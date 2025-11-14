@@ -1,0 +1,44 @@
+name: karbonson
+version: 1.0.0+1
+description: "A new Flutter project."
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.2
+  flutter_bloc: ^8.1.6
+  equatable: ^2.0.5
+  firebase_core: ^2.32.0
+  firebase_auth: ^4.16.0
+  cloud_firestore: ^4.17.5
+  firebase_messaging: ^14.7.10
+  shared_preferences: ^2.2.3
+  connectivity_plus: ^5.0.2
+  flutter_svg: ^2.0.9
+  cached_network_image: ^3.3.0
+  animations: ^2.0.8
+  google_fonts: ^6.1.0
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
+  mockito: ^5.5.0
+  bloc_test: ^9.1.7
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icon/karbon2.png
+    - assets/images/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/karbon2.png"

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "523262104471",
+    "project_id": "karbon2-c39e7",
+    "storage_bucket": "karbon2-c39e7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:523262104471:android:bf890e9d9ca698f52eead2",
+        "android_client_info": {
+          "package_name": "com.example.karbon2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDd6CWJLN__xASlFHo6aNQVGghjGaQqg0c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:523262104471:android:cd1cf27fe02259302eead2",
+        "android_client_info": {
+          "package_name": "com.example.karbonson"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDd6CWJLN__xASlFHo6aNQVGghjGaQqg0c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
