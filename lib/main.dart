@@ -6,8 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'pages/login_page.dart';
 import 'firebase_options.dart';
 import 'services/notification_service.dart';
-import 'providers/theme_provider.dart';
-import 'providers/quiz_bloc.dart';
+import 'provides/theme_provider.dart';
+import 'provides/quiz_bloc.dart';
 import 'services/quiz_logic.dart'; 
 // Not: firebase_options.dart dosyası sizin projenizden gelen kodu içerir.
 

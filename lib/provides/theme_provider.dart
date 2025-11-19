@@ -8,8 +8,7 @@ class ThemeProvider with ChangeNotifier {
   ThemeProvider() {
     _loadThemeMode();
   }
-  
-  get SharedPreferences => null;
+
 
   Future<void> _loadThemeMode() async {
     final prefs = await SharedPreferences.getInstance();

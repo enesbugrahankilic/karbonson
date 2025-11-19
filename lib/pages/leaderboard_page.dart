@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+ 
 import '../widgets/leaderboard_item.dart';
 import 'login_page.dart';
 
@@ -48,8 +48,6 @@ class LeaderboardPage extends StatelessWidget {
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(child: Text('Henüz kayıtlı skor bulunmuyor!'));
           }
-
-          final currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
           return ListView.builder(
             padding: const EdgeInsets.all(8),

@@ -2,8 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../services/quiz_logic.dart';
-import '../models/question.dart';
-import '../providers/quiz_bloc.dart';
+import '../provides/quiz_bloc.dart';
 import '../widgets/custom_question_card.dart';
 
 class QuizPage extends StatefulWidget {
