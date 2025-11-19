@@ -9,16 +9,40 @@ project 'Runner', {
   'Release' => :release,
 }
 
-flutter_root = File.expand_path(File.join(__dir__, '..', 'Development', 'flutter'))
-# Eğer yukarıdaki yol yanlışsa flutter_root'u aşağıdaki gibi otomatik bulmaya değiştir:
-# flutter_root = File.expand_path(File.join(__dir__, '..', '.'))
+# Try to use FLUTTER_ROOT environment variable first (set by flutter tool),
+# otherwise fall back to a relative path. This is more robust across setups.
+# Try FLUTTER_ROOT env first. If not set, try to resolve from `which flutter`.
+flutter_root = ENV['FLUTTER_ROOT']
+if flutter_root.nil? || flutter_root.empty?
+  begin
+    flutter_bin = `which flutter`.strip
+    if flutter_bin && !flutter_bin.empty?
+      flutter_root = File.expand_path(File.join(flutter_bin, '..', '..'))
+    end
+  rescue
+    flutter_root = nil
+  end
+end
 
-# Flutter'ın podhelper'ını yükle
-load File.join(File.expand_path('..', __dir__), 'flutter', 'packages', 'flutter_tools', 'bin', 'podhelper.rb') rescue load File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper.rb')
+# final fallback: project-relative "flutter" folder (older setups)
+flutter_root ||= File.expand_path(File.join(__dir__, '..', '..', 'flutter'))
+
+# Load Flutter's podhelper.rb from the Flutter SDK
+podhelper = File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper.rb')
+unless File.exist?(podhelper)
+  raise "Could not find Flutter's podhelper at #{podhelper}. Is FLUTTER_ROOT set correctly?\nTried: ENV['FLUTTER_ROOT'] and `which flutter`. Run `which flutter` and set FLUTTER_ROOT accordingly in your shell (e.g. in ~/.zshrc)."
+end
+load podhelper
 
 target 'Runner' do
   use_frameworks! :linkage => :static
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+  end
 end
