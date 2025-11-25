@@ -1,5 +1,6 @@
 // lib/pages/friends_page.dart
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/game_board.dart';
 import '../services/firestore_service.dart';
@@ -22,7 +23,9 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
   List<FriendRequest> _sentRequests = [];
   List<Map<String, dynamic>> _searchResults = [];
   bool _isLoading = false;
-  int _selectedTabIndex = 0;
+  
+  // Button protection against double-clicks and race conditions
+  final Set<String> _processingRequests = {};
 
   @override
   void initState() {
@@ -77,25 +80,147 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
     }
   }
 
+  /// Arkadaşlık isteğini güvenli şekilde kabul et
+  /// Specification: Double-click koruması ve hata yönetimi
   Future<void> _acceptFriendRequest(String requestId) async {
-    final success = await _firestoreService.acceptFriendRequest(requestId, widget.userNickname);
+    // Double-click koruması
+    if (_processingRequests.contains(requestId)) {
+      if (kDebugMode) debugPrint('İstek zaten işleniyor: $requestId');
+      return;
+    }
 
-    if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Arkadaşlık isteği kabul edildi')),
-      );
-      _loadFriendsData();
+    // Processing başlat
+    _processingRequests.add(requestId);
+    setState(() {}); // UI'ı güncelle
+
+    try {
+      // İlk önce isteğin geçerliliğini kontrol et
+      final isValid = await _firestoreService.isFriendRequestValid(requestId, widget.userNickname);
+      
+      if (!isValid) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Bu istek artık geçerli değil'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        _loadFriendsData(); // Listeyi yenile
+        return;
+      }
+
+      // Atomik kabul işlemi
+      final success = await _firestoreService.acceptFriendRequest(requestId, widget.userNickname);
+
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✅ Arkadaşlık isteği başarıyla kabul edildi!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🚨 İstek kabul edilirken bir hata oluştu'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        _loadFriendsData(); // Listeyi yenile
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Kritik hata: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Beklenmeyen bir hata oluştu'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      // Processing bitir
+      _processingRequests.remove(requestId);
+      if (mounted) {
+        setState(() {}); // UI'ı güncelle
+      }
     }
   }
 
+  /// Arkadaşlık isteğini güvenli şekilde reddet
+  /// Specification: Double-click koruması ve hata yönetimi
   Future<void> _rejectFriendRequest(String requestId) async {
-    final success = await _firestoreService.rejectFriendRequest(requestId, widget.userNickname);
+    // Double-click koruması
+    if (_processingRequests.contains(requestId)) {
+      if (kDebugMode) debugPrint('İstek zaten işleniyor: $requestId');
+      return;
+    }
 
-    if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Arkadaşlık isteği reddedildi')),
+    // Processing başlat
+    _processingRequests.add(requestId);
+    setState(() {}); // UI'ı güncelle
+
+    try {
+      // İlk önce isteğin geçerliliğini kontrol et
+      final isValid = await _firestoreService.isFriendRequestValid(requestId, widget.userNickname);
+      
+      if (!isValid) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Bu istek artık geçerli değil'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        _loadFriendsData(); // Listeyi yenile
+        return;
+      }
+
+      // Atomik reddetme işlemi (bildirim ile)
+      final success = await _firestoreService.rejectFriendRequest(
+        requestId, 
+        widget.userNickname,
+        sendNotification: true, // Bildirim gönder
       );
-      _loadFriendsData();
+
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✅ Arkadaşlık isteği reddedildi'),
+              backgroundColor: Colors.blue,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🚨 İstek reddedilirken bir hata oluştu'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        _loadFriendsData(); // Listeyi yenile
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Kritik hata: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Beklenmeyen bir hata oluştu'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      // Processing bitir
+      _processingRequests.remove(requestId);
+      if (mounted) {
+        setState(() {}); // UI'ı güncelle
+      }
     }
   }
 
@@ -131,7 +256,7 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                           borderRadius: BorderRadius.circular(12),
                         ),
                         filled: true,
-                        fillColor: Colors.white.withOpacity(0.9),
+                        fillColor: Colors.white.withValues(alpha: 0.9),
                       ),
                       onChanged: _searchUsers,
                     ),
@@ -220,13 +345,35 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                                                 trailing: Row(
                                                   mainAxisSize: MainAxisSize.min,
                                                   children: [
+                                                    // Kabul butonu - Double-click koruması ile
                                                     IconButton(
-                                                      icon: const Icon(Icons.check, color: Colors.green),
-                                                      onPressed: () => _acceptFriendRequest(request.id),
+                                                      icon: Icon(
+                                                        Icons.check, 
+                                                        color: _processingRequests.contains(request.id) 
+                                                            ? Colors.grey 
+                                                            : Colors.green,
+                                                      ),
+                                                      onPressed: _processingRequests.contains(request.id)
+                                                          ? null
+                                                          : () => _acceptFriendRequest(request.id),
+                                                      tooltip: _processingRequests.contains(request.id)
+                                                          ? 'İşleniyor...'
+                                                          : 'Kabul Et',
                                                     ),
+                                                    // Red butonu - Double-click koruması ile  
                                                     IconButton(
-                                                      icon: const Icon(Icons.close, color: Colors.red),
-                                                      onPressed: () => _rejectFriendRequest(request.id),
+                                                      icon: Icon(
+                                                        Icons.close, 
+                                                        color: _processingRequests.contains(request.id)
+                                                            ? Colors.grey 
+                                                            : Colors.red,
+                                                      ),
+                                                      onPressed: _processingRequests.contains(request.id)
+                                                          ? null
+                                                          : () => _rejectFriendRequest(request.id),
+                                                      tooltip: _processingRequests.contains(request.id)
+                                                          ? 'İşleniyor...'
+                                                          : 'Reddet',
                                                     ),
                                                   ],
                                                 ),

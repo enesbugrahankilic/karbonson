@@ -8,10 +8,6 @@ import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'notification_service.dart';
 
 class QuizLogic {
-  static final QuizLogic _instance = QuizLogic._internal();
-
-  factory QuizLogic() => _instance;
-
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   int _currentScore = 0;
   int _highScore = 0;
@@ -132,10 +128,10 @@ class QuizLogic {
     Question(
       text: 'Hangisi iklim değişikliğine katkı sağlar?',
       options: [
-        Option(text: 'Fosil yakıt kullanımı', score: 0),
-        Option(text: 'Rüzgar türbinleri kurmak', score: 10),
-        Option(text: 'Ağaçlandırma yapmak', score: 10),
-        Option(text: 'Güneş panelleri kullanmak', score: 10),
+        Option(text: 'Fosil yakıt kullanımı', score: 10),
+        Option(text: 'Rüzgar türbinleri kurmak', score: 0),
+        Option(text: 'Ağaçlandırma yapmak', score: 0),
+        Option(text: 'Güneş panelleri kullanmak', score: 0),
       ],
     ),
     // Soru 13
@@ -172,10 +168,10 @@ class QuizLogic {
     Question(
       text: 'Hangisi ekosisteme zarar verir?',
       options: [
-        Option(text: 'Atıkları doğaya bırakmak', score: 0),
-        Option(text: 'Geri dönüşüm yapmak', score: 10),
-        Option(text: 'Doğal yaşamı korumak', score: 10),
-        Option(text: 'Enerji tasarrufu sağlamak', score: 10),
+        Option(text: 'Atıkları doğaya bırakmak', score: 10),
+        Option(text: 'Geri dönüşüm yapmak', score: 0),
+        Option(text: 'Doğal yaşamı korumak', score: 0),
+        Option(text: 'Enerji tasarrufu sağlamak', score: 0),
       ],
     ),
     // Soru 17
@@ -422,60 +418,66 @@ class QuizLogic {
     Question(
       text: 'Doğada çözünme süresi en uzun olan madde hangisidir?',
       options: [
-        Option(text: 'Elma çöpü', score: 0),
-        Option(text: 'Kağıt', score: 0),
-        Option(text: 'Cam şişe', score: 5), // Geri dönüştürülmezse binlerce yıl
         Option(text: 'Plastik şişe', score: 10),
+        Option(text: 'Cam şişe', score: 8),
+        Option(text: 'Kağıt', score: 5),
+        Option(text: 'Elma çöpü', score: 0),
+        Option(text: 'Boş Bırak', score: 0),
       ],
     ),
     // Soru 42
     Question(
       text: 'Şarj edilebilir piller kullanmak neye katkı sağlar?',
       options: [
-        Option(text: 'Daha fazla atık üretimine', score: 0),
         Option(text: 'Kimyasal atık miktarını azaltmaya', score: 10),
-        Option(text: 'Enerji tüketimini artırmaya', score: 0),
         Option(text: 'Daha zayıf performans sağlamaya', score: 0),
+        Option(text: 'Enerji tüketimini artırmaya', score: 0),
+        Option(text: 'Daha fazla atık üretimine', score: 0),
+        Option(text: 'Boş Bırak', score: 0),
       ],
     ),
     // Soru 43
     Question(
       text: 'Sürdürülebilir kalkınmanın en temel hedefi nedir?',
       options: [
-        Option(text: 'Sadece ekonomik büyümeye odaklanmak', score: 0),
-        Option(text: 'Doğal kaynakları sınırsız kullanmak', score: 0),
         Option(text: 'Çevre, toplum ve ekonomiyi dengelemek', score: 10),
         Option(text: 'Nüfus artışını hızlandırmak', score: 0),
+        Option(text: 'Doğal kaynakları sınırsız kullanmak', score: 0),
+        Option(text: 'Sadece ekonomik büyümeye odaklanmak', score: 0),
+        Option(text: 'Boş Bırak', score: 0),
       ],
     ),
     // Soru 44
     Question(
       text: 'Toplu taşıma kullanmanın bireysel çevreye katkısı nedir?',
       options: [
-        Option(text: 'Daha fazla trafik yaratmak', score: 0),
         Option(text: 'Kişi başına düşen karbon salımını azaltmak', score: 10),
+        Option(text: 'Yolculuk süresini uzatmak', score: 0),
         Option(text: 'Daha fazla yakıt tüketmek', score: 0),
-        Option(text: 'Yolculuk süresini uzatmak', score: 5),
+        Option(text: 'Daha fazla trafik yaratmak', score: 0),
+        Option(text: 'Boş Bırak', score: 0),
       ],
     ),
     // Soru 45
     Question(
       text: 'Gıda israfını azaltmak için ne yapılabilir?',
       options: [
-        Option(text: 'Gereğinden fazla yemek pişirmek', score: 0),
-        Option(text: 'Son kullanma tarihi geçen gıdaları saklamak', score: 0),
         Option(text: 'Alışveriş listesi yapmak ve porsiyonları ayarlamak', score: 10),
         Option(text: 'Bütün yiyecekleri atmak', score: 0),
+        Option(text: 'Son kullanma tarihi geçen gıdaları saklamak', score: 0),
+        Option(text: 'Gereğinden fazla yemek pişirmek', score: 0),
+        Option(text: 'Boş Bırak', score: 0),
       ],
     ),
     // Soru 46
     Question(
       text: 'Hangi doğal kaynak, yenilenemez bir enerji kaynağıdır?',
       options: [
-        Option(text: 'Rüzgar', score: 0),
-        Option(text: 'Güneş', score: 0),
         Option(text: 'Petrol', score: 10),
         Option(text: 'Su', score: 0),
+        Option(text: 'Güneş', score: 0),
+        Option(text: 'Rüzgar', score: 0),
+        Option(text: 'Boş Bırak', score: 0),
       ],
     ),
     // Soru 47
@@ -483,9 +485,10 @@ class QuizLogic {
       text: 'Su kirliliğine neden olan en büyük etkenlerden biri nedir?',
       options: [
         Option(text: 'Evsel ve endüstriyel atık sular', score: 10),
-        Option(text: 'Balık avcılığı', score: 0),
-        Option(text: 'Buharlaşma', score: 0),
         Option(text: 'Yağmur yağması', score: 0),
+        Option(text: 'Buharlaşma', score: 0),
+        Option(text: 'Balık avcılığı', score: 0),
+        Option(text: 'Boş Bırak', score: 0),
       ],
     ),
     // Soru 48
@@ -493,29 +496,32 @@ class QuizLogic {
       text: 'Geri dönüşümde kâğıt atıkların toplanması neyi engeller?',
       options: [
         Option(text: 'Ağaç kesimini azaltmaya yardımcı olur', score: 10),
-        Option(text: 'Daha fazla çöp sahası ihtiyacını artırır', score: 0),
-        Option(text: 'Enerji tüketimini artırır', score: 0),
         Option(text: 'Kâğıt kalitesini düşürür', score: 0),
+        Option(text: 'Enerji tüketimini artırır', score: 0),
+        Option(text: 'Daha fazla çöp sahası ihtiyacını artırır', score: 0),
+        Option(text: 'Boş Bırak', score: 0),
       ],
     ),
     // Soru 49
     Question(
       text: 'Çevre dostu temizlik ürünleri kullanmanın avantajı nedir?',
       options: [
-        Option(text: 'Daha pahalı olmaları', score: 0),
         Option(text: 'Su kaynaklarına daha az kimyasal salmaları', score: 10),
-        Option(text: 'Daha zor temizlemeleri', score: 0),
         Option(text: 'Daha çok köpürmeleri', score: 0),
+        Option(text: 'Daha zor temizlemeleri', score: 0),
+        Option(text: 'Daha pahalı olmaları', score: 0),
+        Option(text: 'Boş Bırak', score: 0),
       ],
     ),
     // Soru 50
     Question(
       text: 'İklim değişikliği ile mücadelede bireylerin en temel sorumluluğu nedir?',
       options: [
-        Option(text: 'Sürekli seyahat etmek', score: 0),
-        Option(text: 'Tüketimi artırmak', score: 0),
         Option(text: 'Karbon ayak izini azaltacak bilinçli kararlar almak', score: 10),
         Option(text: 'Gelişmeleri takip etmemek', score: 0),
+        Option(text: 'Tüketimi artırmak', score: 0),
+        Option(text: 'Sürekli seyahat etmek', score: 0),
+        Option(text: 'Boş Bırak', score: 0),
       ],
     ),
   ];
@@ -523,7 +529,7 @@ class QuizLogic {
   List<Question> questions = [];
   final Random _random = Random();
 
-  QuizLogic._internal() {
+  QuizLogic() {
     _loadHighScore();
     _selectRandomQuestions(5);
   }
@@ -562,16 +568,38 @@ class QuizLogic {
   }
   
   void _selectRandomQuestions(int count) {
-    var availableQuestions = _allQuestions.where((q) => !_answeredQuestions.contains(q.text)).toList();
-    if (availableQuestions.isEmpty) {
+    var regularQuestions = _allQuestions.where((q) => q.options.length == 4).toList();
+    var bonusQuestions = _allQuestions.where((q) => q.options.length == 5).toList();
+
+    var availableRegular = regularQuestions.where((q) => !_answeredQuestions.contains(q.text)).toList();
+    var availableBonus = bonusQuestions.where((q) => !_answeredQuestions.contains(q.text)).toList();
+
+    if (availableRegular.isEmpty && availableBonus.isEmpty) {
       _answeredQuestions.clear();
-      availableQuestions = _allQuestions;
+      availableRegular = regularQuestions;
+      availableBonus = bonusQuestions;
     }
-    
-    availableQuestions.shuffle(_random);
-    questions = availableQuestions.take(min(count, availableQuestions.length)).toList();
-    for (final q in questions) {
+
+    availableRegular.shuffle(_random);
+    availableBonus.shuffle(_random);
+
+    questions = [];
+    int selected = 0;
+
+    // Önce regular sorulardan seç
+    for (var q in availableRegular) {
+      if (selected >= count) break;
+      questions.add(q);
       _answeredQuestions.add(q.text);
+      selected++;
+    }
+
+    // Eğer hala yeterli soru yoksa bonus sorulardan seç
+    for (var q in availableBonus) {
+      if (selected >= count) break;
+      questions.add(q);
+      _answeredQuestions.add(q.text);
+      selected++;
     }
   }
 

@@ -43,7 +43,9 @@ class CustomQuestionCard extends StatelessWidget {
             children: [
               Text(
                 question,
-                style: Theme.of(context).textTheme.titleLarge,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  height: 1.4,
+                ),
                 textAlign: TextAlign.center,
                 maxLines: null,
               ),
@@ -53,12 +55,14 @@ class CustomQuestionCard extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: isAnswered ? null : () => onOptionSelected(option),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _getButtonColor(option),
+                        backgroundColor: _getButtonColor(option, context),
                         padding: const EdgeInsets.all(16),
                       ),
                       child: Text(
                         option,
-                        style: const TextStyle(fontSize: 16),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   )),
@@ -69,11 +73,11 @@ class CustomQuestionCard extends StatelessWidget {
     );
   }
 
-  Color? _getButtonColor(String option) {
+  Color? _getButtonColor(String option, BuildContext context) {
     if (!isAnswered) return null;
-    if (option == correctAnswer) return Colors.green[100];
+    if (option == correctAnswer) return Theme.of(context).colorScheme.primaryContainer;
     if (option == selectedAnswer && selectedAnswer != correctAnswer) {
-      return Colors.red[100];
+      return Theme.of(context).colorScheme.errorContainer;
     }
     return null;
   }

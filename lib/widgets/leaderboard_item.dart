@@ -23,18 +23,20 @@ class LeaderboardItem extends StatelessWidget {
       elevation: rank <= 3 ? 8 : 2,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
-        leading: _buildLeadingWidget(),
+        leading: _buildLeadingWidget(context),
         title: Text(
           username,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: rank <= 3 ? FontWeight.bold : FontWeight.normal,
-                color: isCurrentPlayerInTop10 ? Colors.red : null,
+                color: isCurrentPlayerInTop10 
+                  ? Theme.of(context).colorScheme.error 
+                  : Theme.of(context).textTheme.titleMedium?.color,
               ),
         ),
         trailing: Text(
           score.toString(),
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: _getScoreColor(),
+                color: _getScoreColor(context),
                 fontWeight: FontWeight.bold,
               ),
         ),
@@ -42,10 +44,10 @@ class LeaderboardItem extends StatelessWidget {
     );
   }
 
-  Widget _buildLeadingWidget() {
+  Widget _buildLeadingWidget(BuildContext context) {
     if (rank <= 3) {
       return CircleAvatar(
-        backgroundColor: _getRankColor(),
+        backgroundColor: _getRankColor(context),
         child: Text(
           rank.toString(),
           style: const TextStyle(
@@ -70,29 +72,29 @@ class LeaderboardItem extends StatelessWidget {
     );
   }
 
-  Color _getRankColor() {
+  Color _getRankColor(BuildContext context) {
     switch (rank) {
       case 1:
-        return Colors.amber;
+        return Theme.of(context).colorScheme.primary;
       case 2:
-        return Colors.grey[400]!;
+        return Theme.of(context).colorScheme.secondary;
       case 3:
-        return Colors.brown[300]!;
+        return Theme.of(context).colorScheme.tertiary;
       default:
-        return Colors.blue;
+        return Theme.of(context).colorScheme.primaryContainer;
     }
   }
 
-  Color _getScoreColor() {
+  Color _getScoreColor(BuildContext context) {
     switch (rank) {
       case 1:
-        return Colors.amber;
+        return Theme.of(context).colorScheme.primary;
       case 2:
-        return Colors.grey[600]!;
+        return Theme.of(context).colorScheme.secondary;
       case 3:
-        return Colors.brown;
+        return Theme.of(context).colorScheme.tertiary;
       default:
-        return Colors.black87;
+        return Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87;
     }
   }
 }

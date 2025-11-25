@@ -4,11 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'board_game_page.dart';
 import 'leaderboard_page.dart';
 import 'multiplayer_lobby_page.dart';
 import 'friends_page.dart';
+import 'profile_page.dart';
+import 'register_page.dart';
+import 'settings_page.dart';
+import '../services/profile_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -103,20 +106,23 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState!.validate()) {
       final nickname = _nicknameController.text;
       try {
-        // Anonim giriş yap
+        // Anonim giriş yap (Specification I.1: UID Centrality)
         final userCredential = await FirebaseAuth.instance.signInAnonymously();
         final user = userCredential.user;
 
         if (user != null) {
-          // Kullanıcı bilgilerini Firestore'a kaydet
-          await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-            'nickname': nickname,
-            'lastLogin': FieldValue.serverTimestamp(),
-            'isAnonymous': true,
-          }, SetOptions(merge: true));
+          // Specification I.1 & I.2: Use UID as document ID
+          // Initialize user profile with UID centrality
+          final profileService = ProfileService();
+          
+          // Create or update user profile with UID as document ID
+          await profileService.initializeProfile(
+            nickname: nickname,
+          );
 
-            if (!mounted) return;
+          if (!mounted) return;
 
+          // Navigate - pages will use FirebaseAuth.instance.currentUser?.uid internally
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -125,11 +131,11 @@ class _LoginPageState extends State<LoginPage> {
           );
         }
       } catch (e, stackTrace) {
-          // Log the error and stacktrace for debugging (debug-only)
-          if (kDebugMode) {
-            debugPrint('Login error (type=${e.runtimeType}): $e');
-            debugPrint('$stackTrace');
-          }
+        // Log the error and stacktrace for debugging (debug-only)
+        if (kDebugMode) {
+          debugPrint('Login error (type=${e.runtimeType}): $e');
+          debugPrint('$stackTrace');
+        }
 
         // Firebase hatası olsa bile oyuna devam et (fallback)
         if (!mounted) return;
@@ -174,161 +180,249 @@ class _LoginPageState extends State<LoginPage> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 600),
-                  curve: Curves.easeInOut,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Color.fromRGBO(255, 255, 255, 0.95),
-                    borderRadius: BorderRadius.circular(32),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 16,
-                        offset: Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 10),
-                      Hero(
-                        tag: 'eco-icon',
-                        child: Icon(
-                          Icons.eco,
-                          size: 90,
-                          color: Color(0xFF4CAF50),
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      Text(
-                        'Oyuna Başla',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green.shade700,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 28),
-                      Form(
-                        key: _formKey,
-                        child: TextFormField(
-                          controller: _nicknameController,
-                          decoration: InputDecoration(
-                            labelText: 'Takma Adınız (Nickname)',
-                            filled: true,
-                            fillColor: Colors.green.shade50,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(18),
-                              borderSide: BorderSide.none,
-                            ),
-                            prefixIcon: const Icon(Icons.person, color: Color(0xFF1E88E5)),
-                            suffixIcon: IconButton(
-                              icon: const Icon(Icons.casino, color: Color(0xFF4CAF50)),
-                              onPressed: _suggestRandomName,
-                              tooltip: 'Rastgele isim öner',
-                            ),
-                          ),
-                          style: const TextStyle(fontSize: 18),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Lütfen bir takma ad girin';
-                            }
-                            if (value.length < 3) {
-                              return 'Takma ad en az 3 karakter olmalı';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 400),
-                        curve: Curves.easeInOut,
-                        child: ElevatedButton.icon(
-                          onPressed: _startGame,
-                          icon: const Icon(Icons.play_arrow, size: 28, color: Colors.white),
-                          label: const Text('Oyuna Başla', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(double.infinity, 56),
-                            backgroundColor: const Color(0xFF4CAF50),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                            elevation: 8,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 400),
-                        curve: Curves.easeInOut,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              final nickname = _nicknameController.text;
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => MultiplayerLobbyPage(userNickname: nickname),
-                                ),
-                              );
-                            }
-                          },
-                          icon: const Icon(Icons.group, size: 28, color: Colors.white),
-                          label: const Text('Çok Oyunculu Oyna', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(double.infinity, 56),
-                            backgroundColor: const Color(0xFF2196F3),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                            elevation: 8,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => FriendsPage(userNickname: _nicknameController.text),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.people, color: Color(0xFF8BC34A)),
-                              label: const Text('Arkadaşlar', style: TextStyle(fontSize: 17, color: Color(0xFF8BC34A))),
-                              style: TextButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: TextButton.icon(
-                              onPressed: _viewLeaderboard,
-                              icon: const Icon(Icons.leaderboard, color: Color(0xFF1E88E5)),
-                              label: const Text('Liderlik Tablosu', style: TextStyle(fontSize: 17, color: Color(0xFF1E88E5))),
-                              style: TextButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                            ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Icon(
+                            Icons.eco,
+                            size: 60,
+                            color: const Color(0xFF4CAF50),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Oyuna Başla',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Form(
+                            key: _formKey,
+                            child: TextFormField(
+                              controller: _nicknameController,
+                              decoration: InputDecoration(
+                                labelText: 'Takma Adınız',
+                                filled: true,
+                                fillColor: Colors.grey[50],
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                                ),
+                                prefixIcon: Icon(Icons.person, color: Colors.grey[600]),
+                                suffixIcon: IconButton(
+                                  icon: Icon(Icons.casino, color: const Color(0xFF4CAF50)),
+                                  onPressed: _suggestRandomName,
+                                  tooltip: 'Rastgele isim öner',
+                                ),
+                                labelStyle: TextStyle(color: Colors.grey[700]),
+                              ),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Lütfen bir takma ad girin';
+                                }
+                                if (value.length < 3) {
+                                  return 'Takma ad en az 3 karakter olmalı';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton.icon(
+                            onPressed: _startGame,
+                            icon: const Icon(Icons.play_arrow),
+                            label: const Text('Tek Oyun'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF4CAF50),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                final nickname = _nicknameController.text;
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MultiplayerLobbyPage(userNickname: nickname),
+                                  ),
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.group),
+                            label: const Text('Çok Oyunculu'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2196F3),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextButton.icon(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => FriendsPage(userNickname: _nicknameController.text),
+                                      ),
+                                    );
+                                  },
+                                  icon: Icon(Icons.people, color: Colors.green[800]),
+                                  label: Text('Arkadaşlar', style: TextStyle(
+                                    fontSize: 14, 
+                                    color: Colors.green[800],
+                                    fontWeight: FontWeight.w600,
+                                  )),
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    backgroundColor: Colors.grey[100],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TextButton.icon(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ProfilePage(userNickname: _nicknameController.text),
+                                      ),
+                                    );
+                                  },
+                                  icon: Icon(Icons.person, color: Colors.purple[800]),
+                                  label: Text('Profil', style: TextStyle(
+                                    fontSize: 14, 
+                                    color: Colors.purple[800],
+                                    fontWeight: FontWeight.w600,
+                                  )),
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    backgroundColor: Colors.grey[100],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TextButton.icon(
+                                  onPressed: _viewLeaderboard,
+                                  icon: Icon(Icons.leaderboard, color: Colors.blue[800]),
+                                  label: Text('Liderlik', style: TextStyle(
+                                    fontSize: 14, 
+                                    color: Colors.blue[800],
+                                    fontWeight: FontWeight.w600,
+                                  )),
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    backgroundColor: Colors.grey[100],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          
+                          // Kayıt ol ve Ayarlar butonları
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const RegisterPage(),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  'Kayıt Ol',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.blue[700],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const SettingsPage(),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  'Ayarlar',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),

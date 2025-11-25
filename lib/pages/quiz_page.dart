@@ -77,9 +77,16 @@ class _QuizPageState extends State<QuizPage> {
             Text(
               'Puan: ${state.score}',
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 26,
                 fontWeight: FontWeight.bold,
-                color: Colors.green.shade700,
+                color: Colors.green.shade900,
+                shadows: [
+                  Shadow(
+                    offset: Offset(0, 2),
+                    blurRadius: 3,
+                    color: Colors.black26,
+                  ),
+                ],
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -87,9 +94,16 @@ class _QuizPageState extends State<QuizPage> {
             Text(
               'Soru ${state.currentQuestion + 1}/${state.questions.length}',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: Colors.blueGrey.shade700,
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+                shadows: [
+                  Shadow(
+                    offset: Offset(0, 1),
+                    blurRadius: 2,
+                    color: Colors.black12,
+                  ),
+                ],
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -138,10 +152,17 @@ class _QuizPageState extends State<QuizPage> {
               elevation: 0,
               centerTitle: true,
               actions: [
-                IconButton(
-                  icon: const Icon(Icons.exit_to_app),
-                  onPressed: () => _confirmExit(context),
-                  tooltip: 'Oyundan Çık',
+                Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black87,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.exit_to_app, color: Colors.white),
+                    onPressed: () => _confirmExit(context),
+                    tooltip: 'Oyundan Çık',
+                  ),
                 ),
               ],
             ),

@@ -29,6 +29,7 @@ class GameLogic with ChangeNotifier {
   int get lastDiceRoll => _lastDiceRoll;
   bool get isDiceRolling => _isDiceRolling;
   bool get isGameFinished => player.position == GameBoard.totalTiles - 1;
+  Player? get currentPlayer => player;
 
   String get timeElapsedFormatted {
     final minutes = (_timeElapsedInSeconds ~/ 60).toString().padLeft(2, '0');

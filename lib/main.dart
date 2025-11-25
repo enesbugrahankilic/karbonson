@@ -4,12 +4,16 @@ import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode, debugPrint;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'provides/theme_provider.dart';
 import 'provides/quiz_bloc.dart';
+import 'provides/profile_bloc.dart';
 import 'services/quiz_logic.dart';
+import 'services/profile_service.dart';
 import 'firebase_options.dart';
 import 'services/notification_service.dart';
 import 'pages/login_page.dart';
+import 'pages/tutorial_page.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -31,6 +35,7 @@ void main() {
         providers: [
           ChangeNotifierProvider(create: (_) => ThemeProvider()),
           BlocProvider(create: (_) => QuizBloc(quizLogic: QuizLogic())),
+          BlocProvider(create: (_) => ProfileBloc(profileService: ProfileService())),
         ],
         child: const AppRoot(),
       ),
@@ -161,18 +166,50 @@ class _AppRootState extends State<AppRoot> {
   }
 }
 
-class Karbon2App extends StatelessWidget {
+class Karbon2App extends StatefulWidget {
   const Karbon2App({super.key});
 
   @override
+  State<Karbon2App> createState() => _Karbon2AppState();
+}
+
+class _Karbon2AppState extends State<Karbon2App> {
+  bool _hasSeenTutorial = false;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkTutorialStatus();
+  }
+
+  Future<void> _checkTutorialStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeen = prefs.getBool('hasSeenTutorial') ?? false;
+    setState(() {
+      _hasSeenTutorial = hasSeen;
+      _loading = false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+
     return MaterialApp(
       title: 'Eco Game',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: Provider.of<ThemeProvider>(context).themeMode,
-      home: const LoginPage(),
+      home: _hasSeenTutorial ? const LoginPage() : const TutorialPage(),
     );
   }
 }

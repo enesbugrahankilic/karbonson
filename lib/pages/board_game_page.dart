@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:math' as math;
 import '../services/game_logic.dart';
 import '../services/multiplayer_game_logic.dart';
@@ -38,6 +39,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
   late Animation<double> _diceRotationAnimation;
   String? _notificationMessage;
   Color? _notificationColor;
+  bool _scoreSaved = false;
 
   @override
   void initState() {
@@ -79,7 +81,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
     final resultScore = await navigator.push<int>(
       MaterialPageRoute(
         builder: (context) => QuizPage(
-          userNickname: gameLogic.player.nickname,
+          userNickname: gameLogic.currentPlayer!.nickname,
           quizLogic: gameLogic.quizLogic,
         ),
       ),
@@ -88,7 +90,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
     if (!mounted) return;
 
     if (resultScore != null) {
-      final message = gameLogic.onQuizFinished(resultScore, gameLogic.player);
+      final message = gameLogic.onQuizFinished(resultScore, gameLogic.currentPlayer!);
       _showTopNotification('Puan: $resultScore. \n$message', color: Colors.green);
     } else {
       gameLogic.setIsQuizActive(false);
@@ -127,17 +129,17 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
     }
   }
 
-  // _showTileEffectDialog removed: use ScaffoldMessenger captured before async gaps instead.
-
   void _showEndGameDialog(BuildContext context, dynamic gameLogic) async {
+    final capturedContext = context;
     if (widget.isMultiplayer) {
       // Multiplayer end game logic
       final currentPlayer = gameLogic.currentPlayer;
-      if (currentPlayer != null) {
+      if (currentPlayer != null && !_scoreSaved) {
         final finalScore = currentPlayer.quizScore;
         final totalScore = finalScore - (gameLogic.timeElapsedInSeconds ~/ 10);
 
         final saveMessage = await FirestoreService().saveUserScore(currentPlayer.nickname, totalScore);
+        _scoreSaved = true;
 
         // Check if in top 10
         bool isInTop10 = false;
@@ -152,7 +154,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
         if (!mounted) return;
 
         showGeneralDialog(
-          context: context,
+          context: capturedContext,
           barrierDismissible: false,
           barrierLabel: '',
           transitionDuration: const Duration(milliseconds: 500),
@@ -203,14 +205,13 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                         ],
                       ),
                       Text(
-                        '$saveMessage',
+                        saveMessage,
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
-                      if (isInTop10)
-                        Text(
-                          '🏆 Tebrikler! İlk 10\'a girdiniz!',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
+                      ... (isInTop10 ? [Text(
+                        '🏆 Tebrikler! İlk 10\'a girdiniz!',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      )] : []),
                       const SizedBox(height: 16),
                       const Text(
                         'Oyuncu Skorları:',
@@ -245,7 +246,11 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
       final finalScore = gameLogic.player.quizScore;
       final totalScore = finalScore - (gameLogic.timeElapsedInSeconds ~/ 10);
 
-      final saveMessage = await FirestoreService().saveUserScore(gameLogic.player.nickname, totalScore);
+      String saveMessage = '';
+      if (!_scoreSaved) {
+        saveMessage = await FirestoreService().saveUserScore(gameLogic.player.nickname, totalScore);
+        _scoreSaved = true;
+      }
 
       // Check if in top 10
       bool isInTop10 = false;
@@ -260,7 +265,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
       if (!mounted) return;
 
       showGeneralDialog(
-        context: context,
+        context: capturedContext,
         barrierDismissible: false,
         barrierLabel: '',
         transitionDuration: const Duration(milliseconds: 500),
@@ -311,14 +316,14 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                       ],
                     ),
                     Text(
-                      '$saveMessage',
+                      saveMessage,
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
-                    if (isInTop10)
+                    ...[if (isInTop10)
                       Text(
                         '🏆 Tebrikler! İlk 10\'a girdiniz!',
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
+                      )],
                   ],
                 ),
                 actions: <Widget>[
@@ -334,39 +339,9 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                   ),
                 ],
               ),
-            );
-          },
-        );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (widget.isMultiplayer) {
-      return ChangeNotifierProvider(
-        create: (_) => MultiplayerGameLogic(),
-        child: Consumer<MultiplayerGameLogic>(
-          builder: (context, gameLogic, child) {
-            // Initialize multiplayer game logic if room data is available
-            if (gameLogic.currentRoom == null && widget.roomId != null && widget.playerId != null) {
-              // We need to load the room data first
-              _initializeMultiplayerGame(context, gameLogic);
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            return _buildGameUI(context, gameLogic, isMultiplayer: true);
-          },
-        ),
-      );
-    } else {
-      return ChangeNotifierProvider(
-        create: (_) => GameLogic()..initializeGame(widget.userNickname),
-        child: Consumer<GameLogic>(
-          builder: (context, gameLogic, child) {
-            return _buildGameUI(context, gameLogic, isMultiplayer: false);
-          },
-        ),
+            ),
+          );
+        },
       );
     }
   }
@@ -390,7 +365,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
       return Container();
     }
 
-    final currentTile = gameLogic.board.tiles[gameLogic.player.position];
+    final currentTile = gameLogic.board.tiles[gameLogic.currentPlayer!.position];
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -600,7 +575,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
         final tile = gameLogic.board.tiles[index];
         final playersHere = widget.isMultiplayer
             ? gameLogic.currentRoom.players.where((p) => p.position == index).toList()
-            : gameLogic.player.position == index ? [gameLogic.player] : [];
+            : gameLogic.currentPlayer != null && gameLogic.currentPlayer.position == index ? [gameLogic.currentPlayer] : [];
         return _buildTile(context, tile, playersHere, widget.isMultiplayer);
       },
     );
@@ -687,10 +662,10 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
               ? 'Bekleniyor...'
               : (currentPlayer.turnsToSkip > 0 ? 'Pas Geçiliyor (${currentPlayer.turnsToSkip})' : 'Zar At!'));
     } else {
-      isDisabled = isDisabled || gameLogic.player.turnsToSkip > 0;
+      isDisabled = isDisabled || (gameLogic.currentPlayer?.turnsToSkip ?? 0) > 0;
       buttonText = gameLogic.isQuizActive
           ? 'Quiz Açık...'
-          : (gameLogic.player.turnsToSkip > 0 ? 'Pas Geçiliyor (${gameLogic.player.turnsToSkip})' : 'Zar At!');
+          : ((gameLogic.currentPlayer?.turnsToSkip ?? 0) > 0 ? 'Pas Geçiliyor (${gameLogic.currentPlayer?.turnsToSkip ?? 0})' : 'Zar At!');
     }
 
     return Column(
@@ -748,51 +723,51 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
               onPressed: isDisabled
                 ? null
                 : () async {
-                  // Capture context-dependent objects before any async gaps
-                  final messenger = ScaffoldMessenger.of(context);
-                  final navigator = Navigator.of(context);
+                    // Capture context-dependent objects before any async gaps
+                    final messenger = ScaffoldMessenger.of(context);
+                    final navigator = Navigator.of(context);
 
-                  // Start dice animation and haptic feedback
-                  _diceAnimationController.forward(from: 0);
-                  HapticFeedback.mediumImpact();
+                    // Start dice animation and haptic feedback
+                    _diceAnimationController.forward(from: 0);
+                    HapticFeedback.mediumImpact();
 
-                  final rollResult = await gameLogic.rollDice();
+                    final rollResult = await gameLogic.rollDice();
 
-                  // Stop animation
-                  _diceAnimationController.stop();
+                    // Stop animation
+                    _diceAnimationController.stop();
 
-                  // Ensure widget still mounted before using UI APIs
-                  if (!mounted) return;
+                    // Ensure widget still mounted before using UI APIs
+                    if (!mounted) return;
 
-                  if (rollResult == -1) {
-                    _showTopNotification('Tur Atlandı! Cezanız Bitmedi.', color: Colors.orange, duration: const Duration(seconds: 3));
-                  } else if (rollResult > 0) {
+                    if (rollResult == -1) {
+                      _showTopNotification('Tur Atlandı! Cezanız Bitmedi.', color: Colors.orange, duration: const Duration(seconds: 3));
+                    } else if (rollResult > 0) {
 
-                    final currentTileAfterMove = gameLogic.board.tiles[gameLogic.player.position];
+                      final currentTileAfterMove = gameLogic.board.tiles[gameLogic.currentPlayer!.position];
 
-                    // 1. Kare etkisini uygula
-                    final message = widget.isMultiplayer
-                        ? gameLogic.applyTileEffect(gameLogic.player, currentTileAfterMove)
-                        : gameLogic.applyTileEffect(currentTileAfterMove);
+                      // 1. Kare etkisini uygula
+                      final message = widget.isMultiplayer
+                          ? gameLogic.applyTileEffect(gameLogic.currentPlayer!, currentTileAfterMove)
+                          : gameLogic.applyTileEffect(currentTileAfterMove);
 
-                    // 2. Etki diyalogunu göster (Quiz hariç)
-                      if (currentTileAfterMove.type != TileType.start &&
-                      currentTileAfterMove.type != TileType.finish &&
-                      currentTileAfterMove.type != TileType.quiz)
-                    {
-                      _showTopNotification(message, color: Colors.blue, duration: const Duration(seconds: 3));
+                      // 2. Etki diyalogunu göster (Quiz hariç)
+                        if (currentTileAfterMove.type != TileType.start &&
+                        currentTileAfterMove.type != TileType.finish &&
+                        currentTileAfterMove.type != TileType.quiz)
+                      {
+                        _showTopNotification(message, color: Colors.blue, duration: const Duration(seconds: 3));
+                      }
+
+                      // 3. Quiz Kontrolü: Eğer kare Quiz ise, zar atma işlemi bittikten hemen sonra quiz'i aç
+                        if (currentTileAfterMove.type == TileType.quiz) {
+                        // Top notification göster (Quiz Vakti mesajı)
+                        _showTopNotification(message, color: Colors.purple, duration: const Duration(seconds: 3));
+                        // Quiz'i aç
+                        if (!mounted) return;
+                        await _startQuiz(navigator, messenger, gameLogic);
+                      }
                     }
-
-                    // 3. Quiz Kontrolü: Eğer kare Quiz ise, zar atma işlemi bittikten hemen sonra quiz'i aç
-                      if (currentTileAfterMove.type == TileType.quiz) {
-                      // Top notification göster (Quiz Vakti mesajı)
-                      _showTopNotification(message, color: Colors.purple, duration: const Duration(seconds: 3));
-                      // Quiz'i aç
-                      if (!mounted) return;
-                      await _startQuiz(navigator, messenger, gameLogic);
-                    }
-                  }
-                },
+                  },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 40),
                 backgroundColor: const Color(0xFF4CAF50),
@@ -810,5 +785,35 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
         ),
       ],
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.isMultiplayer) {
+      return ChangeNotifierProvider(
+        create: (_) => MultiplayerGameLogic(),
+        child: Consumer<MultiplayerGameLogic>(
+          builder: (context, gameLogic, child) {
+            // Initialize multiplayer game logic if room data is available
+            if (gameLogic.currentRoom == null && widget.roomId != null && widget.playerId != null) {
+              // We need to load the room data first
+              _initializeMultiplayerGame(context, gameLogic);
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            return _buildGameUI(context, gameLogic, isMultiplayer: true);
+          },
+        ),
+      );
+    } else {
+      return ChangeNotifierProvider(
+        create: (_) => GameLogic()..initializeGame(widget.userNickname),
+        child: Consumer<GameLogic>(
+          builder: (context, gameLogic, child) {
+            return _buildGameUI(context, gameLogic, isMultiplayer: false);
+          },
+        ),
+      );
+    }
   }
 }
