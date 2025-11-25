@@ -3,6 +3,7 @@
 // All user data structures follow UID-based document ID requirements
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../services/firestore_service.dart';
 
 /// Server-side user profile data with UID centrality
 /// Specification I.1 & I.2: Document ID MUST be Firebase Auth UID
@@ -157,6 +158,17 @@ class PrivacySettings {
   }
 }
 
+/// Nickname validation result
+class NicknameValidationResult {
+  final bool isValid;
+  final String error;
+
+  NicknameValidationResult({
+    required this.isValid,
+    this.error = '',
+  });
+}
+
 /// Nickname validation and filtering (Specification I.4)
 class NicknameValidator {
   static const List<String> _bannedWords = [
@@ -170,6 +182,7 @@ class NicknameValidator {
   static const int _changeCooldownDays = 90; // Specification I.4
 
   /// Validates nickname according to specification rules
+  /// This validates format, length, and content but NOT uniqueness
   static NicknameValidationResult validate(String nickname) {
     if (nickname.isEmpty) {
       return NicknameValidationResult(
@@ -215,20 +228,33 @@ class NicknameValidator {
     return NicknameValidationResult(isValid: true);
   }
 
+  /// Validates nickname including uniqueness check
+  /// This is the comprehensive validation method for registration
+  static Future<NicknameValidationResult> validateWithUniqueness(String nickname) async {
+    // First validate format and content
+    final formatValidation = validate(nickname);
+    if (!formatValidation.isValid) {
+      return formatValidation;
+    }
+
+    // Then check uniqueness
+    final firestoreService = FirestoreService();
+    final isAvailable = await firestoreService.isNicknameAvailable(nickname);
+    
+    if (!isAvailable) {
+      return NicknameValidationResult(
+        isValid: false,
+        error: 'Bu takma ad zaten kullanılıyor. Lütfen farklı bir takma ad seçin.',
+      );
+    }
+
+    return NicknameValidationResult(isValid: true);
+  }
+
   /// Checks if nickname can be changed based on cooldown period
   static Future<bool> canChangeNickname(String uid) async {
     // This would typically check Firestore for last change timestamp
     // For now, returning true - implementation would need Firestore check
     return true;
   }
-}
-
-class NicknameValidationResult {
-  final bool isValid;
-  final String error;
-
-  NicknameValidationResult({
-    required this.isValid,
-    this.error = '',
-  });
 }

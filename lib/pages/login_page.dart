@@ -305,73 +305,132 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: TextButton.icon(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => FriendsPage(userNickname: _nicknameController.text),
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              // Use different layouts based on screen width
+                              if (constraints.maxWidth < 400) {
+                                // Small screens: use vertical layout
+                                return Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: TextButton.icon(
+                                            onPressed: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => FriendsPage(userNickname: _nicknameController.text),
+                                                ),
+                                              );
+                                            },
+                                            icon: const Icon(Icons.people, size: 16),
+                                            label: const Text('Arkadaşlar', style: TextStyle(fontSize: 12)),
+                                            style: TextButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                              backgroundColor: Colors.grey[100],
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: TextButton.icon(
+                                            onPressed: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => ProfilePage(userNickname: _nicknameController.text),
+                                                ),
+                                              );
+                                            },
+                                            icon: const Icon(Icons.person, size: 16, color: Colors.purple),
+                                            label: const Text('Profil', style: TextStyle(fontSize: 12, color: Colors.purple)),
+                                            style: TextButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                              backgroundColor: Colors.grey[100],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: TextButton.icon(
+                                        onPressed: _viewLeaderboard,
+                                        icon: const Icon(Icons.leaderboard, size: 16, color: Colors.blue),
+                                        label: const Text('Liderlik Tablosu', style: TextStyle(fontSize: 12, color: Colors.blue)),
+                                        style: TextButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(vertical: 8),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          backgroundColor: Colors.grey[100],
+                                        ),
                                       ),
-                                    );
-                                  },
-                                  icon: Icon(Icons.people, color: Colors.green[800]),
-                                  label: Text('Arkadaşlar', style: TextStyle(
-                                    fontSize: 14, 
-                                    color: Colors.green[800],
-                                    fontWeight: FontWeight.w600,
-                                  )),
-                                  style: TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    backgroundColor: Colors.grey[100],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: TextButton.icon(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => ProfilePage(userNickname: _nicknameController.text),
+                                    ),
+                                  ],
+                                );
+                              } else {
+                                // Medium and large screens: use horizontal layout
+                                return Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextButton.icon(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => FriendsPage(userNickname: _nicknameController.text),
+                                            ),
+                                          );
+                                        },
+                                        icon: const Icon(Icons.people, size: 18),
+                                        label: const Text('Arkadaşlar', style: TextStyle(fontSize: 14)),
+                                        style: TextButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(vertical: 12),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                          backgroundColor: Colors.grey[100],
+                                        ),
                                       ),
-                                    );
-                                  },
-                                  icon: Icon(Icons.person, color: Colors.purple[800]),
-                                  label: Text('Profil', style: TextStyle(
-                                    fontSize: 14, 
-                                    color: Colors.purple[800],
-                                    fontWeight: FontWeight.w600,
-                                  )),
-                                  style: TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    backgroundColor: Colors.grey[100],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: TextButton.icon(
-                                  onPressed: _viewLeaderboard,
-                                  icon: Icon(Icons.leaderboard, color: Colors.blue[800]),
-                                  label: Text('Liderlik', style: TextStyle(
-                                    fontSize: 14, 
-                                    color: Colors.blue[800],
-                                    fontWeight: FontWeight.w600,
-                                  )),
-                                  style: TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    backgroundColor: Colors.grey[100],
-                                  ),
-                                ),
-                              ),
-                            ],
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: TextButton.icon(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => ProfilePage(userNickname: _nicknameController.text),
+                                            ),
+                                          );
+                                        },
+                                        icon: const Icon(Icons.person, size: 18, color: Colors.purple),
+                                        label: const Text('Profil', style: TextStyle(fontSize: 14, color: Colors.purple)),
+                                        style: TextButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(vertical: 12),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                          backgroundColor: Colors.grey[100],
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: TextButton.icon(
+                                        onPressed: _viewLeaderboard,
+                                        icon: const Icon(Icons.leaderboard, size: 18, color: Colors.blue),
+                                        label: const Text('Liderlik', style: TextStyle(fontSize: 14, color: Colors.blue)),
+                                        style: TextButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(vertical: 12),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                          backgroundColor: Colors.grey[100],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }
+                            },
                           ),
                           const SizedBox(height: 16),
                           

@@ -5,9 +5,11 @@ import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/profile_service.dart';
+import '../models/user_data.dart';
 import 'login_page.dart';
 import 'board_game_page.dart';
 import 'multiplayer_lobby_page.dart';
+import 'tutorial_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -110,6 +112,26 @@ class _RegisterPageState extends State<RegisterPage> {
 
         if (kDebugMode) debugPrint('Starting registration for: $email');
 
+        // Check nickname uniqueness before creating user
+        if (kDebugMode) debugPrint('Checking nickname uniqueness: $nickname');
+        final nicknameValidation = await NicknameValidator.validateWithUniqueness(nickname);
+        
+        if (!nicknameValidation.isValid) {
+          if (!mounted) return;
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(nicknameValidation.error),
+              backgroundColor: Colors.red,
+            ),
+          );
+          
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        if (kDebugMode) debugPrint('Nickname uniqueness confirmed');
+
         // Firebase Authentication ile kayıt ol
         final UserCredential userCredential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(email: email, password: password);
@@ -129,11 +151,19 @@ class _RegisterPageState extends State<RegisterPage> {
 
           if (!mounted) return;
 
-          // Ana sayfaya yönlendir (kullanıcı giriş yapmış durumda)
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Kayıt başarılı! Hoş geldiniz!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // Yeni kullanıcıları tutorial sayfasına yönlendir
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => const LoginPage(),
+              builder: (context) => const TutorialPage(),
             ),
           );
         }

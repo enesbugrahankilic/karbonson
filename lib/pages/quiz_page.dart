@@ -79,7 +79,7 @@ class _QuizPageState extends State<QuizPage> {
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
-                color: Colors.green.shade900,
+                color: Colors.black87,
                 shadows: [
                   Shadow(
                     offset: Offset(0, 2),

@@ -521,6 +521,44 @@ class FirestoreService {
     }
   }
 
+  /// Check if a nickname is already taken by another user
+  /// Returns true if nickname is available, false if already taken
+  Future<bool> isNicknameAvailable(String nickname) async {
+    try {
+      final currentUser = _auth.currentUser;
+      
+      final querySnapshot = await _db
+          .collection(_usersCollection)
+          .where('nickname', isEqualTo: nickname)
+          .limit(1)
+          .get();
+
+      // If no documents found, nickname is available
+      if (querySnapshot.docs.isEmpty) {
+        if (kDebugMode) debugPrint('✅ Nickname "$nickname" is available');
+        return true;
+      }
+
+      // If we found documents, check if any belong to a different user
+      for (final doc in querySnapshot.docs) {
+        final userData = UserData.fromMap(doc.data(), doc.id);
+        
+        // If this is the current user, nickname is still "available" for them
+        if (currentUser != null && userData.uid == currentUser.uid) {
+          if (kDebugMode) debugPrint('✅ Nickname "$nickname" belongs to current user');
+          return true;
+        }
+      }
+
+      if (kDebugMode) debugPrint('❌ Nickname "$nickname" is already taken');
+      return false;
+    } catch (e) {
+      if (kDebugMode) debugPrint('🚨 Error checking nickname availability: $e');
+      // In case of error, allow the operation but log the issue
+      return true;
+    }
+  }
+
   /// Clean up invalid or orphaned data (Specification I.2)
   /// Removes user data that doesn't correspond to valid Auth UIDs
   Future<int> cleanupInvalidUserData() async {

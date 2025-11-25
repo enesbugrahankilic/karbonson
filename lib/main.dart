@@ -131,7 +131,7 @@ class _AppRootState extends State<AppRoot> {
               children: const [
                 CircularProgressIndicator(),
                 SizedBox(height: 12),
-                Text('Başlatılıyor... Lütfen bekleyin'),
+                Text('Başlatılıyor... Lütfen bekleyin', style: TextStyle(color: Colors.black87)),
               ],
             ),
           ),
@@ -143,13 +143,13 @@ class _AppRootState extends State<AppRoot> {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
-          appBar: AppBar(title: const Text('Başlatma Hatası')),
+          appBar: AppBar(title: const Text('Başlatma Hatası', style: TextStyle(color: Colors.black87))),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('Uygulama başlatılırken hata oluştu.'),
+                const Text('Uygulama başlatılırken hata oluştu.', style: TextStyle(color: Colors.black87)),
                 const SizedBox(height: 8),
                 Text(_error ?? '', style: const TextStyle(color: Colors.red)),
                 const SizedBox(height: 16),

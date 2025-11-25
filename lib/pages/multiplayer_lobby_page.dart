@@ -227,8 +227,8 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage> {
                                       ),
                                     );
                                   },
-                                  icon: Icon(Icons.people, color: Colors.green[700]),
-                                  label: Text('Arkadaşlarını Yönet', style: TextStyle(color: Colors.green[700])),
+                                  icon: Icon(Icons.people, color: Colors.black87),
+                                  label: Text('Arkadaşlarını Yönet', style: TextStyle(color: Colors.black87)),
                                   style: TextButton.styleFrom(
                                     backgroundColor: Colors.grey[100],
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

@@ -146,16 +146,17 @@ class GameLogic with ChangeNotifier {
     return message;
   }
   
-  String? onQuizFinished(int score) {
-    player.quizScore += score;
+  String? onQuizFinished(int score, [Player? playerParam]) {
+    final targetPlayer = playerParam ?? player;
+    targetPlayer.quizScore += score;
     setIsQuizActive(false); 
 
     // Quiz bittikten sonra Ceza Karesi kontrolü
-    if (board.tiles[player.position].type == TileType.penalty) {
+    if (board.tiles[targetPlayer.position].type == TileType.penalty) {
       
       // İlk 2 tur koruması bittiyse puanı düşür.
       if (_diceRollCount > 2) {
-          player.quizScore = max(0, player.quizScore - 5); // 5 Puan Kaybı
+          targetPlayer.quizScore = max(0, targetPlayer.quizScore - 5); // 5 Puan Kaybı
           notifyListeners();
           return "Quiz Puanı: $score. Ceza Karesi: -5 Puan ve 5 Saniye Ceza uygulandı.";
       } else {
