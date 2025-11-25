@@ -3,6 +3,8 @@
 
 #include <gtk/gtk.h>
 
+#define APPLICATION_ID "com.example.karbonson"
+
 G_DECLARE_FINAL_TYPE(MyApplication, my_application, MY, APPLICATION,
                      GtkApplication)
 

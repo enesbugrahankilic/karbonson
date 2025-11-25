@@ -1,16 +1,23 @@
 // lib/services/quiz_logic.dart
-import '../models/question.dart'; 
+import '../models/question.dart';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
+import 'notification_service.dart';
 
 class QuizLogic {
+  static final QuizLogic _instance = QuizLogic._internal();
+
+  factory QuizLogic() => _instance;
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   int _currentScore = 0;
   int _highScore = 0;
-  List<String> _answeredQuestions = [];
-  List<Question> _allQuestions = [
+  final List<String> _answeredQuestions = [];
+  DateTime? _lastPlayTime;
+  final List<Question> _allQuestions = [
     // Soru 1
     Question(
       text: 'Karbon ayak izinizi azaltmanın en etkili yolu nedir?',
@@ -516,7 +523,7 @@ class QuizLogic {
   List<Question> questions = [];
   final Random _random = Random();
 
-  QuizLogic() {
+  QuizLogic._internal() {
     _loadHighScore();
     _selectRandomQuestions(5);
   }
@@ -525,8 +532,12 @@ class QuizLogic {
     try {
       final prefs = await SharedPreferences.getInstance();
       _highScore = prefs.getInt('highScore') ?? 0;
+      final lastPlayTimeMillis = prefs.getInt('lastPlayTime');
+      if (lastPlayTimeMillis != null) {
+        _lastPlayTime = DateTime.fromMillisecondsSinceEpoch(lastPlayTimeMillis);
+      }
     } catch (e) {
-      print('Error loading high score: $e');
+      if (kDebugMode) debugPrint('Error loading high score: $e');
     }
   }
 
@@ -534,7 +545,10 @@ class QuizLogic {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('highScore', _highScore);
-      
+      if (_lastPlayTime != null) {
+        await prefs.setInt('lastPlayTime', _lastPlayTime!.millisecondsSinceEpoch);
+      }
+
       final userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
         await _firestore.collection('scores').doc(userId).set({
@@ -543,7 +557,7 @@ class QuizLogic {
         }, SetOptions(merge: true));
       }
     } catch (e) {
-      print('Error saving high score: $e');
+      if (kDebugMode) debugPrint('Error saving high score: $e');
     }
   }
   
@@ -556,7 +570,9 @@ class QuizLogic {
     
     availableQuestions.shuffle(_random);
     questions = availableQuestions.take(min(count, availableQuestions.length)).toList();
-    questions.forEach((q) => _answeredQuestions.add(q.text));
+    for (final q in questions) {
+      _answeredQuestions.add(q.text);
+    }
   }
 
   Future<List<Question>> getQuestions() async {
@@ -570,10 +586,16 @@ class QuizLogic {
     );
 
     _currentScore += selectedOption.score;
-    
+
     if (_currentScore > _highScore) {
       _highScore = _currentScore;
       await _saveHighScore();
+      // Yeni yüksek skor için bildirim gönder
+      try {
+        await NotificationService.scheduleHighScoreNotification();
+      } catch (e) {
+        if (kDebugMode) debugPrint('Error sending high score notification: $e');
+      }
     }
 
     return selectedOption.score > 0;
@@ -591,6 +613,8 @@ class QuizLogic {
     resetScore();
     _selectRandomQuestions(5);
     await _loadHighScore();
+    _lastPlayTime = DateTime.now();
+    await _saveHighScore(); // Son oynama zamanını kaydetmek için
   }
 
   Future<List<Map<String, dynamic>>> getLeaderboard() async {
@@ -610,7 +634,7 @@ class QuizLogic {
         };
       }).toList();
     } catch (e) {
-      print('Error fetching leaderboard: $e');
+      if (kDebugMode) debugPrint('Error fetching leaderboard: $e');
       return [];
     }
   }
@@ -627,7 +651,24 @@ class QuizLogic {
         });
       }
     } catch (e) {
-      print('Error saving game results: $e');
+      if (kDebugMode) debugPrint('Error saving game results: $e');
+    }
+  }
+
+  // 12 saatlik hatırlatma kontrolü
+  Future<void> checkAndSendReminderNotification() async {
+    if (_lastPlayTime == null) return;
+
+    final now = DateTime.now();
+    final difference = now.difference(_lastPlayTime!);
+
+    if (difference.inHours >= 12) {
+      try {
+        await NotificationService.scheduleReminderNotification();
+        if (kDebugMode) debugPrint('Reminder notification sent after ${difference.inHours} hours');
+      } catch (e) {
+        if (kDebugMode) debugPrint('Error sending reminder notification: $e');
+      }
     }
   }
 }

@@ -10,15 +10,15 @@ dependencies:
   flutter:
     sdk: flutter
   provider: ^6.1.2
-  flutter_bloc: ^8.1.6
+  flutter_bloc: ^9.1.1
   equatable: ^2.0.5
-  firebase_core: ^2.32.0
-  firebase_auth: ^4.16.0
-  cloud_firestore: ^4.17.5
-  firebase_messaging: ^14.7.10
+  firebase_core: ^4.2.1
+  firebase_auth: ^6.1.2
+  cloud_firestore: ^6.1.0
+  firebase_messaging: ^16.0.4
   flutter_local_notifications: ^19.5.0
   shared_preferences: ^2.2.3
-  connectivity_plus: ^5.0.2
+  connectivity_plus: ^7.0.0
   flutter_svg: ^2.0.9
   cached_network_image: ^3.3.0
   animations: ^2.0.8
@@ -28,13 +28,20 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
   mockito: ^5.5.0
-  bloc_test: ^9.1.7
+  bloc_test: ^10.0.0
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/fonts/
+  fonts:
+    - family: Montserrat
+      fonts:
+        - asset: assets/fonts/Montserrat-Regular.ttf
+        - asset: assets/fonts/Montserrat-Bold.ttf
 
 flutter_launcher_icons:
   android: true

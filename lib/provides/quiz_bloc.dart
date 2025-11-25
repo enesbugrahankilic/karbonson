@@ -88,13 +88,18 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         currentState.questions[event.questionIndex],
         event.answer,
       );
-      
       List<String> newAnswers = List.from(currentState.answers);
       newAnswers[event.questionIndex] = event.answer;
-      
+
+      // Prevent advancing the index past the last question to avoid
+      // RangeError when the UI accesses `questions[currentQuestion]`.
+      final nextIndex = (event.questionIndex + 1) >= currentState.questions.length
+          ? currentState.questions.length - 1
+          : event.questionIndex + 1;
+
       emit(QuizLoaded(
         questions: currentState.questions,
-        currentQuestion: event.questionIndex + 1,
+        currentQuestion: nextIndex,
         score: isCorrect ? currentState.score + 1 : currentState.score,
         answers: newAnswers,
       ));

@@ -117,12 +117,12 @@ class GameLogic with ChangeNotifier {
     String message = "";
     
     switch (tile.type) {
-      case TileType.Bonus:
+      case TileType.bonus:
         _timeElapsedInSeconds = max(0, _timeElapsedInSeconds - 5); 
         message = "+5 Saniye Kazandın! ⏱️";
         break;
-        
-      case TileType.Penalty:
+      
+      case TileType.penalty:
         // CEZA KONTROLÜ: İlk 2 zar atışında koruma
         if (_diceRollCount <= 2) {
             message = "Güvenli Bölge! İlk 2 tur koruması devrede. 🎉";
@@ -133,13 +133,13 @@ class GameLogic with ChangeNotifier {
         }
         break;
         
-      case TileType.Quiz:
+      case TileType.quiz:
         message = "Quiz Vakti! Puan Kazan. 🧠"; 
         break;
-      case TileType.Start:
+      case TileType.start:
         message = "Oyuna Başla!";
         break;
-      case TileType.Finish:
+      case TileType.finish:
         break;
     }
     return message;
@@ -150,7 +150,7 @@ class GameLogic with ChangeNotifier {
     setIsQuizActive(false); 
 
     // Quiz bittikten sonra Ceza Karesi kontrolü
-    if (board.tiles[player.position].type == TileType.Penalty) {
+    if (board.tiles[player.position].type == TileType.penalty) {
       
       // İlk 2 tur koruması bittiyse puanı düşür.
       if (_diceRollCount > 2) {

@@ -10,14 +10,14 @@ class CustomQuestionCard extends StatelessWidget {
   final String correctAnswer;
 
   const CustomQuestionCard({
-    Key? key,
+    super.key,
     required this.question,
     required this.options,
     required this.onOptionSelected,
     required this.isAnswered,
     required this.selectedAnswer,
     required this.correctAnswer,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +45,7 @@ class CustomQuestionCard extends StatelessWidget {
                 question,
                 style: Theme.of(context).textTheme.titleLarge,
                 textAlign: TextAlign.center,
+                maxLines: null,
               ),
               const SizedBox(height: 24),
               ...options.map((option) => Padding(

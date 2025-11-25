@@ -6,14 +6,16 @@ class LeaderboardItem extends StatelessWidget {
   final int score;
   final String? avatarUrl;
   final int rank;
+  final bool isCurrentPlayerInTop10;
 
   const LeaderboardItem({
-    Key? key,
+    super.key,
     required this.username,
     required this.score,
     this.avatarUrl,
     required this.rank,
-  }) : super(key: key);
+    required this.isCurrentPlayerInTop10,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +28,7 @@ class LeaderboardItem extends StatelessWidget {
           username,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: rank <= 3 ? FontWeight.bold : FontWeight.normal,
+                color: isCurrentPlayerInTop10 ? Colors.red : null,
               ),
         ),
         trailing: Text(

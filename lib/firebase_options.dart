@@ -46,34 +46,34 @@ class DefaultFirebaseOptions {
     messagingSenderId: '523262104471',
     projectId: 'karbon2-c39e7',
     authDomain: 'karbon2-c39e7.firebaseapp.com',
-    storageBucket: 'karbon2-c39e7.firebasestorage.app',
+    storageBucket: 'karbon2-c39e7.appspot.com',
     measurementId: 'G-KS0BHVZPQ3',
   );
 
   static final firebase_core.FirebaseOptions android = firebase_core.FirebaseOptions(
     apiKey: 'AIzaSyDd6CWJLN__xASlFHo6aNQVGghjGaQqg0c',
-    appId: '1:523262104471:android:bf890e9d9ca698f52eead2',
+    appId: '1:523262104471:android:cd1cf27fe02259302eead2',
     messagingSenderId: '523262104471',
     projectId: 'karbon2-c39e7',
-    storageBucket: 'karbon2-c39e7.firebasestorage.app',
+    storageBucket: 'karbon2-c39e7.appspot.com',
   );
 
   static final firebase_core.FirebaseOptions ios = firebase_core.FirebaseOptions(
     apiKey: 'AIzaSyAJofoTHi1wOdulPmW0ZQxdr3O8nOEAdHI',
-    appId: '1:523262104471:ios:5903694a3d3593472eead2',
+    appId: '1:523262104471:ios:349f07eb68af53d82eead2',
     messagingSenderId: '523262104471',
     projectId: 'karbon2-c39e7',
-    storageBucket: 'karbon2-c39e7.firebasestorage.app',
-    iosBundleId: 'com.example.karbon2',
+    storageBucket: 'karbon2-c39e7.appspot.com',
+    iosBundleId: 'com.example.karbonson',
   );
 
   static final firebase_core.FirebaseOptions macos = firebase_core.FirebaseOptions(
     apiKey: 'AIzaSyAJofoTHi1wOdulPmW0ZQxdr3O8nOEAdHI',
-    appId: '1:523262104471:ios:5903694a3d3593472eead2',
+    appId: '1:523262104471:ios:349f07eb68af53d82eead2',
     messagingSenderId: '523262104471',
     projectId: 'karbon2-c39e7',
-    storageBucket: 'karbon2-c39e7.firebasestorage.app',
-    iosBundleId: 'com.example.karbon2',
+    storageBucket: 'karbon2-c39e7.appspot.com',
+    iosBundleId: 'com.example.karbonson',
   );
 
   static final firebase_core.FirebaseOptions windows = firebase_core.FirebaseOptions(
@@ -82,7 +82,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '523262104471',
     projectId: 'karbon2-c39e7',
     authDomain: 'karbon2-c39e7.firebaseapp.com',
-    storageBucket: 'karbon2-c39e7.firebasestorage.app',
+    storageBucket: 'karbon2-c39e7.appspot.com',
     measurementId: 'G-08WE3MPZ5Y',
   );
 

@@ -31,11 +31,10 @@ class LeaderboardPage extends StatelessWidget {
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('scores')
-            .orderBy('highScore', descending: true)
-            .limit(10)
-            .snapshots(),
+          stream: FirebaseFirestore.instance
+              .collection('users')
+              .orderBy('score', descending: true)
+              .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -55,13 +54,17 @@ class LeaderboardPage extends StatelessWidget {
             itemBuilder: (context, index) {
               final doc = snapshot.data!.docs[index];
               final data = doc.data() as Map<String, dynamic>;
+              final username = data['nickname'] as String? ?? 'Anonim';
+              final rank = index + 1;
+              final isCurrentPlayerInTop10 = rank <= 10 && username == currentPlayerNickname;
 
-              return LeaderboardItem(
-                username: data['nickname'] as String? ?? 'Anonim',
-                score: data['highScore'] as int? ?? 0,
-                avatarUrl: data['avatarUrl'] as String?,
-                rank: index + 1,
-              );
+                return LeaderboardItem(
+                  username: username,
+                  score: data['score'] as int? ?? 0,
+                  avatarUrl: data['avatarUrl'] as String?,
+                  rank: rank,
+                  isCurrentPlayerInTop10: isCurrentPlayerInTop10,
+                );
             },
           );
         },

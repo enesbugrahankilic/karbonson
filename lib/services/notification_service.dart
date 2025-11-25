@@ -1,5 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 // Eğer arka plan işleyicisinde (handler) başka Firebase servisi kullanıyorsanız
 // buraya 'package:firebase_core/firebase_core.dart' eklemeniz ve 
 // handler içinde Firebase.initializeApp() yapmanız gerekebilir.
@@ -10,24 +11,41 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 // izole bir ortamda bile bulabilmesini sağlar.
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Eğer burada Firestore, Realtime DB vb. kullanacaksanız, 
-  // Firebase.initializeApp(); çağrısını eklemelisiniz.
-  print('Handling a background message: ${message.messageId}');
-  // Arka plan bildirimleri genellikle burada işlenir (veritabanına kaydetme vb.)
+  // Sadece Firestore, Realtime DB vb. kullanıyorsanız ve main.dart'ta başlatma yoksa ekleyin.
+  // Bu projede main.dart'ta başlatma var, burada tekrar başlatmaya gerek yok!
+  if (kDebugMode) debugPrint('Handling a background message: ${message.messageId}');
 }
 
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
-  static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 
   static Future<void> initialize() async {
-    // 1. Firebase izinlerini iste (iOS cihazlar için ana izin kaynağı)
-    await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    if (kDebugMode) debugPrint('NotificationService: initialize() start');
+    FirebaseMessaging? messaging;
+    try {
+      messaging = FirebaseMessaging.instance;
+    } catch (e, st) {
+      // If Firebase isn't initialized yet, accessing instance may fail; log and continue.
+      if (kDebugMode) debugPrint('NotificationService: FirebaseMessaging.instance not available yet: $e');
+      if (kDebugMode) debugPrint('$st');
+    }
+
+    try {
+      // 1. Firebase izinlerini iste (iOS cihazlar için ana izin kaynağı)
+      if (messaging != null) {
+        await messaging.requestPermission(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+      } else {
+        if (kDebugMode) debugPrint('NotificationService: skipping requestPermission (no messaging instance)');
+      }
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('NotificationService: requestPermission failed: $e');
+      if (kDebugMode) debugPrint('$st');
+    }
 
     // 2. Yerel bildirim ayarlarını başlat
     const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -45,28 +63,49 @@ class NotificationService {
       iOS: initializationSettingsIOS,
     );
 
-    await _notifications.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) {
-        // Bildirime dokunma olayını ele alın
-        print('Notification tapped: ${response.payload}');
-        // Burada kullanıcıyı payload'a göre ilgili sayfaya yönlendirebilirsiniz.
-      },
-    );
+    try {
+      await _notifications.initialize(
+        initializationSettings,
+        onDidReceiveNotificationResponse: (NotificationResponse response) {
+          if (kDebugMode) debugPrint('Notification tapped: ${response.payload}');
+        },
+      );
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('NotificationService: _notifications.initialize failed: $e');
+      if (kDebugMode) debugPrint('$st');
+    }
 
     // 3. Arka plan mesajlarını top-level handler'a yönlendir
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    try {
+      if (messaging != null) {
+        FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      } else {
+        if (kDebugMode) debugPrint('NotificationService: skipping onBackgroundMessage registration');
+      }
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('NotificationService: onBackgroundMessage registration failed: $e');
+      if (kDebugMode) debugPrint('$st');
+    }
 
     // 4. Ön plan (uygulama açıksa) mesajlarını dinle
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      // FCM bildirimini al, yerel bildirim olarak göster.
-      _showNotification(
-        title: message.notification?.title ?? 'New Message',
-        body: message.notification?.body ?? '',
-        // IMPROVEMENT: Bildirim dokunulduğunda kullanılmak üzere payload'ı ekle
-        payload: message.data.toString(), 
-      );
-    });
+    try {
+      if (messaging != null) {
+        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+          // FCM bildirimini al, yerel bildirim olarak göster.
+          _showNotification(
+            title: message.notification?.title ?? 'New Message',
+            body: message.notification?.body ?? '',
+            payload: message.data.toString(),
+          );
+        });
+      } else {
+        if (kDebugMode) debugPrint('NotificationService: skipping onMessage listener (no messaging instance)');
+      }
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('NotificationService: onMessage listener failed: $e');
+      if (kDebugMode) debugPrint('$st');
+    }
+    if (kDebugMode) debugPrint('NotificationService: initialize() finished');
   }
 
 
@@ -108,14 +147,99 @@ class NotificationService {
   // --- Yardımcı Metotlar ---
 
   static Future<String?> getToken() async {
-    return await _messaging.getToken();
+    try {
+      final messaging = FirebaseMessaging.instance;
+      return await messaging.getToken();
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('NotificationService: getToken failed: $e');
+      if (kDebugMode) debugPrint('$st');
+      return null;
+    }
   }
 
   static Future<void> subscribeToTopic(String topic) async {
-    await _messaging.subscribeToTopic(topic);
+    try {
+      final messaging = FirebaseMessaging.instance;
+      await messaging.subscribeToTopic(topic);
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('NotificationService: subscribeToTopic failed: $e');
+      if (kDebugMode) debugPrint('$st');
+    }
   }
 
   static Future<void> unsubscribeFromTopic(String topic) async {
-    await _messaging.unsubscribeFromTopic(topic);
+    try {
+      final messaging = FirebaseMessaging.instance;
+      await messaging.unsubscribeFromTopic(topic);
+    } catch (e, st) {
+      if (kDebugMode) debugPrint('NotificationService: unsubscribeFromTopic failed: $e');
+      if (kDebugMode) debugPrint('$st');
+    }
+  }
+
+  // --- Yerel Bildirim Zamanlama Metotları ---
+
+  static Future<void> scheduleHighScoreNotification() async {
+    const androidDetails = AndroidNotificationDetails(
+      'high_score_channel',
+      'Yüksek Skor Bildirimleri',
+      channelDescription: 'Yeni yüksek skor elde edildiğinde bildirim.',
+      importance: Importance.high,
+      priority: Priority.high,
+      showWhen: true,
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications.show(
+      DateTime.now().millisecond + 1,
+      '🎉 Yeni Yüksek Skor!',
+      'Tebrikler! Quiz puanında yeni bir rekora ulaştınız!',
+      details,
+    );
+  }
+
+  static Future<void> scheduleReminderNotification() async {
+    const androidDetails = AndroidNotificationDetails(
+      'reminder_channel',
+      'Hatırlatma Bildirimleri',
+      channelDescription: 'Uzun süredir oynamadığınızda hatırlatma.',
+      importance: Importance.high,
+      priority: Priority.high,
+      showWhen: true,
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications.show(
+      DateTime.now().millisecond + 2,
+      '🏃‍♂️ Oyun Zamanı!',
+      '12 saattir oynamadınız. Biraz vakit ayırıp quiz oynamaya ne dersiniz?',
+      details,
+    );
+  }
+
+  static Future<void> scheduleDelayedReminderNotification() async {
+    // Bu metod şu anda kullanılmıyor - 12 saatlik hatırlatma için farklı bir yaklaşım kullanılacak
+    // (örneğin, uygulama açıldığında kontrol etmek)
+    await scheduleReminderNotification();
   }
 }
