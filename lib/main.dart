@@ -203,13 +203,32 @@ class _Karbon2AppState extends State<Karbon2App> {
       );
     }
 
-    return MaterialApp(
-      title: 'Eco Game',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: Provider.of<ThemeProvider>(context).themeMode,
-      home: _hasSeenTutorial ? const LoginPage() : const TutorialPage(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        ThemeData themeToShow;
+        String title;
+        
+        if (themeProvider.isHighContrast) {
+          themeToShow = AppTheme.highContrastTheme;
+          title = 'Eco Game - Yüksek Kontrast';
+        } else {
+          themeToShow = themeProvider.themeMode == ThemeMode.dark 
+            ? AppTheme.darkTheme 
+            : AppTheme.lightTheme;
+          title = 'Eco Game';
+        }
+
+        return MaterialApp(
+          title: title,
+          debugShowCheckedModeBanner: false,
+          theme: themeToShow,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeProvider.isHighContrast 
+            ? ThemeMode.light 
+            : themeProvider.themeMode,
+          home: _hasSeenTutorial ? const LoginPage() : const TutorialPage(),
+        );
+      },
     );
   }
 }

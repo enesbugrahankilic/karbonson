@@ -40,10 +40,12 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
   String? _notificationMessage;
   Color? _notificationColor;
   bool _scoreSaved = false;
+  bool _endGameDialogShown = false;
 
   @override
   void initState() {
     super.initState();
+    _endGameDialogShown = false;
     _diceAnimationController = AnimationController(
       duration: const Duration(milliseconds: 700),
       vsync: this,
@@ -347,6 +349,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
   }
 
   Future<void> _initializeMultiplayerGame(BuildContext context, MultiplayerGameLogic gameLogic) async {
+    _endGameDialogShown = false; // Reset flag for new game
     final firestoreService = FirestoreService();
     final room = await firestoreService.listenToRoom(widget.roomId!).first;
 
@@ -356,10 +359,11 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
   }
 
   Widget _buildGameUI(BuildContext context, dynamic gameLogic, {required bool isMultiplayer}) {
-    if (gameLogic.isGameFinished) {
+    if (gameLogic.isGameFinished && !_endGameDialogShown) {
       final capturedContext = context;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
+        if (!mounted || _endGameDialogShown) return;
+        _endGameDialogShown = true;
         _showEndGameDialog(capturedContext, gameLogic);
       });
       return Container();
@@ -794,6 +798,11 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
         create: (_) => MultiplayerGameLogic(),
         child: Consumer<MultiplayerGameLogic>(
           builder: (context, gameLogic, child) {
+            // Reset flag when game is no longer finished
+            if (!gameLogic.isGameFinished) {
+              _endGameDialogShown = false;
+            }
+            
             // Initialize multiplayer game logic if room data is available
             if (gameLogic.currentRoom == null && widget.roomId != null && widget.playerId != null) {
               // We need to load the room data first
@@ -810,6 +819,11 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
         create: (_) => GameLogic()..initializeGame(widget.userNickname),
         child: Consumer<GameLogic>(
           builder: (context, gameLogic, child) {
+            // Reset flag when game is no longer finished
+            if (!gameLogic.isGameFinished) {
+              _endGameDialogShown = false;
+            }
+            
             return _buildGameUI(context, gameLogic, isMultiplayer: false);
           },
         ),

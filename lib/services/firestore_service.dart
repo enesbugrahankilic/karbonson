@@ -7,6 +7,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/game_board.dart';
 import '../models/notification_data.dart';
 import '../models/user_data.dart';
+import '../utils/room_code_generator.dart';
+import 'duel_game_logic.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -56,12 +58,16 @@ class FirestoreService {
   // Multiplayer Methods
 
   /// Yeni bir oyun odası oluşturur
-  Future<GameRoom?> createRoom(String hostId, String hostNickname, List<Map<String, dynamic>> boardTiles) async {
+  Future<GameRoom?> createRoom(String hostId, String hostNickname, List<Map<String, dynamic>> boardTiles, {String? customRoomCode, String? customAccessCode}) async {
     try {
       if (kDebugMode) debugPrint('Creating room for host: $hostNickname ($hostId)');
       
       final roomId = _db.collection(_roomsCollection).doc().id;
       if (kDebugMode) debugPrint('Generated room ID: $roomId');
+      
+      // Generate room codes if not provided
+      final String roomCode = customRoomCode ?? await _generateUniqueRoomCode();
+      final String accessCode = customAccessCode ?? _generateAccessCode();
       
       final room = GameRoom(
         id: roomId,
@@ -70,13 +76,15 @@ class FirestoreService {
         players: [],
         boardTiles: boardTiles,
         createdAt: DateTime.now(),
+        roomCode: roomCode,
+        accessCode: accessCode,
       );
 
       final roomData = room.toMap();
       if (kDebugMode) debugPrint('Room data to save: ${roomData.toString()}');
 
       await _db.collection(_roomsCollection).doc(roomId).set(roomData);
-      if (kDebugMode) debugPrint('✅ Room created successfully: $roomId');
+      if (kDebugMode) debugPrint('✅ Room created successfully: $roomId with code: $roomCode');
       return room;
     } catch (e, stackTrace) {
       if (kDebugMode) {
@@ -262,6 +270,7 @@ class FirestoreService {
       final querySnapshot = await _db
           .collection(_roomsCollection)
           .where('status', isEqualTo: GameStatus.waiting.toString().split('.').last)
+          .where('isActive', isEqualTo: true)
           .orderBy('createdAt', descending: true)
           .limit(20)
           .get();
@@ -273,6 +282,122 @@ class FirestoreService {
       if (kDebugMode) debugPrint('HATA: Aktif odalar getirilirken hata: $e');
       return [];
     }
+  }
+
+  /// Oda koduna göre oda bulur
+  Future<GameRoom?> findRoomByCode(String roomCode) async {
+    try {
+      final querySnapshot = await _db
+          .collection(_roomsCollection)
+          .where('roomCode', isEqualTo: roomCode)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        return GameRoom.fromMap(querySnapshot.docs.first.data());
+      }
+      return null;
+    } catch (e) {
+      if (kDebugMode) debugPrint('HATA: Oda koduna göre arama yapılırken hata: $e');
+      return null;
+    }
+  }
+
+  /// Erişim koduna göre odaya katılır
+  Future<GameRoom?> joinRoomByAccessCode(String accessCode, MultiplayerPlayer player) async {
+    try {
+      if (kDebugMode) debugPrint('Attempting to join room with access code: $accessCode');
+      
+      final querySnapshot = await _db
+          .collection(_roomsCollection)
+          .where('accessCode', isEqualTo: accessCode)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        if (kDebugMode) debugPrint('❌ No room found with access code: $accessCode');
+        return null;
+      }
+
+      final roomDoc = querySnapshot.docs.first;
+      final roomData = roomDoc.data();
+      
+      if (kDebugMode) debugPrint('Room found with access code, joining...');
+      
+      // Oyuncu zaten odada mı kontrol et
+      final players = (roomData['players'] as List<dynamic>?)
+          ?.map((p) => MultiplayerPlayer.fromMap(p as Map<String, dynamic>))
+          .toList() ?? [];
+
+      if (players.any((p) => p.id == player.id)) {
+        if (kDebugMode) debugPrint('✅ Player already in room');
+        return GameRoom.fromMap(roomData);
+      }
+
+      // Maksimum oyuncu sayısı kontrolü
+      if (players.length >= 4) {
+        if (kDebugMode) debugPrint('❌ Room is full (${players.length}/4 players)');
+        return null;
+      }
+
+      players.add(player);
+      final updatedPlayers = players.map((p) => p.toMap()).toList();
+      
+      await roomDoc.reference.update({'players': updatedPlayers});
+
+      if (kDebugMode) debugPrint('✅ Player joined room successfully');
+      return GameRoom.fromMap(roomData);
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('🚨 ERROR: Failed to join room by access code: $e');
+        debugPrint('Stack trace: $stackTrace');
+      }
+      return null;
+    }
+  }
+
+  /// Oda durumunu günceller (aktif/pasif)
+  Future<bool> updateRoomStatus(String roomId, {bool? isActive}) async {
+    try {
+      final updates = <String, dynamic>{};
+      if (isActive != null) {
+        updates['isActive'] = isActive;
+      }
+
+      if (updates.isNotEmpty) {
+        await _db.collection(_roomsCollection).doc(roomId).update(updates);
+        if (kDebugMode) debugPrint('Room status updated: $roomId');
+      }
+      return true;
+    } catch (e) {
+      if (kDebugMode) debugPrint('HATA: Oda durumu güncellenirken hata: $e');
+      return false;
+    }
+  }
+
+  /// Benzersiz oda kodu üretir
+  Future<String> _generateUniqueRoomCode() async {
+    int attempts = 0;
+    const maxAttempts = 100;
+    
+    while (attempts < maxAttempts) {
+      final code = RoomCodeGenerator.generateRoomCode();
+      final existingRoom = await findRoomByCode(code);
+      
+      if (existingRoom == null) {
+        return code;
+      }
+      
+      attempts++;
+    }
+    
+    // Fallback: use timestamp-based code
+    return DateTime.now().millisecondsSinceEpoch.toString().substring(0, 4);
+  }
+
+  /// Erişim kodu üretir
+  String _generateAccessCode() {
+    return RoomCodeGenerator.generateAccessCode();
   }
 
   // === IDENTITY MANAGEMENT AND DATA INTEGRITY (Specification I.1-I.4) ===
@@ -527,11 +652,13 @@ class FirestoreService {
     try {
       final currentUser = _auth.currentUser;
       
+      // Reduced timeout for better UX
       final querySnapshot = await _db
           .collection(_usersCollection)
           .where('nickname', isEqualTo: nickname)
           .limit(1)
-          .get();
+          .get()
+          .timeout(const Duration(seconds: 5));
 
       // If no documents found, nickname is available
       if (querySnapshot.docs.isEmpty) {
@@ -541,21 +668,31 @@ class FirestoreService {
 
       // If we found documents, check if any belong to a different user
       for (final doc in querySnapshot.docs) {
-        final userData = UserData.fromMap(doc.data(), doc.id);
-        
-        // If this is the current user, nickname is still "available" for them
-        if (currentUser != null && userData.uid == currentUser.uid) {
-          if (kDebugMode) debugPrint('✅ Nickname "$nickname" belongs to current user');
-          return true;
+        try {
+          final userData = UserData.fromMap(doc.data(), doc.id);
+          
+          // If this is the current user, nickname is still "available" for them
+          if (currentUser != null && userData.uid == currentUser.uid) {
+            if (kDebugMode) debugPrint('✅ Nickname "$nickname" belongs to current user');
+            return true;
+          }
+        } catch (parseError) {
+          // Skip documents that can't be parsed
+          if (kDebugMode) debugPrint('⚠️ Skipping invalid document during nickname check: $parseError');
+          continue;
         }
       }
 
       if (kDebugMode) debugPrint('❌ Nickname "$nickname" is already taken');
       return false;
     } catch (e) {
-      if (kDebugMode) debugPrint('🚨 Error checking nickname availability: $e');
-      // In case of error, allow the operation but log the issue
-      return true;
+      if (kDebugMode) {
+        debugPrint('🚨 Error checking nickname availability: $e');
+        if (e.toString().contains('network') || e.toString().contains('timeout')) {
+          debugPrint('⚠️ Network error during nickname check - allowing operation');
+        }
+      }
+      return true; // Fail open - allow the operation to continue
     }
   }
 
@@ -971,6 +1108,77 @@ class FirestoreService {
       return true;
     } catch (e) {
       if (kDebugMode) debugPrint('HATA: Arkadaş kaldırılırken hata: $e');
+      return false;
+    }
+  }
+
+  // === DUEL ROOM METHODS ===
+
+  /// Duel room collection
+  static const String _duelRoomsCollection = 'duel_rooms';
+
+  /// Listen to duel room changes
+  Stream<DuelRoom?> listenToDuelRoom(String roomId) {
+    return _db.collection(_duelRoomsCollection).doc(roomId).snapshots().map((doc) {
+      if (doc.exists) {
+        return DuelRoom.fromMap(doc.data()!);
+      }
+      return null;
+    });
+  }
+
+  /// Update duel game state
+  Future<bool> updateDuelGameState(String roomId, {
+    int? timeElapsedInSeconds,
+    Map<String, dynamic>? currentQuestion,
+    int? questionStartTime,
+    int? currentQuestionIndex,
+    List<Map<String, dynamic>>? questionAnswers,
+    List<Map<String, dynamic>>? players,
+  }) async {
+    try {
+      final updates = <String, dynamic>{};
+      if (timeElapsedInSeconds != null) updates['timeElapsedInSeconds'] = timeElapsedInSeconds;
+      if (currentQuestion != null) updates['currentQuestion'] = currentQuestion;
+      if (questionStartTime != null) updates['questionStartTime'] = questionStartTime;
+      if (currentQuestionIndex != null) updates['currentQuestionIndex'] = currentQuestionIndex;
+      if (questionAnswers != null) updates['questionAnswers'] = questionAnswers;
+      if (players != null) updates['players'] = players;
+
+      if (updates.isNotEmpty) {
+        await _db.collection(_duelRoomsCollection).doc(roomId).update(updates);
+      }
+      return true;
+    } catch (e) {
+      if (kDebugMode) debugPrint('HATA: Duel game state güncellenirken hata: $e');
+      return false;
+    }
+  }
+
+  /// End duel game
+  Future<bool> endDuelGame(String roomId, String winnerName, int winnerScore) async {
+    try {
+      await _db.collection(_duelRoomsCollection).doc(roomId).update({
+        'status': 'finished',
+        'winnerName': winnerName,
+        'winnerScore': winnerScore,
+      });
+      if (kDebugMode) debugPrint('Duel oyunu bitti: $roomId, Kazanan: $winnerName ($winnerScore puan)');
+      return true;
+    } catch (e) {
+      if (kDebugMode) debugPrint('HATA: Duel oyunu bitirilirken hata: $e');
+      return false;
+    }
+  }
+
+  /// Leave duel room
+  Future<bool> leaveDuelRoom(String roomId) async {
+    try {
+      await _db.collection(_duelRoomsCollection).doc(roomId).delete();
+      if (kDebugMode) debugPrint('Duel odasından ayrıldı: $roomId');
+      return true;
+    } catch (e) {
+      if (kDebugMode) debugPrint('HATA: Duel odasından ayrılırken hata: $e');
       return false;
     }
   }

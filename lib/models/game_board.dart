@@ -87,6 +87,11 @@ class GameRoom {
   int timeElapsedInSeconds;
   List<Map<String, dynamic>> boardTiles; // Serialized board
   DateTime createdAt;
+  
+  // Room access control
+  final String roomCode; // 4-digit unique code
+  final bool isActive; // Active/Passive status
+  final String? accessCode; // 4-digit access code for joining
 
   GameRoom({
     required this.id,
@@ -98,6 +103,9 @@ class GameRoom {
     this.timeElapsedInSeconds = 0,
     required this.boardTiles,
     required this.createdAt,
+    required this.roomCode,
+    this.isActive = true,
+    this.accessCode,
   });
 
   Map<String, dynamic> toMap() {
@@ -111,6 +119,9 @@ class GameRoom {
       'timeElapsedInSeconds': timeElapsedInSeconds,
       'boardTiles': boardTiles,
       'createdAt': createdAt.toIso8601String(),
+      'roomCode': roomCode,
+      'isActive': isActive,
+      'accessCode': accessCode,
     };
   }
 
@@ -132,6 +143,9 @@ class GameRoom {
           ?.map((t) => t as Map<String, dynamic>)
           .toList() ?? [],
       createdAt: DateTime.parse(map['createdAt']),
+      roomCode: map['roomCode'] ?? '',
+      isActive: map['isActive'] ?? true,
+      accessCode: map['accessCode'],
     );
   }
 }

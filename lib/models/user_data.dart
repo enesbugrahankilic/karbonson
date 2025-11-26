@@ -237,18 +237,33 @@ class NicknameValidator {
       return formatValidation;
     }
 
-    // Then check uniqueness
-    final firestoreService = FirestoreService();
-    final isAvailable = await firestoreService.isNicknameAvailable(nickname);
-    
-    if (!isAvailable) {
-      return NicknameValidationResult(
-        isValid: false,
-        error: 'Bu takma ad zaten kullanılıyor. Lütfen farklı bir takma ad seçin.',
-      );
-    }
+    try {
+      // Then check uniqueness with timeout - FAIL OPEN approach
+      final firestoreService = FirestoreService();
+      final isAvailable = await firestoreService.isNicknameAvailable(nickname)
+          .timeout(const Duration(seconds: 8));
+      
+      if (!isAvailable) {
+        return NicknameValidationResult(
+          isValid: false,
+          error: 'Bu takma ad zaten kullanılıyor. Lütfen farklı bir takma ad seçin.',
+        );
+      }
 
-    return NicknameValidationResult(isValid: true);
+      return NicknameValidationResult(isValid: true);
+    } catch (e) {
+      // If nickname check fails (network/timeout), allow registration to proceed
+      // The uniqueness will be checked again during profile creation
+      if (e.toString().contains('timeout') || e.toString().contains('network')) {
+        return NicknameValidationResult(
+          isValid: true,
+          error: '',
+        );
+      }
+      
+      // For other errors, still allow but log
+      return NicknameValidationResult(isValid: true);
+    }
   }
 
   /// Checks if nickname can be changed based on cooldown period

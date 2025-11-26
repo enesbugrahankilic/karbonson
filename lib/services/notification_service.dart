@@ -242,4 +242,145 @@ class NotificationService {
     // (örneğin, uygulama açıldığında kontrol etmek)
     await scheduleReminderNotification();
   }
+
+  // --- Oyun Davetiye Bildirimleri ---
+
+  /// Oyun davetiyesi bildirimini göster
+  static Future<void> showGameInvitationNotification({
+    required String fromNickname,
+    required String roomHostNickname,
+    required String roomCode,
+  }) async {
+    const androidDetails = AndroidNotificationDetails(
+      'game_invitation_channel',
+      'Oyun Davetiyeleri',
+      channelDescription: 'Arkadaşlarınızın oyun davetiyeleri',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: true,
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications.show(
+      DateTime.now().millisecond + 100,
+      '🎮 Oyun Davetiyesi!',
+      '$fromNickname size ${roomHostNickname}\'ın odasında oyun oynamak için davet gönderdi! (Kod: $roomCode)',
+      details,
+      payload: 'game_invitation:$roomCode',
+    );
+  }
+
+  /// Hızlı oyun davetiyesi bildirimi (2 kişilik düello)
+  static Future<void> showDuelInvitationNotification({
+    required String fromNickname,
+    required String roomCode,
+  }) async {
+    const androidDetails = AndroidNotificationDetails(
+      'duel_invitation_channel',
+      'Düello Davetiyeleri',
+      channelDescription: 'Hızlı düello davetiyeleri',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: true,
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications.show(
+      DateTime.now().millisecond + 101,
+      '⚔️ Düello Davetiyesi!',
+      '$fromNickname sizi hızlı bir düelloya davet ediyor! (Kod: $roomCode)',
+      details,
+      payload: 'duel_invitation:$roomCode',
+    );
+  }
+
+  /// Oyun başladı bildirimi
+  static Future<void> showGameStartedNotification({
+    required String gameMode,
+    required List<String> playerNames,
+  }) async {
+    const androidDetails = AndroidNotificationDetails(
+      'game_started_channel',
+      'Oyun Başlangıcı',
+      channelDescription: 'Oyun başladığında bildirim',
+      importance: Importance.high,
+      priority: Priority.high,
+      showWhen: true,
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    final playersText = playerNames.join(', ');
+    await _notifications.show(
+      DateTime.now().millisecond + 102,
+      '🎯 Oyun Başladı!',
+      '$gameMode modunda $playersText ile oyun başladı!',
+      details,
+      payload: 'game_started:$gameMode',
+    );
+  }
+
+  /// Oyun bitti bildirimi
+  static Future<void> showGameFinishedNotification({
+    required String winnerName,
+    required String gameMode,
+    required int score,
+  }) async {
+    const androidDetails = AndroidNotificationDetails(
+      'game_finished_channel',
+      'Oyun Sonu',
+      channelDescription: 'Oyun bittiğinde bildirim',
+      importance: Importance.high,
+      priority: Priority.high,
+      showWhen: true,
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications.show(
+      DateTime.now().millisecond + 103,
+      '🏆 Oyun Bitti!',
+      '$gameMode modunda kazanan: $winnerName (Puan: $score)',
+      details,
+      payload: 'game_finished:$winnerName',
+    );
+  }
 }

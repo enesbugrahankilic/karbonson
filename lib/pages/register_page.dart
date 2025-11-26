@@ -114,7 +114,41 @@ class _RegisterPageState extends State<RegisterPage> {
 
         // Check nickname uniqueness before creating user
         if (kDebugMode) debugPrint('Checking nickname uniqueness: $nickname');
-        final nicknameValidation = await NicknameValidator.validateWithUniqueness(nickname);
+        
+        NicknameValidationResult nicknameValidation;
+        try {
+          nicknameValidation = await NicknameValidator.validateWithUniqueness(nickname)
+              .timeout(const Duration(seconds: 8));
+        } catch (e) {
+          if (kDebugMode) debugPrint('Error checking nickname uniqueness: $e');
+          if (!mounted) return;
+          
+          String errorMsg = 'Takma ad kontrolü sırasında hata oluştu. ';
+          
+          if (e.toString().contains('timeout')) {
+            errorMsg += 'Bağlantı zaman aşımı. İnternet bağlantınızı kontrol edin.';
+          } else if (e.toString().contains('network')) {
+            errorMsg += 'Ağ bağlantısı sorunu. İnternet bağlantınızı kontrol edin.';
+          } else {
+            errorMsg += 'Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.';
+          }
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMsg),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'Tekrar Dene',
+                textColor: Colors.white,
+                onPressed: _registerUser,
+              ),
+            ),
+          );
+          
+          setState(() => _isLoading = false);
+          return;
+        }
         
         if (!nicknameValidation.isValid) {
           if (!mounted) return;
@@ -133,8 +167,15 @@ class _RegisterPageState extends State<RegisterPage> {
         if (kDebugMode) debugPrint('Nickname uniqueness confirmed');
 
         // Firebase Authentication ile kayıt ol
-        final UserCredential userCredential = await FirebaseAuth.instance
-            .createUserWithEmailAndPassword(email: email, password: password);
+        UserCredential userCredential;
+        try {
+          userCredential = await FirebaseAuth.instance
+              .createUserWithEmailAndPassword(email: email, password: password)
+              .timeout(const Duration(seconds: 15));
+        } catch (e) {
+          if (kDebugMode) debugPrint('Firebase Auth creation failed: $e');
+          rethrow; // Let the outer catch block handle FirebaseAuthException
+        }
 
         final User? user = userCredential.user;
 
@@ -182,7 +223,10 @@ class _RegisterPageState extends State<RegisterPage> {
             errorMessage = 'Geçerli bir e-posta adresi girin.';
             break;
           case 'operation-not-allowed':
-            errorMessage = 'E-posta/şifre girişi etkinleştirilmemiş.';
+            errorMessage = 'Email/şifre girişi etkinleştirilmemiş. Firebase Authentication ayarlarını kontrol edin.';
+            break;
+          case 'internal-error':
+            errorMessage = 'Firebase yapılandırma sorunu. İnternet bağlantınızı kontrol edin ve uygulamayı yeniden başlatmayı deneyin.';
             break;
           default:
             errorMessage = 'Kayıt olurken bir hata oluştu: ${e.message}';

@@ -174,14 +174,19 @@ class ProfileService {
   }
 
   /// Initialize profile for a new user with UID Centrality (Specification I.1-I.2)
+  /// Now accepts user parameter to avoid race condition
   Future<void> initializeProfile({
     required String nickname,
     String? profilePictureUrl,
     PrivacySettings? privacySettings,
+    User? user, // Accept user parameter to avoid race condition
   }) async {
     try {
-      final user = _auth.currentUser;
-      if (user == null) return;
+      final currentUser = user ?? _auth.currentUser;
+      if (currentUser == null) {
+        if (kDebugMode) debugPrint('❌ No user available for profile initialization');
+        return;
+      }
 
       // Initialize server profile with UID centrality
       await _firestoreService.createOrUpdateUserProfile(
@@ -194,7 +199,7 @@ class ProfileService {
       await saveLocalStatistics(LocalStatisticsData.empty());
       
       // Cache UID locally for offline access
-      await cacheUid(user.uid);
+      await cacheUid(currentUser.uid);
     } catch (e) {
       if (kDebugMode) debugPrint('Error initializing profile: $e');
     }
@@ -261,6 +266,23 @@ class ProfileService {
 
   /// Check if user is authenticated with UID validation
   bool get isUserAuthenticated => _firestoreService.isUserAuthenticated;
+
+  /// Check if user is registered (has email/password account vs anonymous)
+  Future<bool> isUserRegistered() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return false;
+      
+      // Check if user has email (indicates registration) and is not anonymous
+      final isEmailUser = user.email != null && user.email!.isNotEmpty;
+      final isAnonymous = user.isAnonymous;
+      
+      return isEmailUser && !isAnonymous;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error checking registration status: $e');
+      return false;
+    }
+  }
 
   /// Copy UID to clipboard helper method (Specification III.3)
   static Future<void> copyUidToClipboard(String uid) async {

@@ -12,6 +12,7 @@ import 'profile_page.dart';
 import 'register_page.dart';
 import 'settings_page.dart';
 import '../services/profile_service.dart';
+import '../theme/theme_colors.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -23,6 +24,11 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _nicknameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final ProfileService _profileService = ProfileService();
+  
+  // Registration status
+  bool _isRegistered = false;
+  bool _isCheckingRegistration = true;
 
   // Kapsamlı isim önerisi listesi
   final List<String> _availableNames = [
@@ -100,6 +106,24 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     // Sayfa açıldığında rastgele bir isim öner
     _suggestRandomName(); 
+    
+    // Check registration status to conditionally show profile button
+    _checkRegistrationStatus();
+  }
+
+  Future<void> _checkRegistrationStatus() async {
+    try {
+      final isRegistered = await _profileService.isUserRegistered();
+      setState(() {
+        _isRegistered = isRegistered;
+        _isCheckingRegistration = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isRegistered = false;
+        _isCheckingRegistration = false;
+      });
+    }
   }
 
   Future<void> _startGame() async {
@@ -173,9 +197,9 @@ class _LoginPageState extends State<LoginPage> {
         centerTitle: true,
       ),
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
+            colors: ThemeColors.getGradientColors(context),
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -212,13 +236,13 @@ class _LoginPageState extends State<LoginPage> {
                             color: const Color(0xFF4CAF50),
                           ),
                           const SizedBox(height: 16),
-                          const Text(
+                          Text(
                             'Oyuna Başla',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                              color: ThemeColors.getText(context),
                             ),
                           ),
                           const SizedBox(height: 24),
@@ -227,32 +251,32 @@ class _LoginPageState extends State<LoginPage> {
                             child: TextFormField(
                               controller: _nicknameController,
                               decoration: InputDecoration(
-                                labelText: 'Takma Adınız',
+                                labelText: 'Adınız',
                                 filled: true,
-                                fillColor: Colors.grey[50],
+                                fillColor: ThemeColors.getInputBackground(context),
+                                labelStyle: TextStyle(color: ThemeColors.getGreen(context)),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                  borderSide: BorderSide(color: ThemeColors.getBorder(context)),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                  borderSide: BorderSide(color: ThemeColors.getBorder(context)),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
                                 ),
-                                prefixIcon: Icon(Icons.person, color: Colors.grey[600]),
+                                prefixIcon: Icon(Icons.person, color: ThemeColors.getSecondaryText(context)),
                                 suffixIcon: IconButton(
-                                  icon: Icon(Icons.casino, color: const Color(0xFF4CAF50)),
+                                  icon: Icon(Icons.casino, color: Theme.of(context).colorScheme.primary),
                                   onPressed: _suggestRandomName,
                                   tooltip: 'Rastgele isim öner',
                                 ),
-                                labelStyle: TextStyle(color: Colors.grey[700]),
                               ),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.black,
+                                color: ThemeColors.getText(context),
                                 fontWeight: FontWeight.w500,
                               ),
                               validator: (value) {
@@ -334,25 +358,30 @@ class _LoginPageState extends State<LoginPage> {
                                           ),
                                         ),
                                         const SizedBox(width: 8),
-                                        Expanded(
-                                          child: TextButton.icon(
-                                            onPressed: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) => ProfilePage(userNickname: _nicknameController.text),
-                                                ),
-                                              );
-                                            },
-                                            icon: const Icon(Icons.person, size: 16, color: Colors.purple),
-                                            label: const Text('Profil', style: TextStyle(fontSize: 12, color: Colors.purple)),
-                                            style: TextButton.styleFrom(
-                                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                              backgroundColor: Colors.grey[100],
+                                        if (_isRegistered && !_isCheckingRegistration)
+                                          Expanded(
+                                            child: TextButton.icon(
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) => ProfilePage(userNickname: _nicknameController.text),
+                                                  ),
+                                                );
+                                              },
+                                              icon: const Icon(Icons.person, size: 16, color: Colors.purple),
+                                              label: const Text('Profil', style: TextStyle(fontSize: 12, color: Colors.purple)),
+                                              style: TextButton.styleFrom(
+                                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                backgroundColor: Colors.grey[100],
+                                              ),
                                             ),
                                           ),
-                                        ),
+                                        if (!_isRegistered || _isCheckingRegistration)
+                                          const Expanded(
+                                            child: SizedBox.shrink(),
+                                          ),
                                       ],
                                     ),
                                     const SizedBox(height: 8),
@@ -395,25 +424,30 @@ class _LoginPageState extends State<LoginPage> {
                                       ),
                                     ),
                                     const SizedBox(width: 8),
-                                    Expanded(
-                                      child: TextButton.icon(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => ProfilePage(userNickname: _nicknameController.text),
-                                            ),
-                                          );
-                                        },
-                                        icon: const Icon(Icons.person, size: 18, color: Colors.purple),
-                                        label: const Text('Profil', style: TextStyle(fontSize: 14, color: Colors.purple)),
-                                        style: TextButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(vertical: 12),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                          backgroundColor: Colors.grey[100],
+                                    if (_isRegistered && !_isCheckingRegistration)
+                                      Expanded(
+                                        child: TextButton.icon(
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => ProfilePage(userNickname: _nicknameController.text),
+                                              ),
+                                            );
+                                          },
+                                          icon: const Icon(Icons.person, size: 18, color: Colors.purple),
+                                          label: const Text('Profil', style: TextStyle(fontSize: 14, color: Colors.purple)),
+                                          style: TextButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                            backgroundColor: Colors.grey[100],
+                                          ),
                                         ),
                                       ),
-                                    ),
+                                    if (!_isRegistered || _isCheckingRegistration)
+                                      const Expanded(
+                                        child: SizedBox.shrink(),
+                                      ),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: TextButton.icon(

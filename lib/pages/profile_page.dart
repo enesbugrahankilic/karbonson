@@ -12,6 +12,8 @@ import '../services/presence_service.dart';
 import '../services/friendship_service.dart';
 import '../models/profile_data.dart';
 import '../models/user_data.dart';
+import 'register_page.dart';
+import 'login_page.dart';
 
 class ProfilePage extends StatefulWidget {
   final String userNickname;
@@ -30,10 +32,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   // Services for enhanced functionality
   final PresenceService _presenceService = PresenceService();
   final FriendshipService _friendshipService = FriendshipService();
+  final ProfileService _profileService = ProfileService();
   
   // Stream for real-time presence updates
   StreamSubscription? _presenceSubscription;
   Map<String, PresenceStatus> _friendPresence = {};
+  
+  // Registration status
+  bool _isRegistered = false;
+  bool _isCheckingRegistration = true;
 
   @override
   void initState() {
@@ -47,12 +54,36 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       vsync: this,
     );
 
-    // Start animations
-    _fadeController.forward();
-    _slideController.forward();
-    
-    // Initialize presence service
-    _initializePresenceService();
+    // Check registration status first
+    _checkRegistrationStatus();
+  }
+
+  Future<void> _checkRegistrationStatus() async {
+    setState(() {
+      _isCheckingRegistration = true;
+    });
+
+    try {
+      final isRegistered = await _profileService.isUserRegistered();
+      setState(() {
+        _isRegistered = isRegistered;
+        _isCheckingRegistration = false;
+      });
+
+      if (_isRegistered) {
+        // Start animations for registered users
+        _fadeController.forward();
+        _slideController.forward();
+        
+        // Initialize presence service
+        _initializePresenceService();
+      }
+    } catch (e) {
+      setState(() {
+        _isRegistered = false;
+        _isCheckingRegistration = false;
+      });
+    }
   }
 
   Future<void> _initializePresenceService() async {
@@ -94,7 +125,32 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
+    // Show loading while checking registration status
+    if (_isCheckingRegistration) {
+      return const _RegistrationCheckScreen();
+    }
+
+    // Show registration prompt for unregistered users
+    if (!_isRegistered) {
+      return const _UnregisteredUserScreen();
+    }
+
+    // Show profile page for registered users
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profil', style: TextStyle(color: Colors.black)),
+        backgroundColor: Colors.white,
+        elevation: 2,
+        iconTheme: const IconThemeData(color: Colors.black),
+        actions: [
+          // Logout button
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => _showLogoutDialog(context),
+            tooltip: 'Çıkış Yap',
+          ),
+        ],
+      ),
       body: BlocProvider(
         create: (context) => ProfileBloc(
           profileService: ProfileService(),
@@ -102,6 +158,63 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         child: const ProfileContent(),
       ),
     );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Çıkış Yap'),
+          content: const Text('Hesabınızdan çıkış yapmak istediğinizden emin misiniz?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('İptal'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop(); // Close dialog
+                await _logout(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Çıkış Yap'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    try {
+      // Set user as offline
+      _presenceService.setUserOffline();
+      _presenceService.dispose();
+
+      // Sign out from Firebase
+      await FirebaseAuth.instance.signOut();
+
+      // Navigate back to login page
+      if (context.mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/login',
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Çıkış yapılırken hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
 
@@ -690,5 +803,151 @@ class _GameHistoryList extends StatelessWidget {
       default:
         return 'Tek Oyuncu';
     }
+  }
+}
+
+// Registration check screen widget
+class _RegistrationCheckScreen extends StatelessWidget {
+  const _RegistrationCheckScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text(
+                'Profil kontrol ediliyor...',
+                style: TextStyle(fontSize: 16, color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Unregistered user screen widget
+class _UnregisteredUserScreen extends StatelessWidget {
+  const _UnregisteredUserScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profil', style: TextStyle(color: Colors.black)),
+        backgroundColor: Colors.white,
+        elevation: 2,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.95),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.person_add,
+                    size: 80,
+                    color: Color(0xFF4CAF50),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Kayıt Olmanız Gerekiyor',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2E7D32),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Profil sayfasına erişebilmek için önce kayıt olmanız gerekiyor. Kayıt olarak daha fazla özellikten yararlanabilirsiniz.',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (context) => const RegisterPage()),
+                          (route) => false,
+                        );
+                      },
+                      icon: const Icon(Icons.person_add),
+                      label: const Text('Kayıt Ol'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4CAF50),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      icon: const Icon(Icons.arrow_back),
+                      label: const Text('Geri Dön'),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

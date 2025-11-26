@@ -1,5 +1,6 @@
 // ignore_for_file: unrelated_type_equality_checks
 
+import 'dart:io';
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
@@ -23,6 +24,25 @@ class ConnectivityService {
   Future<bool> isConnected() async {
     final result = await _connectivity.checkConnectivity();
     return result != ConnectivityResult.none;
+  }
+
+  /// Enhanced connectivity check with internet reachability test
+  Future<bool> hasInternetConnection() async {
+    try {
+      // First check basic connectivity
+      final connectivityResult = await _connectivity.checkConnectivity();
+      if (connectivityResult == ConnectivityResult.none) {
+        return false;
+      }
+
+      // Test actual internet reachability
+      final result = await InternetAddress.lookup('google.com')
+          .timeout(const Duration(seconds: 3));
+      
+      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+    } catch (e) {
+      return false;
+    }
   }
 
   void dispose() {
