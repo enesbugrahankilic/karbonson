@@ -9,6 +9,7 @@ import '../models/notification_data.dart';
 import '../models/user_data.dart';
 import '../utils/room_code_generator.dart';
 import 'duel_game_logic.dart';
+import 'notification_service.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -760,12 +761,47 @@ class FirestoreService {
       );
 
       await _db.collection(_friendRequestsCollection).doc(requestId).set(request.toMap());
+      
+      // Send notification to recipient about new friend request
+      try {
+        await _createFriendRequestNotification(toUserId, fromUserId, fromNickname);
+      } catch (notificationError) {
+        if (kDebugMode) debugPrint('⚠️ Bildirim gönderilemedi ama istek başarıyla oluşturuldu: $notificationError');
+        // Don't fail the entire operation if notification fails
+      }
+      
       if (kDebugMode) debugPrint('Arkadaşlık isteği gönderildi: $fromNickname -> $toNickname');
       return true;
     } catch (e) {
       if (kDebugMode) debugPrint('HATA: Arkadaşlık isteği gönderilirken hata: $e');
       return false;
     }
+  }
+
+  /// Create friend request notification
+  Future<void> _createFriendRequestNotification(String recipientId, String fromUserId, String fromNickname) async {
+    final notificationDoc = _db
+        .collection(_notificationsCollection)
+        .doc(recipientId)
+        .collection('notifications')
+        .doc();
+
+    final notification = NotificationData(
+      id: notificationDoc.id,
+      type: NotificationType.general,
+      title: '📨 Arkadaşlık İsteği',
+      message: '$fromNickname arkadaşlık isteği gönderdi',
+      senderId: fromUserId,
+      senderNickname: fromNickname,
+      additionalData: {
+        'fromUserId': fromUserId,
+        'fromNickname': fromNickname,
+        'notificationType': 'friend_request',
+      },
+      createdAt: DateTime.now(),
+    );
+
+    await notificationDoc.set(notification.toMap());
   }
 
   /// Arkadaşlık isteğini atomik olarak kabul et
@@ -847,6 +883,16 @@ class FirestoreService {
       final notificationWithId = notification.copyWith(id: notificationDoc.id);
       batch.set(notificationDoc, notificationWithId.toMap());
 
+      // Also send push notification (non-blocking)
+      try {
+        NotificationService.showFriendRequestAcceptedNotification(
+          acceptedByNickname: request.toNickname,
+          acceptedByUserId: recipientId,
+        );
+      } catch (e) {
+        if (kDebugMode) debugPrint('⚠️ Push notification failed but operation succeeded: $e');
+      }
+
       // Tüm işlemleri atomik olarak commit et
       await batch.commit();
 
@@ -915,6 +961,16 @@ class FirestoreService {
 
         final notificationWithId = notification.copyWith(id: notificationDoc.id);
         batch.set(notificationDoc, notificationWithId.toMap());
+
+        // Also send push notification (non-blocking)
+        try {
+          NotificationService.showFriendRequestRejectedNotification(
+            rejectedByNickname: request.toNickname,
+            rejectedByUserId: recipientId,
+          );
+        } catch (e) {
+          if (kDebugMode) debugPrint('⚠️ Push notification failed but operation succeeded: $e');
+        }
       }
 
       // Tüm işlemleri atomik olarak commit et
@@ -972,6 +1028,21 @@ class FirestoreService {
       if (kDebugMode) debugPrint('HATA: Alınan arkadaşlık istekleri getirilirken hata: $e');
       return [];
     }
+  }
+
+  /// Kullanıcının aldığı arkadaşlık isteklerini dinle (real-time)
+  Stream<List<FriendRequest>> listenToReceivedFriendRequests(String userId) {
+    return _db
+        .collection(_friendRequestsCollection)
+        .where('toUserId', isEqualTo: userId)
+        .where('status', isEqualTo: FriendRequestStatus.pending.toString().split('.').last)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((querySnapshot) {
+      return querySnapshot.docs
+          .map((doc) => FriendRequest.fromMap(doc.data()))
+          .toList();
+    });
   }
 
   /// Kullanıcının gönderdiği arkadaşlık isteklerini getir

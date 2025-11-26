@@ -383,4 +383,106 @@ class NotificationService {
       payload: 'game_finished:$winnerName',
     );
   }
+
+  /// Arkadaşlık isteği bildirimi
+  static Future<void> showFriendRequestNotification({
+    required String fromNickname,
+    required String fromUserId,
+  }) async {
+    const androidDetails = AndroidNotificationDetails(
+      'friend_request_channel',
+      'Arkadaşlık İstekleri',
+      channelDescription: 'Yeni arkadaşlık istekleri için bildirim',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: true,
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications.show(
+      DateTime.now().millisecond + 200,
+      '👥 Arkadaşlık İsteği!',
+      '$fromNickname arkadaşlık isteği gönderdi',
+      details,
+      payload: 'friend_request:$fromUserId',
+    );
+  }
+
+  /// Arkadaşlık isteği kabul bildirimi
+  static Future<void> showFriendRequestAcceptedNotification({
+    required String acceptedByNickname,
+    required String acceptedByUserId,
+  }) async {
+    const androidDetails = AndroidNotificationDetails(
+      'friend_request_accepted_channel',
+      'Arkadaşlık Kabul',
+      channelDescription: 'Arkadaşlık isteği kabul edildiğinde bildirim',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: true,
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications.show(
+      DateTime.now().millisecond + 201,
+      '✅ Arkadaşlık Kabul Edildi!',
+      '$acceptedByNickname arkadaşlık isteğinizi kabul etti',
+      details,
+      payload: 'friend_request_accepted:$acceptedByUserId',
+    );
+  }
+
+  /// Arkadaşlık isteği red bildirimi
+  static Future<void> showFriendRequestRejectedNotification({
+    required String rejectedByNickname,
+    required String rejectedByUserId,
+  }) async {
+    const androidDetails = AndroidNotificationDetails(
+      'friend_request_rejected_channel',
+      'Arkadaşlık Red',
+      channelDescription: 'Arkadaşlık isteği reddedildiğinde bildirim',
+      importance: Importance.high,
+      priority: Priority.high,
+      showWhen: true,
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications.show(
+      DateTime.now().millisecond + 202,
+      '❌ Arkadaşlık İsteği Reddedildi',
+      '$rejectedByNickname arkadaşlık isteğinizi reddetti',
+      details,
+      payload: 'friend_request_rejected:$rejectedByUserId',
+    );
+  }
 }

@@ -6,6 +6,8 @@ import '../models/game_board.dart';
 import '../services/firestore_service.dart';
 import 'board_game_page.dart';
 import '../utils/room_code_generator.dart';
+import '../widgets/friend_invite_dialog.dart';
+import '../widgets/game_invitation_list.dart';
 
 class RoomManagementPage extends StatefulWidget {
   final String userNickname;
@@ -263,6 +265,24 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
         ),
         actions: [
           TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _showFriendInviteDialog(); // Show friend invite dialog after room creation
+            },
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.green.shade100,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.person_add, size: 18, color: Colors.green),
+                const SizedBox(width: 4),
+                Text('Arkadaş Davet Et', style: TextStyle(color: Colors.green.shade700)),
+              ],
+            ),
+          ),
+          TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Tamam', style: TextStyle(color: Colors.blue)),
           ),
@@ -300,6 +320,21 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
         ),
       );
     }
+  }
+
+  /// Show friend invitation dialog
+  void _showFriendInviteDialog() {
+    if (_currentRoom == null) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => FriendInviteDialog(
+        roomId: _currentRoom!.id,
+        roomHostNickname: _currentRoom!.hostNickname,
+        inviterNickname: widget.userNickname,
+      ),
+    );
   }
 
   /// Özel kod ile oda oluşturma dialogu
@@ -391,12 +426,18 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
         actions: [
-          if (_currentRoom != null && _isHost)
+          if (_currentRoom != null && _isHost) ...[
             IconButton(
               icon: Icon(_currentRoom!.isActive ? Icons.pause : Icons.play_arrow),
               onPressed: _toggleRoomStatus,
               tooltip: _currentRoom!.isActive ? 'Odayı Pasifleştir' : 'Odayı Aktifleştir',
             ),
+            IconButton(
+              icon: const Icon(Icons.person_add),
+              onPressed: _showFriendInviteDialog,
+              tooltip: 'Arkadaş Davet Et (User ID ile)',
+            ),
+          ],
         ],
       ),
       body: Container(
@@ -519,6 +560,32 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
                                   ),
                                   child: const Text('Odaya Katıl'),
                                 ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Card(
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                const Text(
+                                  'Bekleyen Oyun Davetleri',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 16),
+                                const GameInvitationList(),
                               ],
                             ),
                           ),

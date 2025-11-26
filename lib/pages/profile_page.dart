@@ -143,6 +143,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         elevation: 2,
         iconTheme: const IconThemeData(color: Colors.black),
         actions: [
+          // Change Password button
+          IconButton(
+            icon: const Icon(Icons.lock_reset),
+            onPressed: () => _showChangePasswordDialog(context),
+            tooltip: 'Şifre Değiştir',
+          ),
           // Logout button
           IconButton(
             icon: const Icon(Icons.logout),
@@ -157,6 +163,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         )..add(LoadProfile(widget.userNickname)),
         child: const ProfileContent(),
       ),
+    );
+  }
+
+  void _showChangePasswordDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return const ChangePasswordDialog();
+      },
     );
   }
 
@@ -293,6 +308,292 @@ class ProfileContent extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// Change Password Dialog Widget
+class ChangePasswordDialog extends StatefulWidget {
+  const ChangePasswordDialog({super.key});
+
+  @override
+  State<ChangePasswordDialog> createState() => _ChangePasswordDialogState();
+}
+
+class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
+  final TextEditingController _currentPasswordController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
+
+  @override
+  void dispose() {
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _changePassword() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Kullanıcı oturumu bulunamadı'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Re-authenticate user with current password
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: _currentPasswordController.text,
+      );
+
+      try {
+        await user.reauthenticateWithCredential(credential);
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Mevcut şifreniz yanlış'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // Update password
+      await user.updatePassword(_newPasswordController.text);
+
+      if (context.mounted) {
+        // Close dialog
+        Navigator.of(context).pop();
+        
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Şifreniz başarıyla değiştirildi'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (context.mounted) {
+        String errorMessage;
+        switch (e.code) {
+          case 'weak-password':
+            errorMessage = 'Yeni şifre çok zayıf. En az 6 karakter olmalıdır.';
+            break;
+          case 'requires-recent-login':
+            errorMessage = 'Şifrenizi değiştirmek için tekrar giriş yapmanız gerekiyor.';
+            break;
+          default:
+            errorMessage = 'Şifre değiştirilirken hata oluştu: ${e.message}';
+        }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Beklenmeyen bir hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      title: const Text('Şifre Değiştir'),
+      content: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Current Password Field
+              TextFormField(
+                controller: _currentPasswordController,
+                obscureText: _obscureCurrentPassword,
+                decoration: InputDecoration(
+                  labelText: 'Mevcut Şifre',
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                  ),
+                  prefixIcon: Icon(Icons.lock, color: Colors.grey[600]),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureCurrentPassword ? Icons.visibility : Icons.visibility_off,
+                      color: Colors.grey[600],
+                    ),
+                    onPressed: () {
+                      setState(() => _obscureCurrentPassword = !_obscureCurrentPassword);
+                    },
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Mevcut şifre gerekli';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              
+              // New Password Field
+              TextFormField(
+                controller: _newPasswordController,
+                obscureText: _obscureNewPassword,
+                decoration: InputDecoration(
+                  labelText: 'Yeni Şifre',
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                  ),
+                  prefixIcon: Icon(Icons.lock_outline, color: Colors.grey[600]),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureNewPassword ? Icons.visibility : Icons.visibility_off,
+                      color: Colors.grey[600],
+                    ),
+                    onPressed: () {
+                      setState(() => _obscureNewPassword = !_obscureNewPassword);
+                    },
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Yeni şifre gerekli';
+                  }
+                  if (value.length < 6) {
+                    return 'Yeni şifre en az 6 karakter olmalı';
+                  }
+                  if (value == _currentPasswordController.text) {
+                    return 'Yeni şifre mevcut şifreden farklı olmalı';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              
+              // Confirm Password Field
+              TextFormField(
+                controller: _confirmPasswordController,
+                obscureText: _obscureConfirmPassword,
+                decoration: InputDecoration(
+                  labelText: 'Yeni Şifre Tekrar',
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                  ),
+                  prefixIcon: Icon(Icons.lock_outline, color: Colors.grey[600]),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                      color: Colors.grey[600],
+                    ),
+                    onPressed: () {
+                      setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
+                    },
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Şifre tekrarı gerekli';
+                  }
+                  if (value != _newPasswordController.text) {
+                    return 'Şifreler eşleşmiyor';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+          child: const Text('İptal'),
+        ),
+        ElevatedButton(
+          onPressed: _isLoading ? null : _changePassword,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF4CAF50),
+            foregroundColor: Colors.white,
+          ),
+          child: _isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                )
+              : const Text('Şifre Değiştir'),
+        ),
+      ],
     );
   }
 }

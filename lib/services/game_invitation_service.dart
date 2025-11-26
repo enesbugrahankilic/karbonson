@@ -306,6 +306,197 @@ class GameInvitationService {
       }).toList();
     });
   }
+
+  /// Invite a friend to game room by user ID (odaya user ID ile arkadaş daveti)
+  Future<GameInvitationResult> inviteFriendByUserId({
+    required String roomId,
+    required String targetUserId,
+    required String inviterNickname,
+  }) async {
+    try {
+      final currentUser = _auth.currentUser;
+      if (currentUser == null) {
+        return GameInvitationResult(
+          success: false,
+          error: 'User not authenticated',
+        );
+      }
+
+      // Prevent self-invitation
+      if (currentUser.uid == targetUserId) {
+        return GameInvitationResult(
+          success: false,
+          error: 'Cannot invite yourself',
+        );
+      }
+
+      // Verify room exists and is joinable
+      final roomDoc = await _firestore.collection(_roomsCollection).doc(roomId).get();
+      if (!roomDoc.exists) {
+        return GameInvitationResult(
+          success: false,
+          error: 'Game room not found',
+        );
+      }
+
+      final roomData = roomDoc.data()!;
+      final players = (roomData['players'] as List<dynamic>? ?? []);
+      
+      // Check if room is full
+      if (players.length >= 4) {
+        return GameInvitationResult(
+          success: false,
+          error: 'Game room is full',
+        );
+      }
+
+      // Check if room is still waiting for players
+      final roomStatus = roomData['status'] as String;
+      if (roomStatus != 'waiting') {
+        return GameInvitationResult(
+          success: false,
+          error: 'Game has already started',
+        );
+      }
+
+      // Get target user profile
+      final targetUserDoc = await _firestore.collection('users').doc(targetUserId).get();
+      if (!targetUserDoc.exists) {
+        return GameInvitationResult(
+          success: false,
+          error: 'User not found',
+        );
+      }
+
+      final targetUserData = targetUserDoc.data()!;
+      final targetUserNickname = targetUserData['nickname'] as String? ?? 'Unknown Player';
+
+      // Check if user is already in the room
+      final isAlreadyInRoom = players.any((player) => player['id'] == targetUserId);
+      if (isAlreadyInRoom) {
+        return GameInvitationResult(
+          success: false,
+          error: 'User is already in the room',
+        );
+      }
+
+      // Check for existing pending invitation
+      final existingInvitationQuery = await _firestore
+          .collection(_gameInvitationsCollection)
+          .where('fromUserId', isEqualTo: currentUser.uid)
+          .where('toUserId', isEqualTo: targetUserId)
+          .where('roomId', isEqualTo: roomId)
+          .where('status', isEqualTo: 'pending')
+          .limit(1)
+          .get();
+
+      if (existingInvitationQuery.docs.isNotEmpty) {
+        return GameInvitationResult(
+          success: false,
+          error: 'Invitation already sent to this user',
+        );
+      }
+
+      // Create game invitation
+      final invitationId = _firestore.collection(_gameInvitationsCollection).doc().id;
+      
+      final invitation = GameInvitation(
+        id: invitationId,
+        fromUserId: currentUser.uid,
+        fromNickname: inviterNickname,
+        toUserId: targetUserId,
+        roomId: roomId,
+        roomHostNickname: roomData['hostNickname'] as String,
+        createdAt: DateTime.now(),
+      );
+
+      await _firestore.collection(_gameInvitationsCollection).doc(invitationId).set({
+        'id': invitation.id,
+        'fromUserId': invitation.fromUserId,
+        'fromNickname': invitation.fromNickname,
+        'toUserId': invitation.toUserId,
+        'roomId': invitation.roomId,
+        'roomHostNickname': invitation.roomHostNickname,
+        'createdAt': FieldValue.serverTimestamp(),
+        'status': 'pending',
+      });
+
+      if (kDebugMode) {
+        debugPrint('✅ Game invitation sent by user ID: $targetUserId for room $roomId');
+      }
+
+      return GameInvitationResult(
+        success: true,
+        message: 'Invitation sent to $targetUserNickname',
+      );
+
+    } catch (e) {
+      if (kDebugMode) debugPrint('🚨 Error inviting friend by user ID: $e');
+      return GameInvitationResult(
+        success: false,
+        error: 'Failed to send invitation: $e',
+      );
+    }
+  }
+
+  /// Search users by user ID or nickname for friend invitations
+  Future<List<UserSearchResult>> searchUsers(String searchQuery) async {
+    try {
+      if (searchQuery.trim().isEmpty) return [];
+
+      // Search by exact user ID first
+      if (searchQuery.length >= 10) { // Assuming minimum UID length
+        final userDoc = await _firestore.collection('users').doc(searchQuery.trim()).get();
+        if (userDoc.exists) {
+          final userData = userDoc.data()!;
+          return [
+            UserSearchResult(
+              userId: searchQuery.trim(),
+              nickname: userData['nickname'] as String? ?? 'Unknown',
+              foundBy: 'userId',
+            ),
+          ];
+        }
+      }
+
+      // Search by nickname (partial match)
+      final nicknameQuery = await _firestore
+          .collection('users')
+          .where('nickname', isGreaterThanOrEqualTo: searchQuery.trim())
+          .where('nickname', isLessThanOrEqualTo: searchQuery.trim() + '\uf8ff')
+          .limit(10)
+          .get();
+
+      return nicknameQuery.docs.map((doc) {
+        final data = doc.data();
+        return UserSearchResult(
+          userId: doc.id,
+          nickname: data['nickname'] as String? ?? 'Unknown',
+          foundBy: 'nickname',
+        );
+      }).toList();
+
+    } catch (e) {
+      if (kDebugMode) debugPrint('🚨 Error searching users: $e');
+      return [];
+    }
+  }
+
+  /// Get room participants (for checking if user is already in room)
+  Future<List<String>> getRoomParticipants(String roomId) async {
+    try {
+      final roomDoc = await _firestore.collection(_roomsCollection).doc(roomId).get();
+      if (!roomDoc.exists) return [];
+
+      final roomData = roomDoc.data()!;
+      final players = (roomData['players'] as List<dynamic>? ?? []);
+      
+      return players.map((player) => player['id'] as String).toList();
+    } catch (e) {
+      if (kDebugMode) debugPrint('🚨 Error getting room participants: $e');
+      return [];
+    }
+  }
 }
 
 /// Game invitation model
@@ -373,5 +564,18 @@ class GameInvitationActionResult {
     this.error,
     this.message,
     this.roomId,
+  });
+}
+
+/// User search result for friend invitations
+class UserSearchResult {
+  final String userId;
+  final String nickname;
+  final String foundBy; // 'userId' or 'nickname'
+
+  UserSearchResult({
+    required this.userId,
+    required this.nickname,
+    required this.foundBy,
   });
 }

@@ -34,6 +34,7 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
   List<UserData> _allRegisteredUsers = [];
   bool _isLoading = false;
   StreamSubscription<List<GameInvitation>>? _invitationSubscription;
+  StreamSubscription<List<FriendRequest>>? _friendRequestSubscription;
   
   // Button protection against double-clicks and race conditions
   final Set<String> _processingRequests = {};
@@ -44,12 +45,14 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
     _loadFriendsData();
     _initializePresence();
     _startListeningToInvitations();
+    _startListeningToFriendRequests();
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     _invitationSubscription?.cancel();
+    _friendRequestSubscription?.cancel();
     super.dispose();
   }
 
@@ -80,6 +83,51 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
         }
       }
     });
+  }
+
+  void _startListeningToFriendRequests() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    // Listen to real-time changes in friend requests for current user
+    _friendRequestSubscription = _firestoreService
+        .listenToReceivedFriendRequests(currentUser.uid)
+        .listen((requests) {
+      if (mounted) {
+        setState(() {
+          _receivedRequests = requests;
+        });
+
+        // Show notification for new friend requests
+        for (final request in requests) {
+          // Check if this is a new request (not in previous list)
+          final wasAlreadyPresent = _receivedRequests.any((existing) => existing.id == request.id);
+          if (!wasAlreadyPresent && mounted) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _showFriendRequestNotification(request);
+            });
+          }
+        }
+      }
+    });
+  }
+
+  void _showFriendRequestNotification(FriendRequest request) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('📨 ${request.fromNickname} arkadaşlık isteği gönderdi!'),
+        backgroundColor: Colors.blue,
+        action: SnackBarAction(
+          label: 'Görüntüle',
+          textColor: Colors.white,
+          onPressed: () {
+            // Scroll to requests tab
+            DefaultTabController.of(context)?.animateTo(1);
+          },
+        ),
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
 
   Future<void> _loadFriendsData() async {
@@ -428,6 +476,43 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
+          // Friend request counter
+          if (_receivedRequests.isNotEmpty)
+            Stack(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.person_add),
+                  onPressed: () {
+                    // Switch to requests tab
+                    DefaultTabController.of(context)?.animateTo(1);
+                  },
+                ),
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '${_receivedRequests.length}',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           // Game invitation counter
           if (_gameInvitations.isNotEmpty)
             Stack(

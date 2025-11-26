@@ -180,6 +180,124 @@ class _LoginPageState extends State<LoginPage> {
       MaterialPageRoute(builder: (context) => const LeaderboardPage()),
     );
   }
+
+  void _showHelpDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              const Icon(Icons.help_outline, color: Color(0xFF4CAF50), size: 28),
+              const SizedBox(width: 8),
+              Text(
+                'Oyun Yardım',
+                style: TextStyle(
+                  color: ThemeColors.getText(context),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                _buildHelpSection(
+                  '🎉',
+                  'Eco Game\'e Hoş Geldiniz!',
+                  'Çevre bilincini artıran eğlenceli bir tahta oyununa hazır mısınız? Zar atarak ilerleyin, quiz sorularını yanıtlayın ve en yüksek skoru elde etmeye çalışın!',
+                ),
+                _buildHelpSection(
+                  '🎯',
+                  'Oyun Amacı',
+                  'Hedefiniz tahtadaki "Bitiş" karesine ulaşmak! Zar atarak ilerlerken quiz sorularını yanıtlayın, bonus ve ceza karelerinden puan kazanın veya kaybedin.',
+                ),
+                _buildHelpSection(
+                  '🎲',
+                  'Tahta Kareleri',
+                  '• Başlangıç: Oyunun başladığı yer\n• Quiz: Soru yanıtlayın, doğru cevap puan kazandırır\n• Bonus: Ekstra puan kazanın\n• Ceza: Puan kaybı\n• Bitiş: Oyunu tamamlayın',
+                ),
+                _buildHelpSection(
+                  '📊',
+                  'Puanlama Sistemi',
+                  'Quiz puanlarınız toplanır, ancak geçen süreye göre ceza uygulanır. Daha hızlı bitirirseniz daha yüksek skor elde edersiniz!',
+                ),
+                _buildHelpSection(
+                  '👤',
+                  'Tek Oyuncu Modu',
+                  'Tek başınıza oynayın. Zar atın, ilerleyin ve quiz sorularını yanıtlayın. Skorunuz kaydedilir ve liderlik tablosunda yer alabilirsiniz.',
+                ),
+                _buildHelpSection(
+                  '👥',
+                  'Çok Oyuncu Modu',
+                  'Arkadaşlarınızla birlikte oynayın! Sırayla zar atın, birbirinizi geçmeye çalışın. Oda oluşturun veya katılın.',
+                ),
+                _buildHelpSection(
+                  '🚀',
+                  'Nasıl Başlanır?',
+                  'Giriş yapın, tek oyuncu veya çok oyuncu modunu seçin. Zar at butonuna tıklayarak oyuna başlayın. İyi eğlenceler!',
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Kapat'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildHelpSection(String icon, String title, String content) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(icon, style: const TextStyle(fontSize: 24)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: ThemeColors.getText(context),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Text(
+              content,
+              style: TextStyle(
+                fontSize: 14,
+                color: ThemeColors.getText(context),
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
   
   @override
   void dispose() {
@@ -195,6 +313,13 @@ class _LoginPageState extends State<LoginPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline, color: Colors.white),
+            onPressed: _showHelpDialog,
+            tooltip: 'Oyun Yardımı',
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(

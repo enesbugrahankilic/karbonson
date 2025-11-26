@@ -173,7 +173,11 @@ class _RegisterPageState extends State<RegisterPage> {
               .createUserWithEmailAndPassword(email: email, password: password)
               .timeout(const Duration(seconds: 15));
         } catch (e) {
-          if (kDebugMode) debugPrint('Firebase Auth creation failed: $e');
+          if (kDebugMode) {
+            debugPrint('Firebase Auth creation failed: $e');
+            debugPrint('Exception type: ${e.runtimeType}');
+            debugPrint('Exception toString: ${e.toString()}');
+          }
           rethrow; // Let the outer catch block handle FirebaseAuthException
         }
 
@@ -209,8 +213,11 @@ class _RegisterPageState extends State<RegisterPage> {
           );
         }
       } on FirebaseAuthException catch (e) {
-        if (kDebugMode) debugPrint('Firebase Auth error: ${e.code} - ${e.message}');
-        
+        if (kDebugMode) {
+          debugPrint('Firebase Auth error: ${e.code} - ${e.message}');
+          debugPrint('Full exception: $e');
+        }
+
         String errorMessage;
         switch (e.code) {
           case 'weak-password':
@@ -239,6 +246,11 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         );
       } catch (e, stackTrace) {
+        if (kDebugMode) {
+          debugPrint('Unexpected registration error: $e');
+          debugPrint('Exception type: ${e.runtimeType}');
+          debugPrint('Stack trace: $stackTrace');
+        }
         if (kDebugMode) {
           debugPrint('Registration error: $e');
           debugPrint('Stack trace: $stackTrace');
