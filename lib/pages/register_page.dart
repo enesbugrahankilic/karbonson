@@ -5,7 +5,9 @@ import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/profile_service.dart';
+import '../services/firebase_auth_service.dart';
 import '../models/user_data.dart';
+import '../theme/theme_colors.dart';
 import 'login_page.dart';
 import 'board_game_page.dart';
 import 'multiplayer_lobby_page.dart';
@@ -166,12 +168,20 @@ class _RegisterPageState extends State<RegisterPage> {
 
         if (kDebugMode) debugPrint('Nickname uniqueness confirmed');
 
-        // Firebase Authentication ile kayıt ol
-        UserCredential userCredential;
+        // Firebase Authentication ile kayıt ol (Enhanced with retry mechanism)
+        UserCredential? userCredential;
         try {
-          userCredential = await FirebaseAuth.instance
-              .createUserWithEmailAndPassword(email: email, password: password)
-              .timeout(const Duration(seconds: 15));
+          userCredential = await FirebaseAuthService.createUserWithEmailAndPasswordWithRetry(
+            email: email,
+            password: password,
+          );
+          
+          if (userCredential == null) {
+            throw FirebaseAuthException(
+              code: 'internal-error',
+              message: 'Failed to create user after multiple attempts',
+            );
+          }
         } catch (e) {
           if (kDebugMode) {
             debugPrint('Firebase Auth creation failed: $e');
@@ -218,31 +228,18 @@ class _RegisterPageState extends State<RegisterPage> {
           debugPrint('Full exception: $e');
         }
 
-        String errorMessage;
-        switch (e.code) {
-          case 'weak-password':
-            errorMessage = 'Şifre çok zayıf. En az 6 karakter olmalıdır.';
-            break;
-          case 'email-already-in-use':
-            errorMessage = 'Bu e-posta adresi zaten kullanılıyor.';
-            break;
-          case 'invalid-email':
-            errorMessage = 'Geçerli bir e-posta adresi girin.';
-            break;
-          case 'operation-not-allowed':
-            errorMessage = 'Email/şifre girişi etkinleştirilmemiş. Firebase Authentication ayarlarını kontrol edin.';
-            break;
-          case 'internal-error':
-            errorMessage = 'Firebase yapılandırma sorunu. İnternet bağlantınızı kontrol edin ve uygulamayı yeniden başlatmayı deneyin.';
-            break;
-          default:
-            errorMessage = 'Kayıt olurken bir hata oluştu: ${e.message}';
-        }
+        // Use enhanced error handling from FirebaseAuthService
+        final errorMessage = FirebaseAuthService.handleAuthError(e, context: 'email_signup');
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
             backgroundColor: Colors.red,
+            action: SnackBarAction(
+              label: 'Tekrar Dene',
+              textColor: Colors.white,
+              onPressed: _registerUser,
+            ),
           ),
         );
       } catch (e, stackTrace) {
@@ -287,8 +284,8 @@ class _RegisterPageState extends State<RegisterPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: const Text('Kayıt Ol', style: TextStyle(color: Colors.black87)),
-        iconTheme: const IconThemeData(color: Colors.black87),
+        title: Text('Kayıt Ol', style: TextStyle(color: ThemeColors.getAppBarText(context))),
+        iconTheme: IconThemeData(color: ThemeColors.getAppBarIcon(context)),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -311,11 +308,11 @@ class _RegisterPageState extends State<RegisterPage> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: ThemeColors.getContainerBackground(context),
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: ThemeColors.getShadow(context),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           ),
@@ -330,13 +327,13 @@ class _RegisterPageState extends State<RegisterPage> {
                             color: const Color(0xFF4CAF50),
                           ),
                           const SizedBox(height: 16),
-                          const Text(
+                          Text(
                             'Yeni Hesap Oluştur',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                              color: ThemeColors.getTitleText(context),
                             ),
                           ),
                           const SizedBox(height: 24),
@@ -351,23 +348,23 @@ class _RegisterPageState extends State<RegisterPage> {
                                   decoration: InputDecoration(
                                     labelText: 'E-posta Adresi',
                                     filled: true,
-                                    fillColor: Colors.grey[50],
+                                    fillColor: ThemeColors.getInputBackground(context),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide(color: Colors.grey[300]!),
+                                      borderSide: BorderSide(color: ThemeColors.getBorder(context)),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide(color: Colors.grey[300]!),
+                                      borderSide: BorderSide(color: ThemeColors.getBorder(context)),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
                                     ),
-                                    prefixIcon: Icon(Icons.email, color: Colors.grey[600]),
-                                    labelStyle: TextStyle(color: Colors.grey[700]),
+                                    prefixIcon: Icon(Icons.email, color: ThemeColors.getSecondaryText(context)),
+                                    labelStyle: TextStyle(color: ThemeColors.getSecondaryText(context)),
                                   ),
-                                  style: const TextStyle(color: Colors.black),
+                                  style: TextStyle(color: ThemeColors.getText(context)),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return 'E-posta adresi gerekli';
@@ -387,23 +384,23 @@ class _RegisterPageState extends State<RegisterPage> {
                                   decoration: InputDecoration(
                                     labelText: 'Şifre',
                                     filled: true,
-                                    fillColor: Colors.grey[50],
+                                    fillColor: ThemeColors.getInputBackground(context),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide(color: Colors.grey[300]!),
+                                      borderSide: BorderSide(color: ThemeColors.getBorder(context)),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide(color: Colors.grey[300]!),
+                                      borderSide: BorderSide(color: ThemeColors.getBorder(context)),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
                                     ),
-                                    prefixIcon: Icon(Icons.lock, color: Colors.grey[600]),
-                                    labelStyle: TextStyle(color: Colors.grey[700]),
+                                    prefixIcon: Icon(Icons.lock, color: ThemeColors.getSecondaryText(context)),
+                                    labelStyle: TextStyle(color: ThemeColors.getSecondaryText(context)),
                                   ),
-                                  style: const TextStyle(color: Colors.black),
+                                  style: TextStyle(color: ThemeColors.getText(context)),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return 'Şifre gerekli';
@@ -423,23 +420,23 @@ class _RegisterPageState extends State<RegisterPage> {
                                   decoration: InputDecoration(
                                     labelText: 'Şifre Tekrar',
                                     filled: true,
-                                    fillColor: Colors.grey[50],
+                                    fillColor: ThemeColors.getInputBackground(context),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide(color: Colors.grey[300]!),
+                                      borderSide: BorderSide(color: ThemeColors.getBorder(context)),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide(color: Colors.grey[300]!),
+                                      borderSide: BorderSide(color: ThemeColors.getBorder(context)),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
                                     ),
-                                    prefixIcon: Icon(Icons.lock_outline, color: Colors.grey[600]),
-                                    labelStyle: TextStyle(color: Colors.grey[700]),
+                                    prefixIcon: Icon(Icons.lock_outline, color: ThemeColors.getSecondaryText(context)),
+                                    labelStyle: TextStyle(color: ThemeColors.getSecondaryText(context)),
                                   ),
-                                  style: const TextStyle(color: Colors.black),
+                                  style: TextStyle(color: ThemeColors.getText(context)),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return 'Şifre tekrarı gerekli';
@@ -458,28 +455,28 @@ class _RegisterPageState extends State<RegisterPage> {
                                   decoration: InputDecoration(
                                     labelText: 'Takma Adınız',
                                     filled: true,
-                                    fillColor: Colors.grey[50],
+                                    fillColor: ThemeColors.getInputBackground(context),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide(color: Colors.grey[300]!),
+                                      borderSide: BorderSide(color: ThemeColors.getBorder(context)),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide(color: Colors.grey[300]!),
+                                      borderSide: BorderSide(color: ThemeColors.getBorder(context)),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
                                     ),
-                                    prefixIcon: Icon(Icons.person, color: Colors.grey[600]),
+                                    prefixIcon: Icon(Icons.person, color: ThemeColors.getSecondaryText(context)),
                                     suffixIcon: IconButton(
-                                      icon: Icon(Icons.casino, color: const Color(0xFF4CAF50)),
+                                      icon: Icon(Icons.casino, color: ThemeColors.getGreen(context)),
                                       onPressed: _suggestRandomName,
                                       tooltip: 'Rastgele isim öner',
                                     ),
-                                    labelStyle: TextStyle(color: Colors.grey[700]),
+                                    labelStyle: TextStyle(color: ThemeColors.getSecondaryText(context)),
                                   ),
-                                  style: const TextStyle(color: Colors.black),
+                                  style: TextStyle(color: ThemeColors.getText(context)),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return 'Takma ad gerekli';

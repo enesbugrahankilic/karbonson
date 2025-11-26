@@ -10,6 +10,7 @@ import '../models/game_board.dart';
 import 'quiz_page.dart';
 import 'leaderboard_page.dart';
 import '../services/firestore_service.dart';
+import '../theme/theme_colors.dart';
 import 'login_page.dart';
 
 class BoardGamePage extends StatefulWidget {
@@ -430,7 +431,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                           Card(
                             elevation: 10,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                            color: Color.fromRGBO(255, 255, 255, 0.97),
+                            color: ThemeColors.getPlayerInfoCardBackground(context),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 12.0),
                               child: ListTile(
@@ -446,7 +447,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                                       children: [
                                         const Icon(Icons.timer, color: Colors.black54, size: 20),
                                         const SizedBox(width: 4),
-                                        Text(gameLogic.timeElapsedFormatted, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+                                        Text(gameLogic.timeElapsedFormatted, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: ThemeColors.getGameTimeText(context))),
                                       ],
                                     ),
                                   ],
@@ -462,7 +463,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                           Card(
                             elevation: 10,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                            color: Color.fromRGBO(255, 255, 255, 0.97),
+                            color: ThemeColors.getPlayerInfoCardBackground(context),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 12.0),
                               child: Column(
@@ -472,7 +473,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                                     children: [
                                       const Icon(Icons.timer, color: Colors.black54, size: 20),
                                       const SizedBox(width: 4),
-                                      Text(gameLogic.timeElapsedFormatted, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+                                      Text(gameLogic.timeElapsedFormatted, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: ThemeColors.getGameTimeText(context))),
                                     ],
                                   ),
                                   const SizedBox(height: 10),
@@ -506,7 +507,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                                                   '${player.nickname} ${isCurrentPlayer ? "(Sen)" : ""}',
                                                   style: TextStyle(
                                                     fontWeight: FontWeight.bold,
-                                                    color: isCurrentPlayer ? Colors.blue : Colors.black,
+                                                    color: isCurrentPlayer ? Colors.blue : ThemeColors.getPlayerStatusText(context),
                                                   ),
                                                 ),
                                                 Text('Puan: ${player.quizScore}'),
@@ -531,7 +532,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                           child: Card(
                             elevation: 8,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                            color: Colors.green.shade50,
+                            color: ThemeColors.getGameBoardBackground(context),
                             child: Padding(
                               padding: const EdgeInsets.all(12.0),
                               child: _buildGameBoard(gameLogic, currentTile),
@@ -542,7 +543,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                         Card(
                           elevation: 8,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                          color: Color.fromRGBO(255, 255, 255, 0.97),
+                          color: ThemeColors.getPlayerInfoCardBackground(context),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 12.0),
                             child: _buildDiceArea(context, gameLogic, currentTile),

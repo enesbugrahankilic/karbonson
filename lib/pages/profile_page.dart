@@ -12,6 +12,7 @@ import '../services/presence_service.dart';
 import '../services/friendship_service.dart';
 import '../models/profile_data.dart';
 import '../models/user_data.dart';
+import '../theme/theme_colors.dart';
 import 'register_page.dart';
 import 'login_page.dart';
 
@@ -138,10 +139,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     // Show profile page for registered users
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profil', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
+        title: Text('Profil', style: TextStyle(color: ThemeColors.getAppBarText(context))),
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 2,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: IconThemeData(color: ThemeColors.getAppBarIcon(context)),
         actions: [
           // Change Password button
           IconButton(
@@ -193,7 +194,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 await _logout(context);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
+                backgroundColor: ThemeColors.getLogoutButtonBackground(context),
                 foregroundColor: Colors.white,
               ),
               child: const Text('Çıkış Yap'),
@@ -450,24 +451,24 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                 decoration: InputDecoration(
                   labelText: 'Mevcut Şifre',
                   filled: true,
-                  fillColor: Colors.grey[50],
+                  fillColor: ThemeColors.getInputFieldBackground(context),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
+                    borderSide: BorderSide(color: ThemeColors.getInputFieldBorder(context)),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
+                    borderSide: BorderSide(color: ThemeColors.getInputFieldBorder(context)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
                   ),
-                  prefixIcon: Icon(Icons.lock, color: Colors.grey[600]),
+                  prefixIcon: Icon(Icons.lock, color: ThemeColors.getIconColor(context)),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscureCurrentPassword ? Icons.visibility : Icons.visibility_off,
-                      color: Colors.grey[600],
+                      color: ThemeColors.getIconColor(context),
                     ),
                     onPressed: () {
                       setState(() => _obscureCurrentPassword = !_obscureCurrentPassword);
@@ -490,24 +491,24 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                 decoration: InputDecoration(
                   labelText: 'Yeni Şifre',
                   filled: true,
-                  fillColor: Colors.grey[50],
+                  fillColor: ThemeColors.getInputFieldBackground(context),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
+                    borderSide: BorderSide(color: ThemeColors.getInputFieldBorder(context)),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
+                    borderSide: BorderSide(color: ThemeColors.getInputFieldBorder(context)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
                   ),
-                  prefixIcon: Icon(Icons.lock_outline, color: Colors.grey[600]),
+                  prefixIcon: Icon(Icons.lock_outline, color: ThemeColors.getIconColor(context)),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscureNewPassword ? Icons.visibility : Icons.visibility_off,
-                      color: Colors.grey[600],
+                      color: ThemeColors.getIconColor(context),
                     ),
                     onPressed: () {
                       setState(() => _obscureNewPassword = !_obscureNewPassword);
@@ -536,24 +537,24 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                 decoration: InputDecoration(
                   labelText: 'Yeni Şifre Tekrar',
                   filled: true,
-                  fillColor: Colors.grey[50],
+                  fillColor: ThemeColors.getInputFieldBackground(context),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
+                    borderSide: BorderSide(color: ThemeColors.getInputFieldBorder(context)),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
+                    borderSide: BorderSide(color: ThemeColors.getInputFieldBorder(context)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
                   ),
-                  prefixIcon: Icon(Icons.lock_outline, color: Colors.grey[600]),
+                  prefixIcon: Icon(Icons.lock_outline, color: ThemeColors.getIconColor(context)),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
-                      color: Colors.grey[600],
+                      color: ThemeColors.getIconColor(context),
                     ),
                     onPressed: () {
                       setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
@@ -703,7 +704,7 @@ class _IdentityCard extends StatelessWidget {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha:0.95),
+        color: ThemeColors.getCardBackground(context).withOpacity(0.95),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -788,7 +789,7 @@ class _IdentityCard extends StatelessWidget {
                 'UID: ${profileData.serverData?.uid ?? "Yükleniyor..."}',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey[600],
+                  color: ThemeColors.getStatsCardText(context),
                 ),
               ),
               const SizedBox(width: 8),
@@ -818,7 +819,7 @@ class _IdentityCard extends StatelessWidget {
               'Son giriş: ${_formatDate(profileData.serverData!.lastLogin!)}',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey[600],
+                color: ThemeColors.getStatsCardText(context),
               ),
             ),
         ],
@@ -874,24 +875,28 @@ class _StatisticsCards extends StatelessWidget {
             childAspectRatio: 1.2,
             children: [
               _buildStatCard(
+                context,
                 icon: Icons.trending_up,
                 title: 'Kazanma Oranı',
                 value: '${(localData.winRate * 100).toInt()}%',
                 color: const Color(0xFF4CAF50),
               ),
               _buildStatCard(
+                context,
                 icon: Icons.gamepad,
                 title: 'Toplam Oyun',
                 value: localData.totalGamesPlayed.toString(),
                 color: const Color(0xFF2196F3),
               ),
               _buildStatCard(
+                context,
                 icon: Icons.star,
                 title: 'En Yüksek Skor',
                 value: localData.highestScore.toString(),
                 color: const Color(0xFFFF9800),
               ),
               _buildStatCard(
+                context,
                 icon: Icons.analytics,
                 title: 'Ortalama Puan',
                 value: localData.averageScore.toString(),
@@ -904,7 +909,8 @@ class _StatisticsCards extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard({
+  Widget _buildStatCard(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required String value,
@@ -914,7 +920,7 @@ class _StatisticsCards extends StatelessWidget {
       duration: const Duration(milliseconds: 500),
       curve: Curves.easeInOut,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ThemeColors.getStatsCardBackground(context),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -945,7 +951,7 @@ class _StatisticsCards extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey[600],
+                color: ThemeColors.getStatsCardText(context),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -980,7 +986,7 @@ class _GameHistoryList extends StatelessWidget {
             ),
           ),
           if (games.isEmpty)
-            _buildEmptyState()
+            _buildEmptyState(context)
           else
             _buildGameList(context),
         ],
@@ -988,12 +994,12 @@ class _GameHistoryList extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha:0.9),
+        color: ThemeColors.getHistoryCardBackground(context),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -1004,11 +1010,11 @@ class _GameHistoryList extends StatelessWidget {
             color: Colors.grey,
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Henüz oyun geçmişi yok',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey,
+              color: ThemeColors.getEmptyStateText(context),
             ),
           ),
         ],
@@ -1019,7 +1025,7 @@ class _GameHistoryList extends StatelessWidget {
   Widget _buildGameList(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha:0.9),
+        color: ThemeColors.getHistoryCardBackground(context),
         borderRadius: BorderRadius.circular(16),
       ),
       child: ListView.separated(
@@ -1029,13 +1035,13 @@ class _GameHistoryList extends StatelessWidget {
         separatorBuilder: (context, index) => const Divider(height: 1),
         itemBuilder: (context, index) {
           final game = games[index];
-          return _buildGameItem(game);
+          return _buildGameItem(context, game);
         },
       ),
     );
   }
 
-  Widget _buildGameItem(GameHistoryItem game) {
+  Widget _buildGameItem(BuildContext context, GameHistoryItem game) {
     return ListTile(
       leading: Container(
         width: 40,
@@ -1060,7 +1066,7 @@ class _GameHistoryList extends StatelessWidget {
       subtitle: Text(
         '${_formatGameDate(game.playedAt)} • ${_getGameTypeText(game.gameType)}',
         style: TextStyle(
-          color: Colors.grey[600],
+          color: ThemeColors.getStatsCardText(context),
           fontSize: 12,
         ),
       ),
@@ -1148,10 +1154,10 @@ class _UnregisteredUserScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profil', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
+        title: Text('Profil', style: TextStyle(color: ThemeColors.getAppBarText(context))),
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 2,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: IconThemeData(color: ThemeColors.getAppBarIcon(context)),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -1167,7 +1173,7 @@ class _UnregisteredUserScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.95),
+                color: ThemeColors.getCardBackground(context).withOpacity(0.95),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
@@ -1196,11 +1202,11 @@ class _UnregisteredUserScreen extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'Profil sayfasına erişebilmek için önce kayıt olmanız gerekiyor. Kayıt olarak daha fazla özellikten yararlanabilirsiniz.',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.grey,
+                      color: ThemeColors.getStatsCardText(context),
                     ),
                     textAlign: TextAlign.center,
                   ),

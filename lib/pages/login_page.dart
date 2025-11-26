@@ -12,6 +12,7 @@ import 'profile_page.dart';
 import 'register_page.dart';
 import 'settings_page.dart';
 import '../services/profile_service.dart';
+import '../services/firebase_auth_service.dart';
 import '../theme/theme_colors.dart';
 
 class LoginPage extends StatefulWidget {
@@ -129,22 +130,49 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _startGame() async {
     if (_formKey.currentState!.validate()) {
       final nickname = _nicknameController.text;
+      
+      // Show loading state
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
       try {
-        // Anonim giriş yap (Specification I.1: UID Centrality)
-        final userCredential = await FirebaseAuth.instance.signInAnonymously();
-        final user = userCredential.user;
+        // Enhanced anonymous sign-in with retry mechanism and better error handling
+        final user = await FirebaseAuthService.signInAnonymouslyWithRetry();
 
         if (user != null) {
-          // Specification I.1 & I.2: Use UID as document ID
+          if (kDebugMode) {
+            debugPrint('Anonymous sign-in successful for user: ${user.uid}');
+          }
+
           // Initialize user profile with UID centrality
           final profileService = ProfileService();
           
-          // Create or update user profile with UID as document ID
-          await profileService.initializeProfile(
-            nickname: nickname,
-          );
+          try {
+            // Create or update user profile with UID as document ID
+            await profileService.initializeProfile(
+              nickname: nickname,
+            );
+            
+            if (kDebugMode) {
+              debugPrint('User profile initialized successfully for: $nickname');
+            }
+          } catch (profileError) {
+            if (kDebugMode) {
+              debugPrint('Profile initialization failed: $profileError');
+            }
+            // Don't fail the entire process if profile creation fails
+            // User can still play the game
+          }
 
           if (!mounted) return;
+
+          // Close loading dialog
+          Navigator.of(context, rootNavigator: true).pop();
 
           // Navigate - pages will use FirebaseAuth.instance.currentUser?.uid internally
           Navigator.pushReplacement(
@@ -153,21 +181,88 @@ class _LoginPageState extends State<LoginPage> {
               builder: (context) => BoardGamePage(userNickname: nickname),
             ),
           );
+        } else {
+          throw FirebaseAuthException(
+            code: 'internal-error',
+            message: 'Failed to create anonymous user after multiple attempts',
+          );
         }
-      } catch (e, stackTrace) {
-        // Log the error and stacktrace for debugging (debug-only)
+      } on FirebaseAuthException catch (e) {
+        // Close loading dialog
+        if (mounted) {
+          Navigator.of(context, rootNavigator: true).pop();
+        }
+
         if (kDebugMode) {
-          debugPrint('Login error (type=${e.runtimeType}): $e');
+          debugPrint('Firebase Auth error in _startGame: ${e.code} - ${e.message}');
+        }
+
+        // Show user-friendly error message
+        final errorMessage = FirebaseAuthService.handleAuthError(e, context: 'anonymous_signin');
+        
+        if (!mounted) return;
+        
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: const Text('Giriş Hatası'),
+              content: Text(errorMessage),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Tamam'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _startGame(); // Retry
+                  },
+                  child: const Text('Tekrar Dene'),
+                ),
+              ],
+            );
+          },
+        );
+
+      } catch (e, stackTrace) {
+        // Close loading dialog
+        if (mounted) {
+          Navigator.of(context, rootNavigator: true).pop();
+        }
+
+        // Log the error and stacktrace for debugging
+        if (kDebugMode) {
+          debugPrint('Unexpected login error (type=${e.runtimeType}): $e');
           debugPrint('$stackTrace');
         }
 
-        // Firebase hatası olsa bile oyuna devam et (fallback)
         if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => BoardGamePage(userNickname: nickname),
-          ),
+
+        // Show generic error message for unexpected errors
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: const Text('Beklenmeyen Hata'),
+              content: const Text('Giriş yapılırken beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Tamam'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _startGame(); // Retry
+                  },
+                  child: const Text('Tekrar Dene'),
+                ),
+              ],
+            );
+          },
         );
       }
     }
@@ -281,9 +376,9 @@ class _LoginPageState extends State<LoginPage> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.grey[50],
+              color: ThemeColors.getDialogContentBackground(context),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey[200]!),
+              border: Border.all(color: ThemeColors.getBorder(context)),
             ),
             child: Text(
               content,
@@ -342,11 +437,11 @@ class _LoginPageState extends State<LoginPage> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: ThemeColors.getContainerBackground(context),
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: ThemeColors.getShadow(context),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           ),
@@ -478,7 +573,7 @@ class _LoginPageState extends State<LoginPage> {
                                             style: TextButton.styleFrom(
                                               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                              backgroundColor: Colors.grey[100],
+                                              backgroundColor: ThemeColors.getCardBackgroundLight(context),
                                             ),
                                           ),
                                         ),
@@ -499,7 +594,7 @@ class _LoginPageState extends State<LoginPage> {
                                               style: TextButton.styleFrom(
                                                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                                backgroundColor: Colors.grey[100],
+                                                backgroundColor: ThemeColors.getCardBackgroundLight(context),
                                               ),
                                             ),
                                           ),
@@ -519,7 +614,7 @@ class _LoginPageState extends State<LoginPage> {
                                         style: TextButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(vertical: 8),
                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                          backgroundColor: Colors.grey[100],
+                                          backgroundColor: ThemeColors.getButtonBackground(context),
                                         ),
                                       ),
                                     ),
@@ -544,7 +639,7 @@ class _LoginPageState extends State<LoginPage> {
                                         style: TextButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(vertical: 12),
                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                          backgroundColor: Colors.grey[100],
+                                          backgroundColor: ThemeColors.getButtonBackground(context),
                                         ),
                                       ),
                                     ),
@@ -582,7 +677,7 @@ class _LoginPageState extends State<LoginPage> {
                                         style: TextButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(vertical: 12),
                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                          backgroundColor: Colors.grey[100],
+                                          backgroundColor: ThemeColors.getButtonBackground(context),
                                         ),
                                       ),
                                     ),

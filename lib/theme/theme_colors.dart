@@ -21,6 +21,18 @@ class ThemeColors {
         : Colors.white;
   }
   
+  static Color getCardBackgroundLight(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.grey[700]! 
+        : Colors.grey[50]!;
+  }
+  
+  static Color getContainerBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.grey[900]! 
+        : Colors.white;
+  }
+  
   static Color getSurface(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark 
         ? Colors.grey[900]! 
@@ -73,5 +85,147 @@ class ThemeColors {
   
   static Color getGreen(BuildContext context) {
     return const Color(0xFF4CAF50); // Green color for labels
+  }
+  
+  static Color getGameBoardText(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.white 
+        : Colors.black87;
+  }
+  
+  static Color getDialogBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.grey[800]! 
+        : Colors.white;
+  }
+  
+  static Color getDialogContentBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.grey[700]! 
+        : Colors.grey[50]!;
+  }
+  
+  static Color getTitleText(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.white 
+        : Colors.black87;
+  }
+  
+  static Color getButtonBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.grey[700]! 
+        : Colors.grey[100]!;
+  }
+  
+  static Color getCardForeground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.white 
+        : Colors.black87;
+  }
+  
+  static Color getIconColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.white70 
+        : Colors.black54;
+  }
+  
+  static Color getInputFieldBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.grey[800]! 
+        : Colors.grey[50]!;
+  }
+  
+  static Color getInputFieldBorder(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.grey[600]! 
+        : Colors.grey[300]!;
+  }
+  
+  static Color getLogoutButtonBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.red.shade700 
+        : Colors.black;
+  }
+  
+  static Color getGameBoardTileText(BuildContext context) {
+    return Colors.white; // White text on colored tiles for better visibility
+  }
+  
+  static Color getGameBoardCardBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.grey[800]!.withOpacity(0.95) 
+        : Colors.white.withOpacity(0.97);
+  }
+  
+  static Color getGameBoardBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.green.shade800.withOpacity(0.3) 
+        : Colors.green.shade50;
+  }
+  
+  static Color getPlayerInfoCardBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.grey[800]!.withOpacity(0.95) 
+        : Color.fromRGBO(255, 255, 255, 0.97);
+  }
+  
+  static Color getStatsCardBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.grey[800]! 
+        : Colors.white;
+  }
+  
+  static Color getStatsCardText(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.white70 
+        : Colors.grey[600]!;
+  }
+  
+  static Color getHistoryCardBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.grey[800]!.withOpacity(0.9) 
+        : Colors.white.withOpacity(0.9);
+  }
+  
+  static Color getEmptyStateText(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.white70 
+        : Colors.grey;
+  }
+  
+  static Color getGameTimeText(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.white 
+        : Colors.black87;
+  }
+  
+  static Color getPlayerStatusText(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.white 
+        : Colors.black;
+  }
+  
+  static Color getTurnIndicatorBackground(BuildContext context, bool isMyTurn) {
+    return isMyTurn 
+        ? (Theme.of(context).brightness == Brightness.dark ? Colors.green.shade700 : Colors.green.shade100)
+        : (Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade700 : Colors.grey.shade200);
+  }
+  
+  static Color getTurnIndicatorText(BuildContext context, bool isMyTurn) {
+    return isMyTurn 
+        ? (Theme.of(context).brightness == Brightness.dark ? Colors.green.shade200 : Colors.green.shade800)
+        : (Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade300 : Colors.grey.shade700);
+  }
+  
+  static Color getDiceAreaBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.blueGrey.shade700 
+        : Colors.blueGrey.shade100;
+  }
+  
+  static Color getDiceValueText(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.white 
+        : Color(0xFF1E88E5);
   }
 }
