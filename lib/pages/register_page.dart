@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/profile_service.dart';
 import '../services/firebase_auth_service.dart';
+import '../services/email_usage_service.dart';
 import '../models/user_data.dart';
 import '../theme/theme_colors.dart';
 import 'login_page.dart';
@@ -27,6 +28,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _nicknameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  final EmailUsageService _emailUsageService = EmailUsageService();
 
   @override
   void initState() {
@@ -113,6 +115,26 @@ class _RegisterPageState extends State<RegisterPage> {
         final nickname = _nicknameController.text.trim();
 
         if (kDebugMode) debugPrint('Starting registration for: $email');
+
+        // Check email usage limitation (maximum 2 uses)
+        if (kDebugMode) debugPrint('Checking email usage limitation for: $email');
+        
+        final emailUsageValidation = await _emailUsageService.canEmailBeUsed(email);
+        if (!emailUsageValidation.isValid) {
+          if (!mounted) return;
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(emailUsageValidation.error),
+              backgroundColor: Colors.red,
+            ),
+          );
+          
+          setState(() => _isLoading = false);
+          return;
+        }
+        
+        if (kDebugMode) debugPrint('Email usage validation passed: ${emailUsageValidation.emailUsage?.usageCount ?? 0} uses');
 
         // Check nickname uniqueness before creating user
         if (kDebugMode) debugPrint('Checking nickname uniqueness: $nickname');
@@ -203,6 +225,11 @@ class _RegisterPageState extends State<RegisterPage> {
           );
 
           if (kDebugMode) debugPrint('User profile created in Firestore');
+
+          // Record email usage
+          await _emailUsageService.recordEmailUsage(email, user.uid);
+          
+          if (kDebugMode) debugPrint('Email usage recorded successfully');
 
           if (!mounted) return;
 

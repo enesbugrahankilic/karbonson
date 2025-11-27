@@ -531,7 +531,6 @@ class QuizLogic {
 
   QuizLogic() {
     _loadHighScore();
-    _selectRandomQuestions(5);
   }
 
   Future<void> _loadHighScore() async {
@@ -568,17 +567,15 @@ class QuizLogic {
   }
   
   void _selectRandomQuestions(int count) {
+    // Clear answered questions for new session to ensure variety
+    _answeredQuestions.clear();
+    
     var regularQuestions = _allQuestions.where((q) => q.options.length == 4).toList();
     var bonusQuestions = _allQuestions.where((q) => q.options.length == 5).toList();
 
-    var availableRegular = regularQuestions.where((q) => !_answeredQuestions.contains(q.text)).toList();
-    var availableBonus = bonusQuestions.where((q) => !_answeredQuestions.contains(q.text)).toList();
-
-    if (availableRegular.isEmpty && availableBonus.isEmpty) {
-      _answeredQuestions.clear();
-      availableRegular = regularQuestions;
-      availableBonus = bonusQuestions;
-    }
+    // Use all available questions for new session
+    var availableRegular = List<Question>.from(regularQuestions);
+    var availableBonus = List<Question>.from(bonusQuestions);
 
     availableRegular.shuffle(_random);
     availableBonus.shuffle(_random);
@@ -639,10 +636,30 @@ class QuizLogic {
 
   Future<void> startNewQuiz() async {
     resetScore();
-    _selectRandomQuestions(5);
+    _selectRandomQuestions(15); // Increased from 5 to 15 questions per quiz
     await _loadHighScore();
     _lastPlayTime = DateTime.now();
     await _saveHighScore(); // Son oynama zamanını kaydetmek için
+  }
+
+  // Preload questions for immediate access
+  Future<void> preloadQuestions() async {
+    _selectRandomQuestions(15);
+  }
+
+  // Get total number of available questions
+  int getTotalQuestions() {
+    return _allQuestions.length;
+  }
+
+  // Get debug information about current quiz session
+  Map<String, dynamic> getQuizDebugInfo() {
+    return {
+      'totalQuestions': _allQuestions.length,
+      'currentSessionQuestions': questions.length,
+      'answeredQuestionsCount': _answeredQuestions.length,
+      'currentSessionQuestionTexts': questions.map((q) => q.text).toList(),
+    };
   }
 
   Future<List<Map<String, dynamic>>> getLeaderboard() async {

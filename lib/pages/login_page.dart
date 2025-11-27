@@ -11,9 +11,13 @@ import 'friends_page.dart';
 import 'profile_page.dart';
 import 'register_page.dart';
 import 'settings_page.dart';
+import 'duel_page.dart';
+import 'duel_invitation_page.dart';
 import '../services/profile_service.dart';
 import '../services/firebase_auth_service.dart';
 import '../theme/theme_colors.dart';
+import '../utils/firebase_config_checker.dart';
+import '../widgets/login_dialog.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -105,21 +109,96 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    // Sayfa açıldığında rastgele bir isim öner
-    _suggestRandomName(); 
+    // Check for cached username first, then suggest random if none found
+    _loadCachedUsername();
     
     // Check registration status to conditionally show profile button
     _checkRegistrationStatus();
   }
 
+  Future<void> _loadCachedUsername() async {
+    try {
+      final cachedUsername = await _profileService.getCurrentNickname();
+      if (cachedUsername != null && cachedUsername.isNotEmpty) {
+        setState(() {
+          _nicknameController.text = cachedUsername;
+        });
+      } else {
+        // Only suggest random name if no cached username exists
+        _suggestRandomName();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error loading cached username: $e');
+      }
+      // Fallback to random name suggestion
+      _suggestRandomName();
+    }
+  }
+
+  /// Check if user should be required to login (for multiplayer/duel modes)
+  Future<bool> _shouldRequireLogin() async {
+    try {
+      // Check if user has played before (has cached username)
+      final cachedUsername = await _profileService.getCurrentNickname();
+      return cachedUsername != null && cachedUsername.isNotEmpty;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Show login requirement dialog for multiplayer/duel modes
+  Future<void> _showLoginRequirementDialog(String modeName) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text('$modeName için Giriş Gerekli'),
+          content: const Text(
+            'Çok oyunculu ve düello modları için hesabınıza giriş yapmanız gerekiyor. '
+            'Bu, arkadaşlarınızla oynamanız ve ilerlemenizi kaydetmeniz için önemlidir.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('İptal'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _showLoginDialog();
+              },
+              child: const Text('Giriş Yap'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const RegisterPage()),
+                );
+              },
+              child: const Text('Kayıt Ol'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _checkRegistrationStatus() async {
     try {
+      // Check if user has a real email account (not anonymous)
       final isRegistered = await _profileService.isUserRegistered();
       setState(() {
         _isRegistered = isRegistered;
         _isCheckingRegistration = false;
       });
     } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error checking registration status: $e');
+      }
       setState(() {
         _isRegistered = false;
         _isCheckingRegistration = false;
@@ -130,6 +209,9 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _startGame() async {
     if (_formKey.currentState!.validate()) {
       final nickname = _nicknameController.text;
+      
+      // Cache the username for future use
+      await _profileService.cacheNickname(nickname);
       
       // Show loading state
       showDialog(
@@ -156,6 +238,7 @@ class _LoginPageState extends State<LoginPage> {
             // Create or update user profile with UID as document ID
             await profileService.initializeProfile(
               nickname: nickname,
+              user: user, // Pass user to avoid race condition
             );
             
             if (kDebugMode) {
@@ -164,9 +247,19 @@ class _LoginPageState extends State<LoginPage> {
           } catch (profileError) {
             if (kDebugMode) {
               debugPrint('Profile initialization failed: $profileError');
+              debugPrint('Error type: ${profileError.runtimeType}');
             }
-            // Don't fail the entire process if profile creation fails
-            // User can still play the game
+            
+            // Show user-friendly error message but still allow game to continue
+            if (!mounted) return;
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Profil oluşturulurken bir sorun oluştu, ancak oyuna devam edebilirsiniz.'),
+                backgroundColor: Colors.orange,
+                duration: Duration(seconds: 3),
+              ),
+            );
           }
 
           if (!mounted) return;
@@ -280,8 +373,13 @@ class _LoginPageState extends State<LoginPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+        
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: isDarkMode 
+              ? ThemeColors.getDialogBackground(context) 
+              : Colors.white,
           title: Row(
             children: [
               const Icon(Icons.help_outline, color: Color(0xFF4CAF50), size: 28),
@@ -289,7 +387,9 @@ class _LoginPageState extends State<LoginPage> {
               Text(
                 'Oyun Yardım',
                 style: TextStyle(
-                  color: ThemeColors.getText(context),
+                  color: isDarkMode 
+                      ? Colors.white 
+                      : Colors.black87,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -336,18 +436,61 @@ class _LoginPageState extends State<LoginPage> {
                   'Nasıl Başlanır?',
                   'Giriş yapın, tek oyuncu veya çok oyuncu modunu seçin. Zar at butonuna tıklayarak oyuna başlayın. İyi eğlenceler!',
                 ),
+                _buildHelpSection(
+                  '⚔️',
+                  'Düello Modu',
+                  'İki oyuncu arasında hızlı cevap yarışı! 5 soruda en çok doğru cevabı veren kazanır. Hız bonusu ile daha fazla puan kazanabilirsiniz.',
+                ),
               ],
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Kapat'),
+              child: Text(
+                'Kapat',
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark 
+                      ? Colors.white70 
+                      : Colors.black54,
+                ),
+              ),
             ),
           ],
         );
       },
     );
+  }
+
+  void _showFirebaseDiagnostics() {
+    showDialog(
+      context: context,
+      builder: (context) => const FirebaseConfigChecker(),
+    );
+  }
+
+  void _showLoginDialog() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => const LoginDialog(),
+    );
+
+    if (result == true && mounted) {
+      // Get current user and navigate to profile page
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Get user nickname
+        final profileService = ProfileService();
+        final nickname = await profileService.getCurrentNickname() ?? user.email?.split('@')[0] ?? 'Kullanıcı';
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProfilePage(userNickname: nickname),
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildHelpSection(String icon, String title, String content) {
@@ -366,7 +509,9 @@ class _LoginPageState extends State<LoginPage> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: ThemeColors.getText(context),
+                    color: Theme.of(context).brightness == Brightness.dark 
+                        ? Colors.white 
+                        : Colors.black87,
                   ),
                 ),
               ),
@@ -376,15 +521,23 @@ class _LoginPageState extends State<LoginPage> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: ThemeColors.getDialogContentBackground(context),
+              color: Theme.of(context).brightness == Brightness.dark 
+                  ? Colors.grey[700]!.withValues(alpha: 0.8)
+                  : Colors.grey[50]!.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: ThemeColors.getBorder(context)),
+              border: Border.all(
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.grey[600]!
+                    : Colors.grey[300]!,
+              ),
             ),
             child: Text(
               content,
               style: TextStyle(
                 fontSize: 14,
-                color: ThemeColors.getText(context),
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.white 
+                    : Colors.black87,
                 height: 1.4,
               ),
             ),
@@ -413,6 +566,11 @@ class _LoginPageState extends State<LoginPage> {
             icon: const Icon(Icons.help_outline, color: Colors.white),
             onPressed: _showHelpDialog,
             tooltip: 'Oyun Yardımı',
+          ),
+          IconButton(
+            icon: const Icon(Icons.bug_report, color: Colors.orange),
+            onPressed: _showFirebaseDiagnostics,
+            tooltip: 'Firebase Yapılandırma Tanısı',
           ),
         ],
       ),
@@ -526,9 +684,17 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 12),
                           ElevatedButton.icon(
-                            onPressed: () {
+                            onPressed: () async {
                               if (_formKey.currentState!.validate()) {
                                 final nickname = _nicknameController.text;
+                                
+                                // Check if login is required
+                                final requiresLogin = await _shouldRequireLogin();
+                                if (requiresLogin && !_isRegistered) {
+                                  await _showLoginRequirementDialog('Çok Oyunculu');
+                                  return;
+                                }
+                                
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -541,6 +707,45 @@ class _LoginPageState extends State<LoginPage> {
                             label: const Text('Çok Oyunculu'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF2196F3),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              if (_formKey.currentState!.validate()) {
+                                final nickname = _nicknameController.text;
+                                
+                                // Check if login is required
+                                final requiresLogin = await _shouldRequireLogin();
+                                if (requiresLogin && !_isRegistered) {
+                                  await _showLoginRequirementDialog('Düello');
+                                  return;
+                                }
+                                
+                                // Use Firebase Auth UID as player ID for authenticated users
+                                final user = FirebaseAuth.instance.currentUser;
+                                final playerId = user != null ? user.uid : 'temp_${DateTime.now().millisecondsSinceEpoch}';
+                                
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DuelPage(
+                                      playerId: playerId,
+                                      playerNickname: nickname,
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.security),
+                            label: const Text('Düello'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF9C27B0),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
@@ -688,10 +893,21 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 16),
                           
-                          // Kayıt ol ve Ayarlar butonları
+                          // Login, Kayıt ol ve Ayarlar butonları
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
+                              TextButton(
+                                onPressed: () => _showLoginDialog(),
+                                child: Text(
+                                  'Giriş Yap',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.green[700],
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
                               TextButton(
                                 onPressed: () {
                                   Navigator.push(

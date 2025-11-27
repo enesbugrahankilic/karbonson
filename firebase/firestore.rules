@@ -77,8 +77,24 @@ service cloud.firestore {
       allow delete: if request.auth != null && resource.data.hostId == request.auth.uid;
     }
 
-    // === LEGACY SCORE COLLECTION (for backward compatibility) ===
-    match /scores/{documentId} {
+    // === EMAIL USAGE COLLECTION (Email usage tracking for limitation) ===
+    match /email_usage/{emailHash} {
+      // Allow read access to authenticated users for email validation
+      allow read: if request.auth != null;
+      
+      // Allow authenticated users to create email usage records during registration
+      allow create: if request.auth != null && 
+        request.resource.data.email is string &&
+        request.resource.data.usageCount is int &&
+        request.resource.data.usageCount >= 1 &&
+        request.resource.data.usageCount <= 2;
+      
+      // Allow authenticated users to update email usage records
+      allow update: if request.auth != null &&
+        request.resource.data.email == resource.data.email &&
+        request.resource.data.usageCount == resource.data.usageCount + 1 &&
+        request.resource.data.usageCount <= 2;
+      
       // Allow read access to scores for leaderboard
       allow read: if true;
       

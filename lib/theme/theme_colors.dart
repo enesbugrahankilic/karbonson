@@ -54,7 +54,7 @@ class ThemeColors {
   static Color getShadow(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark 
         ? Colors.black26 
-        : Colors.black.withOpacity(0.1);
+        : Colors.black.withValues(alpha: 0.1);
   }
   
   static List<Color> getGradientColors(BuildContext context) {
@@ -153,19 +153,19 @@ class ThemeColors {
   
   static Color getGameBoardCardBackground(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark 
-        ? Colors.grey[800]!.withOpacity(0.95) 
-        : Colors.white.withOpacity(0.97);
+        ? Colors.grey[800]!.withValues(alpha: 0.95) 
+        : Colors.white.withValues(alpha: 0.97);
   }
   
   static Color getGameBoardBackground(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark 
-        ? Colors.green.shade800.withOpacity(0.3) 
+        ? Colors.green.shade800.withValues(alpha: 0.3) 
         : Colors.green.shade50;
   }
   
   static Color getPlayerInfoCardBackground(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark 
-        ? Colors.grey[800]!.withOpacity(0.95) 
+        ? Colors.grey[800]!.withValues(alpha: 0.95) 
         : Color.fromRGBO(255, 255, 255, 0.97);
   }
   
@@ -183,8 +183,8 @@ class ThemeColors {
   
   static Color getHistoryCardBackground(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark 
-        ? Colors.grey[800]!.withOpacity(0.9) 
-        : Colors.white.withOpacity(0.9);
+        ? Colors.grey[800]!.withValues(alpha: 0.9) 
+        : Colors.white.withValues(alpha: 0.9);
   }
   
   static Color getEmptyStateText(BuildContext context) {

@@ -1,102 +1,240 @@
 // lib/utils/firebase_config_checker.dart
+// Firebase Configuration Diagnostic Tool
 
-import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../services/firebase_auth_service.dart';
 
-class FirebaseConfigChecker {
-  /// Comprehensive Firebase configuration and connectivity check
-  static Future<Map<String, dynamic>> checkFirebaseConfiguration() async {
-    final Map<String, dynamic> results = {
-      'firebase_initialized': false,
-      'auth_supported': false,
-      'firestore_accessible': false,
-      'network_connectivity': false,
-      'config_issues': <String>[],
-      'recommendations': <String>[],
-    };
+class FirebaseConfigChecker extends StatefulWidget {
+  const FirebaseConfigChecker({super.key});
+
+  @override
+  State<FirebaseConfigChecker> createState() => _FirebaseConfigCheckerState();
+}
+
+class _FirebaseConfigCheckerState extends State<FirebaseConfigChecker> {
+  bool _isRunning = false;
+  Map<String, dynamic> _diagnosticResults = {};
+  String _statusMessage = 'Hazır';
+
+  Future<void> _runDiagnostics() async {
+    setState(() {
+      _isRunning = true;
+      _statusMessage = 'Firebase konfigürasyonu kontrol ediliyor...';
+      _diagnosticResults = {};
+    });
 
     try {
-      // Check 1: Firebase App initialization
-      if (FirebaseAuth.instance.app != null) {
-        results['firebase_initialized'] = true;
-        if (kDebugMode) debugPrint('✅ Firebase App is initialized');
-      } else {
-        results['config_issues'].add('Firebase App not initialized');
-        results['recommendations'].add('Check Firebase initialization in main.dart');
-        if (kDebugMode) debugPrint('❌ Firebase App not initialized');
-      }
+      // Get comprehensive debug info
+      final debugInfo = await FirebaseAuthService.getDebugInfo();
+      
+      // Check anonymous auth specifically
+      final anonymousCheck = await FirebaseAuthService.checkAnonymousAuthEnabled();
+      
+      // Check general auth configuration
+      final configCheck = await FirebaseAuthService.checkAuthConfiguration();
 
-      // Check 2: Auth Provider availability
-      try {
-        final authInstance = FirebaseAuth.instance;
-        results['auth_supported'] = true;
-        if (kDebugMode) debugPrint('✅ Firebase Auth is available');
-      } catch (e) {
-        results['config_issues'].add('Firebase Auth not accessible');
-        results['recommendations'].add('Check google-services.json and Firebase project configuration');
-        if (kDebugMode) debugPrint('❌ Firebase Auth not accessible: $e');
-      }
+      setState(() {
+        _diagnosticResults = {
+          'debug_info': debugInfo,
+          'anonymous_check': anonymousCheck,
+          'config_check': configCheck,
+          'timestamp': DateTime.now().toIso8601String(),
+        };
+        _statusMessage = 'Tanı tamamlandı';
+      });
 
-      // Check 3: Network connectivity (basic test)
-      try {
-        // This will throw if network is unavailable
-        await InternetAddress.lookup('google.com');
-        results['network_connectivity'] = true;
-        if (kDebugMode) debugPrint('✅ Network connectivity is available');
-      } catch (e) {
-        results['config_issues'].add('No network connectivity');
-        results['recommendations'].add('Check internet connection');
-        if (kDebugMode) debugPrint('❌ No network connectivity: $e');
-      }
-
-      // Check 4: Firestore accessibility (basic test)
-      try {
-        await FirebaseFirestore.instance.enableNetwork();
-        results['firestore_accessible'] = true;
-        if (kDebugMode) debugPrint('✅ Firestore is accessible');
-      } catch (e) {
-        results['config_issues'].add('Firestore not accessible');
-        results['recommendations'].add('Check Firebase project permissions and network connection');
-        if (kDebugMode) debugPrint('❌ Firestore not accessible: $e');
-      }
-
-    } catch (e, stackTrace) {
-      results['config_issues'].add('General configuration error: $e');
+    } catch (e) {
       if (kDebugMode) {
-        debugPrint('🚨 Firebase configuration check failed: $e');
-        debugPrint('Stack trace: $stackTrace');
+        debugPrint('Firebase diagnostic failed: $e');
       }
+      setState(() {
+        _statusMessage = 'Tanı sırasında hata: $e';
+      });
+    } finally {
+      setState(() {
+        _isRunning = false;
+      });
     }
-
-    return results;
   }
 
-  /// Get user-friendly error messages for common Firebase issues
-  static String getErrorMessage(Map<String, dynamic> checkResults) {
-    final issues = checkResults['config_issues'] as List<String>;
-    
-    if (issues.isEmpty) {
-      return 'Firebase yapılandırması doğru görünüyor. Kayıt işlemini tekrar deneyin.';
-    }
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Row(
+        children: [
+          Icon(Icons.security, color: Colors.orange, size: 28),
+          const SizedBox(width: 8),
+          const Text('Firebase Yapılandırma Tanısı'),
+        ],
+      ),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _statusMessage,
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            if (_diagnosticResults.isNotEmpty) ...[
+              _buildDiagnosticSection(
+                '🔍 Tanı Sonuçları',
+                _buildDiagnosticResults(),
+              ),
+            ],
+            const SizedBox(height: 16),
+            if (_diagnosticResults.isNotEmpty && _diagnosticResults['anonymous_check']?['enabled'] == false)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.shade200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.error, color: Colors.red.shade700, size: 20),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Çözüm: Anonymous Authentication Etkinleştir',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      '1. Firebase Console\'a gidin\n'
+                      '2. Authentication > Sign-in method seçin\n'
+                      '3. Anonymous provider\'ı etkinleştirin\n'
+                      '4. Değişiklikleri kaydedin',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        if (_diagnosticResults.isNotEmpty)
+          TextButton.icon(
+            onPressed: () => _runDiagnostics(),
+            icon: const Icon(Icons.refresh, size: 16),
+            label: const Text('Yeniden Test Et'),
+          ),
+        TextButton(
+          onPressed: _isRunning ? null : () => Navigator.of(context).pop(),
+          child: const Text('Kapat'),
+        ),
+        if (_diagnosticResults.isEmpty)
+          ElevatedButton.icon(
+            onPressed: _isRunning ? null : _runDiagnostics,
+            icon: _isRunning
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.play_arrow, size: 16),
+            label: const Text('Tanı Başlat'),
+          ),
+      ],
+    );
+  }
 
-    final messages = <String>[];
+  Widget _buildDiagnosticResults() {
+    final anonymousCheck = _diagnosticResults['anonymous_check'];
+    final configCheck = _diagnosticResults['config_check'];
     
-    for (final issue in issues) {
-      if (issue.contains('not initialized')) {
-        messages.add('Firebase başlatma sorunu. Uygulamayı yeniden başlatmayı deneyin.');
-      } else if (issue.contains('Auth not accessible')) {
-        messages.add('Firebase Authentication yapılandırma sorunu. google-services.json dosyasını kontrol edin.');
-      } else if (issue.contains('network')) {
-        messages.add('İnternet bağlantısı sorunu. Bağlantınızı kontrol edin.');
-      } else if (issue.contains('Firestore')) {
-        messages.add('Veritabanı erişim sorunu. Firebase proje izinlerini kontrol edin.');
-      } else {
-        messages.add('Firebase yapılandırma sorunu: $issue');
-      }
-    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildCheckItem(
+          'Firebase Başlatıldı',
+          configCheck?['firebase_initialized'] == true,
+        ),
+        _buildCheckItem(
+          'Anonymous Sign-in Etkin',
+          anonymousCheck?['enabled'] == true,
+        ),
+        _buildCheckItem(
+          'Mevcut Kullanıcı',
+          configCheck?['current_user_available'] == true,
+        ),
+        const SizedBox(height: 12),
+        if (anonymousCheck?['reason'] != null)
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              'Detay: ${anonymousCheck['reason']}',
+              style: const TextStyle(fontSize: 12),
+            ),
+          ),
+      ],
+    );
+  }
 
-    return messages.join('\n');
+  Widget _buildCheckItem(String title, bool isSuccess) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(
+            isSuccess ? Icons.check_circle : Icons.cancel,
+            color: isSuccess ? Colors.green : Colors.red,
+            size: 16,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              color: isSuccess ? Colors.green.shade700 : Colors.red.shade700,
+              fontWeight: isSuccess ? FontWeight.w500 : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDiagnosticSection(String title, Widget content) {
+    return Container(
+      width: double.maxFinite,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          content,
+        ],
+      ),
+    );
   }
 }

@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'dart:math' as math;
 import '../services/game_logic.dart';
 import '../services/multiplayer_game_logic.dart';
@@ -133,7 +133,6 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
   }
 
   void _showEndGameDialog(BuildContext context, dynamic gameLogic) async {
-    final capturedContext = context;
     if (widget.isMultiplayer) {
       // Multiplayer end game logic
       final currentPlayer = gameLogic.currentPlayer;
@@ -156,13 +155,14 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
 
         if (!mounted) return;
 
+        // Use a fresh context if available, fallback to captured context
         showGeneralDialog(
-          context: capturedContext,
+          context: context,
           barrierDismissible: false,
           barrierLabel: '',
           transitionDuration: const Duration(milliseconds: 500),
           pageBuilder: (context, animation1, animation2) => Container(),
-          transitionBuilder: (context, animation1, animation2, child) {
+          transitionBuilder: (BuildContext dialogContext, Animation<double> animation1, Animation<double> animation2, Widget child) {
             return ScaleTransition(
               scale: Tween<double>(begin: 0.5, end: 1.0).animate(CurvedAnimation(parent: animation1, curve: Curves.elasticOut)),
               child: FadeTransition(
@@ -267,13 +267,14 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
 
       if (!mounted) return;
 
+      // Use a fresh context if available, fallback to captured context
       showGeneralDialog(
-        context: capturedContext,
+        context: context,
         barrierDismissible: false,
         barrierLabel: '',
         transitionDuration: const Duration(milliseconds: 500),
         pageBuilder: (context, animation1, animation2) => Container(),
-        transitionBuilder: (context, animation1, animation2, child) {
+        transitionBuilder: (BuildContext dialogContext, Animation<double> animation1, Animation<double> animation2, Widget child) {
           return ScaleTransition(
             scale: Tween<double>(begin: 0.5, end: 1.0).animate(CurvedAnimation(parent: animation1, curve: Curves.elasticOut)),
             child: FadeTransition(
@@ -361,11 +362,10 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
 
   Widget _buildGameUI(BuildContext context, dynamic gameLogic, {required bool isMultiplayer}) {
     if (gameLogic.isGameFinished && !_endGameDialogShown) {
-      final capturedContext = context;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || _endGameDialogShown) return;
         _endGameDialogShown = true;
-        _showEndGameDialog(capturedContext, gameLogic);
+        _showEndGameDialog(context, gameLogic);
       });
       return Container();
     }
@@ -484,7 +484,9 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                                       margin: const EdgeInsets.symmetric(vertical: 4),
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        color: isCurrentPlayer ? Colors.blue.shade50 : Colors.grey.shade50,
+                                        color: Theme.of(context).brightness == Brightness.dark 
+                                            ? (isCurrentPlayer ? Colors.blue.shade700 : Colors.grey.shade700)
+                                            : (isCurrentPlayer ? Colors.blue.shade50 : Colors.grey.shade50),
                                         borderRadius: BorderRadius.circular(8),
                                         border: Border.all(
                                           color: isCurrentTurn ? Colors.green : Colors.transparent,
@@ -495,7 +497,9 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                                         children: [
                                           Icon(
                                             Icons.person,
-                                            color: isCurrentPlayer ? Colors.blue : Colors.grey,
+                                            color: Theme.of(context).brightness == Brightness.dark 
+                                                ? (isCurrentPlayer ? Colors.lightBlue : Colors.white70)
+                                                : (isCurrentPlayer ? Colors.blue : Colors.grey),
                                             size: 24,
                                           ),
                                           const SizedBox(width: 8),
@@ -680,7 +684,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
             padding: const EdgeInsets.all(8),
             margin: const EdgeInsets.only(bottom: 10),
             decoration: BoxDecoration(
-              color: gameLogic.isMyTurn ? Colors.green.shade100 : Colors.grey.shade200,
+              color: ThemeColors.getTurnIndicatorBackground(context, gameLogic.isMyTurn),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: gameLogic.isMyTurn ? Colors.green : Colors.grey,
@@ -692,7 +696,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: gameLogic.isMyTurn ? Colors.green.shade800 : Colors.grey.shade700,
+                color: ThemeColors.getTurnIndicatorText(context, gameLogic.isMyTurn),
               ),
               textAlign: TextAlign.center,
             ),
@@ -702,7 +706,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.blueGrey.shade100,
+            color: ThemeColors.getDiceAreaBackground(context),
             borderRadius: BorderRadius.circular(10),
           ),
           child: AnimatedBuilder(
@@ -711,7 +715,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
               return Transform.rotate(
                 angle: gameLogic.isDiceRolling ? _diceRotationAnimation.value : 0,
                 child: gameLogic.lastDiceRoll > 0
-                  ? Text('🎲 ${gameLogic.lastDiceRoll}', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFF1E88E5)))
+                  ? Text('🎲 ${gameLogic.lastDiceRoll}', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: ThemeColors.getDiceValueText(context)))
                   : Text('🎲 Zar At!', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.grey.shade600)),
               );
             },

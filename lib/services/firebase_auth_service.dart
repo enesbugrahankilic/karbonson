@@ -1,5 +1,5 @@
 // lib/services/firebase_auth_service.dart
-// Enhanced Firebase Authentication Service with comprehensive error handling
+// Enhanced Firebase Authentication Service with comprehensive error handling and debugging
 
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,6 +15,7 @@ class FirebaseAuthService {
   static String handleAuthError(FirebaseAuthException e, {String? context}) {
     if (kDebugMode) {
       debugPrint('Auth Error [${context ?? 'Unknown'}]: ${e.code} - ${e.message}');
+      debugPrint('Full error details: ${e.toString()}');
     }
 
     switch (e.code) {
@@ -37,7 +38,7 @@ class FirebaseAuthService {
       case 'invalid-email':
         return 'Geçerli bir e-posta adresi girin.';
       case 'operation-not-allowed':
-        return 'Bu giriş yöntemi şu anda etkinleştirilmemiş. Yöneticinizle iletişime geçin.';
+        return 'Bu giriş yöntemi şu anda etkinleştirilmemiş. Firebase Authentication ayarlarını kontrol edin.';
       case 'requires-recent-login':
         return 'Bu işlem için tekrar giriş yapmanız gerekiyor.';
       case 'invalid-credential':
@@ -49,7 +50,7 @@ class FirebaseAuthService {
       case 'invalid-verification-id':
         return 'Doğrulama kimliği geçersiz.';
       case 'quota-exceeded':
-        return 'Kota aşıldı. Lütfen daha sonra tekrar deneyin.';
+        return 'Firebase kullanım limiti aşıldı. Lütfen daha sonra tekrar deneyin.';
       default:
         return 'Beklenmeyen bir hata oluştu: ${e.message ?? e.code}';
     }
@@ -66,7 +67,7 @@ class FirebaseAuthService {
     } else if (message.contains('quota') || message.contains('limit')) {
       return 'Firebase kullanım limiti aşıldı. Lütfen daha sonra tekrar deneyin.';
     } else if (context == 'anonymous_signin') {
-      return 'Anonim giriş yapılamıyor. Firebase Authentication ayarlarını kontrol edin.';
+      return 'Anonim giriş yapılamıyor. Firebase Authentication ayarlarını kontrol edin.\n\nLütfen Firebase Console\'da Anonymous Authentication\'ı etkinleştirin.';
     } else if (context == 'email_signup') {
       return 'Kayıt işlemi gerçekleştirilemedi. Email/Şifre girişi etkinleştirildiğinden emin olun.';
     } else if (context == 'email_signin') {
@@ -80,7 +81,7 @@ class FirebaseAuthService {
   static Future<bool> _isNetworkAvailable() async {
     try {
       final connectivityResult = await Connectivity().checkConnectivity();
-      return connectivityResult != ConnectivityResult.none;
+      return connectivityResult.isNotEmpty && connectivityResult.first != ConnectivityResult.none;
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Network check failed: $e');
@@ -91,6 +92,19 @@ class FirebaseAuthService {
 
   /// Enhanced anonymous sign-in with proper error handling and retries
   static Future<User?> signInAnonymouslyWithRetry({int maxRetries = _maxRetries}) async {
+    // Pre-flight configuration check
+    if (kDebugMode) {
+      debugPrint('=== Starting Anonymous Sign-in Process ===');
+      debugPrint('Firebase app: ${_auth.app.options.projectId}');
+      debugPrint('Current user: ${_auth.currentUser?.uid ?? 'none'}');
+    }
+
+    // Check if anonymous sign-in is potentially enabled
+    final configCheck = await checkAnonymousAuthEnabled();
+    if (!configCheck['enabled'] && kDebugMode) {
+      debugPrint('⚠️  Anonymous authentication may not be enabled: ${configCheck['reason']}');
+    }
+
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         // Check network connectivity
@@ -103,37 +117,53 @@ class FirebaseAuthService {
 
         if (kDebugMode) {
           debugPrint('Anonymous sign-in attempt $attempt of $maxRetries');
+          debugPrint('Current timestamp: ${DateTime.now().toIso8601String()}');
         }
 
         final result = await _auth.signInAnonymously().timeout(_defaultTimeout);
         
         if (kDebugMode) {
-          debugPrint('Anonymous sign-in successful: ${result.user?.uid}');
+          debugPrint('✅ Anonymous sign-in successful: ${result.user?.uid}');
+          debugPrint('=== Anonymous Sign-in Process Completed ===');
         }
         
         return result.user;
 
       } on FirebaseAuthException catch (e) {
         if (kDebugMode) {
-          debugPrint('Anonymous sign-in attempt $attempt failed: ${e.code} - ${e.message}');
+          debugPrint('❌ Anonymous sign-in attempt $attempt failed: ${e.code} - ${e.message}');
+          debugPrint('Exception type: ${e.runtimeType}');
+          debugPrint('Error details: ${e.toString()}');
         }
 
         // If it's the last attempt, throw the error
         if (attempt == maxRetries) {
+          if (kDebugMode) {
+            debugPrint('🚫 All anonymous sign-in attempts failed');
+            debugPrint('Final error: ${e.code} - ${e.message}');
+          }
           rethrow;
         }
 
         // For certain errors, don't retry
         if (e.code == 'operation-not-allowed' || e.code == 'user-disabled') {
+          if (kDebugMode) {
+            debugPrint('🚫 Non-retryable error detected: ${e.code}');
+          }
           rethrow;
         }
 
-        // Wait before retrying
-        await Future.delayed(_retryDelay * attempt);
+        // Wait before retrying with exponential backoff
+        final delay = _retryDelay * attempt;
+        if (kDebugMode) {
+          debugPrint('⏳ Waiting ${delay.inSeconds} seconds before retry...');
+        }
+        await Future.delayed(delay);
 
       } catch (e) {
         if (kDebugMode) {
-          debugPrint('Anonymous sign-in attempt $attempt failed with unexpected error: $e');
+          debugPrint('❌ Anonymous sign-in attempt $attempt failed with unexpected error: $e');
+          debugPrint('Exception type: ${e.runtimeType}');
         }
 
         if (attempt == maxRetries) {
@@ -144,11 +174,80 @@ class FirebaseAuthService {
           );
         }
 
-        await Future.delayed(_retryDelay * attempt);
+        final delay = _retryDelay * attempt;
+        await Future.delayed(delay);
       }
     }
     
     return null; // This should never be reached
+  }
+
+  /// Check if anonymous authentication is enabled by attempting a test operation
+  static Future<Map<String, dynamic>> checkAnonymousAuthEnabled() async {
+    try {
+      if (kDebugMode) {
+        debugPrint('Checking anonymous auth configuration...');
+      }
+
+      // Test anonymous sign-in capability with short timeout
+      final testResult = await _auth.signInAnonymously().timeout(const Duration(seconds: 5));
+      
+      if (kDebugMode) {
+        debugPrint('✅ Anonymous authentication appears to be enabled');
+        debugPrint('Test user created: ${testResult.user?.uid}');
+      }
+      
+      // Sign out immediately after test
+      await _auth.signOut();
+      
+      return {
+        'enabled': true,
+        'reason': 'Test sign-in successful',
+        'test_user': testResult.user?.uid,
+      };
+
+    } on FirebaseAuthException catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Anonymous authentication test failed: ${e.code} - ${e.message}');
+      }
+
+      // Provide specific diagnosis
+      String reason = 'Unknown error';
+      switch (e.code) {
+        case 'operation-not-allowed':
+          reason = 'Anonymous authentication is not enabled in Firebase Console';
+          break;
+        case 'internal-error':
+          reason = 'Internal Firebase error - check project configuration';
+          break;
+        case 'network-request-failed':
+          reason = 'Network connectivity issue';
+          break;
+        case 'too-many-requests':
+          reason = 'Rate limit exceeded';
+          break;
+        default:
+          reason = 'Error: ${e.code} - ${e.message}';
+      }
+
+      return {
+        'enabled': false,
+        'reason': reason,
+        'error_code': e.code,
+        'error_message': e.message,
+      };
+
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Anonymous authentication check failed with unexpected error: $e');
+      }
+
+      return {
+        'enabled': false,
+        'reason': 'Unexpected error during check: $e',
+        'error_type': e.runtimeType.toString(),
+      };
+    }
   }
 
   /// Enhanced email/password sign-up with retry mechanism
@@ -299,22 +398,15 @@ class FirebaseAuthService {
 
     try {
       // Check if Firebase app is initialized
-      results['firebase_initialized'] = _auth.app != null;
+      results['firebase_initialized'] = true; // FirebaseAuth.instance always has an app
       
       // Check if current user is available (indicates auth is working)
       results['current_user_available'] = _auth.currentUser != null;
       
-      // Test anonymous sign-in capability
-      try {
-        await _auth.signInAnonymously().timeout(const Duration(seconds: 5));
-        results['anonymous_signin_enabled'] = true;
-        
-        // Sign out immediately after test
-        await _auth.signOut();
-      } catch (e) {
-        results['anonymous_signin_enabled'] = false;
-        results['anonymous_signin_error'] = e.toString();
-      }
+      // Check anonymous auth capability
+      final anonymousCheck = await checkAnonymousAuthEnabled();
+      results['anonymous_signin_enabled'] = anonymousCheck['enabled'];
+      results['anonymous_signin_reason'] = anonymousCheck['reason'];
 
     } catch (e) {
       results['error'] = e.toString();
@@ -342,5 +434,17 @@ class FirebaseAuthService {
       }
       return false;
     }
+  }
+
+  /// Get comprehensive debug information for troubleshooting
+  static Future<Map<String, dynamic>> getDebugInfo() async {
+    return {
+      'timestamp': DateTime.now().toIso8601String(),
+      'firebase_app': _auth.app.options.projectId,
+      'current_user': _auth.currentUser?.uid ?? 'none',
+      'auth_configuration': await checkAuthConfiguration(),
+      'network_available': await _isNetworkAvailable(),
+      'platform': kIsWeb ? 'web' : 'mobile',
+    };
   }
 }

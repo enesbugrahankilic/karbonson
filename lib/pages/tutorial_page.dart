@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login_page.dart';
+import '../theme/theme_colors.dart';
 
 class TutorialPage extends StatefulWidget {
   const TutorialPage({super.key});
@@ -86,9 +87,9 @@ class _TutorialPageState extends State<TutorialPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
+            colors: ThemeColors.getGradientColors(context),
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -119,10 +120,12 @@ class _TutorialPageState extends State<TutorialPage> {
                           const SizedBox(height: 32),
                           Text(
                             page['title']!,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: Theme.of(context).brightness == Brightness.dark 
+                                  ? Colors.white 
+                                  : Colors.white,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -132,15 +135,19 @@ class _TutorialPageState extends State<TutorialPage> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            color: Colors.white.withValues(alpha: 0.95),
+                            color: Theme.of(context).brightness == Brightness.dark 
+                                ? Colors.grey[800]!.withValues(alpha: 0.95)
+                                : Colors.white.withValues(alpha: 0.95),
                             child: Padding(
                               padding: const EdgeInsets.all(24.0),
                               child: Text(
                                 page['content']!,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 18,
                                   height: 1.5,
-                                  color: Colors.black87,
+                                  color: Theme.of(context).brightness == Brightness.dark 
+                                      ? Colors.white 
+                                      : Colors.black87,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -167,8 +174,12 @@ class _TutorialPageState extends State<TutorialPage> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: _currentPage == index
-                                ? Colors.white
-                                : Colors.white.withValues(alpha: 0.5),
+                                ? (Theme.of(context).brightness == Brightness.dark 
+                                    ? Colors.white 
+                                    : Colors.white)
+                                : (Theme.of(context).brightness == Brightness.dark 
+                                    ? Colors.white.withValues(alpha: 0.5)
+                                    : Colors.white.withValues(alpha: 0.5)),
                           ),
                         ),
                       ),
@@ -181,8 +192,12 @@ class _TutorialPageState extends State<TutorialPage> {
                           ElevatedButton(
                             onPressed: _previousPage,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white.withValues(alpha: 0.8),
-                              foregroundColor: Colors.black87,
+                              backgroundColor: Theme.of(context).brightness == Brightness.dark 
+                                  ? Colors.grey[700]!.withValues(alpha: 0.8)
+                                  : Colors.white.withValues(alpha: 0.8),
+                              foregroundColor: Theme.of(context).brightness == Brightness.dark 
+                                  ? Colors.white 
+                                  : Colors.black87,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 24,
                                 vertical: 12,
@@ -196,6 +211,7 @@ class _TutorialPageState extends State<TutorialPage> {
                           onPressed: _nextPage,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF4CAF50),
+                            foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 24,
                               vertical: 12,

@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provides/theme_provider.dart';
+import '../pages/uid_debug_page.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -99,6 +101,41 @@ class SettingsPage extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: 16),
+              // Developer/Debug Section (only show in debug mode)
+              if (kDebugMode)
+                Card(
+                  color: Colors.orange.shade50,
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: Icon(
+                          Icons.developer_mode,
+                          color: Colors.orange,
+                        ),
+                        title: const Text('Geliştirici Araçları'),
+                        subtitle: const Text('Debug ve test araçları'),
+                      ),
+                      const Divider(),
+                      ListTile(
+                        leading: Icon(
+                          Icons.security,
+                          color: Colors.red,
+                        ),
+                        title: const Text('UID Debug & Cleanup'),
+                        subtitle: const Text('UID tutarsızlıklarını kontrol et ve temizle'),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const UIDDebugPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
             ],
           );
         },
@@ -214,7 +251,7 @@ class SettingsPage extends StatelessWidget {
                                   : 'Kapalı - Standart renkler',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                                 ),
                               ),
                             ],
@@ -250,7 +287,7 @@ class SettingsPage extends StatelessWidget {
                                 'Sistem ayarlarını takip et',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                                 ),
                               ),
                             ],
@@ -279,7 +316,7 @@ class SettingsPage extends StatelessWidget {
                                 '48dp minimum dokunma alanı',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                                 ),
                               ),
                             ],

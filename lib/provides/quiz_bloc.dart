@@ -69,6 +69,8 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
   Future<void> _onLoadQuiz(LoadQuiz event, Emitter<QuizState> emit) async {
     emit(QuizLoading());
     try {
+      // Start a new quiz and preload questions
+      await quizLogic.startNewQuiz();
       final questions = await quizLogic.getQuestions();
       emit(QuizLoaded(
         questions: questions,
