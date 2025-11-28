@@ -9,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/profile_data.dart';
 import '../models/user_data.dart';
 import 'firestore_service.dart';
+import 'firebase_auth_service.dart';
 
 class ProfileService {
   static const String _localStatsKey = 'user_game_statistics';
@@ -292,5 +293,111 @@ class ProfileService {
     // This would typically use the clipboard package
     // For now, just return - implementation would depend on the clipboard service
     if (kDebugMode) debugPrint('Copy to clipboard: $uid');
+  }
+
+  /// Email verification methods
+  /// Check if current user's email is verified
+  Future<bool> isEmailVerified() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return false;
+      
+      // Reload user data to get latest verification status
+      await user.reload();
+      
+      return user.emailVerified;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error checking email verification status: $e');
+      return false;
+    }
+  }
+
+  /// Get email verification status with detailed information
+  Future<EmailVerificationStatus> getEmailVerificationStatus() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        return EmailVerificationStatus(
+          isVerified: false,
+          hasEmail: false,
+          email: null,
+          message: 'Kullanıcı oturumu bulunamadı',
+        );
+      }
+      
+      // Reload user to get latest email verification status
+      await user.reload();
+      final currentUser = _auth.currentUser!;
+      
+      final hasEmail = currentUser.email != null && currentUser.email!.isNotEmpty;
+      final isVerified = currentUser.emailVerified;
+      
+      return EmailVerificationStatus(
+        isVerified: isVerified,
+        hasEmail: hasEmail,
+        email: currentUser.email,
+        message: isVerified 
+            ? 'E-posta adresi doğrulanmış' 
+            : 'E-posta adresi doğrulanmamış',
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error getting email verification status: $e');
+      return EmailVerificationStatus(
+        isVerified: false,
+        hasEmail: false,
+        email: null,
+        message: 'Doğrulama durumu kontrol edilemedi',
+      );
+    }
+  }
+
+  /// Update user profile with email verification status
+  Future<bool> updateEmailVerificationStatus(bool isVerified) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return false;
+      
+      // Get current user profile
+      final userData = await _firestoreService.getUserProfile(user.uid);
+      if (userData == null) return false;
+      
+      // Update email verification status
+      final updatedUserData = userData.copyWith(
+        isEmailVerified: isVerified,
+        emailVerifiedAt: isVerified ? DateTime.now() : null,
+        updatedAt: DateTime.now(),
+      );
+      
+      // Save updated profile
+      final success = await _firestoreService.createOrUpdateUserProfile(
+        nickname: updatedUserData.nickname,
+        profilePictureUrl: updatedUserData.profilePictureUrl,
+        privacySettings: updatedUserData.privacySettings,
+        fcmToken: updatedUserData.fcmToken,
+      );
+      
+      return success != null;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error updating email verification status: $e');
+      return false;
+    }
+  }
+
+  /// Sync email verification status between Firebase Auth and Firestore
+  Future<bool> syncEmailVerificationStatus() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return false;
+      
+      // Get current verification status from Firebase Auth
+      await user.reload();
+      final isVerified = user.emailVerified;
+      
+      // Update Firestore profile with verification status
+      return await updateEmailVerificationStatus(isVerified);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error syncing email verification status: $e');
+      return false;
+    }
   }
 }

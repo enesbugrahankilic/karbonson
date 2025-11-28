@@ -13,6 +13,7 @@ import 'register_page.dart';
 import 'settings_page.dart';
 import 'duel_page.dart';
 import 'duel_invitation_page.dart';
+import 'email_verification_page.dart';
 import '../services/profile_service.dart';
 import '../services/firebase_auth_service.dart';
 import '../services/authentication_state_service.dart';
@@ -514,8 +515,11 @@ class _LoginPageState extends State<LoginPage> {
       // Get current user and navigate to profile page
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        // Get user nickname
+        // Check email verification status
         final profileService = ProfileService();
+        final verificationStatus = await profileService.getEmailVerificationStatus();
+        
+        // Get user nickname
         final nickname = await profileService.getCurrentNickname() ?? user.email?.split('@')[0] ?? 'Kullanıcı';
         
         // Set authentication state
@@ -525,10 +529,135 @@ class _LoginPageState extends State<LoginPage> {
           uid: user.uid,
         );
 
+        // If email is not verified, show verification dialog first
+        if (verificationStatus.hasEmail && !verificationStatus.isVerified) {
+          final shouldVerify = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: const Text('E-posta Doğrulama Gerekli'),
+              content: const Text('Hesabınızın tüm özelliklerinden yararlanabilmek için e-posta adresinizi doğrulamanız gerekiyor.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Daha Sonra'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Doğrula'),
+                ),
+              ],
+            ),
+          );
+          
+          if (shouldVerify == true) {
+            // Navigate to email verification page
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const EmailVerificationPage(),
+              ),
+            ).then((isVerified) {
+              if (isVerified == true) {
+                // Email verified, navigate to profile
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfilePage(),
+                  ),
+                );
+              }
+            });
+            return;
+          }
+        }
+
+        // Email is verified or not required, navigate to profile
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => const ProfilePage(),
+          ),
+        );
+      }
+    }
+  }
+
+  /// Show logout confirmation dialog
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Çıkış Yap'),
+          content: const Text('Hesabınızdan çıkış yapmak istediğinizden emin misiniz?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('İptal'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _performLogout();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Çıkış Yap'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Perform logout and clear authentication state
+  Future<void> _performLogout() async {
+    try {
+      // Sign out from Firebase
+      await FirebaseAuth.instance.signOut();
+      
+      // Clear authentication state
+      final authStateService = AuthenticationStateService();
+      authStateService.clearAuthenticationState();
+      
+      // Authentication state and Firebase signout is sufficient for logout
+      
+      if (kDebugMode) {
+        debugPrint('User logged out successfully');
+      }
+      
+      // Show confirmation message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Çıkış yapıldı'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      
+      // Refresh the page to update UI
+      if (mounted) {
+        setState(() {
+          _isRegistered = false;
+          _isCheckingRegistration = false;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Logout error: $e');
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Çıkış yapılırken hata oluştu: $e'),
+            backgroundColor: Colors.red,
           ),
         );
       }
@@ -937,59 +1066,97 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 16),
                           
-                          // Login, Kayıt ol ve Ayarlar butonları
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              TextButton(
-                                onPressed: () => _showLoginDialog(),
-                                child: Text(
-                                  'Giriş Yap',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: ThemeColors.getSuccessColor(context),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const RegisterPage(),
+                          // Login, Çıkış Yap, Kayıt ol ve Ayarlar butonları
+                          if (_isRegistered && !_isCheckingRegistration)
+                            // Show logout button for registered users
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                TextButton(
+                                  onPressed: _showLogoutDialog,
+                                  child: Text(
+                                    'Çıkış Yap',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                  );
-                                },
-                                child: Text(
-                                  'Kayıt Ol',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: ThemeColors.getInfoColor(context),
-                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const SettingsPage(),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const SettingsPage(),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    'Ayarlar',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: ThemeColors.getSecondaryText(context),
+                                      fontWeight: FontWeight.w500,
                                     ),
-                                  );
-                                },
-                                child: Text(
-                                  'Ayarlar',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: ThemeColors.getSecondaryText(context),
-                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            )
+                          else
+                            // Show login/register buttons for non-registered users
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                TextButton(
+                                  onPressed: () => _showLoginDialog(),
+                                  child: Text(
+                                    'Giriş Yap',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: ThemeColors.getSuccessColor(context),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const RegisterPage(),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    'Kayıt Ol',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: ThemeColors.getInfoColor(context),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const SettingsPage(),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    'Ayarlar',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: ThemeColors.getSecondaryText(context),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                         ],
                       ),
                     ),

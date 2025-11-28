@@ -122,6 +122,16 @@ class RegistrationService {
         debugPrint('Email usage recorded successfully');
       }
 
+      // Notify progress
+      onProgress?.call();
+
+      // Step 6: Send email verification
+      await _sendEmailVerification(user);
+
+      if (kDebugMode) {
+        debugPrint('Email verification sent successfully');
+      }
+
       // Notify success
       onSuccess?.call();
 
@@ -283,6 +293,20 @@ class RegistrationService {
       }
       // On error, don't block the registration process
       return false;
+    }
+  }
+
+  /// Send email verification to newly registered user
+  Future<void> _sendEmailVerification(User user) async {
+    try {
+      await FirebaseAuthService.sendEmailVerification();
+    } catch (e) {
+      // Log the error but don't fail registration
+      if (kDebugMode) {
+        debugPrint('Email verification send error (non-critical): $e');
+      }
+      // Registration can still succeed even if email verification fails
+      // User can request verification email later from profile settings
     }
   }
 }

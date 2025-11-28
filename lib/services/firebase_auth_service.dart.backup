@@ -626,10 +626,6 @@ class FirebaseAuthService {
     }
   }
 
-  /// ============================================
-  /// PASSWORD RESET METHODS - NEW FUNCTIONALITY
-  /// ============================================
-
   /// Enhanced password reset with comprehensive error handling
   static Future<PasswordResetResult> sendPasswordResetEmail({
     required String email,
@@ -722,19 +718,22 @@ class FirebaseAuthService {
   /// Validate email format
   static bool _isValidEmail(String email) {
     if (email.isEmpty) return false;
+    
+    // Check if email is just whitespace
     if (email.trim().isEmpty) return false;
     
-    final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
-    return emailRegex.hasMatch(email.trim());
+    // Simple but effective email validation
+    final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+
   }
 
   /// Verify password reset code from email link
-  static Future<String> verifyPasswordResetCode(String code) async {
+  static Future<UserCredential?> verifyPasswordResetCode(String code) async {
     try {
       if (kDebugMode) {
         debugPrint('Verifying password reset code...');
       }
 
+      // Check if code is valid format (Firebase codes are typically longer)
       if (code.isEmpty || code.length < 10) {
         throw FirebaseAuthException(
           code: 'invalid-verification-code',
@@ -742,13 +741,14 @@ class FirebaseAuthService {
         );
       }
 
-      final email = await FirebaseAuth.instance.verifyPasswordResetCode(code);
+      // Verify the code
+      final credential = await FirebaseAuth.instance.verifyPasswordResetCode(code);
       
       if (kDebugMode) {
-        debugPrint('Password reset code verified successfully for email: $email');
+        debugPrint('Password reset code verified successfully');
       }
 
-      return email;
+      return credential;
     } on FirebaseAuthException catch (e) {
       if (kDebugMode) {
         debugPrint('Password reset code verification error: ${e.code} - ${e.message}');
@@ -766,11 +766,12 @@ class FirebaseAuthService {
   }
 
   /// Confirm password reset with new password
-  static Future<void> confirmPasswordReset({
+  static Future<UserCredential?> confirmPasswordReset({
     required String code,
     required String newPassword,
   }) async {
     try {
+      // Validate new password
       if (newPassword.isEmpty || newPassword.length < 6) {
         throw FirebaseAuthException(
           code: 'weak-password',
@@ -782,7 +783,8 @@ class FirebaseAuthService {
         debugPrint('Confirming password reset with new password...');
       }
 
-      await FirebaseAuth.instance.confirmPasswordReset(
+      // Confirm password reset
+      final credential = await FirebaseAuth.instance.confirmPasswordReset(
         code: code,
         newPassword: newPassword,
       );
@@ -790,6 +792,8 @@ class FirebaseAuthService {
       if (kDebugMode) {
         debugPrint('Password reset confirmed successfully');
       }
+
+      return credential;
     } on FirebaseAuthException catch (e) {
       if (kDebugMode) {
         debugPrint('Password reset confirmation error: ${e.code} - ${e.message}');
@@ -822,6 +826,124 @@ class FirebaseAuthService {
   static bool canPerformPasswordReset() {
     try {
       final user = _auth.currentUser;
+      // Can reset password if user has email and is not anonymous
+      return user != null && 
+             user.email != null && 
+             user.email!.isNotEmpty && 
+             !user.isAnonymous;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error checking password reset capability: $e');
+      }
+      return false;
+    }
+  }
+});
+    
+    return emailRegex.hasMatch(email.trim());
+  }
+
+  /// Verify password reset code from email link
+  static Future<UserCredential?> verifyPasswordResetCode(String code) async {
+    try {
+      if (kDebugMode) {
+        debugPrint('Verifying password reset code...');
+      }
+
+      // Check if code is valid format (Firebase codes are typically longer)
+      if (code.isEmpty || code.length < 10) {
+        throw FirebaseAuthException(
+          code: 'invalid-verification-code',
+          message: 'Geçersiz doğrulama kodu',
+        );
+      }
+
+      // Verify the code
+      final credential = await FirebaseAuth.instance.verifyPasswordResetCode(code);
+      
+      if (kDebugMode) {
+        debugPrint('Password reset code verified successfully');
+      }
+
+      return credential;
+    } on FirebaseAuthException catch (e) {
+      if (kDebugMode) {
+        debugPrint('Password reset code verification error: ${e.code} - ${e.message}');
+      }
+      rethrow;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Unexpected password reset code verification error: $e');
+      }
+      throw FirebaseAuthException(
+        code: 'internal-error',
+        message: 'Doğrulama kodu işlenirken hata oluştu: $e',
+      );
+    }
+  }
+
+  /// Confirm password reset with new password
+  static Future<UserCredential?> confirmPasswordReset({
+    required String code,
+    required String newPassword,
+  }) async {
+    try {
+      // Validate new password
+      if (newPassword.isEmpty || newPassword.length < 6) {
+        throw FirebaseAuthException(
+          code: 'weak-password',
+          message: 'Şifre en az 6 karakter olmalıdır',
+        );
+      }
+
+      if (kDebugMode) {
+        debugPrint('Confirming password reset with new password...');
+      }
+
+      // Confirm password reset
+      final credential = await FirebaseAuth.instance.confirmPasswordReset(
+        code: code,
+        newPassword: newPassword,
+      );
+
+      if (kDebugMode) {
+        debugPrint('Password reset confirmed successfully');
+      }
+
+      return credential;
+    } on FirebaseAuthException catch (e) {
+      if (kDebugMode) {
+        debugPrint('Password reset confirmation error: ${e.code} - ${e.message}');
+      }
+      rethrow;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Unexpected password reset confirmation error: $e');
+      }
+      throw FirebaseAuthException(
+        code: 'internal-error',
+        message: 'Şifre sıfırlama onaylanırken hata oluştu: $e',
+      );
+    }
+  }
+
+  /// Get current user's email for auto-population (null-safe)
+  static String? getCurrentUserEmail() {
+    try {
+      return _auth.currentUser?.email;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error getting current user email: $e');
+      }
+      return null;
+    }
+  }
+
+  /// Check if current user can perform password reset
+  static bool canPerformPasswordReset() {
+    try {
+      final user = _auth.currentUser;
+      // Can reset password if user has email and is not anonymous
       return user != null && 
              user.email != null && 
              user.email!.isNotEmpty && 

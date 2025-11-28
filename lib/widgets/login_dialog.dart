@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firebase_auth_service.dart';
 import '../services/profile_service.dart';
 import '../theme/theme_colors.dart';
+import '../pages/forgot_password_page.dart';
 
 class LoginDialog extends StatefulWidget {
   const LoginDialog({super.key});
@@ -226,6 +227,45 @@ class _LoginDialogState extends State<LoginDialog> {
                 },
               ),
               const SizedBox(height: 16),
+              
+              // Forgot Password Button
+              SizedBox(
+                width: double.infinity,
+                child: TextButton.icon(
+                  onPressed: _isLoading 
+                    ? null 
+                    : () {
+                        Navigator.of(context).pop(); // Close login dialog
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ForgotPasswordPage(),
+                          ),
+                        );
+                      },
+                  icon: Icon(
+                    Icons.help_outline,
+                    size: 18,
+                    color: ThemeColors.getInfoColor(context),
+                  ),
+                  label: Text(
+                    'Şifremi Unuttum',
+                    style: TextStyle(
+                      color: ThemeColors.getInfoColor(context),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 8),
               
               // Help Text
               Container(

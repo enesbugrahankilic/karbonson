@@ -23,6 +23,10 @@ class UserData {
   
   // FCM Token Management (Specification V.2)
   final String? fcmToken;
+  
+  // Email Verification
+  final bool isEmailVerified;
+  final DateTime? emailVerifiedAt;
 
   UserData({
     required this.uid,
@@ -34,6 +38,8 @@ class UserData {
     this.isAnonymous = false,
     this.privacySettings = const PrivacySettings.defaults(),
     this.fcmToken,
+    this.isEmailVerified = false,
+    this.emailVerifiedAt,
   });
 
   factory UserData.fromMap(Map<String, dynamic> map, String documentId) {
@@ -55,6 +61,8 @@ class UserData {
           ? PrivacySettings.fromMap(map['privacySettings'] as Map<String, dynamic>)
           : const PrivacySettings.defaults(),
       fcmToken: map['fcmToken'],
+      isEmailVerified: map['isEmailVerified'] ?? false,
+      emailVerifiedAt: DateTimeParser.parse(map['emailVerifiedAt']),
     );
   }
 
@@ -69,6 +77,8 @@ class UserData {
       'isAnonymous': isAnonymous,
       'privacySettings': privacySettings.toMap(),
       'fcmToken': fcmToken,
+      'isEmailVerified': isEmailVerified,
+      'emailVerifiedAt': DateTimeParser.toTimestamp(emailVerifiedAt),
     };
   }
 
@@ -82,6 +92,8 @@ class UserData {
     bool? isAnonymous,
     PrivacySettings? privacySettings,
     String? fcmToken,
+    bool? isEmailVerified,
+    DateTime? emailVerifiedAt,
   }) {
     return UserData(
       uid: uid ?? this.uid,
@@ -93,6 +105,8 @@ class UserData {
       isAnonymous: isAnonymous ?? this.isAnonymous,
       privacySettings: privacySettings ?? this.privacySettings,
       fcmToken: fcmToken ?? this.fcmToken,
+      isEmailVerified: isEmailVerified ?? this.isEmailVerified,
+      emailVerifiedAt: emailVerifiedAt ?? this.emailVerifiedAt,
     );
   }
 }
