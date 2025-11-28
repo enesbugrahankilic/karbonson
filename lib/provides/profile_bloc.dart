@@ -2,7 +2,9 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/profile_data.dart';
+import '../models/user_data.dart';
 import '../services/profile_service.dart';
 
 // Events
@@ -96,16 +98,42 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   Future<void> _onLoadProfile(LoadProfile event, Emitter<ProfileState> emit) async {
     emit(ProfileLoading());
     try {
-      // Cache nickname for later use
+      // Get current authenticated user
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        emit(ProfileError('Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.'));
+        return;
+      }
+
+      // Cache current user nickname for later use
       await profileService.cacheNickname(event.userNickname);
       
       // Load profile data with two-stage loading strategy
       final profileData = await profileService.getProfileData();
       
-      emit(ProfileLoaded(
-        profileData: profileData,
-        currentNickname: event.userNickname,
-      ));
+      // If no server data available, create a minimal profile from Auth user
+      if (profileData.serverData == null) {
+        final serverData = profileData.serverData ?? ServerProfileData(
+          uid: currentUser.uid,
+          nickname: event.userNickname.isNotEmpty 
+              ? event.userNickname 
+              : (await profileService.getCurrentNickname() ?? currentUser.email?.split('@')[0] ?? 'Kullanıcı'),
+          profilePictureUrl: null,
+          lastLogin: DateTime.now(),
+          createdAt: null,
+        );
+        
+        final updatedProfile = profileData.copyWith(serverData: serverData);
+        emit(ProfileLoaded(
+          profileData: updatedProfile,
+          currentNickname: serverData.nickname,
+        ));
+      } else {
+        emit(ProfileLoaded(
+          profileData: profileData,
+          currentNickname: event.userNickname.isNotEmpty ? event.userNickname : (profileData.serverData?.nickname ?? 'Kullanıcı'),
+        ));
+      }
 
       // Refresh server data in background
       if (profileData.serverData == null) {
@@ -113,7 +141,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         if (updatedProfile.serverData != null) {
           emit(ProfileLoaded(
             profileData: updatedProfile,
-            currentNickname: event.userNickname,
+            currentNickname: event.userNickname.isNotEmpty ? event.userNickname : (updatedProfile.serverData?.nickname ?? 'Kullanıcı'),
           ));
         }
       }

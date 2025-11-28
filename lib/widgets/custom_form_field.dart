@@ -1,4 +1,4 @@
-ı// lib/widgets/custom_form_field.dart
+// lib/widgets/custom_form_field.dart
 // Reusable custom form field widgets with consistent styling
 import 'package:flutter/material.dart';
 import '../theme/theme_colors.dart';
@@ -63,11 +63,14 @@ class EmailFormField extends StatelessWidget {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+        borderSide: BorderSide(color: ThemeColors.getPrimaryButtonColor(context), width: 2),
       ),
       prefixIcon: Icon(Icons.email, color: ThemeColors.getSecondaryText(context)),
       labelStyle: TextStyle(color: ThemeColors.getSecondaryText(context)),
-      errorStyle: const TextStyle(color: Colors.red, fontSize: 12),
+      errorStyle: TextStyle(
+        color: ThemeColors.getErrorColor(context), 
+        fontSize: 12
+      ),
     );
   }
 }
@@ -139,7 +142,7 @@ class _PasswordFormFieldState extends State<PasswordFormField> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+        borderSide: BorderSide(color: ThemeColors.getPrimaryButtonColor(context), width: 2),
       ),
       prefixIcon: Icon(Icons.lock, color: ThemeColors.getSecondaryText(context)),
       suffixIcon: IconButton(
@@ -154,7 +157,10 @@ class _PasswordFormFieldState extends State<PasswordFormField> {
         },
       ),
       labelStyle: TextStyle(color: ThemeColors.getSecondaryText(context)),
-      errorStyle: const TextStyle(color: Colors.red, fontSize: 12),
+      errorStyle: TextStyle(
+        color: ThemeColors.getErrorColor(context), 
+        fontSize: 12
+      ),
     );
   }
 }
@@ -221,11 +227,14 @@ class PasswordConfirmationFormField extends StatelessWidget {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+        borderSide: BorderSide(color: ThemeColors.getPrimaryButtonColor(context), width: 2),
       ),
       prefixIcon: Icon(Icons.lock_outline, color: ThemeColors.getSecondaryText(context)),
       labelStyle: TextStyle(color: ThemeColors.getSecondaryText(context)),
-      errorStyle: const TextStyle(color: Colors.red, fontSize: 12),
+      errorStyle: TextStyle(
+        color: ThemeColors.getErrorColor(context), 
+        fontSize: 12
+      ),
     );
   }
 }
@@ -292,7 +301,7 @@ class NicknameFormField extends StatelessWidget {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+        borderSide: BorderSide(color: ThemeColors.getPrimaryButtonColor(context), width: 2),
       ),
       prefixIcon: Icon(Icons.person, color: ThemeColors.getSecondaryText(context)),
       suffixIcon: onSuggestRandom != null
@@ -303,7 +312,10 @@ class NicknameFormField extends StatelessWidget {
             )
           : null,
       labelStyle: TextStyle(color: ThemeColors.getSecondaryText(context)),
-      errorStyle: const TextStyle(color: Colors.red, fontSize: 12),
+      errorStyle: TextStyle(
+        color: ThemeColors.getErrorColor(context), 
+        fontSize: 12
+      ),
       counterStyle: TextStyle(color: ThemeColors.getSecondaryText(context), fontSize: 12),
     );
   }

@@ -161,7 +161,7 @@ class _LoginDialogState extends State<LoginDialog> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getGreen(context), width: 2),
+                    borderSide: BorderSide(color: ThemeColors.getPrimaryButtonColor(context), width: 2),
                   ),
                   prefixIcon: Icon(Icons.email, color: ThemeColors.getSecondaryText(context)),
                 ),
@@ -199,7 +199,7 @@ class _LoginDialogState extends State<LoginDialog> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getGreen(context), width: 2),
+                    borderSide: BorderSide(color: ThemeColors.getPrimaryButtonColor(context), width: 2),
                   ),
                   prefixIcon: Icon(Icons.lock, color: ThemeColors.getSecondaryText(context)),
                   suffixIcon: IconButton(

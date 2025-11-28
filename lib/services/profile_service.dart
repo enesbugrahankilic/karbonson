@@ -47,10 +47,13 @@ class ProfileService {
   }
 
   /// Load server profile data from Firebase with UID Centrality (Specification I.1-I.2)
-  Future<UserData?> loadServerProfile() async {
+  Future<UserData?> loadServerProfile({String? uid}) async {
     try {
       final user = _auth.currentUser;
-      if (user == null) return null;
+      if (user == null) {
+        if (kDebugMode) debugPrint('No authenticated user found');
+        return null;
+      }
 
       final userData = await _firestoreService.getUserProfile(user.uid);
       return userData;

@@ -10,6 +10,7 @@ import '../provides/profile_bloc.dart';
 import '../services/profile_service.dart';
 import '../services/presence_service.dart';
 import '../services/friendship_service.dart';
+import '../services/authentication_state_service.dart';
 import '../models/profile_data.dart';
 import '../models/user_data.dart';
 import '../theme/theme_colors.dart';
@@ -17,9 +18,7 @@ import 'register_page.dart';
 import 'login_page.dart';
 
 class ProfilePage extends StatefulWidget {
-  final String userNickname;
-
-  const ProfilePage({super.key, required this.userNickname});
+  const ProfilePage({super.key});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -34,6 +33,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   final PresenceService _presenceService = PresenceService();
   final FriendshipService _friendshipService = FriendshipService();
   final ProfileService _profileService = ProfileService();
+  final AuthenticationStateService _authStateService = AuthenticationStateService();
   
   // Stream for real-time presence updates
   StreamSubscription? _presenceSubscription;
@@ -78,6 +78,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         
         // Initialize presence service
         _initializePresenceService();
+        
+        // Initialize authentication state service
+        await _authStateService.initializeAuthState();
       }
     } catch (e) {
       setState(() {
@@ -161,7 +164,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       body: BlocProvider(
         create: (context) => ProfileBloc(
           profileService: ProfileService(),
-        )..add(LoadProfile(widget.userNickname)),
+        ),
         child: const ProfileContent(),
       ),
     );
@@ -211,6 +214,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       _presenceService.setUserOffline();
       _presenceService.dispose();
 
+      // Clear authentication state service
+      _authStateService.clearAuthenticationState();
+
       // Sign out from Firebase
       await FirebaseAuth.instance.signOut();
 
@@ -234,8 +240,22 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 }
 
-class ProfileContent extends StatelessWidget {
+class ProfileContent extends StatefulWidget {
   const ProfileContent({super.key});
+
+  @override
+  State<ProfileContent> createState() => _ProfileContentState();
+}
+
+class _ProfileContentState extends State<ProfileContent> {
+  @override
+  void initState() {
+    super.initState();
+    // Automatically load profile when widget is created
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProfileBloc>().add(const LoadProfile(''));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -462,7 +482,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                    borderSide: BorderSide(color: ThemeColors.getPrimaryButtonColor(context), width: 2),
                   ),
                   prefixIcon: Icon(Icons.lock, color: ThemeColors.getIconColor(context)),
                   suffixIcon: IconButton(
@@ -502,7 +522,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                    borderSide: BorderSide(color: ThemeColors.getPrimaryButtonColor(context), width: 2),
                   ),
                   prefixIcon: Icon(Icons.lock_outline, color: ThemeColors.getIconColor(context)),
                   suffixIcon: IconButton(
@@ -548,7 +568,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                    borderSide: BorderSide(color: ThemeColors.getPrimaryButtonColor(context), width: 2),
                   ),
                   prefixIcon: Icon(Icons.lock_outline, color: ThemeColors.getIconColor(context)),
                   suffixIcon: IconButton(
@@ -583,7 +603,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
         ElevatedButton(
           onPressed: _isLoading ? null : _changePassword,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF4CAF50),
+            backgroundColor: ThemeColors.getPrimaryButtonColor(context),
             foregroundColor: Colors.white,
           ),
           child: _isLoading
@@ -772,10 +792,10 @@ class _IdentityCard extends StatelessWidget {
             child: Text(
               profileData.serverData?.nickname ?? 'Yükleniyor...',
               key: ValueKey(profileData.serverData?.nickname),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF2E7D32),
+                color: ThemeColors.getTitleColor(context),
               ),
             ),
           ),
@@ -879,28 +899,28 @@ class _StatisticsCards extends StatelessWidget {
                 icon: Icons.trending_up,
                 title: 'Kazanma Oranı',
                 value: '${(localData.winRate * 100).toInt()}%',
-                color: const Color(0xFF4CAF50),
+                color: ThemeColors.getSuccessColor(context),
               ),
               _buildStatCard(
                 context,
                 icon: Icons.gamepad,
                 title: 'Toplam Oyun',
                 value: localData.totalGamesPlayed.toString(),
-                color: const Color(0xFF2196F3),
+                color: ThemeColors.getInfoColor(context),
               ),
               _buildStatCard(
                 context,
                 icon: Icons.star,
                 title: 'En Yüksek Skor',
                 value: localData.highestScore.toString(),
-                color: const Color(0xFFFF9800),
+                color: ThemeColors.getWarningColor(context),
               ),
               _buildStatCard(
                 context,
                 icon: Icons.analytics,
                 title: 'Ortalama Puan',
                 value: localData.averageScore.toString(),
-                color: const Color(0xFF9C27B0),
+                color: ThemeColors.getAccentButtonColor(context),
               ),
             ],
           ),
@@ -1048,7 +1068,7 @@ class _GameHistoryList extends StatelessWidget {
         height: 40,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: game.isWin ? const Color(0xFF4CAF50) : const Color(0xFFF44336),
+          color: game.isWin ? ThemeColors.getSuccessColor(context) : ThemeColors.getErrorColor(context),
         ),
         child: Icon(
           game.isWin ? Icons.check : Icons.close,
@@ -1223,7 +1243,7 @@ class _UnregisteredUserScreen extends StatelessWidget {
                       icon: const Icon(Icons.person_add),
                       label: const Text('Kayıt Ol'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4CAF50),
+                        backgroundColor: ThemeColors.getPrimaryButtonColor(context),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(

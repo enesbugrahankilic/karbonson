@@ -81,10 +81,7 @@ class _DuelInvitationPageState extends State<DuelInvitationPage> {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => DuelPage(
-              playerId: invitation.inviteeId,
-              playerNickname: invitation.inviteeNickname,
-            ),
+            builder: (context) => const DuelPage(),
           ),
         );
       }

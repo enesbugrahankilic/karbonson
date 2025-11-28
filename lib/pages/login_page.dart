@@ -15,6 +15,7 @@ import 'duel_page.dart';
 import 'duel_invitation_page.dart';
 import '../services/profile_service.dart';
 import '../services/firebase_auth_service.dart';
+import '../services/authentication_state_service.dart';
 import '../theme/theme_colors.dart';
 import '../utils/firebase_config_checker.dart';
 import '../widgets/login_dialog.dart';
@@ -109,11 +110,41 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
+    // Check for persistent authentication state first
+    _checkPersistentAuth();
+    
     // Check for cached username first, then suggest random if none found
     _loadCachedUsername();
     
     // Check registration status to conditionally show profile button
     _checkRegistrationStatus();
+  }
+
+  /// Check if user has persistent authentication and navigate accordingly
+  Future<void> _checkPersistentAuth() async {
+    try {
+      final authStateService = AuthenticationStateService();
+      final isAuth = await authStateService.isCurrentUserAuthenticated();
+      
+      if (kDebugMode) {
+        debugPrint('LoginPage: Persistent auth check - is authenticated: $isAuth');
+        debugPrint('Auth state: ${authStateService.getDebugInfo()}');
+      }
+      
+      if (isAuth && mounted) {
+        // User is already authenticated, navigate to profile page
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ProfilePage(),
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('LoginPage: Error checking persistent auth: $e');
+      }
+    }
   }
 
   Future<void> _loadCachedUsername() async {
@@ -267,11 +298,15 @@ class _LoginPageState extends State<LoginPage> {
           // Close loading dialog
           Navigator.of(context, rootNavigator: true).pop();
 
-          // Navigate - pages will use FirebaseAuth.instance.currentUser?.uid internally
+          // Get authenticated nickname from global state service
+          final authStateService = AuthenticationStateService();
+          final gameNickname = await authStateService.getGameNickname();
+          
+          // Navigate - pages will use global authentication state
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => BoardGamePage(userNickname: nickname),
+              builder: (context) => BoardGamePage(userNickname: gameNickname),
             ),
           );
         } else {
@@ -482,11 +517,18 @@ class _LoginPageState extends State<LoginPage> {
         // Get user nickname
         final profileService = ProfileService();
         final nickname = await profileService.getCurrentNickname() ?? user.email?.split('@')[0] ?? 'Kullanıcı';
+        
+        // Set authentication state
+        final authStateService = AuthenticationStateService();
+        await authStateService.setAuthenticatedUser(
+          nickname: nickname,
+          uid: user.uid,
+        );
 
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => ProfilePage(userNickname: nickname),
+            builder: (context) => const ProfilePage(),
           ),
         );
       }
@@ -563,12 +605,12 @@ class _LoginPageState extends State<LoginPage> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.help_outline, color: Colors.white),
+            icon: Icon(Icons.help_outline, color: ThemeColors.getAppBarIcon(context)),
             onPressed: _showHelpDialog,
             tooltip: 'Oyun Yardımı',
           ),
           IconButton(
-            icon: const Icon(Icons.bug_report, color: Colors.orange),
+            icon: Icon(Icons.bug_report, color: ThemeColors.getWarningColor(context)),
             onPressed: _showFirebaseDiagnostics,
             tooltip: 'Firebase Yapılandırma Tanısı',
           ),
@@ -611,7 +653,7 @@ class _LoginPageState extends State<LoginPage> {
                           Icon(
                             Icons.eco,
                             size: 60,
-                            color: const Color(0xFF4CAF50),
+                            color: ThemeColors.getGreen(context),
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -674,7 +716,7 @@ class _LoginPageState extends State<LoginPage> {
                             icon: const Icon(Icons.play_arrow),
                             label: const Text('Tek Oyun'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF4CAF50),
+                              backgroundColor: ThemeColors.getPrimaryButtonColor(context),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
@@ -695,10 +737,14 @@ class _LoginPageState extends State<LoginPage> {
                                   return;
                                 }
                                 
+                                // Get authenticated nickname from global state service
+                                final authStateService = AuthenticationStateService();
+                                final gameNickname = await authStateService.getGameNickname();
+                                
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => MultiplayerLobbyPage(userNickname: nickname),
+                                    builder: (context) => MultiplayerLobbyPage(userNickname: gameNickname),
                                   ),
                                 );
                               }
@@ -706,7 +752,7 @@ class _LoginPageState extends State<LoginPage> {
                             icon: const Icon(Icons.group),
                             label: const Text('Çok Oyunculu'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2196F3),
+                              backgroundColor: ThemeColors.getSecondaryButtonColor(context),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
@@ -727,17 +773,15 @@ class _LoginPageState extends State<LoginPage> {
                                   return;
                                 }
                                 
-                                // Use Firebase Auth UID as player ID for authenticated users
-                                final user = FirebaseAuth.instance.currentUser;
-                                final playerId = user != null ? user.uid : 'temp_${DateTime.now().millisecondsSinceEpoch}';
+                                // Get authenticated data from global state service
+                                final authStateService = AuthenticationStateService();
+                                final gameNickname = await authStateService.getGameNickname();
+                                final playerId = await authStateService.getGamePlayerId();
                                 
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => DuelPage(
-                                      playerId: playerId,
-                                      playerNickname: nickname,
-                                    ),
+                                    builder: (context) => const DuelPage(),
                                   ),
                                 );
                               }
@@ -745,7 +789,7 @@ class _LoginPageState extends State<LoginPage> {
                             icon: const Icon(Icons.security),
                             label: const Text('Düello'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF9C27B0),
+                              backgroundColor: ThemeColors.getAccentButtonColor(context),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
@@ -790,7 +834,7 @@ class _LoginPageState extends State<LoginPage> {
                                                 Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
-                                                    builder: (context) => ProfilePage(userNickname: _nicknameController.text),
+                                                    builder: (context) => const ProfilePage(),
                                                   ),
                                                 );
                                               },
@@ -856,7 +900,7 @@ class _LoginPageState extends State<LoginPage> {
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (context) => ProfilePage(userNickname: _nicknameController.text),
+                                                builder: (context) => const ProfilePage(),
                                               ),
                                             );
                                           },
@@ -903,7 +947,7 @@ class _LoginPageState extends State<LoginPage> {
                                   'Giriş Yap',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.green[700],
+                                    color: ThemeColors.getSuccessColor(context),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -921,7 +965,7 @@ class _LoginPageState extends State<LoginPage> {
                                   'Kayıt Ol',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.blue[700],
+                                    color: ThemeColors.getInfoColor(context),
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -939,7 +983,7 @@ class _LoginPageState extends State<LoginPage> {
                                   'Ayarlar',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.grey[600],
+                                    color: ThemeColors.getSecondaryText(context),
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),

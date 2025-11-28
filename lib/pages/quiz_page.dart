@@ -2,14 +2,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../services/quiz_logic.dart';
+import '../services/authentication_state_service.dart';
 import '../provides/quiz_bloc.dart';
 import '../widgets/custom_question_card.dart';
 
 class QuizPage extends StatefulWidget {
-  final String userNickname;
   final QuizLogic quizLogic;
 
-  const QuizPage({super.key, required this.userNickname, required this.quizLogic});
+  const QuizPage({super.key, required this.quizLogic});
 
   @override
   State<QuizPage> createState() => _QuizPageState();
@@ -17,10 +17,16 @@ class QuizPage extends StatefulWidget {
 
 class _QuizPageState extends State<QuizPage> {
   bool _didLoadQuiz = false;
+  final AuthenticationStateService _authStateService = AuthenticationStateService();
 
   @override
   void initState() {
     super.initState();
+  }
+
+  /// Get authenticated user nickname for display
+  Future<String> _getUserNickname() async {
+    return await _authStateService.getGameNickname();
   }
 
   @override

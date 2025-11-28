@@ -3,7 +3,9 @@
 // All user data structures follow UID-based document ID requirements
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../services/firestore_service.dart';
+import '../utils/datetime_parser.dart';
 
 /// Server-side user profile data with UID centrality
 /// Specification I.1 & I.2: Document ID MUST be Firebase Auth UID
@@ -45,15 +47,9 @@ class UserData {
       uid: documentId, // Always use document ID as UID
       nickname: map['nickname'] ?? '',
       profilePictureUrl: map['profilePictureUrl'],
-      lastLogin: map['lastLogin'] != null 
-          ? (map['lastLogin'] as Timestamp).toDate() 
-          : null,
-      createdAt: map['createdAt'] != null 
-          ? (map['createdAt'] as Timestamp).toDate() 
-          : null,
-      updatedAt: map['updatedAt'] != null 
-          ? (map['updatedAt'] as Timestamp).toDate() 
-          : null,
+      lastLogin: DateTimeParser.parse(map['lastLogin']),
+      createdAt: DateTimeParser.parse(map['createdAt']),
+      updatedAt: DateTimeParser.parse(map['updatedAt']),
       isAnonymous: map['isAnonymous'] ?? false,
       privacySettings: map['privacySettings'] != null 
           ? PrivacySettings.fromMap(map['privacySettings'] as Map<String, dynamic>)
@@ -67,9 +63,9 @@ class UserData {
       'uid': uid,
       'nickname': nickname,
       'profilePictureUrl': profilePictureUrl,
-      'lastLogin': lastLogin?.toIso8601String(),
-      'createdAt': createdAt?.toIso8601String(),
-      'updatedAt': updatedAt?.toIso8601String(),
+      'lastLogin': DateTimeParser.toTimestamp(lastLogin),
+      'createdAt': DateTimeParser.toTimestamp(createdAt),
+      'updatedAt': DateTimeParser.toTimestamp(updatedAt),
       'isAnonymous': isAnonymous,
       'privacySettings': privacySettings.toMap(),
       'fcmToken': fcmToken,

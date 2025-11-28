@@ -4,18 +4,12 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/duel_game_logic.dart';
 import '../services/firestore_service.dart';
+import '../services/authentication_state_service.dart';
 import '../theme/theme_colors.dart';
 import '../widgets/duel_invite_dialog.dart';
 
 class DuelPage extends StatefulWidget {
-  final String playerId;
-  final String playerNickname;
-
-  const DuelPage({
-    super.key,
-    required this.playerId,
-    required this.playerNickname,
-  });
+  const DuelPage({super.key});
 
   @override
   State<DuelPage> createState() => _DuelPageState();
@@ -25,10 +19,21 @@ class _DuelPageState extends State<DuelPage> {
   final DuelGameLogic _duelLogic = DuelGameLogic();
   final FirestoreService _firestoreService = FirestoreService();
   final TextEditingController _answerController = TextEditingController();
+  final AuthenticationStateService _authStateService = AuthenticationStateService();
   
   DuelRoom? _currentRoom;
   bool _isCreatingRoom = false;
   bool _isJoiningRoom = false;
+
+  /// Get current player ID from global authentication state
+  Future<String> _getPlayerId() async {
+    return await _authStateService.getGamePlayerId();
+  }
+
+  /// Get current player nickname from global authentication state
+  Future<String> _getPlayerNickname() async {
+    return await _authStateService.getGameNickname();
+  }
 
   @override
   void initState() {
@@ -60,9 +65,13 @@ class _DuelPageState extends State<DuelPage> {
         'position': index,
       });
 
+      // Get current player info from global authentication state
+      final playerId = await _getPlayerId();
+      final playerNickname = await _getPlayerNickname();
+
       final room = await _firestoreService.createRoom(
-        widget.playerId,
-        widget.playerNickname,
+        playerId,
+        playerNickname,
         boardTiles,
       );
       
@@ -92,9 +101,13 @@ class _DuelPageState extends State<DuelPage> {
     setState(() => _isJoiningRoom = true);
 
     try {
+      // Get current player info from global authentication state
+      final playerId = await _getPlayerId();
+      final playerNickname = await _getPlayerNickname();
+
       final player = DuelPlayer(
-        id: widget.playerId,
-        nickname: widget.playerNickname,
+        id: playerId,
+        nickname: playerNickname,
         duelScore: 0,
         isReady: true,
       );
@@ -226,9 +239,10 @@ class _DuelPageState extends State<DuelPage> {
     );
   }
 
-  void _submitAnswer() {
+  void _submitAnswer() async {
     if (_answerController.text.trim().isNotEmpty) {
-      _duelLogic.submitAnswer(_answerController.text.trim(), widget.playerId);
+      final playerId = await _getPlayerId();
+      _duelLogic.submitAnswer(_answerController.text.trim(), playerId);
       _answerController.clear();
     }
   }
@@ -336,30 +350,43 @@ class _DuelPageState extends State<DuelPage> {
                   const SizedBox(height: 32),
                   // Invite Friends Button
                   if (_currentRoom != null && _currentRoom!.players.length == 1)
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => DuelInviteDialog(
-                              roomId: _currentRoom!.id,
-                              hostId: widget.playerId,
-                              hostNickname: widget.playerNickname,
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.person_add),
-                        label: const Text('Arkadaşlarını Davet Et'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFF9800),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
+                    FutureBuilder<String>(
+                      future: _getPlayerId(),
+                      builder: (context, playerIdSnapshot) {
+                        return FutureBuilder<String>(
+                          future: _getPlayerNickname(),
+                          builder: (context, playerNicknameSnapshot) {
+                            if (playerIdSnapshot.hasData && playerNicknameSnapshot.hasData) {
+                              return SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => DuelInviteDialog(
+                                        roomId: _currentRoom!.id,
+                                        hostId: playerIdSnapshot.data!,
+                                        hostNickname: playerNicknameSnapshot.data!,
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.person_add),
+                                  label: const Text('Arkadaşlarını Davet Et'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFFF9800),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        );
+                      },
                     ),
                   const SizedBox(height: 16),
                   Container(
@@ -588,56 +615,65 @@ class _DuelPageState extends State<DuelPage> {
       return const SizedBox.shrink();
     }
 
-    return Container(
-      margin: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Text(
-            'Skor Tablosu',
-            style: TextStyle(
-              color: ThemeColors.getText(context),
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          ..._currentRoom!.players.map((player) => Container(
-            width: double.infinity,
-            margin: const EdgeInsets.symmetric(vertical: 4),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: player.id == widget.playerId 
-                  ? ThemeColors.getGreen(context).withValues(alpha: 0.2)
-                  : ThemeColors.getCardBackgroundLight(context),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: player.id == widget.playerId 
-                    ? ThemeColors.getGreen(context)
-                    : ThemeColors.getBorder(context),
+    return FutureBuilder<String>(
+      future: _getPlayerId(),
+      builder: (context, playerIdSnapshot) {
+        if (!playerIdSnapshot.hasData) {
+          return const CircularProgressIndicator();
+        }
+
+        return Container(
+          margin: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Text(
+                'Skor Tablosu',
+                style: TextStyle(
+                  color: ThemeColors.getText(context),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  player.nickname,
-                  style: TextStyle(
-                    color: ThemeColors.getText(context),
-                    fontWeight: FontWeight.w500,
+              const SizedBox(height: 8),
+              ..._currentRoom!.players.map((player) => Container(
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: player.id == playerIdSnapshot.data!
+                      ? ThemeColors.getGreen(context).withValues(alpha: 0.2)
+                      : ThemeColors.getCardBackgroundLight(context),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: player.id == playerIdSnapshot.data!
+                        ? ThemeColors.getGreen(context)
+                        : ThemeColors.getBorder(context),
                   ),
                 ),
-                Text(
-                  '${player.duelScore} puan',
-                  style: TextStyle(
-                    color: ThemeColors.getText(context),
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      player.nickname,
+                      style: TextStyle(
+                        color: ThemeColors.getText(context),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      '${player.duelScore} puan',
+                      style: TextStyle(
+                        color: ThemeColors.getText(context),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          )),
-        ],
-      ),
+              )),
+            ],
+          ),
+        );
+      },
     );
   }
 }

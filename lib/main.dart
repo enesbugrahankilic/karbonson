@@ -12,6 +12,8 @@ import 'services/quiz_logic.dart';
 import 'services/profile_service.dart';
 import 'firebase_options.dart';
 import 'services/notification_service.dart';
+import 'services/authentication_state_service.dart';
+import 'services/firebase_auth_service.dart';
 import 'pages/login_page.dart';
 import 'pages/tutorial_page.dart';
 import 'theme/app_theme.dart';
@@ -34,6 +36,7 @@ void main() {
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          ChangeNotifierProvider(create: (_) => AuthenticationStateService()),
           BlocProvider(create: (_) => QuizBloc(quizLogic: QuizLogic())),
           BlocProvider(create: (_) => ProfileBloc(profileService: ProfileService())),
         ],
@@ -87,6 +90,27 @@ class _AppRootState extends State<AppRoot> {
             rethrow;
           }
         }
+      }
+
+      // Initialize authentication persistence to keep users logged in
+      try {
+        if (kDebugMode) debugPrint('AppRoot: initializing authentication persistence');
+        await FirebaseAuthService.initializeAuthPersistence();
+        if (kDebugMode) debugPrint('AppRoot: Authentication persistence initialized');
+      } catch (e, st) {
+        if (kDebugMode) debugPrint('AppRoot: Authentication persistence init failed: $e');
+        if (kDebugMode) debugPrint('$st');
+      }
+
+      // Restore authentication state from persistent session
+      try {
+        if (kDebugMode) debugPrint('AppRoot: restoring authentication state');
+        final authStateService = AuthenticationStateService();
+        await authStateService.initializeAuthState();
+        if (kDebugMode) debugPrint('AppRoot: Authentication state restored');
+      } catch (e, st) {
+        if (kDebugMode) debugPrint('AppRoot: Authentication state restoration failed: $e');
+        if (kDebugMode) debugPrint('$st');
       }
 
       // Safe notification initialization (best-effort)

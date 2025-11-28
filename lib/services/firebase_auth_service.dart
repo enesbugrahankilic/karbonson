@@ -11,6 +11,34 @@ class FirebaseAuthService {
   static const Duration _retryDelay = Duration(seconds: 2);
   static const int _maxRetries = 3;
 
+  /// Initialize authentication persistence
+  /// This ensures users stay logged in even when the app closes
+  static Future<void> initializeAuthPersistence() async {
+    try {
+      // Set persistence to LOCAL (default) to maintain sessions across app restarts
+      await _auth.setPersistence(Persistence.LOCAL);
+      
+      if (kDebugMode) {
+        debugPrint('Firebase Auth persistence initialized to LOCAL');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Failed to initialize auth persistence: $e');
+      }
+    }
+  }
+
+  /// Check if user is currently authenticated with a persistent session
+  static bool isUserAuthenticated() {
+    final user = _auth.currentUser;
+    return user != null;
+  }
+
+  /// Get the current authenticated user with persistent session
+  static User? getCurrentUser() {
+    return _auth.currentUser;
+  }
+
   /// Comprehensive authentication error handler
   static String handleAuthError(FirebaseAuthException e, {String? context}) {
     if (kDebugMode) {

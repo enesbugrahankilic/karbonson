@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import '../services/game_logic.dart';
 import '../services/multiplayer_game_logic.dart';
+import '../services/authentication_state_service.dart';
 import '../models/game_board.dart';
 import 'quiz_page.dart';
 import 'leaderboard_page.dart';
@@ -14,19 +15,19 @@ import '../theme/theme_colors.dart';
 import 'login_page.dart';
 
 class BoardGamePage extends StatefulWidget {
-  final String userNickname;
+  final String? userNickname;
   final bool isMultiplayer;
   final String? roomId;
   final String? playerId;
 
-  const BoardGamePage({super.key, required this.userNickname})
+  const BoardGamePage({super.key, this.userNickname})
       : isMultiplayer = false,
         roomId = null,
         playerId = null;
 
   const BoardGamePage.multiplayer({
     super.key,
-    required this.userNickname,
+    this.userNickname,
     required String this.roomId,
     required String this.playerId,
   }) : isMultiplayer = true;
@@ -42,6 +43,15 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
   Color? _notificationColor;
   bool _scoreSaved = false;
   bool _endGameDialogShown = false;
+  final AuthenticationStateService _authStateService = AuthenticationStateService();
+
+  /// Get nickname from parameter or global authentication state
+  Future<String> _getGameNickname() async {
+    if (widget.userNickname != null && widget.userNickname!.isNotEmpty) {
+      return widget.userNickname!;
+    }
+    return await _authStateService.getGameNickname();
+  }
 
   @override
   void initState() {
@@ -84,7 +94,6 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
     final resultScore = await navigator.push<int>(
       MaterialPageRoute(
         builder: (context) => QuizPage(
-          userNickname: gameLogic.currentPlayer!.nickname,
           quizLogic: gameLogic.quizLogic,
         ),
       ),
@@ -820,18 +829,27 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
         ),
       );
     } else {
-      return ChangeNotifierProvider(
-        create: (_) => GameLogic()..initializeGame(widget.userNickname),
-        child: Consumer<GameLogic>(
-          builder: (context, gameLogic, child) {
-            // Reset flag when game is no longer finished
-            if (!gameLogic.isGameFinished) {
-              _endGameDialogShown = false;
-            }
-            
-            return _buildGameUI(context, gameLogic, isMultiplayer: false);
-          },
-        ),
+      return FutureBuilder<String>(
+        future: _getGameNickname(),
+        builder: (context, nicknameSnapshot) {
+          if (!nicknameSnapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          
+          return ChangeNotifierProvider(
+            create: (_) => GameLogic()..initializeGame(nicknameSnapshot.data!),
+            child: Consumer<GameLogic>(
+              builder: (context, gameLogic, child) {
+                // Reset flag when game is no longer finished
+                if (!gameLogic.isGameFinished) {
+                  _endGameDialogShown = false;
+                }
+                
+                return _buildGameUI(context, gameLogic, isMultiplayer: false);
+              },
+            ),
+          );
+        },
       );
     }
   }

@@ -1,6 +1,8 @@
 // lib/models/profile_data.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+import '../utils/datetime_parser.dart';
 
 /// Server-side profile data fetched from Firebase
 class ServerProfileData {
@@ -23,12 +25,8 @@ class ServerProfileData {
       uid: map['uid'] ?? '',
       nickname: map['nickname'] ?? '',
       profilePictureUrl: map['profilePictureUrl'],
-      lastLogin: map['lastLogin'] != null 
-          ? (map['lastLogin'] as Timestamp).toDate() 
-          : null,
-      createdAt: map['createdAt'] != null 
-          ? (map['createdAt'] as Timestamp).toDate() 
-          : null,
+      lastLogin: DateTimeParser.parse(map['lastLogin']),
+      createdAt: DateTimeParser.parse(map['createdAt']),
     );
   }
 
@@ -53,8 +51,8 @@ class ServerProfileData {
       'uid': uid,
       'nickname': nickname,
       'profilePictureUrl': profilePictureUrl,
-      'lastLogin': lastLogin?.toIso8601String(),
-      'createdAt': createdAt?.toIso8601String(),
+      'lastLogin': DateTimeParser.toTimestamp(lastLogin),
+      'createdAt': DateTimeParser.toTimestamp(createdAt),
     };
   }
 }

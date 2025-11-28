@@ -226,6 +226,52 @@ class ThemeColors {
   static Color getDiceValueText(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark 
         ? Colors.white 
-        : Color(0xFF1E88E5);
+        : const Color(0xFF1E88E5);
+  }
+
+  // Consistent button colors for different actions
+  static Color getPrimaryButtonColor(BuildContext context) {
+    return const Color(0xFF4CAF50); // Green
+  }
+
+  static Color getSecondaryButtonColor(BuildContext context) {
+    return const Color(0xFF2196F3); // Blue
+  }
+
+  static Color getAccentButtonColor(BuildContext context) {
+    return const Color(0xFF9C27B0); // Purple
+  }
+
+  static Color getWarningButtonColor(BuildContext context) {
+    return const Color(0xFFFF9800); // Orange
+  }
+
+  static Color getErrorButtonColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.red.shade700 
+        : const Color(0xFFF44336);
+  }
+
+  // Consistent text colors for different priorities
+  static Color getTitleColor(BuildContext context) {
+    return const Color(0xFF2E7D32); // Dark green for titles
+  }
+
+  static Color getSuccessColor(BuildContext context) {
+    return const Color(0xFF4CAF50); // Green
+  }
+
+  static Color getWarningColor(BuildContext context) {
+    return const Color(0xFFFF9800); // Orange
+  }
+
+  static Color getInfoColor(BuildContext context) {
+    return const Color(0xFF2196F3); // Blue
+  }
+
+  static Color getErrorColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.red.shade300 
+        : const Color(0xFFF44336);
   }
 }
