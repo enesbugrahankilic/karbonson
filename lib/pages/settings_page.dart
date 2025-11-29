@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provides/theme_provider.dart';
+import '../provides/language_provider.dart';
+import '../services/language_service.dart';
 import '../pages/uid_debug_page.dart';
 import '../pages/two_factor_auth_setup_page.dart';
 import '../services/firebase_auth_service.dart';
@@ -17,8 +19,8 @@ class SettingsPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, child) {
+      body: Consumer2<ThemeProvider, LanguageProvider>(
+        builder: (context, themeProvider, languageProvider, child) {
           return ListView(
             padding: const EdgeInsets.all(16.0),
             children: [
@@ -41,6 +43,25 @@ class SettingsPage extends StatelessWidget {
                   onTap: () {
                     themeProvider.toggleTheme();
                   },
+                ),
+              ),
+              const SizedBox(height: 16),
+              Card(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: Icon(
+                        Icons.language,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      title: const Text('Dil Ayarları'),
+                      subtitle: Text('${languageProvider.currentLanguageFlag} ${languageProvider.currentLanguageName}'),
+                      trailing: const Icon(Icons.arrow_forward_ios),
+                      onTap: () {
+                        _showLanguageSelection(context, languageProvider);
+                      },
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
@@ -375,6 +396,37 @@ class SettingsPage extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Kapat'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLanguageSelection(BuildContext context, LanguageProvider languageProvider) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Dil Seçin'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: AppLanguage.values.map((language) {
+            return RadioListTile<AppLanguage>(
+              title: Text('${language.flag} ${language.displayName}'),
+              value: language,
+              groupValue: languageProvider.currentLanguage,
+              onChanged: (AppLanguage? value) async {
+                if (value != null) {
+                  await languageProvider.setLanguage(value);
+                  Navigator.of(context).pop();
+                }
+              },
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('İptal'),
           ),
         ],
       ),

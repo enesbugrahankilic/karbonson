@@ -414,11 +414,9 @@ class AppTheme {
       secondary: _highContrastAccent,
       error: _highContrastError,
       surface: _highContrastBackground,
-      background: _highContrastBackground,
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onSurface: _highContrastText,
-      onBackground: _highContrastText,
       onError: Colors.white,
     ),
     textTheme: const TextTheme(
@@ -512,15 +510,15 @@ class AppTheme {
   // Accessibility helper methods
   static double getAccessibleFontSize(BuildContext context, double baseSize) {
     final mediaQuery = MediaQuery.of(context);
-    final textScaleFactor = mediaQuery.textScaleFactor;
+    final textScaler = mediaQuery.textScaler.scale(baseSize) / baseSize;
     
     // Ensure minimum readable size for accessibility
-    if (textScaleFactor < 1.0) {
+    if (textScaler < 1.0) {
       return baseSize * 1.2;
-    } else if (textScaleFactor > 1.5) {
+    } else if (textScaler > 1.5) {
       return baseSize * 0.9;
     }
-    return baseSize * textScaleFactor;
+    return baseSize * textScaler;
   }
 
   static double getMinimumTouchTargetSize(BuildContext context) {

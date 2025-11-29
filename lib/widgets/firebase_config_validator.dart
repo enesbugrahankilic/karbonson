@@ -37,7 +37,7 @@ class _FirebaseConfigValidatorState extends State<FirebaseConfigValidator> {
       
       setState(() {
         _isConfigValid = isValid;
-        _validationResults = configCheck;
+        _validationResults = {'isValid': configCheck, 'checkedAt': DateTime.now().toIso8601String()};
         _isValidating = false;
       });
 

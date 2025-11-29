@@ -168,12 +168,12 @@ void main() {
 
     group('🔍 Helper Method Tests', () {
       test('should mask email addresses correctly', () {
-        final masked = PasswordResetFeedbackService._maskEmail('user@example.com');
+        final masked = PasswordResetFeedbackService.maskEmail('user@example.com');
         expect(masked, equals('us***@example.com'));
       });
 
       test('should handle short email addresses', () {
-        final masked = PasswordResetFeedbackService._maskEmail('ab@c.com');
+        final masked = PasswordResetFeedbackService.maskEmail('ab@c.com');
         expect(masked, equals('a***@c.com'));
       });
 
@@ -197,12 +197,12 @@ void main() {
       test('should contain all required error codes', () {
         final errorMap = PasswordResetFeedbackService.getErrorMessageMap();
         
-        expect(errorMap, containsKey('user-not-found'));
-        expect(errorMap, containsKey('too-many-requests'));
-        expect(errorMap, containsKey('invalid-email'));
-        expect(errorMap, containsKey('network-request-failed'));
-        expect(errorMap, containsKey('quota-exceeded'));
-        expect(errorMap, containsKey('unknown'));
+        expect(errorMap.containsKey('user-not-found'), isTrue);
+        expect(errorMap.containsKey('too-many-requests'), isTrue);
+        expect(errorMap.containsKey('invalid-email'), isTrue);
+        expect(errorMap.containsKey('network-request-failed'), isTrue);
+        expect(errorMap.containsKey('quota-exceeded'), isTrue);
+        expect(errorMap.containsKey('unknown'), isTrue);
       });
 
       test('should have Turkish messages for all errors', () {

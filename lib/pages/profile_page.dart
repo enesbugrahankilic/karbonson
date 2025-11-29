@@ -724,7 +724,7 @@ class _IdentityCard extends StatelessWidget {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: ThemeColors.getCardBackground(context).withOpacity(0.95),
+        color: ThemeColors.getCardBackground(context).withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -1193,7 +1193,7 @@ class _UnregisteredUserScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: ThemeColors.getCardBackground(context).withOpacity(0.95),
+                color: ThemeColors.getCardBackground(context).withValues(alpha: 0.95),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(

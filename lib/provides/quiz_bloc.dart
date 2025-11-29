@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../models/question.dart';
 import '../services/quiz_logic.dart';
+import '../services/language_service.dart';
 
 // Events
 abstract class QuizEvent extends Equatable {
@@ -11,7 +12,15 @@ abstract class QuizEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class LoadQuiz extends QuizEvent {}
+class LoadQuiz extends QuizEvent {
+  final AppLanguage language;
+
+  const LoadQuiz({this.language = AppLanguage.turkish});
+
+  @override
+  List<Object> get props => [language];
+}
+
 class AnswerQuestion extends QuizEvent {
   final String answer;
   final int questionIndex;
@@ -20,6 +29,15 @@ class AnswerQuestion extends QuizEvent {
 
   @override
   List<Object> get props => [answer, questionIndex];
+}
+
+class ChangeLanguage extends QuizEvent {
+  final AppLanguage language;
+
+  const ChangeLanguage(this.language);
+
+  @override
+  List<Object> get props => [language];
 }
 
 // States
@@ -37,16 +55,18 @@ class QuizLoaded extends QuizState {
   final int currentQuestion;
   final int score;
   final List<String> answers;
+  final AppLanguage currentLanguage;
 
   const QuizLoaded({
     required this.questions,
     required this.currentQuestion,
     required this.score,
     required this.answers,
+    this.currentLanguage = AppLanguage.turkish,
   });
 
   @override
-  List<Object> get props => [questions, currentQuestion, score, answers];
+  List<Object> get props => [questions, currentQuestion, score, answers, currentLanguage];
 }
 class QuizError extends QuizState {
   final String message;
@@ -64,11 +84,15 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
   QuizBloc({required this.quizLogic}) : super(QuizInitial()) {
     on<LoadQuiz>(_onLoadQuiz);
     on<AnswerQuestion>(_onAnswerQuestion);
+    on<ChangeLanguage>(_onChangeLanguage);
   }
 
   Future<void> _onLoadQuiz(LoadQuiz event, Emitter<QuizState> emit) async {
     emit(QuizLoading());
     try {
+      // Set language if provided
+      await quizLogic.setLanguage(event.language);
+      
       // Start a new quiz and preload questions
       await quizLogic.startNewQuiz();
       final questions = await quizLogic.getQuestions();
@@ -77,6 +101,26 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         currentQuestion: 0,
         score: 0,
         answers: List.filled(questions.length, ''),
+        currentLanguage: event.language,
+      ));
+    } catch (e) {
+      emit(QuizError(e.toString()));
+    }
+  }
+
+  Future<void> _onChangeLanguage(ChangeLanguage event, Emitter<QuizState> emit) async {
+    emit(QuizLoading());
+    try {
+      // Set language and restart quiz
+      await quizLogic.setLanguage(event.language);
+      await quizLogic.startNewQuiz();
+      final questions = await quizLogic.getQuestions();
+      emit(QuizLoaded(
+        questions: questions,
+        currentQuestion: 0,
+        score: 0,
+        answers: List.filled(questions.length, ''),
+        currentLanguage: event.language,
       ));
     } catch (e) {
       emit(QuizError(e.toString()));
@@ -104,6 +148,7 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         currentQuestion: nextIndex,
         score: isCorrect ? currentState.score + 1 : currentState.score,
         answers: newAnswers,
+        currentLanguage: currentState.currentLanguage,
       ));
     }
   }

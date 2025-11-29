@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'provides/theme_provider.dart';
+import 'provides/language_provider.dart';
 import 'provides/quiz_bloc.dart';
 import 'provides/profile_bloc.dart';
 import 'services/quiz_logic.dart';
@@ -15,7 +16,6 @@ import 'services/notification_service.dart';
 import 'services/authentication_state_service.dart';
 import 'services/firebase_auth_service.dart';
 import 'services/deep_linking_service.dart';
-import 'pages/password_change_page.dart';
 import 'pages/login_page.dart';
 import 'pages/tutorial_page.dart';
 import 'theme/app_theme.dart';
@@ -38,6 +38,7 @@ void main() {
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          ChangeNotifierProvider(create: (_) => LanguageProvider()),
           ChangeNotifierProvider(create: (_) => AuthenticationStateService()),
           BlocProvider(create: (_) => QuizBloc(quizLogic: QuizLogic())),
           BlocProvider(create: (_) => ProfileBloc(profileService: ProfileService())),
@@ -239,8 +240,8 @@ class _Karbon2AppState extends State<Karbon2App> {
       );
     }
 
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, child) {
+    return Consumer2<ThemeProvider, LanguageProvider>(
+      builder: (context, themeProvider, languageProvider, child) {
         ThemeData themeToShow;
         String title;
         
@@ -262,6 +263,7 @@ class _Karbon2AppState extends State<Karbon2App> {
           themeMode: themeProvider.isHighContrast 
             ? ThemeMode.light 
             : themeProvider.themeMode,
+          locale: languageProvider.locale,
           home: _hasSeenTutorial ? const LoginPage() : const TutorialPage(),
         );
       },

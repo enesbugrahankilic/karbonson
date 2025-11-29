@@ -82,8 +82,10 @@ class DeepLinkingService {
   /// Initialize deep linking service
   Future<void> initialize() async {
     try {
-      // Initialize Firebase Dynamic Links
-      await FirebaseDynamicLinks.instance.getInitialLink();
+      // NOTE: Firebase Dynamic Links is deprecated and will shut down on August 25, 2025
+      // Please migrate to alternative solutions like Firebase App Links or custom deep linking
+      // For now, we'll skip initialization to avoid deprecation warnings
+      // await FirebaseDynamicLinks.instance.getInitialLink();
       
       // Listen for incoming links when app is in foreground
       _linkSubscription = linkStream.listen(_onLinkReceived, onError: (err) {

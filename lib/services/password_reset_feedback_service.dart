@@ -28,7 +28,7 @@ class PasswordResetFeedbackService {
     bool requiresEmailVerification = false,
   }) {
     final baseMessage = getTurkishSuccessMessage();
-    final maskedEmail = _maskEmail(email);
+    final maskedEmail = maskEmail(email);
     
     if (requiresEmailVerification) {
       return "$baseMessage\n\nNot: E-posta adresinizi doğrulamanız gerekebilir ($maskedEmail).";
@@ -134,7 +134,7 @@ class PasswordResetFeedbackService {
     required String email,
     Map<String, dynamic>? parameters,
   }) {
-    final maskedEmail = _maskEmail(email);
+    final maskedEmail = maskEmail(email);
     const tag = 'PasswordReset';
     final paramsStr = parameters != null ? ', Parametreler: $parameters' : '';
     final message = "[$tag] 🚀 $operation başlatıldı - E-posta: $maskedEmail$paramsStr";
@@ -150,7 +150,7 @@ class PasswordResetFeedbackService {
     required String email,
     bool requiresEmailVerification = false,
   }) {
-    final maskedEmail = _maskEmail(email);
+    final maskedEmail = maskEmail(email);
     const tag = 'PasswordReset';
     final message = "[$tag] ✅ $operation başarılı - E-posta: $maskedEmail, E-posta doğrulama: ${requiresEmailVerification ? 'Gerekli' : 'Gerekli değil'}";
     
@@ -166,7 +166,7 @@ class PasswordResetFeedbackService {
     required String warningType,
     String? details,
   }) {
-    final maskedEmail = _maskEmail(email);
+    final maskedEmail = maskEmail(email);
     const tag = 'PasswordReset';
     final message = "[$tag] ⚠️ $operation uyarısı - E-posta: $maskedEmail, Tür: $warningType${details != null ? ', Detay: $details' : ''}";
     
@@ -184,7 +184,7 @@ class PasswordResetFeedbackService {
     Object? exception,
     StackTrace? stackTrace,
   }) {
-    final maskedEmail = _maskEmail(email);
+    final maskedEmail = maskEmail(email);
     const tag = 'PasswordReset';
     final message = "[$tag] ❌ $operation hatası - E-posta: $maskedEmail, Kod: $errorCode${errorMessage != null ? ', Mesaj: $errorMessage' : ''}${exception != null ? ', Exception: $exception' : ''}";
     
@@ -201,7 +201,7 @@ class PasswordResetFeedbackService {
   /// ===========================================
   
   /// E-posta adresini maskeler (güvenlik için)
-  static String _maskEmail(String email) {
+  static String maskEmail(String email) {
     if (!email.contains('@') || email.length < 5) {
       return '***';
     }

@@ -268,22 +268,22 @@ class ErrorDisplayWidget extends StatelessWidget {
 
     switch (error.severity) {
       case ErrorSeverity.info:
-        backgroundColor = Colors.blue.withOpacity(0.1);
+        backgroundColor = Colors.blue.withValues(alpha: 0.1);
         textColor = Colors.blue.shade700;
         icon = Icons.info_outline;
         break;
       case ErrorSeverity.warning:
-        backgroundColor = Colors.orange.withOpacity(0.1);
+        backgroundColor = Colors.orange.withValues(alpha: 0.1);
         textColor = Colors.orange.shade700;
         icon = Icons.warning_outlined;
         break;
       case ErrorSeverity.error:
-        backgroundColor = Colors.red.withOpacity(0.1);
+        backgroundColor = Colors.red.withValues(alpha: 0.1);
         textColor = Colors.red.shade700;
         icon = Icons.error_outline;
         break;
       case ErrorSeverity.critical:
-        backgroundColor = Colors.red.withOpacity(0.2);
+        backgroundColor = Colors.red.withValues(alpha: 0.2);
         textColor = Colors.red.shade900;
         icon = Icons.error;
         break;
@@ -296,7 +296,7 @@ class ErrorDisplayWidget extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: textColor.withOpacity(0.3),
+          color: textColor.withValues(alpha: 0.3),
           width: 1,
         ),
       ),

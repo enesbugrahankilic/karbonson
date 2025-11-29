@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../services/firebase_auth_service.dart';
+import '../services/firebase_2fa_service.dart';
 import '../services/profile_service.dart';
 import '../theme/theme_colors.dart';
 import '../pages/forgot_password_page.dart';
@@ -54,8 +54,8 @@ class _LoginDialogState extends State<LoginDialog> {
       final email = _emailController.text.trim();
       final password = _passwordController.text;
       
-      // Use enhanced Firebase Auth Service with 2FA support
-      final authResult = await FirebaseAuthService.signInWithEmailAndPasswordWith2FA(
+      // Use enhanced 2FA Service with proper email and password authentication
+      final authResult = await Firebase2FAService.signInWithEmailAndPasswordWith2FA(
         email: email,
         password: password,
       );
@@ -95,14 +95,19 @@ class _LoginDialogState extends State<LoginDialog> {
         }
       } else {
         // Login failed for other reasons
-        throw FirebaseAuthException(
-          code: 'login-failed',
-          message: authResult.message,
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(authResult.message),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
       }
     } on FirebaseAuthException catch (e) {
-      // Use enhanced error handling from FirebaseAuthService
-      final errorMessage = FirebaseAuthService.handleAuthError(e, context: 'email_signin');
+      // Use enhanced error handling from Firebase Auth
+      final errorMessage = e.message ?? 'Giriş sırasında bir hata oluştu';
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

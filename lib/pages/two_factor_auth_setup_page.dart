@@ -52,12 +52,14 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage> {
     });
 
     try {
-      final status = await _profileService.get2FAStatus();
+      // Use the new Firebase2FAService to check 2FA status
+      final isEnabled = await Firebase2FAService.is2FAEnabled();
+      final phoneNumbers = await Firebase2FAService.getEnrolledPhoneNumbers();
       
       if (mounted) {
         setState(() {
-          _is2FAEnabled = status['is2FAEnabled'] ?? false;
-          _phoneNumber = status['phoneNumber'];
+          _is2FAEnabled = isEnabled;
+          _phoneNumber = phoneNumbers.isNotEmpty ? phoneNumbers.first : null;
           _isLoading = false;
         });
       }
@@ -93,9 +95,7 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage> {
     try {
       final phoneNumber = _phoneController.text.trim();
       
-      final result = await FirebaseAuthService.enable2FA(
-        phoneNumber: phoneNumber,
-      );
+      final result = await Firebase2FAService.enable2FA(phoneNumber);
 
       if (mounted) {
         if (result.isSuccess) {
@@ -159,10 +159,10 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage> {
     try {
       final phoneNumber = _phoneController.text.trim();
       
-      final result = await FirebaseAuthService.finalize2FASetup(
-        verificationId: _verificationId!,
-        smsCode: _smsCodeController.text.trim(),
-        phoneNumber: phoneNumber,
+      final result = await Firebase2FAService.finalize2FASetup(
+        _verificationId!,
+        _smsCodeController.text.trim(),
+        phoneNumber,
       );
 
       if (mounted) {
@@ -184,7 +184,7 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage> {
           });
           
           // Update UserData model
-          await FirebaseAuthService.updateUserData2FAStatus(true, phoneNumber);
+          await Firebase2FAService.updateUserData2FAStatus(true, phoneNumber);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -258,7 +258,7 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage> {
     });
 
     try {
-      final result = await FirebaseAuthService.disable2FA();
+      final result = await Firebase2FAService.disable2FA();
 
       if (mounted) {
         if (result.isSuccess) {
@@ -277,7 +277,7 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage> {
           });
           
           // Update UserData model
-          await FirebaseAuthService.updateUserData2FAStatus(false, null);
+          await Firebase2FAService.updateUserData2FAStatus(false, null);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
