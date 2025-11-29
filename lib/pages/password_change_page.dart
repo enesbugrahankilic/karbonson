@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firebase_auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/profile_service.dart';
+import '../services/deep_linking_service.dart';
 import '../theme/theme_colors.dart';
 import '../widgets/login_dialog.dart';
 
@@ -47,6 +48,7 @@ class _PasswordChangePageState extends State<PasswordChangePage>
     _initializeAnimation();
     _initializeFromParameters();
     _checkConnectivity();
+    _handleDeepLinkIfAvailable();
   }
 
   void _initializeAnimation() {
@@ -83,13 +85,34 @@ class _PasswordChangePageState extends State<PasswordChangePage>
   }
 
   Future<void> _checkConnectivity() async {
-    final isConnected = await _connectivityService.isConnected();
+    final isConnected = await _connectivityService.checkConnectivity();
     setState(() {
       _isConnected = isConnected;
     });
     
     if (kDebugMode) {
       debugPrint('PasswordChangePage: Network connectivity: $_isConnected');
+    }
+  }
+
+  /// Handle deep link if available (for password reset from email)
+  Future<void> _handleDeepLinkIfAvailable() async {
+    // If we already have code and email from parameters, no need to handle deep link
+    if (_receivedCode != null && _receivedEmail != null) {
+      return;
+    }
+
+    try {
+      // Check if app was opened via deep link from modal route or other source
+      // For now, we'll handle this when the page is pushed with parameters
+      // In a full implementation, this would use the deep linking service
+      if (kDebugMode) {
+        debugPrint('PasswordChangePage: Deep link handling - parameters will be set via route');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('PasswordChangePage: Deep link handling error: $e');
+      }
     }
   }
 
@@ -174,7 +197,21 @@ class _PasswordChangePageState extends State<PasswordChangePage>
         debugPrint('PasswordChangePage: Unexpected error: $e');
       }
 
-      _showErrorDialog('Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.');
+      // Enhanced error handling with specific Turkish messages
+      String errorMessage;
+      if (e.toString().contains('invalid-verification-code') || e.toString().contains('expired')) {
+        errorMessage = 'Şifre sıfırlama kodu geçersiz veya süresi dolmuş. Lütfen yeni bir şifre sıfırlama e-postası gönderin.';
+      } else if (e.toString().contains('weak-password')) {
+        errorMessage = 'Şifre çok zayıf. En az 6 karakter olmalıdır ve güvenli bir şifre seçmelisiniz.';
+      } else if (e.toString().contains('too-many-requests')) {
+        errorMessage = 'Çok fazla deneme yaptınız. Lütfen daha sonra tekrar deneyin.';
+      } else if (e.toString().contains('network')) {
+        errorMessage = 'İnternet bağlantınızı kontrol edin. Ağ bağlantısı sorunu var.';
+      } else {
+        errorMessage = 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
+      }
+
+      _showErrorDialog(errorMessage);
     }
   }
 

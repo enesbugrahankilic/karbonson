@@ -14,6 +14,8 @@ import 'firebase_options.dart';
 import 'services/notification_service.dart';
 import 'services/authentication_state_service.dart';
 import 'services/firebase_auth_service.dart';
+import 'services/deep_linking_service.dart';
+import 'pages/password_change_page.dart';
 import 'pages/login_page.dart';
 import 'pages/tutorial_page.dart';
 import 'theme/app_theme.dart';
@@ -110,6 +112,16 @@ class _AppRootState extends State<AppRoot> {
         if (kDebugMode) debugPrint('AppRoot: Authentication state restored');
       } catch (e, st) {
         if (kDebugMode) debugPrint('AppRoot: Authentication state restoration failed: $e');
+        if (kDebugMode) debugPrint('$st');
+      }
+
+      // Initialize deep linking service for password reset and 2FA flows
+      try {
+        if (kDebugMode) debugPrint('AppRoot: initializing deep linking service');
+        await DeepLinkingService().initialize();
+        if (kDebugMode) debugPrint('AppRoot: Deep linking service initialized');
+      } catch (e, st) {
+        if (kDebugMode) debugPrint('AppRoot: Deep linking service init failed: $e');
         if (kDebugMode) debugPrint('$st');
       }
 

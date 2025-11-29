@@ -12,10 +12,10 @@ dependencies:
   provider: ^6.1.2
   flutter_bloc: ^9.1.1
   equatable: ^2.0.5
-  firebase_core: ^4.2.1
-  firebase_auth: ^6.1.2
-  cloud_firestore: ^6.1.0
-  firebase_messaging: ^16.0.4
+  firebase_core: ^2.27.0
+  firebase_auth: ^4.17.0
+  cloud_firestore: ^4.15.0
+  firebase_messaging: ^14.7.10
   flutter_local_notifications: ^19.5.0
   shared_preferences: ^2.2.3
   connectivity_plus: ^7.0.0
@@ -25,6 +25,8 @@ dependencies:
   google_fonts: ^6.1.0
   cupertino_icons: ^1.0.8
   uuid: ^4.4.0
+  firebase_dynamic_links: ^5.4.8
+  uni_links: ^0.5.1
 
 dev_dependencies:
   flutter_test:

@@ -400,4 +400,102 @@ class ProfileService {
       return false;
     }
   }
+
+  /// ============================================
+  /// 2FA (Multi-Factor Authentication) Methods
+  /// ============================================
+
+  /// Update user profile with 2FA status
+  Future<bool> update2FAStatus(bool is2FAEnabled, String? phoneNumber) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return false;
+      
+      // Get current user profile
+      final userData = await _firestoreService.getUserProfile(user.uid);
+      if (userData == null) return false;
+      
+      // Update 2FA status
+      final updatedUserData = userData.copyWith(
+        is2FAEnabled: is2FAEnabled,
+        phoneNumber: phoneNumber,
+        last2FAVerification: is2FAEnabled ? DateTime.now() : null,
+        updatedAt: DateTime.now(),
+      );
+      
+      // Save updated profile
+      final success = await _firestoreService.createOrUpdateUserProfile(
+        nickname: updatedUserData.nickname,
+        profilePictureUrl: updatedUserData.profilePictureUrl,
+        privacySettings: updatedUserData.privacySettings,
+        fcmToken: updatedUserData.fcmToken,
+      );
+      
+      return success != null;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error updating 2FA status: $e');
+      return false;
+    }
+  }
+
+  /// Get 2FA status information for current user
+  Future<Map<String, dynamic>> get2FAStatus() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        return {
+          'is2FAEnabled': false,
+          'phoneNumber': null,
+          'last2FAVerification': null,
+        };
+      }
+      
+      // Get current user profile
+      final userData = await _firestoreService.getUserProfile(user.uid);
+      if (userData == null) {
+        return {
+          'is2FAEnabled': false,
+          'phoneNumber': null,
+          'last2FAVerification': null,
+        };
+      }
+      
+      return {
+        'is2FAEnabled': userData.is2FAEnabled,
+        'phoneNumber': userData.phoneNumber,
+        'last2FAVerification': userData.last2FAVerification,
+      };
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error getting 2FA status: $e');
+      return {
+        'is2FAEnabled': false,
+        'phoneNumber': null,
+        'last2FAVerification': null,
+      };
+    }
+  }
+
+  /// Sync 2FA status with Firebase Auth state
+  Future<bool> sync2FAStatus() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return false;
+      
+      // Check if user has phone provider linked (indicates 2FA is enabled)
+      final hasPhoneProvider = user.providerData.any((provider) => provider.providerId == 'phone');
+      
+      // Get the phone number if available
+      String? phoneNumber;
+      if (hasPhoneProvider) {
+        final phoneProvider = user.providerData.firstWhere((provider) => provider.providerId == 'phone');
+        phoneNumber = phoneProvider.phoneNumber;
+      }
+      
+      // Update Firestore profile with 2FA status
+      return await update2FAStatus(hasPhoneProvider, phoneNumber);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error syncing 2FA status: $e');
+      return false;
+    }
+  }
 }

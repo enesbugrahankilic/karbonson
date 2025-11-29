@@ -2,18 +2,24 @@
 // Reusable form field validator for consistent validation logic
 
 class FormFieldValidator {
-  /// Email validation regex pattern
-  static const String _emailPattern = r'^[^@]+@[^@]+\.[^@]+';
+  /// Email validation regex pattern as specified in requirements
+  static const String _emailPattern = r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$';
 
-  /// Validate email address
+  /// Validate email address according to requirements
+  /// 
+  /// Checks:
+  /// 1. Empty/blank control: String.trim().isEmpty
+  /// 2. Format control: Required regex pattern
   static String? validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'E-posta adresi gerekli';
+    // Boşluk/Boş Kontrolü: String.trim().isEmpty ile sadece boşluklardan mı oluşuyor veya tamamen mi boş kontrolü
+    if (value == null || value.trim().isEmpty) {
+      return 'Lütfen geçerli bir e-posta adresi girin.';
     }
     
+    // Biçim Kontrolü: Required regex pattern
     final emailRegex = RegExp(_emailPattern);
-    if (!emailRegex.hasMatch(value)) {
-      return 'Geçerli bir e-posta adresi girin';
+    if (!emailRegex.hasMatch(value.trim())) {
+      return 'Girdiğiniz e-posta adresi biçimi geçersiz.';
     }
     
     return null;

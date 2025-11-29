@@ -6,6 +6,7 @@ import '../services/firebase_auth_service.dart';
 import '../services/profile_service.dart';
 import '../theme/theme_colors.dart';
 import '../pages/forgot_password_page.dart';
+import '../pages/two_factor_auth_verification_page.dart';
 
 class LoginDialog extends StatefulWidget {
   const LoginDialog({super.key});
@@ -49,20 +50,20 @@ class _LoginDialogState extends State<LoginDialog> {
     setState(() => _isLoading = true);
 
     try {
-      // Use proper email and password authentication
+      // Use proper email and password authentication with 2FA support
       final email = _emailController.text.trim();
       final password = _passwordController.text;
       
-      // Use enhanced Firebase Auth Service with retry mechanism
-      final credential = await FirebaseAuthService.signInWithEmailAndPasswordWithRetry(
+      // Use enhanced Firebase Auth Service with 2FA support
+      final authResult = await FirebaseAuthService.signInWithEmailAndPasswordWith2FA(
         email: email,
         password: password,
       );
 
-      if (credential?.user != null) {
-        final user = credential!.user!;
+      if (authResult.isSuccess) {
+        // Login successful without 2FA requirement
         if (kDebugMode) {
-          debugPrint('Login successful for user: ${user.uid}');
+          debugPrint('Login successful for user: ${authResult.userId}');
         }
         
         // Update nickname in profile if provided
@@ -73,10 +74,30 @@ class _LoginDialogState extends State<LoginDialog> {
         if (mounted) {
           Navigator.of(context).pop(true); // Return true for successful login
         }
+      } else if (authResult.requires2FA) {
+        // 2FA is required - navigate to verification page
+        if (kDebugMode) {
+          debugPrint('2FA required - navigating to verification page');
+        }
+        
+        if (mounted) {
+          // Close login dialog first
+          Navigator.of(context).pop(false);
+          
+          // Navigate to 2FA verification page
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => TwoFactorAuthVerificationPage(
+                authResult: authResult,
+              ),
+            ),
+          );
+        }
       } else {
+        // Login failed for other reasons
         throw FirebaseAuthException(
-          code: 'internal-error',
-          message: 'Failed to sign in after multiple attempts',
+          code: 'login-failed',
+          message: authResult.message,
         );
       }
     } on FirebaseAuthException catch (e) {

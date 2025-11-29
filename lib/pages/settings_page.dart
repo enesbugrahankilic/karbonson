@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provides/theme_provider.dart';
 import '../pages/uid_debug_page.dart';
+import '../pages/two_factor_auth_setup_page.dart';
+import '../services/firebase_auth_service.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -96,6 +98,19 @@ class SettingsPage extends StatelessWidget {
                       trailing: const Icon(Icons.arrow_forward_ios),
                       onTap: () {
                         _showNotificationSettings(context);
+                      },
+                    ),
+                    const Divider(),
+                    ListTile(
+                      leading: Icon(
+                        Icons.security,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      title: const Text('Güvenlik Ayarları'),
+                      subtitle: const Text('İki faktörlü doğrulama ve diğer güvenlik seçenekleri'),
+                      trailing: const Icon(Icons.arrow_forward_ios),
+                      onTap: () {
+                        _showSecuritySettings(context);
                       },
                     ),
                   ],
@@ -354,6 +369,54 @@ class SettingsPage extends StatelessWidget {
             Text('• Sıra bildirimleri'),
             Text('• Arkadaş istekleri'),
             Text('• Günlük hatırlatmalar'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Kapat'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSecuritySettings(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Güvenlik Ayarları'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              leading: Icon(
+                Icons.security,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: const Text('İki Faktörlü Doğrulama'),
+              subtitle: const Text('Hesabınıza ek güvenlik katmanı ekleyin'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const TwoFactorAuthSetupPage(),
+                  ),
+                );
+              },
+            ),
+            const Divider(),
+            const Text(
+              'Güvenlik ipuçları:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text('• Güçlü şifreler kullanın'),
+            const Text('• Düzenli olarak şifrenizi güncelleyin'),
+            const Text('• İki faktörlü doğrulamayı etkinleştirin'),
+            const Text('• Şüpheli aktiviteleri bildirin'),
           ],
         ),
         actions: [

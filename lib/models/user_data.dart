@@ -27,6 +27,11 @@ class UserData {
   // Email Verification
   final bool isEmailVerified;
   final DateTime? emailVerifiedAt;
+  
+  // 2FA (Multi-Factor Authentication) Fields
+  final bool is2FAEnabled;
+  final String? phoneNumber;
+  final DateTime? last2FAVerification;
 
   UserData({
     required this.uid,
@@ -40,6 +45,9 @@ class UserData {
     this.fcmToken,
     this.isEmailVerified = false,
     this.emailVerifiedAt,
+    this.is2FAEnabled = false,
+    this.phoneNumber,
+    this.last2FAVerification,
   });
 
   factory UserData.fromMap(Map<String, dynamic> map, String documentId) {
@@ -63,6 +71,9 @@ class UserData {
       fcmToken: map['fcmToken'],
       isEmailVerified: map['isEmailVerified'] ?? false,
       emailVerifiedAt: DateTimeParser.parse(map['emailVerifiedAt']),
+      is2FAEnabled: map['is2FAEnabled'] ?? false,
+      phoneNumber: map['phoneNumber'],
+      last2FAVerification: DateTimeParser.parse(map['last2FAVerification']),
     );
   }
 
@@ -79,6 +90,9 @@ class UserData {
       'fcmToken': fcmToken,
       'isEmailVerified': isEmailVerified,
       'emailVerifiedAt': DateTimeParser.toTimestamp(emailVerifiedAt),
+      'is2FAEnabled': is2FAEnabled,
+      'phoneNumber': phoneNumber,
+      'last2FAVerification': DateTimeParser.toTimestamp(last2FAVerification),
     };
   }
 
@@ -94,6 +108,9 @@ class UserData {
     String? fcmToken,
     bool? isEmailVerified,
     DateTime? emailVerifiedAt,
+    bool? is2FAEnabled,
+    String? phoneNumber,
+    DateTime? last2FAVerification,
   }) {
     return UserData(
       uid: uid ?? this.uid,
@@ -107,6 +124,9 @@ class UserData {
       fcmToken: fcmToken ?? this.fcmToken,
       isEmailVerified: isEmailVerified ?? this.isEmailVerified,
       emailVerifiedAt: emailVerifiedAt ?? this.emailVerifiedAt,
+      is2FAEnabled: is2FAEnabled ?? this.is2FAEnabled,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      last2FAVerification: last2FAVerification ?? this.last2FAVerification,
     );
   }
 }
