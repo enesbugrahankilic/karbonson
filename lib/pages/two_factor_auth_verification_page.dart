@@ -67,8 +67,6 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
       // In a real implementation, this would come from the multi-factor resolver
       final verificationResult = await Firebase2FAService.startPhoneVerification(
         phoneNumber: '+905551234567', // This should come from user selection
-        resolver: widget.authResult.multiFactorResolver!,
-        phoneProvider: widget.authResult.phoneProvider!,
       );
 
       if (mounted) {
@@ -136,8 +134,9 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
 
     try {
       final result = await Firebase2FAService.resolve2FAChallenge(
-        multiFactorResolver: widget.authResult.multiFactorResolver!,
-        smsCode: _smsCodeController.text.trim(),
+        _verificationId!,
+        _smsCodeController.text.trim(),
+        multiFactorResolver: widget.authResult.multiFactorResolver,
         phoneIndex: 0, // Assuming first phone factor
       );
 
