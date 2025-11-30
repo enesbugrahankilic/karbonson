@@ -2,8 +2,6 @@
 // Specification: Identity Management and Data Integrity (UID Centrality)
 // All user data structures follow UID-based document ID requirements
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import '../services/firestore_service.dart';
 import '../utils/datetime_parser.dart';
 

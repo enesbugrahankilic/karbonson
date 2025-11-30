@@ -1152,6 +1152,7 @@ PODS:
   - gRPC-Core/Privacy (1.62.5)
   - GTMSessionFetcher/Core (3.5.0)
   - leveldb-library (1.22.6)
+  - MTBBarcodeScanner (5.0.11)
   - nanopb (2.30910.0):
     - nanopb/decode (= 2.30910.0)
     - nanopb/encode (= 2.30910.0)
@@ -1160,6 +1161,9 @@ PODS:
   - objective_c (0.0.1):
     - Flutter
   - PromisesObjC (2.4.0)
+  - qr_code_scanner (0.2.0):
+    - Flutter
+    - MTBBarcodeScanner
   - RecaptchaInterop (100.0.0)
   - shared_preferences_foundation (0.0.1):
     - Flutter
@@ -1180,6 +1184,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - objective_c (from `.symlinks/plugins/objective_c/ios`)
+  - qr_code_scanner (from `.symlinks/plugins/qr_code_scanner/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
   - uni_links (from `.symlinks/plugins/uni_links/ios`)
@@ -1206,6 +1211,7 @@ SPEC REPOS:
     - gRPC-Core
     - GTMSessionFetcher
     - leveldb-library
+    - MTBBarcodeScanner
     - nanopb
     - PromisesObjC
     - RecaptchaInterop
@@ -1229,6 +1235,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_local_notifications/ios"
   objective_c:
     :path: ".symlinks/plugins/objective_c/ios"
+  qr_code_scanner:
+    :path: ".symlinks/plugins/qr_code_scanner/ios"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   sqflite_darwin:
@@ -1265,14 +1273,16 @@ SPEC CHECKSUMS:
   gRPC-Core: eee4be35df218649fe66d721a05a7f27a28f069b
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   leveldb-library: cc8b8f8e013647a295ad3f8cd2ddf49a6f19be19
+  MTBBarcodeScanner: f453b33c4b7dfe545d8c6484ed744d55671788cb
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   objective_c: 89e720c30d716b036faf9c9684022048eee1eee2
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
+  qr_code_scanner: d77f94ecc9abf96d9b9b8fc04ef13f611e5a147a
   RecaptchaInterop: 7d1a4a01a6b2cb1610a47ef3f85f0c411434cb21
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
   uni_links: ed8c961e47ed9ce42b6d91e1de8049e38a4b3152
 
-PODFILE CHECKSUM: dfaf34929fd39c6e473bdd1bedfbb453d7a48fac
+PODFILE CHECKSUM: c5b719e01e2e30321638c290906ed2c642b049b4
 
 COCOAPODS: 1.16.2

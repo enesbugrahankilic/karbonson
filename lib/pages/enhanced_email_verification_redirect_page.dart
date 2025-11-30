@@ -208,7 +208,7 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.blue.withOpacity(0.1),
+              Colors.blue.withValues(alpha: 0.1),
               Colors.white,
             ],
           ),
@@ -240,10 +240,10 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: Colors.green.withOpacity(0.1),
+                                  color: Colors.green.withValues(alpha: 0.1),
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.green.withOpacity(0.3),
+                                    color: Colors.green.withValues(alpha: 0.3),
                                     width: 2,
                                   ),
                                 ),
@@ -270,7 +270,7 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                                   vertical: 8,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.green.withOpacity(0.1),
+                                  color: Colors.green.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: const Text(
@@ -291,13 +291,13 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                               padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
                                 color: _isEmailVerified 
-                                    ? Colors.green.withOpacity(0.1)
-                                    : Colors.orange.withOpacity(0.1),
+                                    ? Colors.green.withValues(alpha: 0.1)
+                                    : Colors.orange.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
                                   color: _isEmailVerified 
-                                      ? Colors.green.withOpacity(0.3)
-                                      : Colors.orange.withOpacity(0.3),
+                                      ? Colors.green.withValues(alpha: 0.3)
+                                      : Colors.orange.withValues(alpha: 0.3),
                                   width: 2,
                                 ),
                               ),
@@ -345,7 +345,7 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                                   color: ThemeColors.getDialogContentBackground(context),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: Colors.blue.withOpacity(0.3),
+                                    color: Colors.blue.withValues(alpha: 0.3),
                                   ),
                                 ),
                                 child: Row(
@@ -511,10 +511,10 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                             Container(
                               padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
-                                color: Colors.blue.withOpacity(0.05),
+                                color: Colors.blue.withValues(alpha: 0.05),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: Colors.blue.withOpacity(0.2),
+                                  color: Colors.blue.withValues(alpha: 0.2),
                                 ),
                               ),
                               child: Column(
@@ -547,10 +547,10 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: Colors.orange.withOpacity(0.05),
+                                  color: Colors.orange.withValues(alpha: 0.05),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                    color: Colors.orange.withOpacity(0.2),
+                                    color: Colors.orange.withValues(alpha: 0.2),
                                   ),
                                 ),
                                 child: Column(

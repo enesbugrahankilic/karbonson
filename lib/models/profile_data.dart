@@ -1,7 +1,5 @@
 // lib/models/profile_data.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import '../utils/datetime_parser.dart';
 
 /// Server-side profile data fetched from Firebase
