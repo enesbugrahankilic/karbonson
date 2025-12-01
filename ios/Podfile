@@ -1,5 +1,5 @@
 # platform minimumunu projenize göre yükseltebilirsiniz (ör. '12.0' veya '13.0')
-platform :ios, '15.0'
+platform :ios, '13.0'
 
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
@@ -38,8 +38,27 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     target.build_configurations.each do |config|
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
-      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = ''
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64 arm64e'
+      config.build_settings['VALID_ARCHS'] = 'x86_64'
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        'PERMISSION_CAMERA=1',
+        'PERMISSION_PHOTOS=1',
+      ]
+      
+      # BoringSSL-GRPC ile Xcode 26.x arasındaki uyumsuzluğu çözmek için.
+      # Hata: unsupported option '-G'
+      if target.name.start_with?('BoringSSL-GRPC')
+        # Remove -G flag from various build settings
+        ['OTHER_CFLAGS', 'OTHER_CPLUSPLUSFLAGS', 'OTHER_LDFLAGS'].each do |setting|
+          config.build_settings[setting] = config.build_settings[setting].to_s.gsub('-G', '').gsub(/\s*-G\b/, '')
+        end
+        
+        # Also clean up CFLAGS if it exists
+        if config.build_settings['CFLAGS']
+          config.build_settings['CFLAGS'] = config.build_settings['CFLAGS'].to_s.gsub('-G', '').gsub(/\s*-G\b/, '')
+        end
+      end
     end
   end
 end

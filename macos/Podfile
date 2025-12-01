@@ -1,4 +1,4 @@
-platform :osx, '12.0'
+platform :osx, '10.15'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -38,5 +38,24 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_macos_build_settings(target)
+    
+    # Force all pods to use macOS 10.15+ deployment target
+    target.build_configurations.each do |config|
+      config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '10.15'
+      
+      # BoringSSL-GRPC ile Xcode 26.x arasındaki uyumsuzluğu çözmek için.
+      # Hata: unsupported option '-G'
+      if target.name.start_with?('BoringSSL-GRPC')
+        # Remove -G flag from various build settings
+        ['OTHER_CFLAGS', 'OTHER_CPLUSPLUSFLAGS', 'OTHER_LDFLAGS'].each do |setting|
+          config.build_settings[setting] = config.build_settings[setting].to_s.gsub('-G', '').gsub(/\s*-G\b/, '')
+        end
+        
+        # Also clean up CFLAGS if it exists
+        if config.build_settings['CFLAGS']
+          config.build_settings['CFLAGS'] = config.build_settings['CFLAGS'].to_s.gsub('-G', '').gsub(/\s*-G\b/, '')
+        end
+      end
+    end
   end
 end
