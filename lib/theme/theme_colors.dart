@@ -60,15 +60,66 @@ class ThemeColors {
   static List<Color> getGradientColors(BuildContext context) {
     if (Theme.of(context).brightness == Brightness.dark) {
       return [
-        const Color(0xFF1a237e), // Dark blue
-        const Color(0xFF2e7d32), // Dark green
+        const Color(0xFF1a1a2e), // Deep navy
+        const Color(0xFF16213e), // Darker navy
+        const Color(0xFF2d5a27), // Dark green
       ];
     } else {
       return [
-        const Color(0xFFe0f7fa), // Light blue
-        const Color(0xFF4CAF50), // Green
+        const Color(0xFFE3F2FD), // Light blue
+        const Color(0xFFF1F8E9), // Light green
+        const Color(0xFF4CAF50), // Primary green
       ];
     }
+  }
+
+  /// Modern gradient combinations for different app sections
+  static List<Color> getPrimaryGradient(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? [
+            const Color(0xFF1B5E20), // Dark green
+            const Color(0xFF2E7D32), // Medium green
+          ]
+        : [
+            const Color(0xFF4CAF50), // Primary green
+            const Color(0xFF81C784), // Light green
+          ];
+  }
+
+  static List<Color> getSecondaryGradient(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? [
+            const Color(0xFF0277BD), // Dark blue
+            const Color(0xFF0288D1), // Medium blue
+          ]
+        : [
+            const Color(0xFF2196F3), // Primary blue
+            const Color(0xFF64B5F6), // Light blue
+          ];
+  }
+
+  static List<Color> getAccentGradient(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? [
+            const Color(0xFF6A1B9A), // Dark purple
+            const Color(0xFF8E24AA), // Medium purple
+          ]
+        : [
+            const Color(0xFF9C27B0), // Primary purple
+            const Color(0xFFBA68C8), // Light purple
+          ];
+  }
+
+  static List<Color> getSurfaceGradient(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? [
+            const Color(0xFF121212), // Dark surface
+            const Color(0xFF1E1E1E), // Medium dark
+          ]
+        : [
+            const Color(0xFFF8F9FA), // Light surface
+            const Color(0xFFFFFFFF), // White
+          ];
   }
   
   static Color getAppBarText(BuildContext context) {
@@ -273,5 +324,100 @@ class ThemeColors {
     return Theme.of(context).brightness == Brightness.dark 
         ? Colors.red.shade300 
         : const Color(0xFFF44336);
+  }
+
+  // Modern color utilities for enhanced design
+  static Color getOverlayColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.black.withValues(alpha: 0.6) 
+        : Colors.black.withValues(alpha: 0.4);
+  }
+
+  static Color getGlassBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.white.withValues(alpha: 0.8);
+  }
+
+  static Color getNeumorphismLight(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.grey.shade800
+        : Colors.grey.shade100;
+  }
+
+  static Color getNeumorphismDark(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.grey.shade900
+        : Colors.white;
+  }
+
+  // Success/Progress colors for game elements
+  static Color getSuccessGradientStart(BuildContext context) {
+    return const Color(0xFF4CAF50);
+  }
+
+  static Color getSuccessGradientEnd(BuildContext context) {
+    return const Color(0xFF81C784);
+  }
+
+  static Color getWarningGradientStart(BuildContext context) {
+    return const Color(0xFFFF9800);
+  }
+
+  static Color getWarningGradientEnd(BuildContext context) {
+    return const Color(0xFFFFB74D);
+  }
+
+  static Color getErrorGradientStart(BuildContext context) {
+    return const Color(0xFFF44336);
+  }
+
+  static Color getErrorGradientEnd(BuildContext context) {
+    return const Color(0xFFEF5350);
+  }
+
+  // Interactive states
+  static Color getInteractiveHover(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.black.withValues(alpha: 0.04);
+  }
+
+  static Color getInteractivePressed(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? Colors.white.withValues(alpha: 0.12)
+        : Colors.black.withValues(alpha: 0.08);
+  }
+
+  static Color getFocusRing(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? const Color(0xFF64B5F6)
+        : const Color(0xFF1976D2);
+  }
+
+  // Modern shadows and elevations
+  static List<BoxShadow> getModernShadow(BuildContext context, {double elevation = 1.0}) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.3 * elevation),
+          blurRadius: 8 * elevation,
+          offset: Offset(0, 4 * elevation),
+        ),
+      ];
+    } else {
+      return [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.1 * elevation),
+          blurRadius: 6 * elevation,
+          offset: Offset(0, 2 * elevation),
+        ),
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.05 * elevation),
+          blurRadius: 12 * elevation,
+          offset: Offset(0, 8 * elevation),
+        ),
+      ];
+    }
   }
 }

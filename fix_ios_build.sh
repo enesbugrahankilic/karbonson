@@ -1,58 +1,47 @@
 #!/bin/bash
 
-# iOS Build Fix Script - Temizle ve Yeniden Inşa Et
-# Amaç: x86_64 simulator için "-G" flag hatasını çözümle
+# iOS Firebase Build Fix Script
+# This script thoroughly cleans and rebuilds the iOS project to resolve Firebase header issues
 
-set -e
+echo "🚀 Starting comprehensive iOS build fix..."
 
-echo "=========================================="
-echo "iOS Build Fix Script Başlayıyor..."
-echo "=========================================="
-echo ""
-
-PROJECT_DIR="/Users/omer/karbonson"
-cd "$PROJECT_DIR"
-
-# 1. Flutter temizliği
-echo "📦 Flutter temizliğini yapıyorum..."
+# Step 1: Clean Flutter build
+echo "🧹 Cleaning Flutter build..."
 flutter clean
+
+# Step 2: Remove iOS build artifacts
+echo "🗑️ Removing iOS build artifacts..."
+cd ios
+rm -rf build/
+rm -rf Pods/
+rm -rf .symlinks/
+rm -f Podfile.lock
+cd ..
+
+# Step 3: Get Flutter dependencies
+echo "📦 Getting Flutter dependencies..."
 flutter pub get
 
-# 2. CocoaPods temizliği ve yeniden kurulum
-echo "🧹 iOS pod bağımlılıklarını temizliyorum..."
+# Step 4: Clean CocoaPods cache
+echo "🧽 Cleaning CocoaPods cache..."
 cd ios
+pod cache clean --all --verbose
 
-# Eski Podfile.lock'u kaldır
-if [ -f Podfile.lock ]; then
-  rm -f Podfile.lock
-  echo "  ✓ Podfile.lock silindi"
-fi
+# Step 5: Update CocoaPods repository
+echo "🔄 Updating CocoaPods repository..."
+pod repo update
 
-# CocoaPods cache'i temizle
-echo "  → pod cache temizleniyor..."
-pod cache clean --all 2>/dev/null || true
+# Step 6: Install pods with verbose output
+echo "📱 Installing pods..."
+pod install --verbose
 
-# Podfile.lock'u yeniden oluştur
-echo "🔄 Pod bağımlılıklarını yeniden kuruyorum..."
-pod install --repo-update
+# Step 7: Return to project root
+cd ..
 
-# 3. Xcode DerivedData temizliği
-echo "📁 Xcode DerivedData'yı temizliyorum..."
-rm -rf ~/Library/Developer/Xcode/DerivedData/*
-echo "  ✓ DerivedData silindi"
+echo "✅ iOS build fix complete!"
+echo "🔄 You can now try running: flutter run"
 
-# 4. Build klasörleri temizliği
-echo "🗑️  Build artefaktlarını temizliyorum..."
-rm -rf build/
-echo "  ✓ build/ silindi"
-
-cd "$PROJECT_DIR"
-
-echo ""
-echo "=========================================="
-echo "✅ Temizlik tamamlandı!"
-echo "=========================================="
-echo ""
-echo "Sonraki adım:"
-echo "  flutter run"
-echo ""
+# Show pod installation summary
+echo "📊 Pod installation summary:"
+cd ios
+pod list

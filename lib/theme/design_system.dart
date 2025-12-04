@@ -24,29 +24,56 @@ class DesignSystem {
   static const double elevationM = 4.0;
   static const double elevationL = 8.0;
 
-  /// Standard card decoration with consistent styling
+  /// Modern card decoration with enhanced shadows and styling
   static BoxDecoration getCardDecoration(BuildContext context, {
     double? borderRadius,
     Color? backgroundColor,
     double? elevation,
+    bool isElevated = false,
+    bool hasGradient = false,
   }) {
-    return BoxDecoration(
-      color: backgroundColor ?? ThemeColors.getCardBackground(context),
-      borderRadius: BorderRadius.circular(borderRadius ?? radiusL),
-      boxShadow: [
-        BoxShadow(
-          color: ThemeColors.getShadow(context),
-          blurRadius: elevation ?? elevationM,
-          offset: const Offset(0, 4),
+    final bgColor = backgroundColor ?? ThemeColors.getCardBackground(context);
+    
+    if (hasGradient) {
+      return BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            bgColor,
+            bgColor.withOpacity(0.95),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-      ],
+        borderRadius: BorderRadius.circular(borderRadius ?? radiusL),
+        boxShadow: ThemeColors.getModernShadow(context, elevation: elevation ?? 1.0),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white.withOpacity(0.05)
+              : Colors.black.withOpacity(0.05),
+          width: 1,
+        ),
+      );
+    }
+    
+    return BoxDecoration(
+      color: bgColor,
+      borderRadius: BorderRadius.circular(borderRadius ?? radiusL),
+      boxShadow: ThemeColors.getModernShadow(context, elevation: elevation ?? 1.0),
+      border: isElevated ? Border.all(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white.withOpacity(0.1)
+            : Colors.black.withOpacity(0.1),
+        width: 1,
+      ) : null,
     );
   }
 
-  /// Standard button style for primary actions
+  /// Modern primary button style with enhanced states
   static ButtonStyle getPrimaryButtonStyle(BuildContext context) {
+    final primaryColor = ThemeColors.getPrimaryButtonColor(context);
+    
     return ElevatedButton.styleFrom(
-      backgroundColor: ThemeColors.getPrimaryButtonColor(context),
+      backgroundColor: primaryColor,
       foregroundColor: Colors.white,
       padding: const EdgeInsets.symmetric(
         horizontal: spacingXl, 
@@ -55,8 +82,52 @@ class DesignSystem {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(radiusM),
       ),
-      elevation: elevationS,
+      elevation: 2,
+      shadowColor: primaryColor.withOpacity(0.3),
       minimumSize: const Size.fromHeight(48), // Accessibility touch target
+      textStyle: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.5,
+      ),
+    ).copyWith(
+      backgroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
+        if (states.contains(MaterialState.disabled)) {
+          return Theme.of(context).brightness == Brightness.dark
+              ? Colors.grey.shade700
+              : Colors.grey.shade300;
+        }
+        if (states.contains(MaterialState.pressed)) {
+          return Color.alphaBlend(
+            Colors.black.withOpacity(0.1), 
+            primaryColor
+          );
+        }
+        if (states.contains(MaterialState.hovered)) {
+          return Color.alphaBlend(
+            Colors.white.withOpacity(0.1), 
+            primaryColor
+          );
+        }
+        return primaryColor;
+      }),
+      foregroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
+        if (states.contains(MaterialState.disabled)) {
+          return Theme.of(context).brightness == Brightness.dark
+              ? Colors.grey.shade400
+              : Colors.grey.shade600;
+        }
+        return Colors.white;
+      }),
+      elevation: MaterialStateProperty.resolveWith<double>((states) {
+        if (states.contains(MaterialState.disabled)) {
+          return 0;
+        }
+        if (states.contains(MaterialState.pressed)) {
+          return 1;
+        }
+        return 2;
+      }),
     );
   }
 
@@ -462,5 +533,340 @@ class DesignSystem {
         ),
       ),
     );
+  }
+
+  // Modern UI Components
+
+  /// Create a skeleton loader for loading states
+  static Widget skeletonLoader(
+    BuildContext context, {
+    double? width,
+    double? height,
+    double borderRadius = 8,
+  }) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: ThemeColors.getNeumorphismLight(context),
+        borderRadius: BorderRadius.circular(borderRadius),
+      ),
+    );
+  }
+
+  /// Create a skeleton text line
+  static Widget skeletonText(
+    BuildContext context, {
+    double? width,
+    int lines = 1,
+    double lineHeight = 16,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: List.generate(lines, (index) {
+        final isLast = index == lines - 1;
+        return Padding(
+          padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
+          child: skeletonLoader(
+            context,
+            width: width ?? (isLast && lines > 1 ? width ?? 60 : null),
+            height: lineHeight,
+            borderRadius: 4,
+          ),
+        );
+      }),
+    );
+  }
+
+  /// Create a skeleton card
+  static Widget skeletonCard(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(spacingM),
+      padding: const EdgeInsets.all(spacingL),
+      decoration: getCardDecoration(context),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          skeletonText(context, width: 120, lines: 1, lineHeight: 20),
+          const SizedBox(height: spacingM),
+          skeletonText(context, lines: 3),
+          const SizedBox(height: spacingM),
+          Row(
+            children: [
+              skeletonLoader(context, width: 80, height: 32, borderRadius: 16),
+              const SizedBox(width: spacingM),
+              skeletonLoader(context, width: 60, height: 32, borderRadius: 16),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Create a modern glass card with backdrop filter
+  static Widget glassCard(
+    BuildContext context, {
+    required Widget child,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+    VoidCallback? onTap,
+  }) {
+    final glassWidget = Container(
+      margin: margin ?? const EdgeInsets.all(spacingM),
+      padding: padding ?? const EdgeInsets.all(spacingL),
+      decoration: BoxDecoration(
+        color: ThemeColors.getGlassBackground(context),
+        borderRadius: BorderRadius.circular(radiusL),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white.withOpacity(0.1)
+              : Colors.white.withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: ThemeColors.getModernShadow(context, elevation: 0.5),
+      ),
+      child: child,
+    );
+
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(radiusL),
+        child: glassWidget,
+      );
+    }
+
+    return glassWidget;
+  }
+
+  /// Create a modern floating action button
+  static Widget modernFAB(
+    BuildContext context, {
+    required IconData icon,
+    required VoidCallback onPressed,
+    String? tooltip,
+    Color? backgroundColor,
+    double? size,
+  }) {
+    final fabSize = size ?? 56.0;
+    final bgColor = backgroundColor ?? ThemeColors.getAccentButtonColor(context);
+    
+    return Tooltip(
+      message: tooltip ?? '',
+      child: Material(
+        elevation: 8,
+        borderRadius: BorderRadius.circular(fabSize / 2),
+        color: bgColor,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(fabSize / 2),
+          child: Container(
+            width: fabSize,
+            height: fabSize,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(fabSize / 2),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: fabSize * 0.4,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Create a modern progress indicator
+  static Widget modernProgressIndicator(
+    BuildContext context, {
+    double? value,
+    Color? color,
+    double strokeWidth = 4,
+  }) {
+    final progressColor = color ?? ThemeColors.getPrimaryButtonColor(context);
+    
+    if (value != null) {
+      return SizedBox(
+        width: 40,
+        height: 40,
+        child: CircularProgressIndicator(
+          value: value,
+          strokeWidth: strokeWidth,
+          valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white.withOpacity(0.1)
+              : Colors.black.withOpacity(0.1),
+        ),
+      );
+    }
+    
+    return SizedBox(
+      width: 32,
+      height: 32,
+      child: CircularProgressIndicator(
+        strokeWidth: strokeWidth,
+        valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+      ),
+    );
+  }
+
+  /// Create a modern chip component
+  static Widget modernChip(
+    BuildContext context, {
+    required String label,
+    IconData? icon,
+    VoidCallback? onTap,
+    Color? backgroundColor,
+    bool isSelected = false,
+  }) {
+    final bgColor = backgroundColor ?? (isSelected
+        ? ThemeColors.getPrimaryButtonColor(context)
+        : ThemeColors.getCardBackgroundLight(context));
+    
+    final fgColor = isSelected
+        ? Colors.white
+        : ThemeColors.getText(context);
+    
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected
+                ? bgColor
+                : ThemeColors.getBorder(context),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 16,
+                color: fgColor,
+              ),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                color: fgColor,
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Create a modern divider with spacing
+  static Widget modernDivider(
+    BuildContext context, {
+    double? width,
+    double thickness = 1,
+    EdgeInsets? margin,
+  }) {
+    return Container(
+      margin: margin ?? const EdgeInsets.symmetric(vertical: spacingM),
+      width: width,
+      child: Divider(
+        thickness: thickness,
+        color: ThemeColors.getBorder(context),
+        height: thickness,
+      ),
+    );
+  }
+}
+
+// Shimmer effect for skeleton loaders
+class Shimmer extends StatefulWidget {
+  final Widget child;
+  final Duration duration;
+  final Color? baseColor;
+  final Color? highlightColor;
+
+  const Shimmer({
+    super.key,
+    required this.child,
+    this.duration = const Duration(milliseconds: 1500),
+    this.baseColor,
+    this.highlightColor,
+  });
+
+  @override
+  State<Shimmer> createState() => _ShimmerState();
+}
+
+class _ShimmerState extends State<Shimmer>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    )..repeat(reverse: true);
+    _animation = Tween<double>(
+      begin: -2.0,
+      end: 2.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return ShaderMask(
+          blendMode: BlendMode.srcATop,
+          shaderCallback: (bounds) {
+            return LinearGradient(
+              colors: [
+                widget.baseColor ?? Colors.grey.shade300,
+                widget.highlightColor ?? Colors.grey.shade100,
+                widget.baseColor ?? Colors.grey.shade300,
+              ],
+              stops: const [0.0, 0.5, 1.0],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              transform: _SlidingGradientTransform(_animation.value),
+            ).createShader(bounds);
+          },
+          child: widget.child,
+        );
+      },
+    );
+  }
+}
+
+class _SlidingGradientTransform extends GradientTransform {
+  final double slidePercent;
+
+  const _SlidingGradientTransform(this.slidePercent);
+
+  @override
+  Matrix4? transform(Rect bounds, {TextDirection? textDirection}) {
+    return Matrix4.translationValues(bounds.width * slidePercent, 0.0, 0.0);
   }
 }

@@ -15,54 +15,61 @@ class AppTheme {
   static const Color _highContrastAccent = Color(0xFF0066CC); // WCAG AA compliant blue
   static const Color _highContrastError = Color(0xFFCC0000); // WCAG AA compliant red
   
-  // Custom text styles for LIGHT theme
+  // Enhanced text styles for LIGHT theme with improved hierarchy
   static const TextStyle _lightDisplayLarge = TextStyle(
-    fontSize: 57,
-    fontWeight: FontWeight.w400,
-    letterSpacing: -0.25,
+    fontSize: 64, // Increased from 57
+    fontWeight: FontWeight.w300, // Lighter weight for modern look
+    letterSpacing: -0.5, // Tighter tracking for large display text
     color: _lightText,
+    height: 1.1, // Tighter line height
   );
   
   static const TextStyle _lightDisplayMedium = TextStyle(
-    fontSize: 45,
-    fontWeight: FontWeight.w400,
-    letterSpacing: 0,
+    fontSize: 48, // Increased from 45
+    fontWeight: FontWeight.w300,
+    letterSpacing: -0.25,
     color: _lightText,
+    height: 1.15,
   );
   
   static const TextStyle _lightDisplaySmall = TextStyle(
-    fontSize: 36,
+    fontSize: 40, // Increased from 36
     fontWeight: FontWeight.w400,
     letterSpacing: 0,
     color: _lightText,
+    height: 1.2,
   );
   
   static const TextStyle _lightHeadlineLarge = TextStyle(
-    fontSize: 32,
-    fontWeight: FontWeight.w600,
+    fontSize: 36, // Increased from 32
+    fontWeight: FontWeight.w500, // Reduced weight for modern look
     letterSpacing: 0,
     color: _lightText,
+    height: 1.25,
   );
   
   static const TextStyle _lightHeadlineMedium = TextStyle(
-    fontSize: 28,
-    fontWeight: FontWeight.w600,
+    fontSize: 30, // Increased from 28
+    fontWeight: FontWeight.w500,
     letterSpacing: 0,
     color: _lightText,
+    height: 1.3,
   );
   
   static const TextStyle _lightHeadlineSmall = TextStyle(
-    fontSize: 24,
-    fontWeight: FontWeight.w600,
+    fontSize: 26, // Increased from 24
+    fontWeight: FontWeight.w500,
     letterSpacing: 0,
     color: _lightText,
+    height: 1.35,
   );
   
   static const TextStyle _lightTitleLarge = TextStyle(
-    fontSize: 22,
+    fontSize: 24, // Increased from 22
     fontWeight: FontWeight.w600,
     letterSpacing: 0,
     color: _lightText,
+    height: 1.4,
   );
   
   static const TextStyle _lightTitleMedium = TextStyle(
@@ -80,31 +87,35 @@ class AppTheme {
   );
   
   static const TextStyle _lightBodyLarge = TextStyle(
-    fontSize: 16,
+    fontSize: 17, // Increased from 16 for better readability
     fontWeight: FontWeight.w400,
-    letterSpacing: 0.5,
+    letterSpacing: 0.15, // Reduced from 0.5 for better readability
     color: _lightText,
+    height: 1.5, // Improved line height
   );
   
   static const TextStyle _lightBodyMedium = TextStyle(
-    fontSize: 14,
+    fontSize: 15, // Increased from 14
     fontWeight: FontWeight.w400,
-    letterSpacing: 0.25,
+    letterSpacing: 0.1, // Reduced from 0.25
     color: _lightText,
+    height: 1.5,
   );
   
   static const TextStyle _lightBodySmall = TextStyle(
-    fontSize: 12,
+    fontSize: 13, // Increased from 12
     fontWeight: FontWeight.w400,
-    letterSpacing: 0.4,
+    letterSpacing: 0.1, // Reduced from 0.4
     color: _lightSecondaryText,
+    height: 1.4,
   );
   
   static const TextStyle _lightLabelLarge = TextStyle(
-    fontSize: 14,
+    fontSize: 15, // Increased from 14
     fontWeight: FontWeight.w600,
-    letterSpacing: 0.1,
+    letterSpacing: 0.05, // Reduced from 0.1
     color: _lightText,
+    height: 1.4,
   );
   
   static const TextStyle _lightLabelMedium = TextStyle(
@@ -523,5 +534,130 @@ class AppTheme {
 
   static double getMinimumTouchTargetSize(BuildContext context) {
     return 48.0; // WCAG AA minimum touch target size
+  }
+
+  // Enhanced Typography Utilities
+  
+  /// Get responsive text size based on screen width and base size
+  static double getResponsiveTextSize(BuildContext context, double baseSize) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    double scaleFactor = 1.0;
+    
+    if (screenWidth > 600) {
+      scaleFactor = 1.1; // Tablet
+    } else if (screenWidth > 1024) {
+      scaleFactor = 1.2; // Desktop
+    }
+    
+    return baseSize * scaleFactor;
+  }
+
+  /// Get semantic text style for different content types
+  static TextStyle getSemanticTextStyle(BuildContext context, String semanticType) {
+    final textTheme = Theme.of(context).textTheme;
+    
+    switch (semanticType) {
+      case 'heading':
+        return textTheme.headlineMedium ?? const TextStyle(fontSize: 24, fontWeight: FontWeight.w600);
+      case 'subheading':
+        return textTheme.titleLarge ?? const TextStyle(fontSize: 20, fontWeight: FontWeight.w500);
+      case 'body':
+        return textTheme.bodyLarge ?? const TextStyle(fontSize: 16, fontWeight: FontWeight.w400);
+      case 'caption':
+        return textTheme.bodySmall ?? const TextStyle(fontSize: 12, fontWeight: FontWeight.w400);
+      case 'button':
+        return textTheme.labelLarge ?? const TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
+      default:
+        return textTheme.bodyMedium ?? const TextStyle(fontSize: 14, fontWeight: FontWeight.w400);
+    }
+  }
+
+  /// Create text style with enhanced readability features
+  static TextStyle createReadableTextStyle(
+    BuildContext context, {
+    required double fontSize,
+    FontWeight? fontWeight,
+    Color? color,
+    double? lineHeight,
+    double? letterSpacing,
+  }) {
+    final baseStyle = getSemanticTextStyle(context, 'body');
+    
+    return baseStyle.copyWith(
+      fontSize: getAccessibleFontSize(context, fontSize),
+      fontWeight: fontWeight,
+      color: color ?? _lightText,
+      height: lineHeight ?? 1.5,
+      letterSpacing: letterSpacing,
+    );
+  }
+
+  /// Get game-specific text styles
+  static TextStyle getGameTitleStyle(BuildContext context) {
+    return getSemanticTextStyle(context, 'heading').copyWith(
+      fontSize: getAccessibleFontSize(context, 32),
+      fontWeight: FontWeight.w700,
+      color: const Color(0xFF4CAF50),
+      height: 1.2,
+    );
+  }
+
+  static TextStyle getGameScoreStyle(BuildContext context) {
+    return getSemanticTextStyle(context, 'heading').copyWith(
+      fontSize: getAccessibleFontSize(context, 28),
+      fontWeight: FontWeight.w600,
+      color: const Color(0xFF2E7D32),
+      height: 1.1,
+    );
+  }
+
+  static TextStyle getGameQuestionStyle(BuildContext context) {
+    return getSemanticTextStyle(context, 'subheading').copyWith(
+      fontSize: getAccessibleFontSize(context, 20),
+      fontWeight: FontWeight.w500,
+      height: 1.4,
+    );
+  }
+
+  static TextStyle getGameOptionStyle(BuildContext context) {
+    return getSemanticTextStyle(context, 'body').copyWith(
+      fontSize: getAccessibleFontSize(context, 16),
+      fontWeight: FontWeight.w500,
+      height: 1.3,
+    );
+  }
+
+  /// Create gradient text style for special elements
+  static TextStyle getGradientTextStyle(BuildContext context, List<Color> colors) {
+    return getSemanticTextStyle(context, 'heading').copyWith(
+      fontSize: getAccessibleFontSize(context, 24),
+      fontWeight: FontWeight.w600,
+      foreground: Paint()
+        ..shader = LinearGradient(
+          colors: colors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ).createShader(const Rect.fromLTWH(0, 0, 200, 50)),
+      height: 1.2,
+    );
+  }
+
+  /// Get emphasis text style for important content
+  static TextStyle getEmphasisTextStyle(BuildContext context) {
+    return getSemanticTextStyle(context, 'body').copyWith(
+      fontWeight: FontWeight.w600,
+      color: const Color(0xFF4CAF50),
+      backgroundColor: Colors.transparent,
+    );
+  }
+
+  /// Get disabled text style for inactive content
+  static TextStyle getDisabledTextStyle(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    return getSemanticTextStyle(context, 'body').copyWith(
+      color: brightness == Brightness.dark 
+          ? Colors.white.withOpacity(0.38)
+          : Colors.black.withOpacity(0.38),
+    );
   }
 }

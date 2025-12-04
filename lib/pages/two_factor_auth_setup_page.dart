@@ -9,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/firebase_2fa_service.dart';
 import '../services/profile_service.dart';
 import '../theme/theme_colors.dart';
+import '../widgets/phone_input_widget.dart';
 
 /// Result class for 2FA operations
 class TwoFactorAuthResult {
@@ -1071,27 +1072,15 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage>
                 style: TextStyle(color: Colors.grey[600]),
               ),
               const SizedBox(height: 24),
-              TextFormField(
+              PhoneInputWidget(
                 controller: _phoneController,
-                decoration: InputDecoration(
-                  labelText: 'Telefon Numarası',
-                  hintText: '+90 555 123 45 67',
-                  prefixIcon: const Icon(Icons.phone),
-                  filled: true,
-                  fillColor: ThemeColors.getInputBackground(context),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                keyboardType: TextInputType.phone,
+                labelText: 'Telefon Numarası',
+                hintText: '0555 555 55 55',
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Telefon numarasını girin';
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Telefon numarası girin';
                   }
-                  if (!value.startsWith('+') || value.length < 10) {
-                    return 'Geçerli bir telefon numarası girin (örn: +90 555 123 45 67)';
-                  }
-                  return null;
+                  return null; // PhoneInputWidget kendi validasyonunu yapacak
                 },
               ),
               const SizedBox(height: 24),

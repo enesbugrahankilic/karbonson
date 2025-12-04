@@ -1031,18 +1031,39 @@ class FirestoreService {
   }
 
   /// Kullanıcının aldığı arkadaşlık isteklerini dinle (real-time)
+  /// Optimized with better error handling and performance
   Stream<List<FriendRequest>> listenToReceivedFriendRequests(String userId) {
-    return _db
-        .collection(_friendRequestsCollection)
-        .where('toUserId', isEqualTo: userId)
-        .where('status', isEqualTo: FriendRequestStatus.pending.toString().split('.').last)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map((querySnapshot) {
-      return querySnapshot.docs
-          .map((doc) => FriendRequest.fromMap(doc.data()))
-          .toList();
-    });
+    if (userId.isEmpty) {
+      if (kDebugMode) debugPrint('❌ Empty userId provided to listenToReceivedFriendRequests');
+      return const Stream.empty();
+    }
+
+    try {
+      return _db
+          .collection(_friendRequestsCollection)
+          .where('toUserId', isEqualTo: userId)
+          .where('status', isEqualTo: FriendRequestStatus.pending.toString().split('.').last)
+          .orderBy('createdAt', descending: true)
+          .limit(50) // Prevent memory issues with too many requests
+          .snapshots()
+          .map((querySnapshot) {
+        try {
+          return querySnapshot.docs
+              .map((doc) => FriendRequest.fromMap(doc.data()))
+              .toList();
+        } catch (parseError) {
+          if (kDebugMode) debugPrint('⚠️ Error parsing friend request: $parseError');
+          return <FriendRequest>[];
+        }
+      }).handleError((error) {
+        if (kDebugMode) debugPrint('🚨 Stream error in listenToReceivedFriendRequests: $error');
+        // Return empty list on error instead of crashing
+        return <FriendRequest>[];
+      });
+    } catch (e) {
+      if (kDebugMode) debugPrint('🚨 Error setting up friend request listener: $e');
+      return const Stream.empty();
+    }
   }
 
   /// Kullanıcının gönderdiği arkadaşlık isteklerini getir

@@ -15,6 +15,7 @@ import 'package:crypto/crypto.dart';
 import '../services/firebase_2fa_service.dart';
 import '../services/profile_service.dart';
 import '../theme/theme_colors.dart';
+import '../widgets/phone_input_widget.dart';
 
 class TOTPSetupResult {
   final bool isSuccess;
@@ -729,23 +730,15 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
               style: TextStyle(color: Colors.grey[600]),
             ),
             const SizedBox(height: 24),
-            TextFormField(
+            PhoneInputWidget(
               controller: _phoneController,
-              decoration: const InputDecoration(
-                labelText: 'Phone Number',
-                hintText: '+1 234 567 8900',
-                prefixIcon: Icon(Icons.phone),
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.phone,
+              labelText: 'Telefon Numarası',
+              hintText: '0555 555 55 55',
               validator: (value) {
-                if (value == null || value.isEmpty) {
+                if (value == null || value.trim().isEmpty) {
                   return 'Please enter your phone number';
                 }
-                if (!value.startsWith('+') || value.length < 10) {
-                  return 'Please enter a valid phone number';
-                }
-                return null;
+                return null; // PhoneInputWidget kendi validasyonunu yapacak
               },
             ),
             const SizedBox(height: 24),

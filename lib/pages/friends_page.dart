@@ -25,6 +25,7 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
   final GameInvitationService _invitationService = GameInvitationService();
   final PresenceService _presenceService = PresenceService();
   final TextEditingController _searchController = TextEditingController();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
 
   List<Friend> _friends = [];
   List<FriendRequest> _receivedRequests = [];
@@ -89,6 +90,9 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) return;
 
+    // Keep track of previous request IDs to detect new requests
+    final Set<String> previousRequestIds = <String>{};
+    
     // Listen to real-time changes in friend requests for current user
     _friendRequestSubscription = _firestoreService
         .listenToReceivedFriendRequests(currentUser.uid)
@@ -99,15 +103,21 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
         });
 
         // Show notification for new friend requests
-        for (final request in requests) {
-          // Check if this is a new request (not in previous list)
-          final wasAlreadyPresent = _receivedRequests.any((existing) => existing.id == request.id);
-          if (!wasAlreadyPresent && mounted) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
+        final currentRequestIds = requests.map((r) => r.id).toSet();
+        final newRequests = requests.where((request) => 
+          !previousRequestIds.contains(request.id)).toList();
+        
+        if (newRequests.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            for (final request in newRequests) {
               _showFriendRequestNotification(request);
-            });
-          }
+            }
+          });
         }
+        
+        // Update previous request IDs for next comparison
+        previousRequestIds.clear();
+        previousRequestIds.addAll(currentRequestIds);
       }
     });
   }
@@ -115,7 +125,36 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
   void _showFriendRequestNotification(FriendRequest request) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('📨 ${request.fromNickname} arkadaşlık isteği gönderdi!'),
+        content: Row(
+          children: [
+            Icon(
+              Icons.person_add,
+              color: Colors.white,
+              size: 20,
+            ),
+            SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '📨 Yeni Arkadaşlık İsteği!',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '${request.fromNickname} arkadaşlık isteği gönderdi',
+                    style: TextStyle(
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         backgroundColor: Colors.blue,
         action: SnackBarAction(
           label: 'Görüntüle',
@@ -125,7 +164,12 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
             DefaultTabController.of(context)?.animateTo(1);
           },
         ),
-        duration: const Duration(seconds: 4),
+        duration: const Duration(seconds: 5),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: EdgeInsets.all(16),
       ),
     );
   }
@@ -141,12 +185,19 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
       }
 
       final userId = currentUser.uid;
-      _friends = await _firestoreService.getFriends(userId);
-      _receivedRequests = await _firestoreService.getReceivedFriendRequests(userId);
-      _sentRequests = await _firestoreService.getSentFriendRequests(userId);
       
-      // Load all registered users
-      _allRegisteredUsers = await _firestoreService.getAllUsers(limit: 50);
+      // Load all data in parallel for better performance
+      final results = await Future.wait([
+        _firestoreService.getFriends(userId),
+        _firestoreService.getReceivedFriendRequests(userId),
+        _firestoreService.getSentFriendRequests(userId),
+        _firestoreService.getAllUsers(limit: 50),
+      ]);
+
+      _friends = results[0] as List<Friend>;
+      _receivedRequests = results[1] as List<FriendRequest>;
+      _sentRequests = results[2] as List<FriendRequest>;
+      _allRegisteredUsers = results[3] as List<UserData>;
       
       // Filter out current user and existing friends
       final friendIds = _friends.map((f) => f.id).toSet();
@@ -156,8 +207,40 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
       
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 Error loading friends data: $e');
+      
+      // Show error to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Veri yüklenirken hata oluştu: $e'),
+            backgroundColor: Colors.red,
+            action: SnackBarAction(
+              label: 'Tekrar Dene',
+              textColor: Colors.white,
+              onPressed: () => _loadFriendsData(),
+            ),
+          ),
+        );
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _refreshData() async {
+    if (kDebugMode) debugPrint('🔄 Refreshing friend data...');
+    await _loadFriendsData();
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('✅ Veriler güncellendi'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 1),
+        ),
+      );
     }
   }
 
@@ -552,77 +635,159 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
             ),
         ],
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+      body: RefreshIndicator(
+        key: _refreshIndicatorKey,
+        onRefresh: _refreshData,
+        color: Colors.blue,
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
           ),
-        ),
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                children: [
-                  // Search Bar
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        hintText: 'Kullanıcı ara...',
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        filled: true,
-                        fillColor: Colors.white.withValues(alpha: 0.9),
-                      ),
-                      onChanged: _searchUsers,
-                    ),
-                  ),
-
-                  // Search Results
-                  if (_searchResults.isNotEmpty)
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: _searchResults.length,
-                        itemBuilder: (context, index) {
-                          final user = _searchResults[index];
-                          final nickname = user['nickname'] as String;
-
-                          return Card(
-                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                            child: ListTile(
-                              leading: const Icon(Icons.person_add),
-                              title: Text(nickname),
-                              trailing: ElevatedButton(
-                                onPressed: () => _sendFriendRequest(nickname),
-                                child: const Text('İstek Gönder'),
+          child: _isLoading && _friends.isEmpty && _receivedRequests.isEmpty
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+                  children: [
+                    // Search Bar
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              decoration: InputDecoration(
+                                hintText: 'Kullanıcı ara...',
+                                prefixIcon: const Icon(Icons.search),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                filled: true,
+                                fillColor: Colors.white.withValues(alpha: 0.9),
                               ),
+                              onChanged: _searchUsers,
                             ),
-                          );
-                        },
+                          ),
+                          SizedBox(width: 8),
+                          // Refresh button
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.blue,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.refresh,
+                                color: Colors.white,
+                              ),
+                              onPressed: _isLoading ? null : _refreshData,
+                              tooltip: 'Yenile',
+                            ),
+                          ),
+                        ],
                       ),
-                    )
-                  else
-                    // Tab Bar
-                    Expanded(
-                      child: DefaultTabController(
-                        length: 4,
-                        child: Column(
-                          children: [
-                            const TabBar(
-                              tabs: [
-                                Tab(text: 'Arkadaşlar'),
-                                Tab(text: 'İstekler'),
-                                Tab(text: 'Gönderilen'),
-                                Tab(text: 'Kayıtlı Kullanıcılar'),
-                              ],
-                            ),
-                            Expanded(
-                              child: TabBarView(
-                                children: [
+                    ),
+
+                    // Search Results
+                    if (_searchResults.isNotEmpty)
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: _searchResults.length,
+                          itemBuilder: (context, index) {
+                            final user = _searchResults[index];
+                            final nickname = user['nickname'] as String;
+
+                            return Card(
+                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                              elevation: 2,
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: Colors.green.withValues(alpha: 0.1),
+                                  child: Icon(Icons.person_add, color: Colors.green),
+                                ),
+                                title: Text(nickname),
+                                trailing: ElevatedButton(
+                                  onPressed: _isLoading ? null : () => _sendFriendRequest(nickname),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child: Text(_isLoading ? 'Yükleniyor...' : 'İstek Gönder'),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    else
+                      // Tab Bar
+                      Expanded(
+                        child: DefaultTabController(
+                          length: 4,
+                          child: Column(
+                            children: [
+                              TabBar(
+                                tabs: [
+                                  Tab(
+                                    text: 'Arkadaşlar',
+                                    icon: Icon(Icons.group),
+                                  ),
+                                  Tab(
+                                    text: 'İstekler',
+                                    icon: Stack(
+                                      children: [
+                                        Icon(Icons.person_add),
+                                        if (_receivedRequests.isNotEmpty)
+                                          Positioned(
+                                            right: -2,
+                                            top: -2,
+                                            child: Container(
+                                              padding: EdgeInsets.all(3),
+                                              decoration: BoxDecoration(
+                                                color: Colors.red,
+                                                borderRadius: BorderRadius.circular(8),
+                                                border: Border.all(
+                                                  color: Colors.white,
+                                                  width: 1,
+                                                ),
+                                              ),
+                                              constraints: BoxConstraints(
+                                                minWidth: 12,
+                                                minHeight: 12,
+                                              ),
+                                              child: Text(
+                                                '${_receivedRequests.length}',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 8,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                  Tab(
+                                    text: 'Gönderilen',
+                                    icon: Icon(Icons.send),
+                                  ),
+                                  Tab(
+                                    text: 'Kayıtlı Kullanıcılar',
+                                    icon: Icon(Icons.people),
+                                  ),
+                                ],
+                                indicatorColor: Colors.blue,
+                                labelColor: Colors.blue,
+                                unselectedLabelColor: Colors.black54,
+                              ),
+                              Expanded(
+                                child: TabBarView(
+                                  children: [
                                   // Friends Tab
                                   _friends.isEmpty
                                       ? const Center(child: Text('Henüz arkadaşın yok'))
@@ -644,108 +809,182 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                                             );
                                           },
                                         ),
-
-                                  // Received Requests Tab
-                                  _receivedRequests.isEmpty
-                                      ? const Center(child: Text('Yeni arkadaşlık isteği yok'))
-                                      : ListView.builder(
-                                          itemCount: _receivedRequests.length,
-                                          itemBuilder: (context, index) {
-                                            final request = _receivedRequests[index];
-                                            return Card(
-                                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                                              child: ListTile(
-                                                leading: const Icon(Icons.person_add),
-                                                title: Text('${request.fromNickname} isteği gönderdi'),
-                                                subtitle: Text('Tarih: ${request.createdAt.day}/${request.createdAt.month}/${request.createdAt.year}'),
-                                                trailing: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    // Kabul butonu - Double-click koruması ile
-                                                    IconButton(
-                                                      icon: Icon(
-                                                        Icons.check, 
-                                                        color: _processingRequests.contains(request.id) 
-                                                            ? Colors.grey 
-                                                            : Colors.green,
-                                                      ),
-                                                      onPressed: _processingRequests.contains(request.id)
-                                                          ? null
-                                                          : () => _acceptFriendRequest(request.id),
-                                                      tooltip: _processingRequests.contains(request.id)
-                                                          ? 'İşleniyor...'
-                                                          : 'Kabul Et',
-                                                    ),
-                                                    // Red butonu - Double-click koruması ile  
-                                                    IconButton(
-                                                      icon: Icon(
-                                                        Icons.close, 
-                                                        color: _processingRequests.contains(request.id)
-                                                            ? Colors.grey 
-                                                            : Colors.red,
-                                                      ),
-                                                      onPressed: _processingRequests.contains(request.id)
-                                                          ? null
-                                                          : () => _rejectFriendRequest(request.id),
-                                                      tooltip: _processingRequests.contains(request.id)
-                                                          ? 'İşleniyor...'
-                                                          : 'Reddet',
-                                                    ),
-                                                  ],
+                                    // Received Requests Tab
+                                    _receivedRequests.isEmpty
+                                        ? const Center(
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.person_add_alt,
+                                                  size: 64,
+                                                  color: Colors.grey,
                                                 ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-
-                                  // Sent Requests Tab
-                                  _sentRequests.isEmpty
-                                      ? const Center(child: Text('Gönderilmiş arkadaşlık isteği yok'))
-                                      : ListView.builder(
-                                          itemCount: _sentRequests.length,
-                                          itemBuilder: (context, index) {
-                                            final request = _sentRequests[index];
-                                            return Card(
-                                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                                              child: ListTile(
-                                                leading: const Icon(Icons.schedule),
-                                                title: Text('${request.toNickname} kullanıcısına istek gönderildi'),
-                                                subtitle: Text('Tarih: ${request.createdAt.day}/${request.createdAt.month}/${request.createdAt.year}'),
-                                              ),
-                                            );
-                                          },
-                                        ),
-
-                                  // All Registered Users Tab
-                                  _allRegisteredUsers.isEmpty
-                                      ? const Center(child: Text('Kayıtlı kullanıcı bulunamadı'))
-                                      : ListView.builder(
-                                          itemCount: _allRegisteredUsers.length,
-                                          itemBuilder: (context, index) {
-                                            final user = _allRegisteredUsers[index];
-                                            return Card(
-                                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                                              child: ListTile(
-                                                leading: const Icon(Icons.people),
-                                                title: Text(user.nickname),
-                                                subtitle: Text('Kayıt Tarihi: ${user.createdAt != null ? "${user.createdAt!.day}/${user.createdAt!.month}/${user.createdAt!.year}" : "Bilinmiyor"}'),
-                                                trailing: ElevatedButton(
-                                                  onPressed: () => _sendFriendRequest(user.nickname),
-                                                  child: const Text('Arkadaş Ekle'),
+                                                SizedBox(height: 16),
+                                                Text(
+                                                  'Yeni arkadaşlık isteği yok',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Colors.grey,
+                                                  ),
                                                 ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                ],
+                                                SizedBox(height: 8),
+                                                Text(
+                                                  'Yeni istekler burada görünecek',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                        : ListView.builder(
+                                            itemCount: _receivedRequests.length,
+                                            itemBuilder: (context, index) {
+                                              final request = _receivedRequests[index];
+                                              final isProcessing = _processingRequests.contains(request.id);
+                                              
+                                              return Card(
+                                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                                elevation: 2,
+                                                child: ListTile(
+                                                  contentPadding: EdgeInsets.all(16),
+                                                  leading: CircleAvatar(
+                                                    backgroundColor: Colors.blue.withValues(alpha: 0.1),
+                                                    child: Icon(
+                                                      Icons.person_add,
+                                                      color: Colors.blue,
+                                                    ),
+                                                  ),
+                                                  title: Text(
+                                                    '${request.fromNickname}',
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                  subtitle: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        'Arkadaşlık isteği gönderdi',
+                                                        style: TextStyle(
+                                                          color: Colors.grey[600],
+                                                        ),
+                                                      ),
+                                                      SizedBox(height: 4),
+                                                      Text(
+                                                        'Tarih: ${request.createdAt.day}/${request.createdAt.month}/${request.createdAt.year} ${request.createdAt.hour}:${request.createdAt.minute.toString().padLeft(2, '0')}',
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: Colors.grey[500],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  trailing: isProcessing 
+                                                      ? SizedBox(
+                                                          width: 80,
+                                                          height: 32,
+                                                          child: Center(
+                                                            child: SizedBox(
+                                                              width: 16,
+                                                              height: 16,
+                                                              child: CircularProgressIndicator(
+                                                                strokeWidth: 2,
+                                                                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        )
+                                                      : Row(
+                                                          mainAxisSize: MainAxisSize.min,
+                                                          children: [
+                                                            // Kabul butonu
+                                                            IconButton(
+                                                              icon: Icon(
+                                                                Icons.check_circle,
+                                                                color: Colors.green,
+                                                                size: 32,
+                                                              ),
+                                                              onPressed: isProcessing ? null : () => _acceptFriendRequest(request.id),
+                                                              tooltip: 'Kabul Et',
+                                                              constraints: BoxConstraints(
+                                                                minWidth: 48,
+                                                                minHeight: 48,
+                                                              ),
+                                                            ),
+                                                            SizedBox(width: 4),
+                                                            // Red butonu
+                                                            IconButton(
+                                                              icon: Icon(
+                                                                Icons.cancel,
+                                                                color: Colors.red,
+                                                                size: 32,
+                                                              ),
+                                                              onPressed: isProcessing ? null : () => _rejectFriendRequest(request.id),
+                                                              tooltip: 'Reddet',
+                                                              constraints: BoxConstraints(
+                                                                minWidth: 48,
+                                                                minHeight: 48,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                    // Sent Requests Tab
+                                    _sentRequests.isEmpty
+                                        ? const Center(child: Text('Gönderilmiş arkadaşlık isteği yok'))
+                                        : ListView.builder(
+                                            itemCount: _sentRequests.length,
+                                            itemBuilder: (context, index) {
+                                              final request = _sentRequests[index];
+                                              return Card(
+                                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                                child: ListTile(
+                                                  leading: const Icon(Icons.schedule),
+                                                  title: Text('${request.toNickname} kullanıcısına istek gönderildi'),
+                                                  subtitle: Text('Tarih: ${request.createdAt.day}/${request.createdAt.month}/${request.createdAt.year}'),
+                                                ),
+                                              );
+                                            },
+                                          ),
+
+                                    // All Registered Users Tab
+                                    _allRegisteredUsers.isEmpty
+                                        ? const Center(child: Text('Kayıtlı kullanıcı bulunamadı'))
+                                        : ListView.builder(
+                                            itemCount: _allRegisteredUsers.length,
+                                            itemBuilder: (context, index) {
+                                              final user = _allRegisteredUsers[index];
+                                              return Card(
+                                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                                child: ListTile(
+                                                  leading: const Icon(Icons.people),
+                                                  title: Text(user.nickname),
+                                                  subtitle: Text('Kayıt Tarihi: ${user.createdAt != null ? "${user.createdAt!.day}/${user.createdAt!.month}/${user.createdAt!.year}" : "Bilinmiyor"}'),
+                                                  trailing: ElevatedButton(
+                                                    onPressed: () => _sendFriendRequest(user.nickname),
+                                                    child: const Text('Arkadaş Ekle'),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                ],
-              ),
+                  ],
+                ),
+        ),
       ),
     );
   }

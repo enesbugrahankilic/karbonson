@@ -1,0 +1,13 @@
+# This is a generated file; do not edit or check into version control.
+cloud_firestore=/Users/omer/.pub-cache/hosted/pub.dev/cloud_firestore-5.6.12/
+connectivity_plus=/Users/omer/.pub-cache/hosted/pub.dev/connectivity_plus-7.0.0/
+firebase_auth=/Users/omer/.pub-cache/hosted/pub.dev/firebase_auth-5.7.0/
+firebase_core=/Users/omer/.pub-cache/hosted/pub.dev/firebase_core-3.15.2/
+firebase_dynamic_links=/Users/omer/.pub-cache/hosted/pub.dev/firebase_dynamic_links-6.1.10/
+firebase_messaging=/Users/omer/.pub-cache/hosted/pub.dev/firebase_messaging-15.2.10/
+flutter_local_notifications=/Users/omer/.pub-cache/hosted/pub.dev/flutter_local_notifications-19.5.0/
+path_provider_foundation=/Users/omer/.pub-cache/hosted/pub.dev/path_provider_foundation-2.5.1/
+qr_code_scanner=/Users/omer/.pub-cache/hosted/pub.dev/qr_code_scanner-1.0.1/
+shared_preferences_foundation=/Users/omer/.pub-cache/hosted/pub.dev/shared_preferences_foundation-2.5.6/
+sqflite_darwin=/Users/omer/.pub-cache/hosted/pub.dev/sqflite_darwin-2.4.2/
+uni_links=/Users/omer/.pub-cache/hosted/pub.dev/uni_links-0.5.1/

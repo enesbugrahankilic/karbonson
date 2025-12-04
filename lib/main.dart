@@ -19,6 +19,8 @@ import 'services/deep_linking_service.dart';
 import 'pages/login_page.dart';
 import 'pages/tutorial_page.dart';
 import 'theme/app_theme.dart';
+import 'core/navigation/app_router.dart';
+import 'core/navigation/navigation_service.dart';
 
 void main() {
   // Run the app inside a guarded zone; call ensureInitialized and runApp
@@ -264,7 +266,12 @@ class _Karbon2AppState extends State<Karbon2App> {
             ? ThemeMode.light 
             : themeProvider.themeMode,
           locale: languageProvider.locale,
-          home: _hasSeenTutorial ? const LoginPage() : const TutorialPage(),
+          navigatorKey: GlobalKey<NavigatorState>(), // Add global navigator key
+          navigatorObservers: [
+            AppNavigatorObserver(), // Register navigation observer
+          ],
+          onGenerateRoute: AppRouter().generateRoute,
+          initialRoute: _hasSeenTutorial ? AppRoutes.login : AppRoutes.tutorial,
         );
       },
     );
