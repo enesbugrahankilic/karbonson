@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
+import 'profile_service.dart';
 
 class ProfilePictureService {
   static const String _defaultAvatarsPath = 'assets/avatars/';
@@ -108,20 +109,28 @@ class ProfilePictureService {
   }
 
   /// Profil fotografini guncelle
-  Future<bool> updateProfilePicture(String imageUrl) async {
+  Future<bool> updateProfilePicture(String imageUrl, ProfileService profileService) async {
     try {
       final User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        debugPrint('Kullanici oturumu bulunamadi');
+        debugPrint('❌ Kullanici oturumu bulunamadi');
         return false;
       }
 
-      // Firestore daki kullanici profilini guncelle
-      // Bu islem ProfileService uzerinden yapilacak
-      debugPrint('Profil fotografi guncelleniyor: $imageUrl');
-      return true;
+      debugPrint('📸 Profil fotografi guncelleniyor: $imageUrl');
+      
+      // ProfileService uzerinden Firestore'u guncelle
+      final success = await profileService.updateProfilePicture(imageUrl);
+      
+      if (success) {
+        debugPrint('✅ Profil fotografi basariyla guncellendi: $imageUrl');
+      } else {
+        debugPrint('❌ Profil fotografi guncellenemedi');
+      }
+      
+      return success;
     } catch (e) {
-      debugPrint('Profil fotografi guncelleme hatasi: $e');
+      debugPrint('🚨 Profil fotografi guncelleme hatasi: $e');
       return false;
     }
   }
@@ -137,11 +146,47 @@ class ProfilePictureService {
       final Reference storageRef = _storage.ref().child(storagePath);
       await storageRef.delete();
       
-      debugPrint('Eski profil fotografi silindi');
+      debugPrint('🗑️ Eski profil fotografi silindi: $storagePath');
       return true;
     } catch (e) {
-      debugPrint('Profil fotografi silme hatasi: $e');
+      debugPrint('❌ Profil fotografi silme hatasi: $e');
       return false;
+    }
+  }
+
+  /// Eski profil fotoğrafını temizle ve yenisini yükle
+  Future<String?> replaceProfilePicture(String newImageUrl, ProfileService profileService) async {
+    try {
+      final User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        debugPrint('❌ Kullanici oturumu bulunamadi');
+        return null;
+      }
+
+      // Mevcut kullanici profilini al
+      final currentProfile = await profileService.loadServerProfile();
+      final oldImageUrl = currentProfile?.profilePictureUrl;
+
+      // Yeni profili güncelle
+      final success = await profileService.updateProfilePicture(newImageUrl);
+      if (!success) {
+        debugPrint('❌ Profil fotografi guncellenemedi');
+        return null;
+      }
+
+      // Eski fotografi sil (asset'ler degilse)
+      if (oldImageUrl != null && 
+          !oldImageUrl.contains('assets/') && 
+          !oldImageUrl.contains('default_avatar') &&
+          oldImageUrl != newImageUrl) {
+        await deleteImageFromFirebase(oldImageUrl);
+      }
+
+      debugPrint('✅ Profil fotografi basariyla degistirildi: $newImageUrl');
+      return newImageUrl;
+    } catch (e) {
+      debugPrint('🚨 Profil fotografi degistirme hatasi: $e');
+      return null;
     }
   }
 

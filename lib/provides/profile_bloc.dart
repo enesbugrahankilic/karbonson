@@ -50,6 +50,15 @@ class AddGameResult extends ProfileEvent {
   List<Object> get props => [score, isWin, gameType];
 }
 
+class UpdateProfilePicture extends ProfileEvent {
+  final String imageUrl;
+
+  const UpdateProfilePicture(this.imageUrl);
+
+  @override
+  List<Object> get props => [imageUrl];
+}
+
 // States
 abstract class ProfileState extends Equatable {
   const ProfileState();
@@ -93,6 +102,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<RefreshServerData>(_onRefreshServerData);
     on<UpdateNickname>(_onUpdateNickname);
     on<AddGameResult>(_onAddGameResult);
+    on<UpdateProfilePicture>(_onUpdateProfilePicture);
   }
 
   Future<void> _onLoadProfile(LoadProfile event, Emitter<ProfileState> emit) async {
@@ -228,6 +238,29 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         ));
       } catch (e) {
         emit(ProfileError('Oyun sonucu kaydedilirken hata oluştu: ${e.toString()}'));
+      }
+    }
+  }
+
+  Future<void> _onUpdateProfilePicture(UpdateProfilePicture event, Emitter<ProfileState> emit) async {
+    final currentState = state;
+    if (currentState is ProfileLoaded) {
+      try {
+        // Update profile picture URL in the state
+        final updatedServerData = currentState.profileData.serverData?.copyWith(
+          profilePictureUrl: event.imageUrl,
+        );
+        
+        final updatedProfile = currentState.profileData.copyWith(
+          serverData: updatedServerData,
+        );
+        
+        emit(ProfileLoaded(
+          profileData: updatedProfile,
+          currentNickname: currentState.currentNickname,
+        ));
+      } catch (e) {
+        emit(ProfileError('Profil resmi güncellenirken hata oluştu: ${e.toString()}'));
       }
     }
   }

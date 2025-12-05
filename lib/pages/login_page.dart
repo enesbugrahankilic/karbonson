@@ -35,6 +35,7 @@ class _LoginPageState extends State<LoginPage> {
   // Registration status
   bool _isRegistered = false;
   bool _isCheckingRegistration = true;
+  bool _hasCheckedPersistentAuth = false; // Track if auth check was done during page initialization
 
   // Kapsamlı isim önerisi listesi
   final List<String> _availableNames = [
@@ -121,7 +122,11 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   /// Check if user has persistent authentication and navigate accordingly
+  /// Only runs during page initialization to avoid interfering with manual navigation
   Future<void> _checkPersistentAuth() async {
+    // Only check once during page initialization
+    if (_hasCheckedPersistentAuth) return;
+    
     try {
       final authStateService = AuthenticationStateService();
       final isAuth = await authStateService.isCurrentUserAuthenticated();
@@ -130,6 +135,9 @@ class _LoginPageState extends State<LoginPage> {
         debugPrint('LoginPage: Persistent auth check - is authenticated: $isAuth');
         debugPrint('Auth state: ${authStateService.getDebugInfo()}');
       }
+      
+      // Mark as checked to prevent re-execution
+      _hasCheckedPersistentAuth = true;
       
       if (isAuth && mounted) {
         // User is already authenticated, navigate to profile page
@@ -145,6 +153,8 @@ class _LoginPageState extends State<LoginPage> {
       if (kDebugMode) {
         debugPrint('LoginPage: Error checking persistent auth: $e');
       }
+      // Still mark as checked even if there's an error to prevent retries
+      _hasCheckedPersistentAuth = true;
     }
   }
 

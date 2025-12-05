@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:developer' as developer;
+import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -22,9 +23,10 @@ class PerformanceService {
   // Memory Management
   Timer? _memoryCleanupTimer;
   int _maxCacheSize = 50; // Maximum number of cached items
+  int _optimizedCacheSize = 100; // Optimized cache size
   
   // Image Caching
-  final Map<String, CacheEntry> _imageCache = {};
+  final Map<String, ImageCacheEntry> _imageCache = {};
   final Map<String, int> _imageAccessCount = {};
 
   void initialize() {
@@ -98,7 +100,7 @@ class PerformanceService {
       final imageInfo = await _loadImageFromNetwork(url);
       
       if (imageInfo != null) {
-        _imageCache[cacheKey] = CacheEntry(
+        _imageCache[cacheKey] = ImageCacheEntry(
           imageInfo: imageInfo,
           createdAt: DateTime.now(),
         );
@@ -214,6 +216,165 @@ class PerformanceService {
     });
   }
 
+  // ⚡ HIZLANDIRMA: Async İşlemleri Optimize Et
+  Future<T> measureNetworkOperation<T>(String operation, Future<T> Function() fn) async {
+    startMeasure('network_$operation');
+    try {
+      // Network timeout ve retry logic
+      final result = await fn().timeout(const Duration(seconds: 10));
+      return result;
+    } catch (e) {
+      developer.log('Network operation failed: $operation - $e');
+      rethrow;
+    } finally {
+      endMeasure('network_$operation');
+    }
+  }
+
+  // ⚡ HIZLANDIRMA: Database İşlemlerini Ölç
+  Future<T> measureDatabaseOperation<T>(String operation, Future<T> Function() fn) async {
+    startMeasure('db_$operation');
+    try {
+      final result = await fn().timeout(const Duration(seconds: 15));
+      return result;
+    } catch (e) {
+      developer.log('Database operation failed: $operation - $e');
+      rethrow;
+    } finally {
+      endMeasure('db_$operation');
+    }
+  }
+
+  // ⚡ HIZLANDIRMA: Widget Build Performansı İzleme
+  void trackWidgetBuildPerformance(String widgetName, VoidCallback buildCallback) {
+    final stopwatch = Stopwatch()..start();
+    buildCallback();
+    stopwatch.stop();
+    
+    if (stopwatch.elapsedMilliseconds > 16) { // 60 FPS threshold
+      developer.log('Slow widget build detected: $widgetName took ${stopwatch.elapsedMilliseconds}ms');
+      startMeasure('slow_build_$widgetName');
+      endMeasure('slow_build_$widgetName');
+    }
+  }
+
+  // ⚡ HIZLANDIRMA: Memory Leak Detection
+  Timer? _memoryLeakDetector;
+  final Map<String, DateTime> _activeObjects = {};
+
+  void registerObject(String objectId) {
+    _activeObjects[objectId] = DateTime.now();
+  }
+
+  void unregisterObject(String objectId) {
+    _activeObjects.remove(objectId);
+  }
+
+  void startMemoryLeakDetection() {
+    _memoryLeakDetector = Timer.periodic(const Duration(minutes: 10), (_) {
+      _detectMemoryLeaks();
+    });
+  }
+
+  void _detectMemoryLeaks() {
+    final now = DateTime.now();
+    final suspiciousObjects = <String>[];
+    
+    for (final entry in _activeObjects.entries) {
+      if (now.difference(entry.value).inMinutes > 60) {
+        suspiciousObjects.add(entry.key);
+      }
+    }
+    
+    if (suspiciousObjects.isNotEmpty) {
+      developer.log('Potential memory leaks detected: ${suspiciousObjects.join(', ')}');
+    }
+  }
+
+  // ⚡ HIZLANDIRMA: Optimized Generic Cache Management
+  final Map<String, CacheEntry> _optimizedCache = {};
+  final Queue<String> _lruQueue = Queue<String>();
+  static const int _optimizedMaxCacheSize = 100;
+
+  void putInCache<T>(String key, T data, {Duration? expiry}) {
+    if (_optimizedCache.length >= _optimizedMaxCacheSize) {
+      _evictOldestCache();
+    }
+    
+    _optimizedCache[key] = CacheEntry(
+      data: data,
+      createdAt: DateTime.now(),
+      expiry: expiry,
+    );
+    _lruQueue.add(key);
+  }
+
+  T? getFromCache<T>(String key) {
+    final entry = _optimizedCache[key];
+    if (entry == null) return null;
+    
+    if (entry.expiry != null && 
+        DateTime.now().difference(entry.createdAt) > entry.expiry!) {
+      _optimizedCache.remove(key);
+      _lruQueue.remove(key);
+      return null;
+    }
+    
+    // Move to end (most recently used)
+    _lruQueue.remove(key);
+    _lruQueue.add(key);
+    
+    return entry.data as T;
+  }
+
+  void _evictOldestCache() {
+    if (_lruQueue.isNotEmpty) {
+      final oldestKey = _lruQueue.removeFirst();
+      _optimizedCache.remove(oldestKey);
+    }
+  }
+
+  // ⚡ HIZLANDIRMA: Batch Operations
+  Future<List<T>> processBatch<T, R>(
+    List<R> items,
+    Future<T> Function(R item) processor, {
+    int batchSize = 10,
+  }) async {
+    final results = <T>[];
+    
+    for (int i = 0; i < items.length; i += batchSize) {
+      final batch = items.sublist(
+        i, 
+        i + batchSize < items.length ? i + batchSize : items.length
+      );
+      
+      final batchResults = await Future.wait(
+        batch.map((item) => processor(item))
+      );
+      
+      results.addAll(batchResults);
+    }
+    
+    return results;
+  }
+
+  // ⚡ HIZLANDIRMA: Performance Alerts
+  void checkPerformanceThresholds() {
+    for (final metric in _metrics.values) {
+      if (metric.duration != null) {
+        final durationMs = metric.duration!.inMilliseconds;
+        
+        if (durationMs > 1000) {
+          developer.log('⚠️ CRITICAL: ${metric.name} took ${durationMs}ms');
+        } else if (durationMs > 500) {
+          developer.log('⚠️ WARNING: ${metric.name} took ${durationMs}ms');
+        } else if (durationMs > 100) {
+          developer.log('ℹ️ INFO: ${metric.name} took ${durationMs}ms');
+        }
+      }
+    }
+  }
+
   // Lazy List Building
   Widget buildLazyList<T>({
     required List<T> items,
@@ -239,13 +400,25 @@ class PerformanceService {
 
 // Supporting Classes
 
-class CacheEntry {
+class ImageCacheEntry {
   final ImageInfo imageInfo;
   final DateTime createdAt;
 
-  CacheEntry({
+  ImageCacheEntry({
     required this.imageInfo,
     required this.createdAt,
+  });
+}
+
+class CacheEntry<T> {
+  final T data;
+  final DateTime createdAt;
+  final Duration? expiry;
+
+  CacheEntry({
+    required this.data,
+    required this.createdAt,
+    this.expiry,
   });
 }
 

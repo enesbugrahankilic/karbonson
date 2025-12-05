@@ -63,10 +63,41 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
     });
 
     try {
-      // For this verification flow, we'll simulate getting the verification ID
-      // In a real implementation, this would come from the multi-factor resolver
+      // Get phone number from multi-factor resolver
+      String? phoneNumber;
+      
+      // First try to get phone number from metadata if available
+      if (widget.authResult.metadata != null && widget.authResult.metadata!['phoneNumber'] != null) {
+        phoneNumber = widget.authResult.metadata!['phoneNumber'] as String;
+      }
+      
+      // If not found in metadata, try to get from resolver hints
+      if (phoneNumber == null && widget.authResult.multiFactorResolver != null) {
+        final hints = widget.authResult.multiFactorResolver!.hints;
+        for (final hint in hints) {
+          if (hint is MultiFactorInfo && hint.factorId.contains('phone')) {
+            // For MultiFactorInfo, phone number might be in displayName or we need to get it differently
+            if (hint is PhoneMultiFactorInfo) {
+              phoneNumber = (hint as PhoneMultiFactorInfo).phoneNumber;
+              break;
+            }
+          }
+        }
+      }
+      
+      // If still no phone number, prompt user to enter it
+      if (phoneNumber == null) {
+        final enteredNumber = await _promptUserForPhoneNumber();
+        if (enteredNumber == null || enteredNumber.isEmpty) {
+          Navigator.of(context).pop();
+          return;
+        }
+        phoneNumber = enteredNumber;
+      }
+
+      // Start phone verification with the correct phone number
       final verificationResult = await Firebase2FAService.startPhoneVerification(
-        phoneNumber: '+905551234567', // This should come from user selection
+        phoneNumber: phoneNumber!,
       );
 
       if (mounted) {
@@ -192,6 +223,53 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
   /// Resend SMS code
   Future<void> _resendSmsCode() async {
     await _startVerification();
+  }
+
+  /// Prompt user for phone number
+  Future<String?> _promptUserForPhoneNumber() async {
+    final controller = TextEditingController();
+    
+    return await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Telefon Numarası Girin'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Telefon numaranızı girin (örn: 0555 555 55 55):'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(
+                  labelText: 'Telefon Numarası',
+                  hintText: '0555 555 55 55',
+                  prefixIcon: Icon(Icons.phone),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('İptal'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final phoneNumber = controller.text.trim();
+                if (phoneNumber.isNotEmpty) {
+                  Navigator.of(context).pop(phoneNumber);
+                }
+              },
+              child: const Text('Devam Et'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   /// Cancel 2FA and go back to login

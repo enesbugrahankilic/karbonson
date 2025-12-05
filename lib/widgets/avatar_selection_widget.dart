@@ -30,13 +30,8 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Debug: Avatar listesini logla
-    print('AvatarSelectionWidget: defaultAvatars count: ${_profilePictureService.defaultAvatars.length}');
-    print('AvatarSelectionWidget: emojiAvatars count: ${_profilePictureService.emojiAvatars.length}');
-    print('AvatarSelectionWidget: allAvatars count: ${_profilePictureService.allAvatars.length}');
-    
     return Container(
-      height: MediaQuery.of(context).size.height * 0.7, // Ekran yüksekliğinin %70'i
+      height: MediaQuery.of(context).size.height * 0.7,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -67,16 +62,6 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
                   _buildSectionTitle('Emoji Avatar'),
                   _buildAvatarGrid(_profilePictureService.emojiAvatars),
                   
-                  // Debug: Tüm avatar listesini göster
-                  if (_profilePictureService.allAvatars.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'Debug: Avatar listesi boş!',
-                        style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  
                   const SizedBox(height: 20),
                   
                   // Action Buttons
@@ -105,7 +90,23 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
   }
 
   Widget _buildAvatarGrid(List<String> avatars) {
-    print('AvatarSelectionWidget: Building avatar grid with ${avatars.length} avatars');
+    // Eğer avatar listesi boşsa bilgi mesajı göster
+    if (avatars.isEmpty) {
+      return Container(
+        height: 120,
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: const Center(
+          child: Text(
+            'Avatar bulunamadı',
+            style: TextStyle(
+              color: Colors.grey,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Container(
       height: 120,
       child: ListView.builder(
@@ -114,7 +115,6 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
         itemCount: avatars.length,
         itemBuilder: (context, index) {
           final String avatarUrl = avatars[index];
-          print('AvatarSelectionWidget: Building avatar item $index: $avatarUrl');
           return _buildAvatarItem(avatarUrl);
         },
       ),
@@ -159,7 +159,6 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
                       height: 80,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
-                        print('AvatarSelectionWidget: SVG yükleme hatası: $avatarUrl - $error');
                         return Container(
                           width: 80,
                           height: 80,

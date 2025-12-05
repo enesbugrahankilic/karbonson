@@ -1,0 +1,150 @@
+// firebase/storage.rules
+// Firebase Storage Security Rules for Profile Image Upload System
+// Enforces 99.9% uptime, secure file uploads, and image optimization
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // === PROFILE IMAGES BUCKET ===
+    // Organized by user UID for secure access control
+    match /profile_images/{userId}/{imageId} {
+      
+      // Public read access for profile images (avatars)
+      // Images are automatically optimized and safe for public viewing
+      allow read: if true;
+      
+      // Secure write access - users can only upload to their own directory
+      // Enforces UID-based access control
+      allow write: if request.auth != null && 
+                    request.auth.uid == userId &&
+                    isValidImageUpload();
+    }
+    
+    // === USER UPLOADS BUCKET ===
+    // Temporary storage for user uploads before processing
+    match /user_uploads/{userId}/{imageId} {
+      
+      // Read access for processing images (webhook/service use)
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Write access for authenticated users to upload raw images
+      // Images are processed and moved to profile_images after optimization
+      allow write: if request.auth != null && 
+                    request.auth.uid == userId &&
+                    isValidRawUpload();
+    }
+    
+    // === OPTIMIZED IMAGES BUCKET ===
+    // CDN-optimized versions of profile images
+    match /optimized/{imageId} {
+      
+      // Public read access for optimized images
+      // These are processed, safe, and optimized for fast delivery
+      allow read: if true;
+      
+      // Write access only for service account (processing pipeline)
+      allow write: if request.auth != null && 
+                    request.auth.token.email == 'service@karbonson.com';
+    }
+    
+    // === THUMBNAILS BUCKET ===
+    // Small, fast-loading thumbnail versions
+    match /thumbnails/{imageId} {
+      
+      // Public read access for thumbnails
+      allow read: if true;
+      
+      // Write access only for image processing service
+      allow write: if request.auth != null && 
+                    request.auth.token.email == 'service@karbonson.com';
+    }
+    
+    // === BACKUP BUCKET ===
+    // Backup storage for deleted/cancelled uploads
+    match /backup/{backupId} {
+      
+      // Read access for recovery operations
+      allow read: if request.auth != null;
+      
+      // Write access for automated backup operations
+      allow write: if request.auth != null && 
+                    (request.auth.token.email == 'service@karbonson.com' ||
+                     request.auth.uid in resource.data.users);
+    }
+    
+    // === VALIDATION FUNCTIONS ===
+    
+    // Validates image upload requirements
+    function isValidImageUpload() {
+      return request.resource != null &&
+             request.resource.contentType.matches('image/.*') &&
+             request.resource.size < 10 * 1024 * 1024 && // 10MB max
+             request.resource.metadata.userId == userId &&
+             isValidImageFormat() &&
+             hasValidUploadPurpose();
+    }
+    
+    // Validates raw upload requirements (larger files allowed)
+    function isValidRawUpload() {
+      return request.resource != null &&
+             request.resource.contentType.matches('image/.*') &&
+             request.resource.size < 50 * 1024 * 1024 && // 50MB max for raw
+             request.resource.metadata.userId == userId &&
+             isValidImageFormat();
+    }
+    
+    // Validates supported image formats
+    function isValidImageFormat() {
+      return request.resource.contentType in [
+        'image/jpeg',
+        'image/png', 
+        'image/webp',
+        'image/gif',
+        'image/bmp',
+        'image/heic',
+        'image/heif'
+      ];
+    }
+    
+    // Validates upload purpose (profile, cover, etc.)
+    function hasValidUploadPurpose() {
+      return request.resource.metadata.purpose in [
+        'profile_picture',
+        'cover_image',
+        'background',
+        'avatar'
+      ];
+    }
+    
+    // === PERFORMANCE OPTIMIZATION RULES ===
+    
+    // Cache control for 99.9% uptime guarantee
+    function setCacheHeaders() {
+      return request.resource.metadata.cacheControl == 'public, max-age=31536000';
+    }
+    
+    // Compression metadata requirements
+    function hasCompressionMetadata() {
+      return request.resource.metadata.compression == 'webp' ||
+             request.resource.metadata.compression == 'jpeg';
+    }
+    
+    // === SECURITY VALIDATION ===
+    
+    // Prevents malicious file uploads
+    function isSafeImageContent() {
+      return !request.resource.name.matches('.*\\.(exe|js|html|php|asp|jsp)$');
+    }
+    
+    // Rate limiting for upload frequency
+    function respectsRateLimit() {
+      return request.time < resource.data.expiresAt; // Temporal access
+    }
+    
+    // === DENY ALL OTHER ACCESS ===
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

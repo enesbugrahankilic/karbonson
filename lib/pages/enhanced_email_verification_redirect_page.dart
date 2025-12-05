@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firebase_auth_service.dart';
 import '../theme/theme_colors.dart';
+import '../widgets/home_button.dart';
 
 class EnhancedEmailVerificationRedirectPage extends StatefulWidget {
   final String? passwordResetEmail;
@@ -188,8 +189,8 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
   }
 
   void _navigateBackToMain() {
-    // Navigate back to the main app flow
-    Navigator.of(context).popUntil((route) => route.isFirst);
+    // Navigate back using pop - let HomeButton handle going to login
+    Navigator.of(context).pop();
   }
 
   @override
@@ -201,6 +202,13 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: const HomeButton(),
+        title: const Text('E-posta Doğrulama'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: ThemeColors.getText(context),
+      ),
       backgroundColor: Colors.transparent,
       body: Container(
         decoration: BoxDecoration(

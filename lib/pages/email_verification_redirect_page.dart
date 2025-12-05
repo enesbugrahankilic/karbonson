@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../theme/theme_colors.dart';
+import '../widgets/home_button.dart';
 
 class EmailVerificationRedirectPage extends StatefulWidget {
   const EmailVerificationRedirectPage({super.key});
@@ -96,10 +97,7 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
     }
   }
 
-  void _navigateBackToMain() {
-    // Navigate back to the main app flow
-    Navigator.of(context).popUntil((route) => route.isFirst);
-  }
+
 
   @override
   void dispose() {
@@ -113,6 +111,13 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
     final userEmail = currentUser?.email;
 
     return Scaffold(
+      appBar: AppBar(
+        leading: const HomeButton(),
+        title: const Text('E-posta Doğrulama'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: ThemeColors.getText(context),
+      ),
       backgroundColor: Colors.transparent,
       body: Container(
         decoration: BoxDecoration(
@@ -332,7 +337,9 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
                               width: double.infinity,
                               height: 50,
                               child: OutlinedButton.icon(
-                                onPressed: _isLoading ? null : _navigateBackToMain,
+                                onPressed: _isLoading ? null : () {
+                                  Navigator.of(context).pop();
+                                },
                                 icon: const Icon(Icons.arrow_forward),
                                 label: const Text('Daha Sonra Yap'),
                                 style: OutlinedButton.styleFrom(

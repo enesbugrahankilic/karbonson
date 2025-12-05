@@ -14,6 +14,7 @@ class TwoFactorAuthResult {
   final bool requires2FA;
   final MultiFactorResolver? multiFactorResolver;
   final PhoneAuthProvider? phoneProvider;
+  final Map<String, dynamic>? metadata;
 
   const TwoFactorAuthResult({
     required this.isSuccess,
@@ -22,17 +23,20 @@ class TwoFactorAuthResult {
     this.requires2FA = false,
     this.multiFactorResolver,
     this.phoneProvider,
+    this.metadata,
   });
 
   factory TwoFactorAuthResult.success({
     required String message,
     String? userId,
+    Map<String, dynamic>? metadata,
   }) {
     return TwoFactorAuthResult(
       isSuccess: true,
       message: message,
       userId: userId,
       requires2FA: false,
+      metadata: metadata,
     );
   }
 
@@ -40,6 +44,7 @@ class TwoFactorAuthResult {
     required String message,
     required MultiFactorResolver? multiFactorResolver,
     required PhoneAuthProvider? phoneProvider,
+    Map<String, dynamic>? metadata,
   }) {
     return TwoFactorAuthResult(
       isSuccess: false,
@@ -47,14 +52,16 @@ class TwoFactorAuthResult {
       requires2FA: true,
       multiFactorResolver: multiFactorResolver,
       phoneProvider: phoneProvider,
+      metadata: metadata,
     );
   }
 
-  factory TwoFactorAuthResult.failure(String message) {
+  factory TwoFactorAuthResult.failure(String message, {Map<String, dynamic>? metadata}) {
     return TwoFactorAuthResult(
       isSuccess: false,
       message: message,
       requires2FA: false,
+      metadata: metadata,
     );
   }
 

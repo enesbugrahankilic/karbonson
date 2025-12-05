@@ -8,6 +8,7 @@ import '../services/profile_service.dart';
 import '../services/deep_linking_service.dart';
 import '../theme/theme_colors.dart';
 import '../widgets/login_dialog.dart';
+import '../widgets/home_button.dart';
 
 /// Password Change Page for setting new password after email reset link
 /// Handles deep linking from password reset emails
@@ -278,15 +279,8 @@ class _PasswordChangePageState extends State<PasswordChangePage>
           actions: [
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).popUntil((route) => route.isFirst); // Return to login
-                // Show login dialog
-                Future.delayed(const Duration(milliseconds: 500), () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => const LoginDialog(),
-                  );
-                });
+                Navigator.of(context).pop(); // Close success dialog
+                // User can now use the HomeButton to navigate to login
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
@@ -365,6 +359,13 @@ class _PasswordChangePageState extends State<PasswordChangePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: const HomeButton(),
+        title: const Text('Şifre Değiştir'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: ThemeColors.getText(context),
+      ),
       backgroundColor: Colors.transparent,
       body: Container(
         decoration: BoxDecoration(

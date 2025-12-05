@@ -544,8 +544,10 @@ class _IdentityCard extends StatelessWidget {
                 context: context,
                 builder: (context) => ProfilePictureChangeDialog(
                   currentProfilePictureUrl: profileData.serverData?.profilePictureUrl,
-                  onProfilePictureUpdated: () {
-                    // Profili yenile
+                  onProfilePictureUpdated: (imageUrl) {
+                    // Profil resmini hemen güncelle
+                    context.read<ProfileBloc>().add(UpdateProfilePicture(imageUrl));
+                    // Backend'i de senkronize et (arka planda)
                     context.read<ProfileBloc>().add(RefreshServerData());
                   },
                 ),

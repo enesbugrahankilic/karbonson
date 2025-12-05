@@ -3,13 +3,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../services/profile_picture_service.dart';
 import '../services/profile_service.dart';
+import '../provides/profile_bloc.dart';
 import 'avatar_selection_widget.dart';
 
 class ProfilePictureChangeDialog extends StatefulWidget {
   final String? currentProfilePictureUrl;
-  final VoidCallback? onProfilePictureUpdated;
+  final Function(String)? onProfilePictureUpdated;
 
   const ProfilePictureChangeDialog({
     Key? key,
@@ -26,7 +28,10 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
   final ProfileService _profileService = ProfileService();
   
   bool _isLoading = false;
+  bool _isUploading = false;
+  bool _hasError = false;
   String? _selectedAvatar;
+  String _uploadStatus = '';
 
   @override
   Widget build(BuildContext context) {
@@ -50,10 +55,33 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
           const CircularProgressIndicator(),
           const SizedBox(height: 16),
           Text(
-            _isLoading ? 'Profil fotografi guncelleniyor...' : 'Yukleniyor...',
+            _isUploading ? _uploadStatus : 'Yukleniyor...',
             style: const TextStyle(fontSize: 16),
+            textAlign: TextAlign.center,
           ),
+          if (_hasError) ...[
+            const SizedBox(height: 16),
+            _buildRetryButton(),
+          ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildRetryButton() {
+    return ElevatedButton.icon(
+      onPressed: () {
+        setState(() {
+          _hasError = false;
+          _isUploading = false;
+          _isLoading = false;
+        });
+      },
+      icon: const Icon(Icons.refresh),
+      label: const Text('Tekrar Dene'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.orange,
+        foregroundColor: Colors.white,
       ),
     );
   }
@@ -255,6 +283,9 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
   Future<void> _uploadAndUpdateImage(File imageFile) async {
     setState(() {
       _isLoading = true;
+      _isUploading = true;
+      _hasError = false;
+      _uploadStatus = 'Resim yükleniyor...';
     });
 
     try {
@@ -262,11 +293,22 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
       final String? imageUrl = await _profilePictureService.uploadImageToFirebase(imageFile);
       
       if (imageUrl != null) {
+        setState(() {
+          _uploadStatus = 'Profil güncelleniyor...';
+        });
         await _updateProfilePicture(imageUrl);
       } else {
+        setState(() {
+          _hasError = true;
+          _isUploading = false;
+        });
         _showErrorSnackBar('Resim yuklenemedi, lutfen tekrar deneyin.');
       }
     } catch (e) {
+      setState(() {
+        _hasError = true;
+        _isUploading = false;
+      });
       _showErrorSnackBar('Bir hata olustu: ${e.toString()}');
     } finally {
       setState(() {
@@ -278,20 +320,31 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
   Future<void> _updateProfilePicture(String imageUrl) async {
     setState(() {
       _isLoading = true;
+      _isUploading = true;
+      _hasError = false;
+      _uploadStatus = 'Profil güncelleniyor...';
     });
 
     try {
-      // ProfileService ile profil fotografini güncelle
-      final success = await _profileService.updateProfilePicture(imageUrl);
+      // Eski fotoğrafı temizle ve yenisini yükle
+      final updatedUrl = await _profilePictureService.replaceProfilePicture(imageUrl, _profileService);
       
-      if (success) {
-        widget.onProfilePictureUpdated?.call();
+      if (updatedUrl != null) {
+        widget.onProfilePictureUpdated?.call(updatedUrl);
         Navigator.of(context).pop(); // Dialog'u kapat
         _showSuccessSnackBar('Profil fotografi basariyla guncellendi!');
       } else {
+        setState(() {
+          _hasError = true;
+          _isUploading = false;
+        });
         _showErrorSnackBar('Profil fotografi guncellenemedi.');
       }
     } catch (e) {
+      setState(() {
+        _hasError = true;
+        _isUploading = false;
+      });
       _showErrorSnackBar('Bir hata olustu: ${e.toString()}');
     } finally {
       setState(() {

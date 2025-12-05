@@ -1,29 +1,149 @@
 // lib/services/local_storage_service.dart
 
+import 'dart:async';
 import 'dart:convert';
+import 'dart:collection';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 import '../models/user_data.dart';
 import '../models/game_board.dart';
 import '../models/profile_data.dart';
 
+/// Cache entry with expiry support
+class CacheEntry {
+  final dynamic data;
+  final DateTime createdAt;
+  final Duration? expiry;
+
+  CacheEntry({
+    required this.data,
+    required this.createdAt,
+    this.expiry,
+  });
+
+  bool get isExpired {
+    if (expiry == null) return false;
+    return DateTime.now().difference(createdAt) > expiry!;
+  }
+}
+
 class LocalStorageService {
+  static LocalStorageService? _instance;
+  static LocalStorageService get instance => _instance ??= LocalStorageService._();
+  
+  LocalStorageService._();
+  
   static const String _userDataKey = 'cached_user_data';
   static const String _profileDataKey = 'cached_profile_data';
   static const String _offlineGameStateKey = 'cached_offline_game';
   static const String _cachedQuestionsKey = 'cached_questions';
   static const String _lastSyncTimeKey = 'last_sync_time';
   static const String _offlineModeKey = 'offline_mode_enabled';
+  
+  // ⚡ PERFORMANCE: Cache expiration settings
+  static const Duration _defaultCacheExpiry = Duration(hours: 24);
+  static const int _maxCacheSize = 50; // Maximum items in cache
+  
+  // ⚡ PERFORMANCE: LRU Cache for frequently accessed data
+  final LinkedHashMap<String, CacheEntry> _memoryCache = LinkedHashMap();
+  final Queue<String> _accessOrder = Queue<String>();
 
   static SharedPreferences? _prefs;
+  
+  // ⚡ PERFORMANCE: Batch operations support
+  static final Map<String, dynamic> _pendingWrites = {};
+  static Timer? _batchWriteTimer;
 
   static Future<void> initialize() async {
     _prefs = await SharedPreferences.getInstance();
+    _startBatchWriteTimer();
+  }
+  
+  // ⚡ PERFORMANCE: Batch write operations for better performance
+  static void _startBatchWriteTimer() {
+    _batchWriteTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      _flushPendingWrites();
+    });
+  }
+  
+  static Future<void> _flushPendingWrites() async {
+    if (_pendingWrites.isEmpty) return;
+    
+    final writes = Map.from(_pendingWrites);
+    _pendingWrites.clear();
+    
+    try {
+      for (final entry in writes.entries) {
+        await _prefs?.setString(entry.key, jsonEncode(entry.value));
+      }
+      if (kDebugMode) {
+        debugPrint('Batch write completed: ${writes.length} items');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Batch write failed: $e');
+      }
+      // Re-add failed writes to pending
+      _pendingWrites.addAll(writes.cast<String, dynamic>());
+    }
   }
 
-  // User Data Caching
+  // ⚡ PERFORMANCE: Enhanced caching with memory cache
+  static void putInMemoryCache(String key, dynamic data, {Duration? expiry}) {
+    final entry = CacheEntry(
+      data: data,
+      createdAt: DateTime.now(),
+      expiry: expiry ?? _defaultCacheExpiry,
+    );
+    
+    // Remove from cache if exists to update access order
+    _instance?._memoryCache.remove(key);
+    _instance?._accessOrder.remove(key);
+    
+    // Add to cache
+    _instance?._memoryCache[key] = entry;
+    _instance?._accessOrder.add(key);
+    
+    // Evict oldest if cache is full
+    if (_instance!._memoryCache.length > _maxCacheSize) {
+      _evictOldestCache();
+    }
+  }
+  
+  static T? getFromMemoryCache<T>(String key) {
+    final entry = _instance?._memoryCache[key];
+    if (entry == null) return null;
+    
+    // Check expiry
+    if (entry.isExpired) {
+      _instance?._memoryCache.remove(key);
+      _instance?._accessOrder.remove(key);
+      return null;
+    }
+    
+    // Move to end (most recently used)
+    _instance?._accessOrder.remove(key);
+    _instance?._accessOrder.add(key);
+    
+    return entry.data as T;
+  }
+  
+  static void _evictOldestCache() {
+    if (_instance!._accessOrder.isNotEmpty) {
+      final oldestKey = _instance!._accessOrder.removeFirst();
+      _instance!._memoryCache.remove(oldestKey);
+    }
+  }
+
+  // User Data Caching with batch support
   static Future<void> cacheUserData(UserData userData) async {
     try {
-      await _prefs?.setString(_userDataKey, jsonEncode(userData.toMap()));
+      final data = userData.toMap();
+      _pendingWrites[_userDataKey] = data;
+      
+      // Also cache in memory for fast access
+      putInMemoryCache(_userDataKey, userData);
+      
     } catch (e) {
       throw Exception('Failed to cache user data: $e');
     }

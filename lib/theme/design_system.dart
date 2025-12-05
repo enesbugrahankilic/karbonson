@@ -39,7 +39,7 @@ class DesignSystem {
         gradient: LinearGradient(
           colors: [
             bgColor,
-            bgColor.withOpacity(0.95),
+            bgColor.withValues(alpha: 0.95),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -48,8 +48,8 @@ class DesignSystem {
         boxShadow: ThemeColors.getModernShadow(context, elevation: elevation ?? 1.0),
         border: Border.all(
           color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white.withOpacity(0.05)
-              : Colors.black.withOpacity(0.05),
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.black.withValues(alpha: 0.05),
           width: 1,
         ),
       );
@@ -61,8 +61,8 @@ class DesignSystem {
       boxShadow: ThemeColors.getModernShadow(context, elevation: elevation ?? 1.0),
       border: isElevated ? Border.all(
         color: Theme.of(context).brightness == Brightness.dark
-            ? Colors.white.withOpacity(0.1)
-            : Colors.black.withOpacity(0.1),
+            ? Colors.white.withValues(alpha: 0.1)
+            : Colors.black.withValues(alpha: 0.1),
         width: 1,
       ) : null,
     );
@@ -83,7 +83,7 @@ class DesignSystem {
         borderRadius: BorderRadius.circular(radiusM),
       ),
       elevation: 2,
-      shadowColor: primaryColor.withOpacity(0.3),
+      shadowColor: primaryColor.withValues(alpha: 0.3),
       minimumSize: const Size.fromHeight(48), // Accessibility touch target
       textStyle: const TextStyle(
         fontSize: 16,
@@ -91,39 +91,39 @@ class DesignSystem {
         letterSpacing: 0.5,
       ),
     ).copyWith(
-      backgroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
-        if (states.contains(MaterialState.disabled)) {
+      backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+        if (states.contains(WidgetState.disabled)) {
           return Theme.of(context).brightness == Brightness.dark
               ? Colors.grey.shade700
               : Colors.grey.shade300;
         }
-        if (states.contains(MaterialState.pressed)) {
+        if (states.contains(WidgetState.pressed)) {
           return Color.alphaBlend(
-            Colors.black.withOpacity(0.1), 
+            Colors.black.withValues(alpha: 0.1), 
             primaryColor
           );
         }
-        if (states.contains(MaterialState.hovered)) {
+        if (states.contains(WidgetState.hovered)) {
           return Color.alphaBlend(
-            Colors.white.withOpacity(0.1), 
+            Colors.white.withValues(alpha: 0.1), 
             primaryColor
           );
         }
         return primaryColor;
       }),
-      foregroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
-        if (states.contains(MaterialState.disabled)) {
+      foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+        if (states.contains(WidgetState.disabled)) {
           return Theme.of(context).brightness == Brightness.dark
               ? Colors.grey.shade400
               : Colors.grey.shade600;
         }
         return Colors.white;
       }),
-      elevation: MaterialStateProperty.resolveWith<double>((states) {
-        if (states.contains(MaterialState.disabled)) {
+      elevation: WidgetStateProperty.resolveWith<double>((states) {
+        if (states.contains(WidgetState.disabled)) {
           return 0;
         }
-        if (states.contains(MaterialState.pressed)) {
+        if (states.contains(WidgetState.pressed)) {
           return 1;
         }
         return 2;
@@ -619,8 +619,8 @@ class DesignSystem {
         borderRadius: BorderRadius.circular(radiusL),
         border: Border.all(
           color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white.withOpacity(0.1)
-              : Colors.white.withOpacity(0.2),
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.white.withValues(alpha: 0.2),
           width: 1,
         ),
         boxShadow: ThemeColors.getModernShadow(context, elevation: 0.5),
@@ -695,8 +695,8 @@ class DesignSystem {
           strokeWidth: strokeWidth,
           valueColor: AlwaysStoppedAnimation<Color>(progressColor),
           backgroundColor: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white.withOpacity(0.1)
-              : Colors.black.withOpacity(0.1),
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.black.withValues(alpha: 0.1),
         ),
       );
     }

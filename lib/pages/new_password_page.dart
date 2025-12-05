@@ -7,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firebase_auth_service.dart';
 import '../theme/theme_colors.dart';
+import '../core/navigation/app_router.dart';
+import '../widgets/home_button.dart';
 
 /// New Password Page - sets new password after OTP verification
 class NewPasswordPage extends StatefulWidget {
@@ -216,14 +218,14 @@ class _NewPasswordPageState extends State<NewPasswordPage>
       case 'forgot_password':
         // Login sayfasına git
         Navigator.of(context).pushNamedAndRemoveUntil(
-          '/login',
+          AppRoutes.login,
           (route) => false,
         );
         break;
       default:
         // Varsayılan olarak login'e git
         Navigator.of(context).pushNamedAndRemoveUntil(
-          '/login',
+          AppRoutes.login,
           (route) => false,
         );
     }
@@ -254,6 +256,13 @@ class _NewPasswordPageState extends State<NewPasswordPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: const HomeButton(),
+        title: Text(_getPageTitle()),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: ThemeColors.getText(context),
+      ),
       backgroundColor: Colors.transparent,
       body: Container(
         decoration: BoxDecoration(

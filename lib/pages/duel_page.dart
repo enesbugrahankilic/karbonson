@@ -1,7 +1,5 @@
 // lib/pages/duel_page.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/duel_game_logic.dart';
 import '../services/firestore_service.dart';
 import '../services/authentication_state_service.dart';
