@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../services/uid_verification_service.dart';
+import '../widgets/home_button.dart';
 
 class UIDDebugPage extends StatefulWidget {
   const UIDDebugPage({super.key});
@@ -25,25 +26,28 @@ class _UIDDebugPageState extends State<UIDDebugPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const HomeButton(),
         title: const Text('UID Debug & Cleanup'),
         backgroundColor: Colors.red.shade700,
         foregroundColor: Colors.white,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 20),
-            _buildQuickHealthCheck(),
-            const SizedBox(height: 20),
-            _buildFullCleanup(),
-            const SizedBox(height: 20),
-            _buildResultsDisplay(),
-            const SizedBox(height: 20),
-            _buildInfoCard(),
-          ],
+      body: Scrollbar(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildHeader(),
+              const SizedBox(height: 20),
+              _buildQuickHealthCheck(),
+              const SizedBox(height: 20),
+              _buildFullCleanup(),
+              const SizedBox(height: 20),
+              _buildResultsDisplay(),
+              const SizedBox(height: 20),
+              _buildInfoCard(),
+            ],
+          ),
         ),
       ),
     );

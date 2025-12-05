@@ -65,6 +65,45 @@ class ProfileService {
     return null;
   }
 
+  /// Update profile picture URL
+  Future<bool> updateProfilePicture(String imageUrl) async {
+    try {
+      final User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        if (kDebugMode) debugPrint('❌ No user available for profile picture update');
+        return false;
+      }
+
+      // Get current user profile
+      final currentProfile = await _firestoreService.getUserProfile(user.uid);
+      if (currentProfile == null) {
+        if (kDebugMode) debugPrint('❌ User profile not found for picture update');
+        return false;
+      }
+
+      // Create updated user data with new profile picture URL
+      final updatedUserData = currentProfile.copyWith(
+        profilePictureUrl: imageUrl,
+      );
+
+      // Save updated profile
+      final success = await _firestoreService.createOrUpdateUserProfile(
+        nickname: updatedUserData.nickname,
+        profilePictureUrl: updatedUserData.profilePictureUrl,
+        privacySettings: updatedUserData.privacySettings,
+      );
+
+      if (kDebugMode) {
+        debugPrint('✅ Profile picture updated successfully: ${updatedUserData.profilePictureUrl}');
+      }
+
+      return success != null;
+    } catch (e) {
+      if (kDebugMode) debugPrint('🚨 Error updating profile picture: $e');
+      return false;
+    }
+  }
+
   /// Update user profile in Firebase with UID Centrality (Specification I.1-I.2)
   Future<bool> updateServerProfile(UserData userData) async {
     try {

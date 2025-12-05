@@ -8,6 +8,8 @@ import 'board_game_page.dart';
 import '../utils/room_code_generator.dart';
 import '../widgets/friend_invite_dialog.dart';
 import '../widgets/game_invitation_list.dart';
+import '../widgets/copy_to_clipboard_widget.dart';
+import '../widgets/home_button.dart';
 
 class RoomManagementPage extends StatefulWidget {
   final String userNickname;
@@ -237,7 +239,17 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Oda Kodu:', style: TextStyle(fontWeight: FontWeight.bold)),
-                        Text(room.roomCode, style: const TextStyle(fontSize: 18, color: Colors.blue)),
+                        Flexible(
+                          child: CopyToClipboardWidget(
+                            textToCopy: room.roomCode,
+                            successMessage: 'Oda kodu kopyalandı!',
+                            child: Text(
+                              room.roomCode, 
+                              style: const TextStyle(fontSize: 18, color: Colors.blue),
+                              textAlign: TextAlign.right,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -245,9 +257,16 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Erişim Kodu:', style: TextStyle(fontWeight: FontWeight.bold)),
-                        SelectableText(
-                          accessCode,
-                          style: const TextStyle(fontSize: 18, color: Colors.green),
+                        Flexible(
+                          child: CopyToClipboardWidget(
+                            textToCopy: accessCode,
+                            successMessage: 'Erişim kodu kopyalandı!',
+                            child: SelectableText(
+                              accessCode,
+                              style: const TextStyle(fontSize: 18, color: Colors.green),
+                              textAlign: TextAlign.right,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -421,6 +440,7 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const HomeButton(),
         title: const Text('Oda Yönetimi', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -652,9 +672,27 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
                                                 '${room.hostNickname}\'ın Odası',
                                                 style: const TextStyle(color: Colors.black),
                                               ),
-                                              subtitle: Text(
-                                                '${room.players.length}/4 oyuncu • Kod: ${room.roomCode}',
-                                                style: TextStyle(color: Colors.grey[600]),
+                                              subtitle: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    '${room.players.length}/4 oyuncu',
+                                                    style: TextStyle(color: Colors.grey[600]),
+                                                  ),
+                                                  const SizedBox(height: 2),
+                                                  CopyToClipboardWidget(
+                                                    textToCopy: room.roomCode,
+                                                    successMessage: 'Oda kodu kopyalandı!',
+                                                    child: Text(
+                                                      'Kod: ${room.roomCode}',
+                                                      style: TextStyle(
+                                                        color: Colors.grey[600],
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                    iconSize: 14,
+                                                  ),
+                                                ],
                                               ),
                                               trailing: ElevatedButton(
                                                 onPressed: room.players.length >= 4

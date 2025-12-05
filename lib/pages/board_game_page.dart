@@ -541,15 +541,13 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                             ),
                           ),
                         const SizedBox(height: 10),
-                        Flexible(
-                          child: Card(
-                            elevation: 8,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                            color: ThemeColors.getGameBoardBackground(context),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: _buildGameBoard(gameLogic, currentTile),
-                            ),
+                        Card(
+                          elevation: 8,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                          color: ThemeColors.getGameBoardBackground(context),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: _buildGameBoard(gameLogic, currentTile),
                           ),
                         ),
                         const SizedBox(height: 25),

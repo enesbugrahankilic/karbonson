@@ -7,6 +7,7 @@ import '../services/language_service.dart';
 import '../pages/uid_debug_page.dart';
 import '../pages/two_factor_auth_setup_page.dart';
 import '../services/firebase_auth_service.dart';
+import '../widgets/home_button.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -15,164 +16,167 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const HomeButton(),
         title: const Text('Ayarlar'),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: Consumer2<ThemeProvider, LanguageProvider>(
         builder: (context, themeProvider, languageProvider, child) {
-          return ListView(
-            padding: const EdgeInsets.all(16.0),
-            children: [
-              Card(
-                child: ListTile(
-                  leading: Icon(
-                    themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  title: const Text('Tema Ayarları'),
-                  subtitle: Text(
-                    themeProvider.isDarkMode ? 'Karanlık Mod Aktif' : 'Aydınlık Mod Aktif',
-                  ),
-                  trailing: Switch(
-                    value: themeProvider.isDarkMode,
-                    onChanged: (value) {
+          return Scrollbar(
+            child: ListView(
+              padding: const EdgeInsets.all(16.0),
+              children: [
+                Card(
+                  child: ListTile(
+                    leading: Icon(
+                      themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    title: const Text('Tema Ayarları'),
+                    subtitle: Text(
+                      themeProvider.isDarkMode ? 'Karanlık Mod Aktif' : 'Aydınlık Mod Aktif',
+                    ),
+                    trailing: Switch(
+                      value: themeProvider.isDarkMode,
+                      onChanged: (value) {
+                        themeProvider.toggleTheme();
+                      },
+                    ),
+                    onTap: () {
                       themeProvider.toggleTheme();
                     },
                   ),
-                  onTap: () {
-                    themeProvider.toggleTheme();
-                  },
                 ),
-              ),
-              const SizedBox(height: 16),
-              Card(
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: Icon(
-                        Icons.language,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      title: const Text('Dil Ayarları'),
-                      subtitle: Text('${languageProvider.currentLanguageFlag} ${languageProvider.currentLanguageName}'),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        _showLanguageSelection(context, languageProvider);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              Card(
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: Icon(
-                        Icons.info,
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                      title: const Text('Uygulama Bilgisi'),
-                      subtitle: const Text('Karbon Son v1.0'),
-                    ),
-                    const Divider(),
-                    ListTile(
-                      leading: Icon(
-                        Icons.palette,
-                        color: Theme.of(context).colorScheme.tertiary,
-                      ),
-                      title: const Text('Tema Önizleme'),
-                      subtitle: const Text('Mevcut tema renklerini görüntüle'),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        _showThemePreview(context);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              Card(
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: Icon(
-                        Icons.accessibility,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      title: const Text('Erişilebilirlik'),
-                      subtitle: const Text('Görme ve işitme ayarları'),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        _showAccessibilitySettings(context);
-                      },
-                    ),
-                    const Divider(),
-                    ListTile(
-                      leading: Icon(
-                        Icons.notifications,
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                      title: const Text('Bildirimler'),
-                      subtitle: const Text('Oyun bildirimlerini yönet'),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        _showNotificationSettings(context);
-                      },
-                    ),
-                    const Divider(),
-                    ListTile(
-                      leading: Icon(
-                        Icons.security,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      title: const Text('Güvenlik Ayarları'),
-                      subtitle: const Text('İki faktörlü doğrulama ve diğer güvenlik seçenekleri'),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        _showSecuritySettings(context);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Developer/Debug Section (only show in debug mode)
-              if (kDebugMode)
+                const SizedBox(height: 16),
                 Card(
-                  color: Colors.orange.shade50,
                   child: Column(
                     children: [
                       ListTile(
                         leading: Icon(
-                          Icons.developer_mode,
-                          color: Colors.orange,
+                          Icons.language,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
-                        title: const Text('Geliştirici Araçları'),
-                        subtitle: const Text('Debug ve test araçları'),
-                      ),
-                      const Divider(),
-                      ListTile(
-                        leading: Icon(
-                          Icons.security,
-                          color: Colors.red,
-                        ),
-                        title: const Text('UID Debug & Cleanup'),
-                        subtitle: const Text('UID tutarsızlıklarını kontrol et ve temizle'),
+                        title: const Text('Dil Ayarları'),
+                        subtitle: Text('${languageProvider.currentLanguageFlag} ${languageProvider.currentLanguageName}'),
                         trailing: const Icon(Icons.arrow_forward_ios),
                         onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const UIDDebugPage(),
-                            ),
-                          );
+                          _showLanguageSelection(context, languageProvider);
                         },
                       ),
                     ],
                   ),
                 ),
-            ],
+                const SizedBox(height: 16),
+                Card(
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: Icon(
+                          Icons.info,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                        title: const Text('Uygulama Bilgisi'),
+                        subtitle: const Text('Karbon Son v1.0'),
+                      ),
+                      const Divider(),
+                      ListTile(
+                        leading: Icon(
+                          Icons.palette,
+                          color: Theme.of(context).colorScheme.tertiary,
+                        ),
+                        title: const Text('Tema Önizleme'),
+                        subtitle: const Text('Mevcut tema renklerini görüntüle'),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                        onTap: () {
+                          _showThemePreview(context);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: Icon(
+                          Icons.accessibility,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        title: const Text('Erişilebilirlik'),
+                        subtitle: const Text('Görme ve işitme ayarları'),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                        onTap: () {
+                          _showAccessibilitySettings(context);
+                        },
+                      ),
+                      const Divider(),
+                      ListTile(
+                        leading: Icon(
+                          Icons.notifications,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                        title: const Text('Bildirimler'),
+                        subtitle: const Text('Oyun bildirimlerini yönet'),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                        onTap: () {
+                          _showNotificationSettings(context);
+                        },
+                      ),
+                      const Divider(),
+                      ListTile(
+                        leading: Icon(
+                          Icons.security,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        title: const Text('Güvenlik Ayarları'),
+                        subtitle: const Text('İki faktörlü doğrulama ve diğer güvenlik seçenekleri'),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                        onTap: () {
+                          _showSecuritySettings(context);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Developer/Debug Section (only show in debug mode)
+                if (kDebugMode)
+                  Card(
+                    color: Colors.orange.shade50,
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: Icon(
+                            Icons.developer_mode,
+                            color: Colors.orange,
+                          ),
+                          title: const Text('Geliştirici Araçları'),
+                          subtitle: const Text('Debug ve test araçları'),
+                        ),
+                        const Divider(),
+                        ListTile(
+                          leading: Icon(
+                            Icons.security,
+                            color: Colors.red,
+                          ),
+                          title: const Text('UID Debug & Cleanup'),
+                          subtitle: const Text('UID tutarsızlıklarını kontrol et ve temizle'),
+                          trailing: const Icon(Icons.arrow_forward_ios),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const UIDDebugPage(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
           );
         },
       ),

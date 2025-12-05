@@ -10,6 +10,7 @@ import '../services/firestore_service.dart';
 import '../services/game_invitation_service.dart';
 import '../services/presence_service.dart';
 import '../widgets/game_invitation_dialog.dart';
+import '../widgets/home_button.dart';
 
 class FriendsPage extends StatefulWidget {
   final String userNickname;
@@ -161,7 +162,10 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
           textColor: Colors.white,
           onPressed: () {
             // Scroll to requests tab
-            DefaultTabController.of(context)?.animateTo(1);
+            final tabController = DefaultTabController.of(context);
+            if (tabController != null) {
+              tabController.animateTo(1);
+            }
           },
         ),
         duration: const Duration(seconds: 5),
@@ -366,6 +370,7 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
   }
 
   Future<String?> _showRoomIdDialog() async {
+    final TextEditingController roomIdController = TextEditingController();
     return showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
@@ -381,7 +386,7 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                 hintText: 'Oda ID\'sini girin',
                 border: OutlineInputBorder(),
               ),
-              controller: _searchController,
+              controller: roomIdController,
             ),
           ],
         ),
@@ -392,7 +397,7 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop(_searchController.text.trim());
+              Navigator.of(context).pop(roomIdController.text.trim());
             },
             child: Text('Davet Gönder'),
           ),
@@ -555,6 +560,7 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const HomeButton(),
         title: const Text('Arkadaşlar'),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -567,7 +573,10 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                   icon: const Icon(Icons.person_add),
                   onPressed: () {
                     // Switch to requests tab
-                    DefaultTabController.of(context)?.animateTo(1);
+                    final tabController = DefaultTabController.of(context);
+                    if (tabController != null) {
+                      tabController.animateTo(1);
+                    }
                   },
                 ),
                 Positioned(
@@ -639,351 +648,359 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
         key: _refreshIndicatorKey,
         onRefresh: _refreshData,
         color: Colors.blue,
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: _isLoading && _friends.isEmpty && _receivedRequests.isEmpty
-              ? const Center(child: CircularProgressIndicator())
-              : Column(
-                  children: [
-                    // Search Bar
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _searchController,
-                              decoration: InputDecoration(
-                                hintText: 'Kullanıcı ara...',
-                                prefixIcon: const Icon(Icons.search),
-                                border: OutlineInputBorder(
+        child: Scrollbar(
+          child: SingleChildScrollView(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: _isLoading && _friends.isEmpty && _receivedRequests.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : Column(
+                      children: [
+                        // Search Bar
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _searchController,
+                                  decoration: InputDecoration(
+                                    hintText: 'Kullanıcı ara...',
+                                    prefixIcon: const Icon(Icons.search),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.white.withValues(alpha: 0.9),
+                                  ),
+                                  onChanged: _searchUsers,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              // Refresh button
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.blue,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                filled: true,
-                                fillColor: Colors.white.withValues(alpha: 0.9),
-                              ),
-                              onChanged: _searchUsers,
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          // Refresh button
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: IconButton(
-                              icon: Icon(
-                                Icons.refresh,
-                                color: Colors.white,
-                              ),
-                              onPressed: _isLoading ? null : _refreshData,
-                              tooltip: 'Yenile',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Search Results
-                    if (_searchResults.isNotEmpty)
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: _searchResults.length,
-                          itemBuilder: (context, index) {
-                            final user = _searchResults[index];
-                            final nickname = user['nickname'] as String;
-
-                            return Card(
-                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                              elevation: 2,
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: Colors.green.withValues(alpha: 0.1),
-                                  child: Icon(Icons.person_add, color: Colors.green),
-                                ),
-                                title: Text(nickname),
-                                trailing: ElevatedButton(
-                                  onPressed: _isLoading ? null : () => _sendFriendRequest(nickname),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue,
-                                    foregroundColor: Colors.white,
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.refresh,
+                                    color: Colors.white,
                                   ),
-                                  child: Text(_isLoading ? 'Yükleniyor...' : 'İstek Gönder'),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      )
-                    else
-                      // Tab Bar
-                      Expanded(
-                        child: DefaultTabController(
-                          length: 4,
-                          child: Column(
-                            children: [
-                              TabBar(
-                                tabs: [
-                                  Tab(
-                                    text: 'Arkadaşlar',
-                                    icon: Icon(Icons.group),
-                                  ),
-                                  Tab(
-                                    text: 'İstekler',
-                                    icon: Stack(
-                                      children: [
-                                        Icon(Icons.person_add),
-                                        if (_receivedRequests.isNotEmpty)
-                                          Positioned(
-                                            right: -2,
-                                            top: -2,
-                                            child: Container(
-                                              padding: EdgeInsets.all(3),
-                                              decoration: BoxDecoration(
-                                                color: Colors.red,
-                                                borderRadius: BorderRadius.circular(8),
-                                                border: Border.all(
-                                                  color: Colors.white,
-                                                  width: 1,
-                                                ),
-                                              ),
-                                              constraints: BoxConstraints(
-                                                minWidth: 12,
-                                                minHeight: 12,
-                                              ),
-                                              child: Text(
-                                                '${_receivedRequests.length}',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 8,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                  Tab(
-                                    text: 'Gönderilen',
-                                    icon: Icon(Icons.send),
-                                  ),
-                                  Tab(
-                                    text: 'Kayıtlı Kullanıcılar',
-                                    icon: Icon(Icons.people),
-                                  ),
-                                ],
-                                indicatorColor: Colors.blue,
-                                labelColor: Colors.blue,
-                                unselectedLabelColor: Colors.black54,
-                              ),
-                              Expanded(
-                                child: TabBarView(
-                                  children: [
-                                  // Friends Tab
-                                  _friends.isEmpty
-                                      ? const Center(child: Text('Henüz arkadaşın yok'))
-                                      : ListView.builder(
-                                          itemCount: _friends.length,
-                                          itemBuilder: (context, index) {
-                                            final friend = _friends[index];
-                                            return Card(
-                                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                                              child: ListTile(
-                                                leading: const Icon(Icons.person),
-                                                title: Text(friend.nickname),
-                                                subtitle: Text('Arkadaşlık: ${friend.addedAt.day}/${friend.addedAt.month}/${friend.addedAt.year}'),
-                                                trailing: ElevatedButton(
-                                                  onPressed: () => _inviteFriendToGame(friend),
-                                                  child: const Text('Davet Et'),
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                    // Received Requests Tab
-                                    _receivedRequests.isEmpty
-                                        ? const Center(
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Icon(
-                                                  Icons.person_add_alt,
-                                                  size: 64,
-                                                  color: Colors.grey,
-                                                ),
-                                                SizedBox(height: 16),
-                                                Text(
-                                                  'Yeni arkadaşlık isteği yok',
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    color: Colors.grey,
-                                                  ),
-                                                ),
-                                                SizedBox(height: 8),
-                                                Text(
-                                                  'Yeni istekler burada görünecek',
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.grey,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          )
-                                        : ListView.builder(
-                                            itemCount: _receivedRequests.length,
-                                            itemBuilder: (context, index) {
-                                              final request = _receivedRequests[index];
-                                              final isProcessing = _processingRequests.contains(request.id);
-                                              
-                                              return Card(
-                                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                                                elevation: 2,
-                                                child: ListTile(
-                                                  contentPadding: EdgeInsets.all(16),
-                                                  leading: CircleAvatar(
-                                                    backgroundColor: Colors.blue.withValues(alpha: 0.1),
-                                                    child: Icon(
-                                                      Icons.person_add,
-                                                      color: Colors.blue,
-                                                    ),
-                                                  ),
-                                                  title: Text(
-                                                    '${request.fromNickname}',
-                                                    style: TextStyle(
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 16,
-                                                    ),
-                                                  ),
-                                                  subtitle: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(
-                                                        'Arkadaşlık isteği gönderdi',
-                                                        style: TextStyle(
-                                                          color: Colors.grey[600],
-                                                        ),
-                                                      ),
-                                                      SizedBox(height: 4),
-                                                      Text(
-                                                        'Tarih: ${request.createdAt.day}/${request.createdAt.month}/${request.createdAt.year} ${request.createdAt.hour}:${request.createdAt.minute.toString().padLeft(2, '0')}',
-                                                        style: TextStyle(
-                                                          fontSize: 12,
-                                                          color: Colors.grey[500],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  trailing: isProcessing 
-                                                      ? SizedBox(
-                                                          width: 80,
-                                                          height: 32,
-                                                          child: Center(
-                                                            child: SizedBox(
-                                                              width: 16,
-                                                              height: 16,
-                                                              child: CircularProgressIndicator(
-                                                                strokeWidth: 2,
-                                                                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        )
-                                                      : Row(
-                                                          mainAxisSize: MainAxisSize.min,
-                                                          children: [
-                                                            // Kabul butonu
-                                                            IconButton(
-                                                              icon: Icon(
-                                                                Icons.check_circle,
-                                                                color: Colors.green,
-                                                                size: 32,
-                                                              ),
-                                                              onPressed: isProcessing ? null : () => _acceptFriendRequest(request.id),
-                                                              tooltip: 'Kabul Et',
-                                                              constraints: BoxConstraints(
-                                                                minWidth: 48,
-                                                                minHeight: 48,
-                                                              ),
-                                                            ),
-                                                            SizedBox(width: 4),
-                                                            // Red butonu
-                                                            IconButton(
-                                                              icon: Icon(
-                                                                Icons.cancel,
-                                                                color: Colors.red,
-                                                                size: 32,
-                                                              ),
-                                                              onPressed: isProcessing ? null : () => _rejectFriendRequest(request.id),
-                                                              tooltip: 'Reddet',
-                                                              constraints: BoxConstraints(
-                                                                minWidth: 48,
-                                                                minHeight: 48,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                    // Sent Requests Tab
-                                    _sentRequests.isEmpty
-                                        ? const Center(child: Text('Gönderilmiş arkadaşlık isteği yok'))
-                                        : ListView.builder(
-                                            itemCount: _sentRequests.length,
-                                            itemBuilder: (context, index) {
-                                              final request = _sentRequests[index];
-                                              return Card(
-                                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                                                child: ListTile(
-                                                  leading: const Icon(Icons.schedule),
-                                                  title: Text('${request.toNickname} kullanıcısına istek gönderildi'),
-                                                  subtitle: Text('Tarih: ${request.createdAt.day}/${request.createdAt.month}/${request.createdAt.year}'),
-                                                ),
-                                              );
-                                            },
-                                          ),
-
-                                    // All Registered Users Tab
-                                    _allRegisteredUsers.isEmpty
-                                        ? const Center(child: Text('Kayıtlı kullanıcı bulunamadı'))
-                                        : ListView.builder(
-                                            itemCount: _allRegisteredUsers.length,
-                                            itemBuilder: (context, index) {
-                                              final user = _allRegisteredUsers[index];
-                                              return Card(
-                                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                                                child: ListTile(
-                                                  leading: const Icon(Icons.people),
-                                                  title: Text(user.nickname),
-                                                  subtitle: Text('Kayıt Tarihi: ${user.createdAt != null ? "${user.createdAt!.day}/${user.createdAt!.month}/${user.createdAt!.year}" : "Bilinmiyor"}'),
-                                                  trailing: ElevatedButton(
-                                                    onPressed: () => _sendFriendRequest(user.nickname),
-                                                    child: const Text('Arkadaş Ekle'),
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                  ],
+                                  onPressed: _isLoading ? null : _refreshData,
+                                  tooltip: 'Yenile',
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ),
-                  ],
-                ),
+
+                        // Search Results
+                        if (_searchResults.isNotEmpty)
+                          Container(
+                            height: MediaQuery.of(context).size.height * 0.7,
+                            child: ListView.builder(
+                              itemCount: _searchResults.length,
+                              itemBuilder: (context, index) {
+                                final user = _searchResults[index];
+                                final nickname = user['nickname'] as String;
+
+                                return Card(
+                                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                  elevation: 2,
+                                  child: ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundColor: Colors.green.withValues(alpha: 0.1),
+                                      child: Icon(Icons.person_add, color: Colors.green),
+                                    ),
+                                    title: Text(nickname),
+                                    trailing: ElevatedButton(
+                                      onPressed: _isLoading ? null : () => _sendFriendRequest(nickname),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.blue,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                      child: Text(_isLoading ? 'Yükleniyor...' : 'İstek Gönder'),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          )
+                        else
+                          // Tab Bar
+                          Container(
+                            height: MediaQuery.of(context).size.height * 0.75,
+                            child: Scrollbar(
+                              child: DefaultTabController(
+                                length: 4,
+                                child: Column(
+                                  children: [
+                                    TabBar(
+                                      tabs: [
+                                        Tab(
+                                          text: 'Arkadaşlar',
+                                          icon: Icon(Icons.group),
+                                        ),
+                                        Tab(
+                                          text: 'İstekler',
+                                          icon: Stack(
+                                            children: [
+                                              Icon(Icons.person_add),
+                                              if (_receivedRequests.isNotEmpty)
+                                                Positioned(
+                                                  right: -2,
+                                                  top: -2,
+                                                  child: Container(
+                                                    padding: EdgeInsets.all(3),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.red,
+                                                      borderRadius: BorderRadius.circular(8),
+                                                      border: Border.all(
+                                                        color: Colors.white,
+                                                        width: 1,
+                                                      ),
+                                                    ),
+                                                    constraints: BoxConstraints(
+                                                      minWidth: 12,
+                                                      minHeight: 12,
+                                                    ),
+                                                    child: Text(
+                                                      '${_receivedRequests.length}',
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 8,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                        Tab(
+                                          text: 'Gönderilen',
+                                          icon: Icon(Icons.send),
+                                        ),
+                                        Tab(
+                                          text: 'Kayıtlı Kullanıcılar',
+                                          icon: Icon(Icons.people),
+                                        ),
+                                      ],
+                                      indicatorColor: Colors.blue,
+                                      labelColor: Colors.blue,
+                                      unselectedLabelColor: Colors.black54,
+                                    ),
+                                    Expanded(
+                                      child: TabBarView(
+                                        children: [
+                                          // Friends Tab
+                                          _friends.isEmpty
+                                              ? const Center(child: Text('Henüz arkadaşın yok'))
+                                              : ListView.builder(
+                                                  itemCount: _friends.length,
+                                                  itemBuilder: (context, index) {
+                                                    final friend = _friends[index];
+                                                    return Card(
+                                                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                                      child: ListTile(
+                                                        leading: const Icon(Icons.person),
+                                                        title: Text(friend.nickname),
+                                                        subtitle: Text('Arkadaşlık: ${friend.addedAt.day}/${friend.addedAt.month}/${friend.addedAt.year}'),
+                                                        trailing: ElevatedButton(
+                                                          onPressed: () => _inviteFriendToGame(friend),
+                                                          child: const Text('Davet Et'),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                          // Received Requests Tab
+                                          _receivedRequests.isEmpty
+                                              ? const Center(
+                                                  child: Column(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      Icon(
+                                                        Icons.person_add_alt,
+                                                        size: 64,
+                                                        color: Colors.grey,
+                                                      ),
+                                                      SizedBox(height: 16),
+                                                      Text(
+                                                        'Yeni arkadaşlık isteği yok',
+                                                        style: TextStyle(
+                                                          fontSize: 16,
+                                                          color: Colors.grey,
+                                                        ),
+                                                      ),
+                                                      SizedBox(height: 8),
+                                                      Text(
+                                                        'Yeni istekler burada görünecek',
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: Colors.grey,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                )
+                                              : ListView.builder(
+                                                  itemCount: _receivedRequests.length,
+                                                  itemBuilder: (context, index) {
+                                                    final request = _receivedRequests[index];
+                                                    final isProcessing = _processingRequests.contains(request.id);
+                                                    
+                                                    return Card(
+                                                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                                      elevation: 2,
+                                                      child: ListTile(
+                                                        contentPadding: EdgeInsets.all(16),
+                                                        leading: CircleAvatar(
+                                                          backgroundColor: Colors.blue.withValues(alpha: 0.1),
+                                                          child: Icon(
+                                                            Icons.person_add,
+                                                            color: Colors.blue,
+                                                          ),
+                                                        ),
+                                                        title: Text(
+                                                          '${request.fromNickname}',
+                                                          style: TextStyle(
+                                                            fontWeight: FontWeight.bold,
+                                                            fontSize: 16,
+                                                          ),
+                                                        ),
+                                                        subtitle: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text(
+                                                              'Arkadaşlık isteği gönderdi',
+                                                              style: TextStyle(
+                                                                color: Colors.grey[600],
+                                                              ),
+                                                            ),
+                                                            SizedBox(height: 4),
+                                                            Text(
+                                                              'Tarih: ${request.createdAt.day}/${request.createdAt.month}/${request.createdAt.year} ${request.createdAt.hour}:${request.createdAt.minute.toString().padLeft(2, '0')}',
+                                                              style: TextStyle(
+                                                                fontSize: 12,
+                                                                color: Colors.grey[500],
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        trailing: isProcessing 
+                                                            ? SizedBox(
+                                                                width: 80,
+                                                                height: 32,
+                                                                child: Center(
+                                                                  child: SizedBox(
+                                                                    width: 16,
+                                                                    height: 16,
+                                                                    child: CircularProgressIndicator(
+                                                                      strokeWidth: 2,
+                                                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              )
+                                                            : Row(
+                                                                mainAxisSize: MainAxisSize.min,
+                                                                children: [
+                                                                  // Kabul butonu
+                                                                  IconButton(
+                                                                    icon: Icon(
+                                                                      Icons.check_circle,
+                                                                      color: Colors.green,
+                                                                      size: 32,
+                                                                    ),
+                                                                    onPressed: isProcessing ? null : () => _acceptFriendRequest(request.id),
+                                                                    tooltip: 'Kabul Et',
+                                                                    constraints: BoxConstraints(
+                                                                      minWidth: 48,
+                                                                      minHeight: 48,
+                                                                    ),
+                                                                  ),
+                                                                  SizedBox(width: 4),
+                                                                  // Red butonu
+                                                                  IconButton(
+                                                                    icon: Icon(
+                                                                      Icons.cancel,
+                                                                      color: Colors.red,
+                                                                      size: 32,
+                                                                    ),
+                                                                    onPressed: isProcessing ? null : () => _rejectFriendRequest(request.id),
+                                                                    tooltip: 'Reddet',
+                                                                    constraints: BoxConstraints(
+                                                                      minWidth: 48,
+                                                                      minHeight: 48,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                          // Sent Requests Tab
+                                          _sentRequests.isEmpty
+                                              ? const Center(child: Text('Gönderilmiş arkadaşlık isteği yok'))
+                                              : ListView.builder(
+                                                  itemCount: _sentRequests.length,
+                                                  itemBuilder: (context, index) {
+                                                    final request = _sentRequests[index];
+                                                    return Card(
+                                                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                                      child: ListTile(
+                                                        leading: const Icon(Icons.schedule),
+                                                        title: Text('${request.toNickname} kullanıcısına istek gönderildi'),
+                                                        subtitle: Text('Tarih: ${request.createdAt.day}/${request.createdAt.month}/${request.createdAt.year}'),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+
+                                          // All Registered Users Tab
+                                          _allRegisteredUsers.isEmpty
+                                              ? const Center(child: Text('Kayıtlı kullanıcı bulunamadı'))
+                                              : ListView.builder(
+                                                  itemCount: _allRegisteredUsers.length,
+                                                  itemBuilder: (context, index) {
+                                                    final user = _allRegisteredUsers[index];
+                                                    return Card(
+                                                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                                      child: ListTile(
+                                                        leading: const Icon(Icons.people),
+                                                        title: Text(user.nickname),
+                                                        subtitle: Text('Kayıt Tarihi: ${user.createdAt != null ? "${user.createdAt!.day}/${user.createdAt!.month}/${user.createdAt!.year}" : "Bilinmiyor"}'),
+                                                        trailing: ElevatedButton(
+                                                          onPressed: () => _sendFriendRequest(user.nickname),
+                                                          child: const Text('Arkadaş Ekle'),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+            ),
+          ),
         ),
       ),
     );

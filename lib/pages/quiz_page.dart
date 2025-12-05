@@ -180,36 +180,38 @@ class _QuizPageState extends State<QuizPage> {
                   end: Alignment.bottomRight,
                 ),
               ),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 18.0),
-                      child: Card(
-                        elevation: 10,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                        color: Color.fromRGBO(255, 255, 255, 0.97),
-                        child: Padding(
-                          padding: const EdgeInsets.all(18.0),
-                          child: CustomQuestionCard(
-                            question: currentQuestion.text,
-                            options: currentQuestion.options.map((o) => o.text).toList(),
-                            onOptionSelected: (answer) => _onAnswerSelected(answer, state.currentQuestion),
-                            isAnswered: state.answers[state.currentQuestion].isNotEmpty,
-                            selectedAnswer: state.answers[state.currentQuestion],
-                            correctAnswer: currentQuestion.options
-                                .firstWhere((o) => o.score > 0)
-                                .text,
+              child: Scrollbar(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 18.0),
+                        child: Card(
+                          elevation: 10,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                          color: Color.fromRGBO(255, 255, 255, 0.97),
+                          child: Padding(
+                            padding: const EdgeInsets.all(18.0),
+                            child: CustomQuestionCard(
+                              question: currentQuestion.text,
+                              options: currentQuestion.options.map((o) => o.text).toList(),
+                              onOptionSelected: (answer) => _onAnswerSelected(answer, state.currentQuestion),
+                              isAnswered: state.answers[state.currentQuestion].isNotEmpty,
+                              selectedAnswer: state.answers[state.currentQuestion],
+                              correctAnswer: currentQuestion.options
+                                  .firstWhere((o) => o.score > 0)
+                                  .text,
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8.0),
+                        child: _buildScoreArea(state),
+                      ),
+                    ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8.0),
-                    child: _buildScoreArea(state),
-                  ),
-                ],
+                ),
               ),
             ),
           );

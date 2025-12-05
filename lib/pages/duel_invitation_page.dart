@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/friendship_service.dart';
 import '../theme/theme_colors.dart';
+import '../widgets/home_button.dart';
 import 'duel_page.dart';
 
 class DuelInvitationPage extends StatefulWidget {
@@ -134,6 +135,7 @@ class _DuelInvitationPageState extends State<DuelInvitationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const HomeButton(),
         title: const Text('Düello Davetleri'),
         backgroundColor: Colors.transparent,
         elevation: 0,

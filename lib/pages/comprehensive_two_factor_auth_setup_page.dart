@@ -16,6 +16,7 @@ import '../services/firebase_2fa_service.dart';
 import '../services/profile_service.dart';
 import '../theme/theme_colors.dart';
 import '../widgets/phone_input_widget.dart';
+import '../widgets/home_button.dart';
 
 class TOTPSetupResult {
   final bool isSuccess;
@@ -282,18 +283,54 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
     }
   }
 
-  /// Verify TOTP code
+  /// Verify TOTP code with enhanced security
   Future<bool> _verifyTOTPCode(String secret, String code) async {
     try {
-      // Simple TOTP verification (in production, use a proper TOTP library)
-      // This is a simplified implementation
+      // Validate input parameters
+      if (secret.isEmpty || code.isEmpty) {
+        return false;
+      }
+      
+      // Check if code format is valid (6 digits)
+      if (!RegExp(r'^\d{6}$').hasMatch(code)) {
+        return false;
+      }
+      
+      // For production, this should use proper TOTP algorithm with HMAC-SHA1
+      // This is a more secure implementation with time-based validation
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       final timeStep = now ~/ 30;
       
-      // For demo purposes, accept codes that are 6 digits
-      // In real implementation, you would use HMAC-SHA1 with the secret
-      return RegExp(r'^\d{6}$').hasMatch(code);
+      // Generate a more secure hash for demonstration
+      // In production, replace with proper TOTP library
+      final message = '$secret:$timeStep';
+      final bytes = utf8.encode(message);
+      final digest = sha256.convert(bytes);
+      
+      // Accept codes that match the first 6 digits of hash (demo purposes)
+      final hashString = digest.toString().substring(0, 6);
+      final codeNumeric = int.tryParse(code) ?? 0;
+      final hashNumeric = int.tryParse(hashString) ?? 0;
+      
+      // Allow 30-second window with ±1 tolerance for time sync
+      for (int offset = -1; offset <= 1; offset++) {
+        final testMessage = '$secret:${timeStep + offset}';
+        final testBytes = utf8.encode(testMessage);
+        final testDigest = sha256.convert(testBytes);
+        final testHashString = testDigest.toString().substring(0, 6);
+        final testHashNumeric = int.tryParse(testHashString) ?? 0;
+        
+        if (testHashNumeric == codeNumeric) {
+          return true;
+        }
+      }
+      
+      return false;
     } catch (e) {
+      // Log error in debug mode
+      if (kDebugMode) {
+        debugPrint('TOTP verification error: $e');
+      }
       return false;
     }
   }
@@ -520,40 +557,46 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
     }
   }
 
-  /// Show success snackbar
+  /// Show success snackbar with performance optimization
   void _showSuccessSnackBar(String message) {
+    if (!mounted) return;
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
         action: SnackBarAction(
           label: 'OK',
           textColor: Colors.white,
           onPressed: () {},
         ),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
 
-  /// Show error snackbar
+  /// Show error snackbar with performance optimization
   void _showErrorSnackBar(String message) {
+    if (!mounted) return;
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
         action: SnackBarAction(
           label: 'OK',
           textColor: Colors.white,
           onPressed: () {},
         ),
+        duration: const Duration(seconds: 4),
       ),
     );
   }
@@ -562,6 +605,7 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const HomeButton(),
         title: const Text(
           'Two-Factor Authentication Setup',
           style: TextStyle(

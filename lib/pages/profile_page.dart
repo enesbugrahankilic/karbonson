@@ -11,11 +11,16 @@ import '../services/profile_service.dart';
 import '../services/presence_service.dart';
 import '../services/friendship_service.dart';
 import '../services/authentication_state_service.dart';
+import '../services/email_otp_service.dart';
 import '../models/profile_data.dart';
 import '../models/user_data.dart';
 import '../theme/theme_colors.dart';
+import '../widgets/copy_to_clipboard_widget.dart';
+import '../widgets/profile_picture_change_dialog.dart';
+import '../widgets/home_button.dart';
 import 'register_page.dart';
 import 'login_page.dart';
+import 'email_otp_verification_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -142,6 +147,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     // Show profile page for registered users
     return Scaffold(
       appBar: AppBar(
+        leading: const HomeButton(),
         title: Text('Profil', style: TextStyle(color: ThemeColors.getAppBarText(context))),
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 2,
@@ -171,12 +177,108 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   void _showChangePasswordDialog(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || user.email == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Kullanıcı bilgileri bulunamadı'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Email OTP ile şifre sıfırlama
+    _sendPasswordResetCode(context, user.email!);
+  }
+
+  Future<void> _sendPasswordResetCode(BuildContext context, String email) async {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
-        return const ChangePasswordDialog();
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text('Şifre Sıfırlama'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.email_outlined,
+                size: 48,
+                color: Colors.blue,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '${email.replaceRange(2, email.indexOf('@'), '***')} adresine 6 haneli doğrulama kodu gönderilecek.',
+                style: TextStyle(
+                  color: ThemeColors.getText(context),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('İptal'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _startEmailOtpFlow(context, email);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ThemeColors.getPrimaryButtonColor(context),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Kod Gönder'),
+            ),
+          ],
+        );
       },
     );
+  }
+
+  Future<void> _startEmailOtpFlow(BuildContext context, String email) async {
+    try {
+      final result = await EmailOtpService.sendOtpCode(
+        email: email,
+        purpose: 'profile_reset',
+      );
+
+      if (result.isSuccess) {
+        // Email OTP sayfasına yönlendir
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => EmailOtpVerificationPage(
+              email: email,
+              purpose: 'profile_reset',
+            ),
+          ),
+        );
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Kod gönderilemedi: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _showLogoutDialog(BuildContext context) {
@@ -222,8 +324,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
       // Navigate back to login page
       if (context.mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/login',
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginPage()),
           (route) => false,
         );
       }
@@ -333,292 +435,6 @@ class _ProfileContentState extends State<ProfileContent> {
   }
 }
 
-// Change Password Dialog Widget
-class ChangePasswordDialog extends StatefulWidget {
-  const ChangePasswordDialog({super.key});
-
-  @override
-  State<ChangePasswordDialog> createState() => _ChangePasswordDialogState();
-}
-
-class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
-  final TextEditingController _currentPasswordController = TextEditingController();
-  final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  bool _isLoading = false;
-  bool _obscureCurrentPassword = true;
-  bool _obscureNewPassword = true;
-  bool _obscureConfirmPassword = true;
-
-  @override
-  void dispose() {
-    _currentPasswordController.dispose();
-    _newPasswordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _changePassword() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _isLoading = true);
-
-    try {
-      final User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Kullanıcı oturumu bulunamadı'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-        return;
-      }
-
-      // Re-authenticate user with current password
-      final credential = EmailAuthProvider.credential(
-        email: user.email!,
-        password: _currentPasswordController.text,
-      );
-
-      try {
-        await user.reauthenticateWithCredential(credential);
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Mevcut şifreniz yanlış'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      // Update password
-      await user.updatePassword(_newPasswordController.text);
-
-      if (context.mounted) {
-        // Close dialog
-        Navigator.of(context).pop();
-        
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Şifreniz başarıyla değiştirildi'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      if (context.mounted) {
-        String errorMessage;
-        switch (e.code) {
-          case 'weak-password':
-            errorMessage = 'Yeni şifre çok zayıf. En az 6 karakter olmalıdır.';
-            break;
-          case 'requires-recent-login':
-            errorMessage = 'Şifrenizi değiştirmek için tekrar giriş yapmanız gerekiyor.';
-            break;
-          default:
-            errorMessage = 'Şifre değiştirilirken hata oluştu: ${e.message}';
-        }
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Beklenmeyen bir hata oluştu: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      title: const Text('Şifre Değiştir'),
-      content: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Current Password Field
-              TextFormField(
-                controller: _currentPasswordController,
-                obscureText: _obscureCurrentPassword,
-                decoration: InputDecoration(
-                  labelText: 'Mevcut Şifre',
-                  filled: true,
-                  fillColor: ThemeColors.getInputFieldBackground(context),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getInputFieldBorder(context)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getInputFieldBorder(context)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getPrimaryButtonColor(context), width: 2),
-                  ),
-                  prefixIcon: Icon(Icons.lock, color: ThemeColors.getIconColor(context)),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureCurrentPassword ? Icons.visibility : Icons.visibility_off,
-                      color: ThemeColors.getIconColor(context),
-                    ),
-                    onPressed: () {
-                      setState(() => _obscureCurrentPassword = !_obscureCurrentPassword);
-                    },
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Mevcut şifre gerekli';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              // New Password Field
-              TextFormField(
-                controller: _newPasswordController,
-                obscureText: _obscureNewPassword,
-                decoration: InputDecoration(
-                  labelText: 'Yeni Şifre',
-                  filled: true,
-                  fillColor: ThemeColors.getInputFieldBackground(context),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getInputFieldBorder(context)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getInputFieldBorder(context)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getPrimaryButtonColor(context), width: 2),
-                  ),
-                  prefixIcon: Icon(Icons.lock_outline, color: ThemeColors.getIconColor(context)),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureNewPassword ? Icons.visibility : Icons.visibility_off,
-                      color: ThemeColors.getIconColor(context),
-                    ),
-                    onPressed: () {
-                      setState(() => _obscureNewPassword = !_obscureNewPassword);
-                    },
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Yeni şifre gerekli';
-                  }
-                  if (value.length < 6) {
-                    return 'Yeni şifre en az 6 karakter olmalı';
-                  }
-                  if (value == _currentPasswordController.text) {
-                    return 'Yeni şifre mevcut şifreden farklı olmalı';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              // Confirm Password Field
-              TextFormField(
-                controller: _confirmPasswordController,
-                obscureText: _obscureConfirmPassword,
-                decoration: InputDecoration(
-                  labelText: 'Yeni Şifre Tekrar',
-                  filled: true,
-                  fillColor: ThemeColors.getInputFieldBackground(context),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getInputFieldBorder(context)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getInputFieldBorder(context)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getPrimaryButtonColor(context), width: 2),
-                  ),
-                  prefixIcon: Icon(Icons.lock_outline, color: ThemeColors.getIconColor(context)),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
-                      color: ThemeColors.getIconColor(context),
-                    ),
-                    onPressed: () {
-                      setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
-                    },
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Şifre tekrarı gerekli';
-                  }
-                  if (value != _newPasswordController.text) {
-                    return 'Şifreler eşleşmiyor';
-                  }
-                  return null;
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-          child: const Text('İptal'),
-        ),
-        ElevatedButton(
-          onPressed: _isLoading ? null : _changePassword,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ThemeColors.getPrimaryButtonColor(context),
-            foregroundColor: Colors.white,
-          ),
-          child: _isLoading
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                )
-              : const Text('Şifre Değiştir'),
-        ),
-      ],
-    );
-  }
-}
-
 class _LoadingState extends StatelessWidget {
   const _LoadingState();
 
@@ -703,21 +519,6 @@ class _IdentityCard extends StatelessWidget {
 
   const _IdentityCard({required this.profileData});
 
-  Future<void> _copyUID(BuildContext context) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid != null) {
-      await Clipboard.setData(ClipboardData(text: uid));
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('UID panoya kopyalandı'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -737,31 +538,61 @@ class _IdentityCard extends StatelessWidget {
       child: Column(
         children: [
           // Profile Picture with Level Ring
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              // Level Ring
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFF4CAF50),
-                    width: 4,
+          GestureDetector(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => ProfilePictureChangeDialog(
+                  currentProfilePictureUrl: profileData.serverData?.profilePictureUrl,
+                  onProfilePictureUpdated: () {
+                    // Profili yenile
+                    context.read<ProfileBloc>().add(RefreshServerData());
+                  },
+                ),
+              );
+            },
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Level Ring
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFF4CAF50),
+                      width: 4,
+                    ),
+                  ),
+                  child: CircleAvatar(
+                    radius: 56,
+                    backgroundColor: Colors.grey[200],
+                    backgroundImage: profileData.serverData?.profilePictureUrl != null
+                        ? NetworkImage(profileData.serverData!.profilePictureUrl!)
+                        : null,
+                    child: profileData.serverData?.profilePictureUrl == null
+                        ? const Icon(Icons.person, size: 56, color: Colors.grey)
+                        : null,
                   ),
                 ),
-                child: CircleAvatar(
-                  radius: 56,
-                  backgroundColor: Colors.grey[200],
-                  backgroundImage: profileData.serverData?.profilePictureUrl != null
-                      ? NetworkImage(profileData.serverData!.profilePictureUrl!)
-                      : null,
-                  child: profileData.serverData?.profilePictureUrl == null
-                      ? const Icon(Icons.person, size: 56, color: Colors.grey)
-                      : null,
+                // Edit Icon
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.blue,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.edit,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
-              ),
               // Level Badge
               Positioned(
                 bottom: 0,
@@ -784,6 +615,7 @@ class _IdentityCard extends StatelessWidget {
               ),
             ],
           ),
+          ),
           const SizedBox(height: 20),
           
           // Nickname
@@ -802,34 +634,32 @@ class _IdentityCard extends StatelessWidget {
           const SizedBox(height: 8),
           
           // UID with copy button
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'UID: ${profileData.serverData?.uid ?? "Yükleniyor..."}',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: ThemeColors.getStatsCardText(context),
-                ),
-              ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () => _copyUID(context),
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4CAF50),
-                    borderRadius: BorderRadius.circular(4),
+          if (profileData.serverData?.uid != null)
+            CopyToClipboardWidget(
+              textToCopy: profileData.serverData!.uid,
+              successMessage: 'UID kopyalandı!',
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'UID: ${profileData.serverData!.uid}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: ThemeColors.getStatsCardText(context),
+                      fontFamily: 'monospace',
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.copy,
-                    size: 16,
-                    color: Colors.white,
-                  ),
-                ),
+                ],
               ),
-            ],
-          ),
+            )
+          else
+            Text(
+              'UID: Yükleniyor...',
+              style: TextStyle(
+                fontSize: 14,
+                color: ThemeColors.getStatsCardText(context),
+              ),
+            ),
           
           const SizedBox(height: 16),
           

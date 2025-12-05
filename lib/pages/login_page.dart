@@ -12,13 +12,12 @@ import 'profile_page.dart';
 import 'register_page.dart';
 import 'settings_page.dart';
 import 'duel_page.dart';
-import 'duel_invitation_page.dart';
 import 'email_verification_page.dart';
 import '../services/profile_service.dart';
 import '../services/firebase_auth_service.dart';
 import '../services/authentication_state_service.dart';
 import '../theme/theme_colors.dart';
-import '../utils/firebase_config_checker.dart';
+
 import '../widgets/login_dialog.dart';
 
 class LoginPage extends StatefulWidget {
@@ -134,6 +133,7 @@ class _LoginPageState extends State<LoginPage> {
       
       if (isAuth && mounted) {
         // User is already authenticated, navigate to profile page
+        if (!mounted) return;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -152,6 +152,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final cachedUsername = await _profileService.getCurrentNickname();
       if (cachedUsername != null && cachedUsername.isNotEmpty) {
+        if (!mounted) return;
         setState(() {
           _nicknameController.text = cachedUsername;
         });
@@ -181,6 +182,7 @@ class _LoginPageState extends State<LoginPage> {
 
   /// Show login requirement dialog for multiplayer/duel modes
   Future<void> _showLoginRequirementDialog(String modeName) async {
+    if (!mounted) return;
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -223,6 +225,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       // Check if user has a real email account (not anonymous)
       final isRegistered = await _profileService.isUserRegistered();
+      if (!mounted) return;
       setState(() {
         _isRegistered = isRegistered;
         _isCheckingRegistration = false;
@@ -231,6 +234,7 @@ class _LoginPageState extends State<LoginPage> {
       if (kDebugMode) {
         debugPrint('Error checking registration status: $e');
       }
+      if (!mounted) return;
       setState(() {
         _isRegistered = false;
         _isCheckingRegistration = false;
@@ -246,6 +250,7 @@ class _LoginPageState extends State<LoginPage> {
       await _profileService.cacheNickname(nickname);
       
       // Show loading state
+      if (!mounted) return;
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -304,6 +309,7 @@ class _LoginPageState extends State<LoginPage> {
           final gameNickname = await authStateService.getGameNickname();
           
           // Navigate - pages will use global authentication state
+          if (!mounted) return;
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -498,12 +504,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _showFirebaseDiagnostics() {
-    showDialog(
-      context: context,
-      builder: (context) => const FirebaseConfigChecker(),
-    );
-  }
+
 
   void _showLoginDialog() async {
     final result = await showDialog<bool>(
@@ -531,6 +532,7 @@ class _LoginPageState extends State<LoginPage> {
 
         // If email is not verified, show verification dialog first
         if (verificationStatus.hasEmail && !verificationStatus.isVerified) {
+          if (!mounted) return;
           final shouldVerify = await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
@@ -550,7 +552,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           );
           
-          if (shouldVerify == true) {
+          if (shouldVerify == true && mounted) {
             // Navigate to email verification page
             Navigator.push(
               context,
@@ -558,7 +560,7 @@ class _LoginPageState extends State<LoginPage> {
                 builder: (context) => const EmailVerificationPage(),
               ),
             ).then((isVerified) {
-              if (isVerified == true) {
+              if (isVerified == true && mounted) {
                 // Email verified, navigate to profile
                 Navigator.pushReplacement(
                   context,
@@ -573,12 +575,14 @@ class _LoginPageState extends State<LoginPage> {
         }
 
         // Email is verified or not required, navigate to profile
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const ProfilePage(),
-          ),
-        );
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ProfilePage(),
+            ),
+          );
+        }
       }
     }
   }
@@ -738,11 +742,6 @@ class _LoginPageState extends State<LoginPage> {
             onPressed: _showHelpDialog,
             tooltip: 'Oyun Yardımı',
           ),
-          IconButton(
-            icon: Icon(Icons.bug_report, color: ThemeColors.getWarningColor(context)),
-            onPressed: _showFirebaseDiagnostics,
-            tooltip: 'Firebase Yapılandırma Tanısı',
-          ),
         ],
       ),
       body: Container(
@@ -755,220 +754,212 @@ class _LoginPageState extends State<LoginPage> {
         ),
         child: SafeArea(
           child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 500),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: ThemeColors.getContainerBackground(context),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: ThemeColors.getShadow(context),
-                            blurRadius: 15,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Icon(
-                            Icons.eco,
-                            size: 60,
-                            color: ThemeColors.getGreen(context),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Oyuna Başla',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: ThemeColors.getText(context),
+            child: Scrollbar(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: ThemeColors.getContainerBackground(context),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: ThemeColors.getShadow(context),
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
                             ),
-                          ),
-                          const SizedBox(height: 24),
-                          Form(
-                            key: _formKey,
-                            child: TextFormField(
-                              controller: _nicknameController,
-                              decoration: InputDecoration(
-                                labelText: 'Adınız',
-                                filled: true,
-                                fillColor: ThemeColors.getInputBackground(context),
-                                labelStyle: TextStyle(color: ThemeColors.getGreen(context)),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: ThemeColors.getBorder(context)),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: ThemeColors.getBorder(context)),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
-                                ),
-                                prefixIcon: Icon(Icons.person, color: ThemeColors.getSecondaryText(context)),
-                                suffixIcon: IconButton(
-                                  icon: Icon(Icons.casino, color: Theme.of(context).colorScheme.primary),
-                                  onPressed: _suggestRandomName,
-                                  tooltip: 'Rastgele isim öner',
-                                ),
-                              ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Icon(
+                              Icons.eco,
+                              size: 60,
+                              color: ThemeColors.getGreen(context),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Oyuna Başla',
+                              textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
                                 color: ThemeColors.getText(context),
-                                fontWeight: FontWeight.w500,
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Lütfen bir takma ad girin';
-                                }
-                                if (value.length < 3) {
-                                  return 'Takma ad en az 3 karakter olmalı';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          ElevatedButton.icon(
-                            onPressed: _startGame,
-                            icon: const Icon(Icons.play_arrow),
-                            label: const Text('Tek Oyun'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: ThemeColors.getPrimaryButtonColor(context),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          ElevatedButton.icon(
-                            onPressed: () async {
-                              if (_formKey.currentState!.validate()) {
-                                final nickname = _nicknameController.text;
-                                
-                                // Check if login is required
-                                final requiresLogin = await _shouldRequireLogin();
-                                if (requiresLogin && !_isRegistered) {
-                                  await _showLoginRequirementDialog('Çok Oyunculu');
-                                  return;
-                                }
-                                
-                                // Get authenticated nickname from global state service
-                                final authStateService = AuthenticationStateService();
-                                final gameNickname = await authStateService.getGameNickname();
-                                
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => MultiplayerLobbyPage(userNickname: gameNickname),
+                            const SizedBox(height: 24),
+                            Form(
+                              key: _formKey,
+                              child: TextFormField(
+                                controller: _nicknameController,
+                                decoration: InputDecoration(
+                                  labelText: 'Adınız',
+                                  filled: true,
+                                  fillColor: ThemeColors.getInputBackground(context),
+                                  labelStyle: TextStyle(color: ThemeColors.getGreen(context)),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: ThemeColors.getBorder(context)),
                                   ),
-                                );
-                              }
-                            },
-                            icon: const Icon(Icons.group),
-                            label: const Text('Çok Oyunculu'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: ThemeColors.getSecondaryButtonColor(context),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          ElevatedButton.icon(
-                            onPressed: () async {
-                              if (_formKey.currentState!.validate()) {
-                                final nickname = _nicknameController.text;
-                                
-                                // Check if login is required
-                                final requiresLogin = await _shouldRequireLogin();
-                                if (requiresLogin && !_isRegistered) {
-                                  await _showLoginRequirementDialog('Düello');
-                                  return;
-                                }
-                                
-                                // Get authenticated data from global state service
-                                final authStateService = AuthenticationStateService();
-                                final gameNickname = await authStateService.getGameNickname();
-                                final playerId = await authStateService.getGamePlayerId();
-                                
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const DuelPage(),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: ThemeColors.getBorder(context)),
                                   ),
-                                );
-                              }
-                            },
-                            icon: const Icon(Icons.security),
-                            label: const Text('Düello'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: ThemeColors.getAccentButtonColor(context),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+                                  ),
+                                  prefixIcon: Icon(Icons.person, color: ThemeColors.getSecondaryText(context)),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(Icons.casino, color: Theme.of(context).colorScheme.primary),
+                                    onPressed: _suggestRandomName,
+                                    tooltip: 'Rastgele isim öner',
+                                  ),
+                                ),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: ThemeColors.getText(context),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Lütfen bir takma ad girin';
+                                  }
+                                  if (value.length < 3) {
+                                    return 'Takma ad en az 3 karakter olmalı';
+                                  }
+                                  return null;
+                                },
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 16),
-                          LayoutBuilder(
-                            builder: (context, constraints) {
-                              // Use different layouts based on screen width
-                              if (constraints.maxWidth < 400) {
-                                // Small screens: use vertical layout
-                                return Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: TextButton.icon(
-                                            onPressed: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) => FriendsPage(userNickname: _nicknameController.text),
-                                                ),
-                                              );
-                                            },
-                                            icon: const Icon(Icons.people, size: 16),
-                                            label: const Text('Arkadaşlar', style: TextStyle(fontSize: 12)),
-                                            style: TextButton.styleFrom(
-                                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                              backgroundColor: ThemeColors.getCardBackgroundLight(context),
+                            const SizedBox(height: 20),
+                            ElevatedButton.icon(
+                              onPressed: _startGame,
+                              icon: const Icon(Icons.play_arrow),
+                              label: const Text('Tek Oyun'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: ThemeColors.getPrimaryButtonColor(context),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  // Check if login is required
+                                  _shouldRequireLogin().then((requiresLogin) async {
+                                    if (requiresLogin && !_isRegistered) {
+                                      await _showLoginRequirementDialog('Çok Oyunculu');
+                                      return;
+                                    }
+                                    
+                                    // Get authenticated nickname from global state service
+                                    final authStateService = AuthenticationStateService();
+                                    authStateService.getGameNickname().then((gameNickname) {
+                                      // Use widget callback to safely navigate
+                                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                                        if (mounted) {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (BuildContext context) => MultiplayerLobbyPage(userNickname: gameNickname),
                                             ),
+                                          );
+                                        }
+                                      });
+                                    });
+                                  });
+                                }
+                              },
+                              icon: const Icon(Icons.group),
+                              label: const Text('Çok Oyunculu'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: ThemeColors.getSecondaryButtonColor(context),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  // Check if login is required
+                                  _shouldRequireLogin().then((requiresLogin) async {
+                                    if (requiresLogin && !_isRegistered) {
+                                      await _showLoginRequirementDialog('Düello');
+                                      return;
+                                    }
+                                    
+                                    // Use widget callback to safely navigate
+                                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                                      if (mounted) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (BuildContext context) => const DuelPage(),
                                           ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        if (_isRegistered && !_isCheckingRegistration)
+                                        );
+                                      }
+                                    });
+                                  });
+                                }
+                              },
+                              icon: const Icon(Icons.security),
+                              label: const Text('Düello'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: ThemeColors.getAccentButtonColor(context),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                // Use different layouts based on screen width
+                                if (constraints.maxWidth < 400) {
+                                  // Small screens: use vertical layout
+                                  return Column(
+                                    children: [
+                                      Row(
+                                        children: [
                                           Expanded(
                                             child: TextButton.icon(
                                               onPressed: () {
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) => const ProfilePage(),
-                                                  ),
-                                                );
+                                                // Get authenticated nickname from global state service
+                                                final authStateService = AuthenticationStateService();
+                                                authStateService.getGameNickname().then((gameNickname) {
+                                                  // Use widget callback to safely navigate
+                                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                                    if (mounted) {
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (BuildContext context) => FriendsPage(userNickname: gameNickname),
+                                                        ),
+                                                      );
+                                                    }
+                                                  });
+                                                });
                                               },
-                                              icon: const Icon(Icons.person, size: 16, color: Colors.purple),
-                                              label: const Text('Profil', style: TextStyle(fontSize: 12, color: Colors.purple)),
+                                              icon: const Icon(Icons.people, size: 16),
+                                              label: const Text('Arkadaşlar', style: TextStyle(fontSize: 12)),
                                               style: TextButton.styleFrom(
                                                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -976,191 +967,224 @@ class _LoginPageState extends State<LoginPage> {
                                               ),
                                             ),
                                           ),
-                                        if (!_isRegistered || _isCheckingRegistration)
-                                          const Expanded(
-                                            child: SizedBox.shrink(),
-                                          ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: TextButton.icon(
-                                        onPressed: _viewLeaderboard,
-                                        icon: const Icon(Icons.leaderboard, size: 16, color: Colors.blue),
-                                        label: const Text('Liderlik Tablosu', style: TextStyle(fontSize: 12, color: Colors.blue)),
-                                        style: TextButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(vertical: 8),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                          backgroundColor: ThemeColors.getButtonBackground(context),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              } else {
-                                // Medium and large screens: use horizontal layout
-                                return Row(
-                                  children: [
-                                    Expanded(
-                                      child: TextButton.icon(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => FriendsPage(userNickname: _nicknameController.text),
+                                          const SizedBox(width: 8),
+                                          if (_isRegistered && !_isCheckingRegistration)
+                                            Expanded(
+                                              child: TextButton.icon(
+                                                onPressed: () {
+                                                  if (!mounted) return;
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) => const ProfilePage(),
+                                                    ),
+                                                  );
+                                                },
+                                                icon: const Icon(Icons.person, size: 16, color: Colors.purple),
+                                                label: const Text('Profil', style: TextStyle(fontSize: 12, color: Colors.purple)),
+                                                style: TextButton.styleFrom(
+                                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                  backgroundColor: ThemeColors.getCardBackgroundLight(context),
+                                                ),
+                                              ),
                                             ),
-                                          );
-                                        },
-                                        icon: const Icon(Icons.people, size: 18),
-                                        label: const Text('Arkadaşlar', style: TextStyle(fontSize: 14)),
-                                        style: TextButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(vertical: 12),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                          backgroundColor: ThemeColors.getButtonBackground(context),
+                                          if (!_isRegistered || _isCheckingRegistration)
+                                            const Expanded(
+                                              child: SizedBox.shrink(),
+                                            ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: TextButton.icon(
+                                          onPressed: _viewLeaderboard,
+                                          icon: const Icon(Icons.leaderboard, size: 16, color: Colors.blue),
+                                          label: const Text('Liderlik Tablosu', style: TextStyle(fontSize: 12, color: Colors.blue)),
+                                          style: TextButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(vertical: 8),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            backgroundColor: ThemeColors.getButtonBackground(context),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    if (_isRegistered && !_isCheckingRegistration)
+                                    ],
+                                  );
+                                } else {
+                                  // Medium and large screens: use horizontal layout
+                                  return Row(
+                                    children: [
                                       Expanded(
                                         child: TextButton.icon(
                                           onPressed: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => const ProfilePage(),
-                                              ),
-                                            );
+                                            // Get authenticated nickname from global state service
+                                            final authStateService = AuthenticationStateService();
+                                            authStateService.getGameNickname().then((gameNickname) {
+                                              // Use widget callback to safely navigate
+                                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                                if (mounted) {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (BuildContext context) => FriendsPage(userNickname: gameNickname),
+                                                    ),
+                                                  );
+                                                }
+                                              });
+                                            });
                                           },
-                                          icon: const Icon(Icons.person, size: 18, color: Colors.purple),
-                                          label: const Text('Profil', style: TextStyle(fontSize: 14, color: Colors.purple)),
+                                          icon: const Icon(Icons.people, size: 18),
+                                          label: const Text('Arkadaşlar', style: TextStyle(fontSize: 14)),
                                           style: TextButton.styleFrom(
                                             padding: const EdgeInsets.symmetric(vertical: 12),
                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                            backgroundColor: Colors.grey[100],
+                                            backgroundColor: ThemeColors.getButtonBackground(context),
                                           ),
                                         ),
                                       ),
-                                    if (!_isRegistered || _isCheckingRegistration)
-                                      const Expanded(
-                                        child: SizedBox.shrink(),
-                                      ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: TextButton.icon(
-                                        onPressed: _viewLeaderboard,
-                                        icon: const Icon(Icons.leaderboard, size: 18, color: Colors.blue),
-                                        label: const Text('Liderlik', style: TextStyle(fontSize: 14, color: Colors.blue)),
-                                        style: TextButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(vertical: 12),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                          backgroundColor: ThemeColors.getButtonBackground(context),
+                                      const SizedBox(width: 8),
+                                      if (_isRegistered && !_isCheckingRegistration)
+                                        Expanded(
+                                          child: TextButton.icon(
+                                            onPressed: () {
+                                              if (!mounted) return;
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => const ProfilePage(),
+                                                ),
+                                              );
+                                            },
+                                            icon: const Icon(Icons.person, size: 18, color: Colors.purple),
+                                            label: const Text('Profil', style: TextStyle(fontSize: 14, color: Colors.purple)),
+                                            style: TextButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                              backgroundColor: Colors.grey[100],
+                                            ),
+                                          ),
+                                        ),
+                                      if (!_isRegistered || _isCheckingRegistration)
+                                        const Expanded(
+                                          child: SizedBox.shrink(),
+                                        ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: TextButton.icon(
+                                          onPressed: _viewLeaderboard,
+                                          icon: const Icon(Icons.leaderboard, size: 18, color: Colors.blue),
+                                          label: const Text('Liderlik', style: TextStyle(fontSize: 14, color: Colors.blue)),
+                                          style: TextButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                            backgroundColor: ThemeColors.getButtonBackground(context),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                );
-                              }
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          
-                          // Login, Çıkış Yap, Kayıt ol ve Ayarlar butonları
-                          if (_isRegistered && !_isCheckingRegistration)
-                            // Show logout button for registered users
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                TextButton(
-                                  onPressed: _showLogoutDialog,
-                                  child: Text(
-                                    'Çıkış Yap',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.red,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => const SettingsPage(),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    'Ayarlar',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: ThemeColors.getSecondaryText(context),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            )
-                          else
-                            // Show login/register buttons for non-registered users
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                TextButton(
-                                  onPressed: () => _showLoginDialog(),
-                                  child: Text(
-                                    'Giriş Yap',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: ThemeColors.getSuccessColor(context),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => const RegisterPage(),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    'Kayıt Ol',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: ThemeColors.getInfoColor(context),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => const SettingsPage(),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    'Ayarlar',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: ThemeColors.getSecondaryText(context),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                    ],
+                                  );
+                                }
+                              },
                             ),
-                        ],
+                            const SizedBox(height: 16),
+                            
+                            // Login, Çıkış Yap, Kayıt ol ve Ayarlar butonları
+                            if (_isRegistered && !_isCheckingRegistration)
+                              // Show logout button for registered users
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  TextButton(
+                                    onPressed: _showLogoutDialog,
+                                    child: Text(
+                                      'Çıkış Yap',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => const SettingsPage(),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      'Ayarlar',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: ThemeColors.getSecondaryText(context),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            else
+                              // Show login/register buttons for non-registered users
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  TextButton(
+                                    onPressed: () => _showLoginDialog(),
+                                    child: Text(
+                                      'Giriş Yap',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: ThemeColors.getSuccessColor(context),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => const RegisterPage(),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      'Kayıt Ol',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: ThemeColors.getInfoColor(context),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => const SettingsPage(),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      'Ayarlar',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: ThemeColors.getSecondaryText(context),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

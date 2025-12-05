@@ -140,21 +140,22 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 40),
-                
-                // Icon
-                Icon(
-                  _isVerified ? Icons.verified : Icons.email,
-                  size: 100,
-                  color: _isVerified 
-                      ? Colors.green 
-                      : Colors.blue,
-                ),
+          child: Scrollbar(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 40),
+                  
+                  // Icon
+                  Icon(
+                    _isVerified ? Icons.verified : Icons.email,
+                    size: 100,
+                    color: _isVerified 
+                        ? Colors.green 
+                        : Colors.blue,
+                  ),
                 
                 const SizedBox(height: 32),
                 
@@ -360,6 +361,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                 ),
               ],
             ),
+          ),
           ),
         ),
       ),

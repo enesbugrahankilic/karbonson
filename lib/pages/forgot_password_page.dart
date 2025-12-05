@@ -6,7 +6,9 @@ import '../services/firebase_auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../theme/theme_colors.dart';
 import '../services/email_verification_service.dart';
+import '../services/email_otp_service.dart';
 import 'email_verification_and_password_reset_info_page.dart';
+import 'email_otp_verification_page.dart';
 
 /// Forgot Password Page with comprehensive email validation and auto-population
 /// Supports automatic email pre-filling from FirebaseAuth.currentUser?.email
@@ -102,12 +104,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
       final email = _emailController.text.trim();
       
       if (kDebugMode) {
-        debugPrint('ForgotPasswordPage: Sending password reset to: ${email.replaceRange(2, email.indexOf('@'), '***')}');
+        debugPrint('ForgotPasswordPage: Sending OTP code to: ${email.replaceRange(2, email.indexOf('@'), '***')}');
       }
 
-      // Send password reset using email verification service with feedback
-      final emailVerificationResult = await EmailVerificationService.sendPasswordResetWithEmailVerificationCheck(
+      // Send OTP code using email OTP service
+      final otpResult = await EmailOtpService.sendOtpCode(
         email: email,
+        purpose: 'forgot_password',
       );
 
       // Hide loading overlay
@@ -117,32 +120,20 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
         _isLoading = false;
       });
 
-      // Handle the result based on success and redirection requirements
-      if (emailVerificationResult.isSuccess) {
-        // Check if user should be redirected to email verification page
-        if (EmailVerificationService.shouldRedirectToEmailVerificationPage(emailVerificationResult)) {
-          // Navigate to email verification and password reset info page for unverified users
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => EmailVerificationAndPasswordResetInfoPage(
-                passwordResetEmail: email,
-              ),
+      // Handle the result
+      if (otpResult.isSuccess) {
+        // Navigate to OTP verification page
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => EmailOtpVerificationPage(
+              email: email,
+              purpose: 'forgot_password',
             ),
-          );
-        } else {
-          // Show success message and navigate back to login
-          _showSuccessSnackbar(emailVerificationResult.message);
-          
-          // Auto-navigate back to login after a short delay
-          Future.delayed(const Duration(seconds: 3), () {
-            if (mounted) {
-              Navigator.of(context).pop(); // Return to login
-            }
-          });
-        }
+          ),
+        );
       } else {
         // Show error message
-        _showErrorSnackbar(emailVerificationResult.message);
+        _showErrorSnackbar(otpResult.message);
       }
 
     } catch (e) {
@@ -515,7 +506,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'E-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.',
+                            'E-posta adresinizi girin, size 6 haneli doğrulama kodu gönderelim.',
                             style: TextStyle(
                               fontSize: 14,
                               color: ThemeColors.getSecondaryText(context),
@@ -659,7 +650,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
                                   child: ElevatedButton.icon(
                                     onPressed: (_isLoading || !_isConnected) ? null : _handleSendPasswordReset,
                                     icon: const Icon(Icons.send),
-                                    label: const Text('Şifre Sıfırlama E-postası Gönder'),
+                                    label: const Text('Doğrulama Kodu Gönder'),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: _isConnected
                                           ? ThemeColors.getPrimaryButtonColor(context)
@@ -688,7 +679,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
                               ),
                             ),
                             child: Text(
-                              'E-posta adresinize gönderilen bağlantıya tıklayarak yeni şifrenizi belirleyebilirsiniz. E-posta gelmezse spam klasörünü kontrol etmeyi unutmayın.',
+                              'E-posta adresinize gönderilen 6 haneli kodu girerek yeni şifrenizi belirleyebilirsiniz. E-posta gelmezse spam klasörünü kontrol etmeyi unutmayın.',
                               style: TextStyle(
                                 color: ThemeColors.getSecondaryText(context),
                                 fontSize: 12,

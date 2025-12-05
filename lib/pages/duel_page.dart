@@ -7,6 +7,8 @@ import '../services/firestore_service.dart';
 import '../services/authentication_state_service.dart';
 import '../theme/theme_colors.dart';
 import '../widgets/duel_invite_dialog.dart';
+import '../widgets/copy_to_clipboard_widget.dart';
+import '../widgets/home_button.dart';
 
 class DuelPage extends StatefulWidget {
   const DuelPage({super.key});
@@ -78,7 +80,21 @@ class _DuelPageState extends State<DuelPage> {
       if (room != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Oda oluşturuldu! Oda Kodu: ${room.id}'),
+            content: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  child: Text('Oda oluşturuldu! Oda Kodu: ${room.id}'),
+                ),
+                const SizedBox(width: 8),
+                CopyToClipboardWidget(
+                  textToCopy: room.id,
+                  successMessage: 'Oda kodu kopyalandı!',
+                  child: const Icon(Icons.copy, size: 16, color: Colors.white),
+                  iconColor: Colors.white,
+                ),
+              ],
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -259,6 +275,7 @@ class _DuelPageState extends State<DuelPage> {
   Widget _buildLobbyView() {
     return Scaffold(
       appBar: AppBar(
+        leading: const HomeButton(),
         title: const Text('Düello Modu'),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -447,20 +464,24 @@ class _DuelPageState extends State<DuelPage> {
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              // Game Status
-              _buildGameStatus(),
-              
-              // Current Question
-              if (_duelLogic.currentQuestion != null) _buildQuestionCard(),
-              
-              // Answer Input
-              if (_duelLogic.isGameActive) _buildAnswerInput(),
-              
-              // Score Board
-              _buildScoreBoard(),
-            ],
+          child: Scrollbar(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Game Status
+                  _buildGameStatus(),
+                  
+                  // Current Question
+                  if (_duelLogic.currentQuestion != null) _buildQuestionCard(),
+                  
+                  // Answer Input
+                  if (_duelLogic.isGameActive) _buildAnswerInput(),
+                  
+                  // Score Board
+                  _buildScoreBoard(),
+                ],
+              ),
+            ),
           ),
         ),
       ),

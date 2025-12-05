@@ -213,9 +213,15 @@ class TwoFactorManagementResult {
 
 class FirebaseAuthService {
   static final fb_auth.FirebaseAuth _auth = fb_auth.FirebaseAuth.instance;
-  static const Duration _defaultTimeout = Duration(seconds: 15);
-  static const Duration _retryDelay = Duration(seconds: 2);
-  static const int _maxRetries = 3;
+  
+  // ⚡ TIMEOUT SÜRESİ 15 SANİYEDEN 5 SANİYEYE DÜŞÜRÜLDÜ
+  static const Duration _defaultTimeout = Duration(seconds: 5);
+  
+  // ⚡ RETRY DELAY 2 SANİYEDEN 0.5 SANİYEYE DÜŞÜRÜLDÜ
+  static const Duration _retryDelay = Duration(milliseconds: 500);
+  
+  // ⚡ MAX RETRY 3'TEN 2'YE DÜŞÜRÜLDÜ
+  static const int _maxRetries = 2;
 
   /// Initialize authentication persistence
   /// This ensures users stay logged in even when the app closes

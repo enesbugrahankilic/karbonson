@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import '../services/game_invitation_service.dart';
+import 'copy_to_clipboard_widget.dart';
 
 class FriendInviteDialog extends StatefulWidget {
   final String roomId;
@@ -259,7 +260,22 @@ class _FriendInviteDialogState extends State<FriendInviteDialog> {
                                   subtitle: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text('ID: ${user.userId.substring(0, 8)}...'),
+                                      Row(
+                                        children: [
+                                          Text('ID: ', style: const TextStyle(fontWeight: FontWeight.w500)),
+                                          Expanded(
+                                            child: CopyToClipboardWidget(
+                                              textToCopy: user.userId,
+                                              successMessage: 'Kullanıcı ID\'si kopyalandı!',
+                                              child: Text(
+                                                '${user.userId.substring(0, 8)}...',
+                                                style: const TextStyle(fontFamily: 'monospace'),
+                                              ),
+                                              iconSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                       Text(
                                         user.foundBy == 'userId' 
                                             ? 'ID ile bulundu' 
