@@ -270,6 +270,7 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
         child: AvatarSelectionWidget(
           onAvatarSelected: (selectedAvatar) async {
             await _updateProfilePicture(selectedAvatar);
+            Navigator.of(context).pop();
           },
           currentAvatarUrl: widget.currentProfilePictureUrl,
         ),
@@ -278,6 +279,8 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
   }
 
   Future<void> _uploadAndUpdateImage(File imageFile) async {
+    if (!mounted) return;
+    
     setState(() {
       _isLoading = true;
       _isUploading = true;
@@ -289,12 +292,12 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
       // Firebase Storage'a yükle
       final String? imageUrl = await _profilePictureService.uploadImageToFirebase(imageFile);
       
-      if (imageUrl != null) {
+      if (imageUrl != null && mounted) {
         setState(() {
           _uploadStatus = 'Profil güncelleniyor...';
         });
         await _updateProfilePicture(imageUrl);
-      } else {
+      } else if (mounted) {
         setState(() {
           _hasError = true;
           _isUploading = false;
@@ -302,19 +305,25 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
         _showErrorSnackBar('Resim yuklenemedi, lutfen tekrar deneyin.');
       }
     } catch (e) {
-      setState(() {
-        _hasError = true;
-        _isUploading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+          _isUploading = false;
+        });
+      }
       _showErrorSnackBar('Bir hata olustu: ${e.toString()}');
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   Future<void> _updateProfilePicture(String imageUrl) async {
+    if (!mounted) return;
+    
     setState(() {
       _isLoading = true;
       _isUploading = true;
@@ -326,11 +335,13 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
       // Eski fotoğrafı temizle ve yenisini yükle
       final updatedUrl = await _profilePictureService.replaceProfilePicture(imageUrl, _profileService);
       
-      if (updatedUrl != null) {
+      if (updatedUrl != null && mounted) {
         widget.onProfilePictureUpdated?.call(updatedUrl);
-        Navigator.of(context).pop(); // Dialog'u kapat
+        if (mounted) {
+          Navigator.of(context).pop(); // Dialog'u kapat
+        }
         _showSuccessSnackBar('Profil fotografi basariyla guncellendi!');
-      } else {
+      } else if (mounted) {
         setState(() {
           _hasError = true;
           _isUploading = false;
@@ -338,19 +349,24 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
         _showErrorSnackBar('Profil fotografi guncellenemedi.');
       }
     } catch (e) {
-      setState(() {
-        _hasError = true;
-        _isUploading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+          _isUploading = false;
+        });
+      }
       _showErrorSnackBar('Bir hata olustu: ${e.toString()}');
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   void _showSuccessSnackBar(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -360,6 +376,7 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
   }
 
   void _showErrorSnackBar(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),

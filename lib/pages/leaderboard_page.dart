@@ -36,6 +36,7 @@ class LeaderboardPage extends StatelessWidget {
         child: StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('users')
+              .where('score', isGreaterThan: 0)
               .orderBy('score', descending: true)
               .snapshots(),
           builder: (context, snapshot) {

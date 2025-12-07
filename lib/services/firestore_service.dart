@@ -468,19 +468,24 @@ class FirestoreService {
   /// Get user profile by UID (Specification I.2: Document ID = UID)
   Future<UserData?> getUserProfile(String uid) async {
     try {
+      if (uid.isEmpty) {
+        if (kDebugMode) debugPrint('❌ Empty UID provided to getUserProfile');
+        return null;
+      }
+
       final userDoc = await _db.collection(_usersCollection).doc(uid).get();
-      
+
       if (!userDoc.exists) {
         if (kDebugMode) debugPrint('❌ User profile not found for UID: $uid');
         return null;
       }
 
       final userData = UserData.fromMap(userDoc.data()!, userDoc.id);
-      
+
       if (kDebugMode) {
         debugPrint('✅ User profile retrieved with UID centrality: ${userData.nickname}');
       }
-      
+
       return userData;
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 Error getting user profile: $e');

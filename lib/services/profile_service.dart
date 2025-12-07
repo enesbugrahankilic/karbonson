@@ -56,12 +56,14 @@ class ProfileService {
         return null;
       }
 
-      final userData = await _firestoreService.getUserProfile(user.uid);
+      // Use provided UID if available, otherwise use current user's UID
+      final targetUid = uid ?? user.uid;
+      final userData = await _firestoreService.getUserProfile(targetUid);
       return userData;
     } catch (e) {
       if (kDebugMode) debugPrint('Error loading server profile: $e');
     }
-    
+
     return null;
   }
 
@@ -74,6 +76,11 @@ class ProfileService {
         return false;
       }
 
+      if (kDebugMode) {
+        debugPrint('📸 Updating profile picture for user: ${user.uid}');
+        debugPrint('📸 New image URL: $imageUrl');
+      }
+
       // Get current user profile
       final currentProfile = await _firestoreService.getUserProfile(user.uid);
       if (currentProfile == null) {
@@ -84,7 +91,12 @@ class ProfileService {
       // Create updated user data with new profile picture URL
       final updatedUserData = currentProfile.copyWith(
         profilePictureUrl: imageUrl,
+        updatedAt: DateTime.now(),
       );
+
+      if (kDebugMode) {
+        debugPrint('📸 Updated user data prepared: ${updatedUserData.nickname}');
+      }
 
       // Save updated profile
       final success = await _firestoreService.createOrUpdateUserProfile(
@@ -93,8 +105,10 @@ class ProfileService {
         privacySettings: updatedUserData.privacySettings,
       );
 
-      if (kDebugMode) {
+      if (success != null && kDebugMode) {
         debugPrint('✅ Profile picture updated successfully: ${updatedUserData.profilePictureUrl}');
+      } else if (kDebugMode) {
+        debugPrint('❌ Failed to update profile picture');
       }
 
       return success != null;

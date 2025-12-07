@@ -11,6 +11,7 @@ import '../models/game_board.dart';
 import 'quiz_page.dart';
 import 'leaderboard_page.dart';
 import '../services/firestore_service.dart';
+import '../services/profile_service.dart';
 import '../theme/theme_colors.dart';
 import 'login_page.dart';
 
@@ -152,6 +153,13 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
         final saveMessage = await FirestoreService().saveUserScore(currentPlayer.nickname, totalScore);
         _scoreSaved = true;
 
+        // Save to profile statistics (isWin = true if totalScore > 0)
+        await ProfileService().addGameResult(
+          score: finalScore,
+          isWin: totalScore > 0,
+          gameType: 'multiplayer',
+        );
+
         // Check if in top 10
         bool isInTop10 = false;
         if (saveMessage == 'Skor kaydedildi.') {
@@ -262,6 +270,13 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
       if (!_scoreSaved) {
         saveMessage = await FirestoreService().saveUserScore(gameLogic.player.nickname, totalScore);
         _scoreSaved = true;
+
+        // Save to profile statistics (isWin = true if totalScore > 0)
+        await ProfileService().addGameResult(
+          score: finalScore,
+          isWin: totalScore > 0,
+          gameType: 'single_player',
+        );
       }
 
       // Check if in top 10

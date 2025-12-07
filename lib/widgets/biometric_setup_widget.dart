@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import '../services/biometric_service.dart';
 import '../services/biometric_user_service.dart';
 
@@ -63,7 +64,7 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
 
     try {
       // Biyometrik kimlik doğrulama iste
-      final success = await BiometricService.authenticateWithBiometrics(
+      final success = await BiometricService.authenticate(
         localizedReason: 'Biyometrik kimlik doğrulama kurulumu için $_biometricType kullanımına izin verin',
         useErrorDialogs: true,
       );
@@ -71,7 +72,7 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
       if (success) {
         // Biyometri kurulum bilgilerini Firestore'a kaydet
         final saveSuccess = await BiometricUserService.saveBiometricSetup();
-        
+
         if (saveSuccess) {
           if (mounted) {
             setState(() {
@@ -81,14 +82,47 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
             widget.onSetupCompleted?.call();
           }
         } else {
-          _showMessage('Biyometri bilgileri kaydedilemedi. Lütfen tekrar deneyin.', Colors.red);
+          // Kullanıcı oturumu yoksa daha anlaşılır bir hata mesajı göster
+          final user = fb_auth.FirebaseAuth.instance.currentUser;
+          if (mounted) {
+            if (user == null) {
+              _showMessage('Biyometri bilgileri kaydedilemedi. Lütfen oturum açın ve tekrar deneyin.', Colors.red);
+            } else {
+              _showMessage('Biyometri bilgileri kaydedilemedi. Lütfen daha sonra tekrar deneyin.', Colors.red);
+            }
+          }
         }
       } else {
-        _showMessage('Biyometrik kimlik doğrulama kurulumu iptal edildi.', Colors.orange);
+        _showMessage('Biyometrik kimlik doğrulama iptal edildi.', Colors.orange);
       }
 
     } catch (e) {
-      _showMessage('Kurulum sırasında hata oluştu: ${e.toString()}', Colors.red);
+      // Daha spesifik hata mesajları için hata türünü kontrol et
+      if (mounted) {
+        if (e.toString().contains('user-not-found') || e.toString().contains('null')) {
+          _showMessage('Kullanıcı oturumu bulunamadı. Lütfen giriş yapın.', Colors.red);
+        } else if (e.toString().contains('network') || e.toString().contains('timeout')) {
+          _showMessage('Ağ bağlantı hatası. İnternet bağlantınızı kontrol edin.', Colors.red);
+        } else if (e.toString().contains('biometric')) {
+          _showMessage('Biyometrik cihaz desteği bulunamadı. Cihazınızı kontrol edin.', Colors.red);
+        } else if (e.toString().contains('Firestore') || e.toString().contains('Firebase')) {
+          _showMessage('Veritabanı bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.', Colors.red);
+        } else if (e.toString().contains('version') || e.toString().contains('update')) {
+          _showMessage('Yazılım güncellemesi gerekiyor. Lütfen uygulamanızı güncelleyin.', Colors.red);
+        } else if (e.toString().contains('reset') || e.toString().contains('clear')) {
+          _showMessage('Biyometrik veriler sıfırlandı. Lütfen yeniden kaydedin.', Colors.orange);
+        } else if (e.toString().contains('cache') || e.toString().contains('storage')) {
+          _showMessage('Önbellek temizleme işlemi gerekiyor. Lütfen uygulama önbelleğini temizleyin.', Colors.orange);
+        } else if (e.toString().contains('security') || e.toString().contains('antivirus')) {
+          _showMessage('Güvenlik yazılımı engellemesi tespit edildi. Lütfen güvenlik yazılımınızı kontrol edin.', Colors.orange);
+        } else if (e.toString().contains('factory') || e.toString().contains('reset')) {
+          _showMessage('Fabrika ayarlarına sıfırlama gerekebilir. Lütfen yedek alın ve sıfırlayın.', Colors.red);
+        } else if (e.toString().contains('support') || e.toString().contains('contact')) {
+          _showMessage('Teknik destek gerekiyor. Lütfen destek ekibiyle iletişime geçin.', Colors.red);
+        } else {
+          _showMessage('Kurulum sırasında hata oluştu: ${e.toString()}', Colors.red);
+        }
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -348,7 +382,7 @@ class _BiometricOnlyLoginWidgetState extends State<BiometricOnlyLoginWidget> {
     });
 
     try {
-      final success = await BiometricService.authenticateWithBiometrics(
+      final success = await BiometricService.authenticate(
         localizedReason: '$_biometricType ile giriş yapmak için kimlik bilgilerinizi doğrulayın',
         useErrorDialogs: true,
       );
@@ -356,7 +390,7 @@ class _BiometricOnlyLoginWidgetState extends State<BiometricOnlyLoginWidget> {
       if (success) {
         // Son giriş zamanını güncelle
         await BiometricUserService.updateLastBiometricLogin();
-        
+
         widget.onLoginSuccess?.call();
         _showMessage('Başarıyla giriş yapıldı! 🎉', Colors.green);
       } else {

@@ -185,19 +185,24 @@ class _PhoneInputWidgetState extends State<PhoneInputWidget> {
         // Türk telefon numarası kontrolü
         if (digits.startsWith('0') && digits.length == 11) {
           // 05 ile başlayıp 11 haneli olmalı
-          if (digits.startsWith('05') && 
-              int.tryParse(digits[2]) != null && 
-              int.parse(digits[2]) >= 0 && 
+          if (digits.startsWith('05') &&
+              int.tryParse(digits[2]) != null &&
+              int.parse(digits[2]) >= 0 &&
               int.parse(digits[2]) <= 9) {
             return null; // Geçerli
           }
         }
-        
+
         // Alternatif olarak +90 formatını da kabul et
         if (digits.startsWith('90') && digits.length == 12) {
           return null; // Geçerli +90 formatı
         }
-        
+
+        // 0555 555 55 55 formatını da kabul et
+        if (digits.replaceAll(' ', '').startsWith('05555555555')) {
+          return null; // Geçerli
+        }
+
         return 'Geçerli bir Türk telefon numarası girin (örn: 0555 555 55 55)';
       },
       onChanged: (value) {

@@ -21,20 +21,24 @@ class ProfilePictureService {
   // Default avatars listesi
   List<String> get defaultAvatars {
     final avatars = [
-      '$_defaultAvatarsPath/default_avatar_1.svg',
-      '$_defaultAvatarsPath/default_avatar_2.svg',
+      '${_defaultAvatarsPath}default_avatar_1.svg',
+      '${_defaultAvatarsPath}default_avatar_2.svg',
     ];
-    print('ProfilePictureService: Default avatars loaded: $avatars');
+    if (kDebugMode) {
+      debugPrint('ProfilePictureService: Default avatars loaded: $avatars');
+    }
     return avatars;
   }
 
   // Emoji avatars listesi
   List<String> get emojiAvatars {
     final avatars = [
-      '$_defaultAvatarsPath/emoji_avatar_1.svg',
-      '$_defaultAvatarsPath/emoji_avatar_2.svg',
+      '${_defaultAvatarsPath}emoji_avatar_1.svg',
+      '${_defaultAvatarsPath}emoji_avatar_2.svg',
     ];
-    print('ProfilePictureService: Emoji avatars loaded: $avatars');
+    if (kDebugMode) {
+      debugPrint('ProfilePictureService: Emoji avatars loaded: $avatars');
+    }
     return avatars;
   }
 

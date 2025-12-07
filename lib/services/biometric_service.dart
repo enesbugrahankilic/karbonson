@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:local_auth_ios/local_auth_ios.dart';
@@ -10,9 +11,19 @@ class BiometricService {
     try {
       final isAvailable = await _localAuth.canCheckBiometrics;
       final isDeviceSupported = await _localAuth.isDeviceSupported();
+      
+      if (kDebugMode) {
+        debugPrint('🔍 Biometric availability check:');
+        debugPrint('🔍 Can check biometrics: $isAvailable');
+        debugPrint('🔍 Device supported: $isDeviceSupported');
+        debugPrint('🔍 Overall available: ${isAvailable && isDeviceSupported}');
+      }
+      
       return isAvailable && isDeviceSupported;
     } catch (e) {
-      print('Biyometri kontrolü hatası: $e');
+      if (kDebugMode) {
+        debugPrint('🚨 Biometric availability check error: $e');
+      }
       return false;
     }
   }
@@ -20,9 +31,20 @@ class BiometricService {
   /// Get list of available biometric types
   static Future<List<BiometricType>> getAvailableBiometrics() async {
     try {
-      return await _localAuth.getAvailableBiometrics();
+      final biometrics = await _localAuth.getAvailableBiometrics();
+      
+      if (kDebugMode) {
+        debugPrint('🔍 Available biometrics: ${biometrics.length} types');
+        for (final biometric in biometrics) {
+          debugPrint('🔍 - $biometric');
+        }
+      }
+      
+      return biometrics;
     } catch (e) {
-      print('Mevcut biyometri türlerini alma hatası: $e');
+      if (kDebugMode) {
+        debugPrint('🚨 Error getting available biometrics: $e');
+      }
       return [];
     }
   }
@@ -45,7 +67,12 @@ class BiometricService {
     bool stickyOnly = false,
   }) async {
     try {
-      return await _localAuth.authenticate(
+      if (kDebugMode) {
+        debugPrint('🔐 Starting biometric authentication');
+        debugPrint('🔐 Reason: $localizedReason');
+      }
+
+      final result = await _localAuth.authenticate(
         localizedReason: localizedReason,
         authMessages: [
           AndroidAuthMessages(
@@ -69,8 +96,17 @@ class BiometricService {
           stickyAuth: stickyOnly,
         ),
       );
+
+      if (kDebugMode) {
+        debugPrint('🔐 Biometric authentication result: $result');
+      }
+
+      return result;
     } catch (e) {
-      print('Biyometrik kimlik doğrulama hatası: $e');
+      if (kDebugMode) {
+        debugPrint('🚨 Biometric authentication error: $e');
+        debugPrint('🚨 Error type: ${e.runtimeType}');
+      }
       return false;
     }
   }
@@ -82,6 +118,12 @@ class BiometricService {
     bool stickyOnly = false,
   }) async {
     try {
+      final isAvailable = await isBiometricAvailable();
+      if (!isAvailable) {
+        debugPrint('Biyometrik kimlik doğrulama mevcut değil');
+        return false;
+      }
+
       return await _localAuth.authenticate(
         localizedReason: localizedReason,
         authMessages: [
@@ -107,7 +149,7 @@ class BiometricService {
         ),
       );
     } catch (e) {
-      print('Kimlik doğrulama hatası: $e');
+      debugPrint('Kimlik doğrulama hatası: $e');
       return false;
     }
   }
@@ -117,7 +159,9 @@ class BiometricService {
     try {
       await _localAuth.stopAuthentication();
     } catch (e) {
-      print('Kimlik doğrulama durdurma hatası: $e');
+      if (kDebugMode) {
+        debugPrint('Kimlik doğrulama durdurma hatası: $e');
+      }
     }
   }
   

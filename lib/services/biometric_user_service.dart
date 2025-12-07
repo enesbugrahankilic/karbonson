@@ -63,7 +63,10 @@ class BiometricUserService {
     try {
       final user = _auth.currentUser;
       if (user == null) {
-        throw Exception('Kullanıcı oturumu bulunamadı');
+        if (kDebugMode) {
+          debugPrint('Biyometri kurulumu atlandı - kullanıcı oturumu yok');
+        }
+        return false;
       }
 
       // Biyometri mevcut mu kontrol et
@@ -106,13 +109,13 @@ class BiometricUserService {
           .set(biometricData.toMap(), SetOptions(merge: true));
 
       if (kDebugMode) {
-        print('Biyometri kurulumu başarıyla kaydedildi: ${user.uid}');
+        debugPrint('Biyometri kurulumu başarıyla kaydedildi: ${user.uid}');
       }
 
       return true;
     } catch (e) {
       if (kDebugMode) {
-        print('Biyometri kurulumu kaydetme hatası: $e');
+        debugPrint('Biyometri kurulumu kaydetme hatası: $e');
       }
       return false;
     }
@@ -133,11 +136,11 @@ class BiometricUserService {
       });
 
       if (kDebugMode) {
-        print('Son biyometri giriş zamanı güncellendi: ${user.uid}');
+        debugPrint('Son biyometri giriş zamanı güncellendi: ${user.uid}');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Son biyometri giriş zamanı güncelleme hatası: $e');
+        debugPrint('Son biyometri giriş zamanı güncelleme hatası: $e');
       }
     }
   }
@@ -158,7 +161,7 @@ class BiometricUserService {
       return BiometricUserData.fromMap(doc.data()!);
     } catch (e) {
       if (kDebugMode) {
-        print('Biyometri verisi alma hatası: $e');
+        debugPrint('Biyometri verisi alma hatası: $e');
       }
       return null;
     }
@@ -181,7 +184,7 @@ class BiometricUserService {
       return data?['isBiometricEnabled'] ?? false;
     } catch (e) {
       if (kDebugMode) {
-        print('Biyometri durumu kontrol hatası: $e');
+        debugPrint('Biyometri durumu kontrol hatası: $e');
       }
       return false;
     }
@@ -202,13 +205,13 @@ class BiometricUserService {
       });
 
       if (kDebugMode) {
-        print('Biyometri devre dışı bırakıldı: ${user.uid}');
+        debugPrint('Biyometri devre dışı bırakıldı: ${user.uid}');
       }
 
       return true;
     } catch (e) {
       if (kDebugMode) {
-        print('Biyometri devre dışı bırakma hatası: $e');
+        debugPrint('Biyometri devre dışı bırakma hatası: $e');
       }
       return false;
     }
@@ -253,7 +256,7 @@ class BiometricUserService {
       };
     } catch (e) {
       if (kDebugMode) {
-        print('Biyometri istatistik hatası: $e');
+        debugPrint('Biyometri istatistik hatası: $e');
       }
       return {};
     }

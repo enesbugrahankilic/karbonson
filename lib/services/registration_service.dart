@@ -177,6 +177,20 @@ class RegistrationService {
 
   /// Validate nickname uniqueness with timeout and error handling
   Future<NicknameValidationResult> _validateNicknameUniqueness(String nickname) async {
+    // Check if the nickname is in the suggestion list
+    final isSuggestedNickname = NicknameService.isInSuggestionList(nickname);
+
+    // If it's a suggested nickname, skip uniqueness validation
+    if (isSuggestedNickname) {
+      if (kDebugMode) {
+        debugPrint('Nickname "$nickname" is in suggestion list, skipping uniqueness check');
+      }
+      return NicknameValidationResult(
+        isValid: true,
+        error: '',
+      );
+    }
+
     try {
       return await NicknameValidator.validateWithUniqueness(nickname)
           .timeout(_nicknameValidationTimeout);

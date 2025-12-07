@@ -123,7 +123,7 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
 
   Widget _buildAvatarItem(String avatarUrl) {
     final bool isSelected = _selectedAvatar == avatarUrl;
-    
+
     return Container(
       margin: const EdgeInsets.only(right: 12),
       child: Column(
@@ -133,6 +133,7 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
               setState(() {
                 _selectedAvatar = avatarUrl;
               });
+              widget.onAvatarSelected(avatarUrl);
             },
             child: Container(
               width: 80,
@@ -152,7 +153,7 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
                 ],
               ),
               child: ClipOval(
-                child: avatarUrl.endsWith('.svg') 
+                child: avatarUrl.endsWith('.svg')
                   ? _buildSvgWidget(avatarUrl)
                   : _buildImageWidget(avatarUrl),
               ),
@@ -182,13 +183,17 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
       avatarUrl,
       width: 80,
       height: 80,
-      fit: BoxFit.cover,
+      fit: BoxFit.contain,
       placeholderBuilder: (context) => Container(
         width: 80,
         height: 80,
         color: Colors.grey[200],
-        child: const Center(
-          child: CircularProgressIndicator(strokeWidth: 2),
+        child: Center(
+          child: Text(
+            avatarUrl.split('/').last.replaceAll('.svg', ''),
+            style: const TextStyle(fontSize: 10, color: Colors.grey),
+            textAlign: TextAlign.center,
+          ),
         ),
       ),
       errorBuilder: (context, error, stackTrace) {
@@ -197,7 +202,20 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
           width: 80,
           height: 80,
           color: Colors.grey[300],
-          child: const Icon(Icons.error, color: Colors.red),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error, color: Colors.red, size: 20),
+              const SizedBox(height: 4),
+              Text(
+                'Hata',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.red.shade700,
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
