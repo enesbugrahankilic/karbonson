@@ -27,6 +27,7 @@ import '../../pages/enhanced_two_factor_auth_setup_page.dart';
 import '../../pages/enhanced_two_factor_auth_verification_page.dart';
 import '../../pages/comprehensive_two_factor_auth_setup_page.dart';
 import '../../pages/comprehensive_2fa_verification_page.dart';
+import '../../pages/ai_recommendations_page.dart';
 import '../../services/authentication_state_service.dart';
 import '../../services/quiz_logic.dart';
 
@@ -60,6 +61,7 @@ class AppRoutes {
   static const String duelInvitation = '/duel-invitation';
   static const String roomManagement = '/room-management';
   static const String settings = '/settings';
+  static const String aiRecommendations = '/ai-recommendations';
 }
 
 /// Navigation configuration with route definitions
@@ -141,6 +143,8 @@ class AppRouter {
         return _createRoute(RoomManagementPage(userNickname: userNickname));
       case AppRoutes.settings:
         return _createRoute(const SettingsPage());
+      case AppRoutes.aiRecommendations:
+        return _createRoute(const AIRecommendationsPage());
       
       default:
         // Default route

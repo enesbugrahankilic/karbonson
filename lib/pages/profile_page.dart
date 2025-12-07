@@ -2,6 +2,7 @@
 // Enhanced with UID Centrality, Presence System, and Offline-First Strategy (III.1-III.4)
 
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,11 +13,13 @@ import '../services/presence_service.dart';
 import '../services/friendship_service.dart';
 import '../services/authentication_state_service.dart';
 import '../services/email_otp_service.dart';
+import '../services/biometric_user_service.dart';
 import '../models/profile_data.dart';
 import '../models/user_data.dart';
 import '../theme/theme_colors.dart';
 import '../widgets/copy_to_clipboard_widget.dart';
 import '../widgets/profile_picture_change_dialog.dart';
+import '../widgets/biometric_setup_widget.dart';
 import '../widgets/home_button.dart';
 import 'register_page.dart';
 import 'login_page.dart';
@@ -413,6 +416,18 @@ class _ProfileContentState extends State<ProfileContent> {
                   curve: Curves.easeOut,
                 )),
                 child: _StatisticsCards(localData: state.profileData.localData),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 0.5),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(
+                  parent: ModalRoute.of(context)!.animation!,
+                  curve: Curves.easeOut,
+                )),
+                child: const _BiometricSettingsSection(),
               ),
             ),
             SliverToBoxAdapter(
@@ -962,6 +977,192 @@ class _GameHistoryList extends StatelessWidget {
       default:
         return 'Tek Oyuncu';
     }
+  }
+}
+
+// Biyometri ayarları bölümü
+class _BiometricSettingsSection extends StatefulWidget {
+  const _BiometricSettingsSection();
+
+  @override
+  State<_BiometricSettingsSection> createState() => _BiometricSettingsSectionState();
+}
+
+class _BiometricSettingsSectionState extends State<_BiometricSettingsSection> {
+  bool _isBiometricEnabled = false;
+  bool _isLoading = false;
+  String _biometricType = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBiometricStatus();
+  }
+
+  Future<void> _loadBiometricStatus() async {
+    try {
+      final isEnabled = await BiometricUserService.isUserBiometricEnabled();
+      if (mounted) {
+        setState(() {
+          _isBiometricEnabled = isEnabled;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Biyometri durumu yükleme hatası: $e');
+      }
+    }
+  }
+
+  Future<void> _disableBiometric() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final success = await BiometricUserService.disableBiometric();
+      
+      if (success) {
+        setState(() {
+          _isBiometricEnabled = false;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Biyometrik giriş devre dışı bırakıldı'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Biyometrik giriş devre dışı bırakılamadı'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Hata: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Güvenlik Ayarları',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.security,
+                        color: ThemeColors.getGreen(context),
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Biyometrik Giriş',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: ThemeColors.getText(context),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _isBiometricEnabled 
+                                  ? 'Biyometrik kimlik doğrulama etkin'
+                                  : 'Biyometrik kimlik doğrulama devre dışı',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: ThemeColors.getSecondaryText(context),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: _isBiometricEnabled,
+                        onChanged: _isLoading ? null : (value) {
+                          if (value) {
+                            // Biyometriyi tekrar etkinleştir
+                            _loadBiometricStatus();
+                          } else {
+                            _disableBiometric();
+                          }
+                        },
+                        activeColor: ThemeColors.getGreen(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  BiometricSetupStatus(),
+                  const SizedBox(height: 16),
+                  if (_isBiometricEnabled)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info, color: Colors.blue.shade700, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Giriş yaparken biyometrik kimlik doğrulama seçeneği görünecektir.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.blue.shade700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -55,5 +55,9 @@
 	<!-- Camera Permissions for Profile Pictures -->
 	<key>NSCameraUsageDescription</key>
 	<string>Profil fotografinizi cekmek icin kamera erisim izni gerekiyor.</string>
+	
+	<!-- Face ID Permissions for Biometric Authentication -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>Güvenli giriş yapmak için Face ID kullanmak istiyoruz.</string>
 </dict>
 </plist>

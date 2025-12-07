@@ -9,6 +9,7 @@ import '../services/email_usage_service.dart';
 import '../models/user_data.dart';
 import '../theme/theme_colors.dart';
 import 'tutorial_page.dart';
+import '../widgets/biometric_setup_widget.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -542,6 +543,17 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                             ),
                             const SizedBox(height: 16),
+                            
+                            // Biyometri kurulum widget'ı (opsiyonel)
+                            BiometricSetupWidget(
+                              onSetupCompleted: () {
+                                if (kDebugMode) debugPrint('Biyometri kurulumu tamamlandı');
+                              },
+                              onSetupSkipped: () {
+                                if (kDebugMode) debugPrint('Biyometri kurulumu atlandı');
+                              },
+                            ),
+                            const SizedBox(height: 8),
                             
                             // Giriş sayfasına yönlendir
                             TextButton(

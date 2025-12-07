@@ -175,11 +175,14 @@ class ProfilePictureService {
       }
 
       // Eski fotografi sil (asset'ler degilse)
-      if (oldImageUrl != null && 
-          !oldImageUrl.contains('assets/') && 
+      if (oldImageUrl != null &&
+          !oldImageUrl.contains('assets/') &&
           !oldImageUrl.contains('default_avatar') &&
           oldImageUrl != newImageUrl) {
-        await deleteImageFromFirebase(oldImageUrl);
+        final deleteSuccess = await deleteImageFromFirebase(oldImageUrl);
+        if (!deleteSuccess) {
+          debugPrint('⚠️ Eski profil fotografi silinirken hata olustu: $oldImageUrl');
+        }
       }
 
       debugPrint('✅ Profil fotografi basariyla degistirildi: $newImageUrl');

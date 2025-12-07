@@ -1,0 +1,435 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:local_auth/local_auth.dart';
+import '../services/biometric_service.dart';
+import '../services/biometric_user_service.dart';
+
+/// Biyometri kurulum widget'ı
+/// Kayıt işleminden sonra biyometri kurulumunu sunar
+class BiometricSetupWidget extends StatefulWidget {
+  final VoidCallback? onSetupCompleted;
+  final VoidCallback? onSetupSkipped;
+
+  const BiometricSetupWidget({
+    Key? key,
+    this.onSetupCompleted,
+    this.onSetupSkipped,
+  }) : super(key: key);
+
+  @override
+  State<BiometricSetupWidget> createState() => _BiometricSetupWidgetState();
+}
+
+class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
+  bool _isAvailable = false;
+  bool _isLoading = false;
+  String _biometricType = '';
+  bool _isSetup = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBiometricAvailability();
+  }
+
+  Future<void> _checkBiometricAvailability() async {
+    try {
+      final available = await BiometricService.isBiometricAvailable();
+      if (available) {
+        _biometricType = await BiometricService.getBiometricTypeName();
+      }
+      
+      if (mounted) {
+        setState(() {
+          _isAvailable = available;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Biyometri kontrol hatası: $e');
+      }
+    }
+  }
+
+  Future<void> _setupBiometric() async {
+    if (!_isAvailable) {
+      _showMessage('Bu cihazda biyometrik kimlik doğrulama mevcut değil.', Colors.orange);
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Biyometrik kimlik doğrulama iste
+      final success = await BiometricService.authenticateWithBiometrics(
+        localizedReason: 'Biyometrik kimlik doğrulama kurulumu için $_biometricType kullanımına izin verin',
+        useErrorDialogs: true,
+      );
+
+      if (success) {
+        // Biyometri kurulum bilgilerini Firestore'a kaydet
+        final saveSuccess = await BiometricUserService.saveBiometricSetup();
+        
+        if (saveSuccess) {
+          if (mounted) {
+            setState(() {
+              _isSetup = true;
+            });
+            _showMessage('Biyometrik kimlik doğrulama başarıyla kuruldu! 🎉', Colors.green);
+            widget.onSetupCompleted?.call();
+          }
+        } else {
+          _showMessage('Biyometri bilgileri kaydedilemedi. Lütfen tekrar deneyin.', Colors.red);
+        }
+      } else {
+        _showMessage('Biyometrik kimlik doğrulama kurulumu iptal edildi.', Colors.orange);
+      }
+
+    } catch (e) {
+      _showMessage('Kurulum sırasında hata oluştu: ${e.toString()}', Colors.red);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _skipSetup() {
+    widget.onSetupSkipped?.call();
+  }
+
+  void _showMessage(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isAvailable) {
+      return const SizedBox.shrink(); // Biyometri mevcut değilse widget gösterme
+    }
+
+    if (_isSetup) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.green.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.green.shade200),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green.shade700, size: 24),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Biyometrik kimlik doğrulama kuruldu',
+                style: TextStyle(
+                  color: Colors.green.shade700,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.blue.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.shade100,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                _biometricType.toLowerCase().contains('face') ? Icons.face : Icons.fingerprint,
+                color: Colors.blue.shade700,
+                size: 32,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  '$_biometricType ile Hızlı Giriş',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue.shade800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Hesabınıza $_biometricType ile hızlı ve güvenli giriş yapabilirsiniz. Bu özellik cihazınızda güvenli bir şekilde saklanır.',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.blue.shade700,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _isLoading ? null : _setupBiometric,
+                  icon: _isLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Icon(Icons.security),
+                  label: Text(
+                    _isLoading ? 'Kuruluyor...' : '$_biometricType Kur',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              TextButton(
+                onPressed: _isLoading ? null : _skipSetup,
+                child: const Text(
+                  'Daha Sonra',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Biyometri kurulum durumu göstergecisi
+class BiometricSetupStatus extends StatelessWidget {
+  const BiometricSetupStatus({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: BiometricUserService.isUserBiometricEnabled(),
+      builder: (context, snapshot) {
+        final isEnabled = snapshot.data ?? false;
+        
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: isEnabled ? Colors.green.shade50 : Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isEnabled ? Colors.green.shade200 : Colors.grey.shade300,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                isEnabled ? Icons.security : Icons.security_outlined,
+                color: isEnabled ? Colors.green.shade700 : Colors.grey.shade600,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  isEnabled 
+                      ? 'Biyometrik giriş etkin'
+                      : 'Biyometrik giriş devre dışı',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isEnabled ? Colors.green.shade700 : Colors.grey.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Sadece biyometri ile giriş widget'ı
+class BiometricOnlyLoginWidget extends StatefulWidget {
+  final VoidCallback? onLoginSuccess;
+  final VoidCallback? onError;
+
+  const BiometricOnlyLoginWidget({
+    Key? key,
+    this.onLoginSuccess,
+    this.onError,
+  }) : super(key: key);
+
+  @override
+  State<BiometricOnlyLoginWidget> createState() => _BiometricOnlyLoginWidgetState();
+}
+
+class _BiometricOnlyLoginWidgetState extends State<BiometricOnlyLoginWidget> {
+  bool _isAvailable = false;
+  bool _isLoading = false;
+  String _biometricType = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBiometricAvailability();
+  }
+
+  Future<void> _checkBiometricAvailability() async {
+    try {
+      final available = await BiometricService.isBiometricAvailable();
+      if (available) {
+        _biometricType = await BiometricService.getBiometricTypeName();
+      }
+      
+      if (mounted) {
+        setState(() {
+          _isAvailable = available;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Biyometri kontrol hatası: $e');
+      }
+    }
+  }
+
+  Future<void> _biometricLogin() async {
+    if (!_isAvailable) {
+      _showMessage('Bu cihazda biyometrik kimlik doğrulama mevcut değil.', Colors.orange);
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final success = await BiometricService.authenticateWithBiometrics(
+        localizedReason: '$_biometricType ile giriş yapmak için kimlik bilgilerinizi doğrulayın',
+        useErrorDialogs: true,
+      );
+
+      if (success) {
+        // Son giriş zamanını güncelle
+        await BiometricUserService.updateLastBiometricLogin();
+        
+        widget.onLoginSuccess?.call();
+        _showMessage('Başarıyla giriş yapıldı! 🎉', Colors.green);
+      } else {
+        _showMessage('Kimlik doğrulama başarısız.', Colors.red);
+        widget.onError?.call();
+      }
+
+    } catch (e) {
+      _showMessage('Giriş sırasında hata oluştu: ${e.toString()}', Colors.red);
+      widget.onError?.call();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showMessage(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isAvailable) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ElevatedButton.icon(
+        onPressed: _isLoading ? null : _biometricLogin,
+        icon: _isLoading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : Icon(
+                _biometricType.toLowerCase().contains('face') ? Icons.face : Icons.fingerprint,
+                color: Colors.white,
+              ),
+        label: Text(
+          _isLoading
+              ? 'Kimlik doğrulanıyor...'
+              : 'Sadece $_biometricType ile Giriş Yap',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.deepPurple,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 2,
+        ),
+      ),
+    );
+  }
+}

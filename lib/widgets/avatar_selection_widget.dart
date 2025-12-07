@@ -153,34 +153,8 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
               ),
               child: ClipOval(
                 child: avatarUrl.endsWith('.svg') 
-                  ? SvgPicture.asset(
-                      avatarUrl,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: 80,
-                          height: 80,
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.error),
-                        );
-                      },
-                    )
-                  : Image.network(
-                      avatarUrl,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: 80,
-                          height: 80,
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.error),
-                        );
-                      },
-                    ),
+                  ? _buildSvgWidget(avatarUrl)
+                  : _buildImageWidget(avatarUrl),
               ),
             ),
           ),
@@ -200,6 +174,66 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSvgWidget(String avatarUrl) {
+    return SvgPicture.asset(
+      avatarUrl,
+      width: 80,
+      height: 80,
+      fit: BoxFit.cover,
+      placeholderBuilder: (context) => Container(
+        width: 80,
+        height: 80,
+        color: Colors.grey[200],
+        child: const Center(
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      ),
+      errorBuilder: (context, error, stackTrace) {
+        debugPrint('❌ SVG yükleme hatası: $avatarUrl - $error');
+        return Container(
+          width: 80,
+          height: 80,
+          color: Colors.grey[300],
+          child: const Icon(Icons.error, color: Colors.red),
+        );
+      },
+    );
+  }
+
+  Widget _buildImageWidget(String avatarUrl) {
+    return Image.network(
+      avatarUrl,
+      width: 80,
+      height: 80,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          width: 80,
+          height: 80,
+          color: Colors.grey[200],
+          child: Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                : null,
+              strokeWidth: 2,
+            ),
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        debugPrint('❌ Resim yükleme hatası: $avatarUrl - $error');
+        return Container(
+          width: 80,
+          height: 80,
+          color: Colors.grey[300],
+          child: const Icon(Icons.error, color: Colors.red),
+        );
+      },
     );
   }
 

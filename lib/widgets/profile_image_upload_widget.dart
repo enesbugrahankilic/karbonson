@@ -165,18 +165,25 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
   Future<void> _uploadImage(Uint8List imageData) async {
     try {
       Navigator.of(context).pop(); // Close preview sheet
-      
+
       setState(() {
         _uploadStatus = ImageUploadStatus.uploading;
       });
 
-      await _imageService.uploadProfileImage(
+      final result = await _imageService.uploadProfileImage(
         imageData: imageData,
         userId: widget.userId,
         format: widget.preferredFormat,
         optimizationParams: widget.optimizationParams,
       );
-      
+
+      if (result == null) {
+        setState(() {
+          _uploadStatus = ImageUploadStatus.error;
+          _errorMessage = 'Resim yüklenirken hata oluştu';
+        });
+      }
+
     } catch (e) {
       setState(() {
         _uploadStatus = ImageUploadStatus.error;

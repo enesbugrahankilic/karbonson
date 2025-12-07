@@ -199,11 +199,69 @@ class AssetOptimizationService {
         debugPrint('❌ Failed to load optimized image: $e');
       }
       
-      // Return fallback image
-      return const Image(
-        image: AssetImage('assets/avatars/default_avatar_1.svg'),
-        fit: BoxFit.cover,
-      );
+      // Return fallback image for SVG and regular images
+      // Check if it's an SVG file and handle accordingly
+      if (imagePath.toLowerCase().endsWith('.svg')) {
+        // For SVG files, try to load as asset first, then fallback to PNG
+        try {
+          return Image.asset(
+            'assets/icon/karbon2.png', // Use PNG fallback for SVG
+            width: width?.toDouble() ?? 200,
+            height: height?.toDouble() ?? 200,
+            fit: fit,
+            errorBuilder: (context, error, stackTrace) {
+              return Image.asset(
+                'assets/avatars/default_avatar_1.png',
+                width: width?.toDouble() ?? 200,
+                height: height?.toDouble() ?? 200,
+                fit: fit,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Image(
+                    image: NetworkImage('https://via.placeholder.com/200x200?text=Avatar'),
+                    fit: BoxFit.cover,
+                  );
+                },
+              );
+            },
+          );
+        } catch (e) {
+          // Final fallback
+          return const Image(
+            image: NetworkImage('https://via.placeholder.com/200x200?text=Avatar'),
+            fit: BoxFit.cover,
+          );
+        }
+      } else {
+        // For regular images, try multiple fallback sources
+        try {
+          return Image.asset(
+            'assets/avatars/default_avatar_1.png',
+            width: width?.toDouble() ?? 200,
+            height: height?.toDouble() ?? 200,
+            fit: fit,
+            errorBuilder: (context, error, stackTrace) {
+              return Image.asset(
+                'assets/icon/karbon2.png',
+                width: width?.toDouble() ?? 200,
+                height: height?.toDouble() ?? 200,
+                fit: fit,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Image(
+                    image: NetworkImage('https://via.placeholder.com/200x200?text=Avatar'),
+                    fit: BoxFit.cover,
+                  );
+                },
+              );
+            },
+          );
+        } catch (e) {
+          // Final fallback
+          return const Image(
+            image: NetworkImage('https://via.placeholder.com/200x200?text=Avatar'),
+            fit: BoxFit.cover,
+          );
+        }
+      }
     }
   }
 

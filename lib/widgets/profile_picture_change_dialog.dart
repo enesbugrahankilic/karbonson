@@ -2,11 +2,8 @@
 
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../services/profile_picture_service.dart';
 import '../services/profile_service.dart';
-import '../provides/profile_bloc.dart';
 import 'avatar_selection_widget.dart';
 
 class ProfilePictureChangeDialog extends StatefulWidget {

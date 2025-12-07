@@ -9,6 +9,8 @@ import 'provides/theme_provider.dart';
 import 'provides/language_provider.dart';
 import 'provides/quiz_bloc.dart';
 import 'provides/profile_bloc.dart';
+import 'provides/ai_bloc.dart';
+import 'services/ai_service.dart';
 import 'services/quiz_logic.dart';
 import 'services/profile_service.dart';
 import 'firebase_options.dart';
@@ -43,6 +45,7 @@ void main() {
           ChangeNotifierProvider(create: (_) => AuthenticationStateService()),
           BlocProvider(create: (_) => QuizBloc(quizLogic: QuizLogic())),
           BlocProvider(create: (_) => ProfileBloc(profileService: ProfileService())),
+          BlocProvider(create: (_) => AIBloc(AIService(baseUrl: 'http://localhost:5000'))),
         ],
         child: const AppRoot(),
       ),
