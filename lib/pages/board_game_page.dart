@@ -14,6 +14,8 @@ import '../services/firestore_service.dart';
 import '../services/profile_service.dart';
 import '../theme/theme_colors.dart';
 import 'login_page.dart';
+import '../services/app_localizations.dart';
+import '../provides/language_provider.dart';
 
 class BoardGamePage extends StatefulWidget {
   final String? userNickname;
@@ -65,6 +67,11 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
     _diceRotationAnimation = Tween<double>(begin: 0, end: 2 * math.pi * 5).animate(
       CurvedAnimation(parent: _diceAnimationController, curve: Curves.easeInOut),
     );
+    
+    // Listen to language changes
+    context.read<LanguageProvider>().addListener(() {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
@@ -117,16 +124,16 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
     final bool? shouldExit = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Oyundan Çıkış'),
-        content: const Text('Ana sayfaya dönmek istediğinizden emin misiniz? Mevcut oyun skorunuz kaydedilmeyecektir.'),
+        title: Text(AppLocalizations.exitGame),
+        content: Text(AppLocalizations.exitGameConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('İptal'),
+            child: Text(AppLocalizations.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Evet, Çık'),
+            child: Text(AppLocalizations.yes),
           ),
         ],
       ),
@@ -215,7 +222,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                       Row(
                         children: [
                           Text(
-                            'Oyun Sonu Skoru: ',
+                            '${AppLocalizations.endGameScore}: ',
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                           ),
                           Text(
@@ -233,9 +240,9 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       )] : []),
                       const SizedBox(height: 16),
-                      const Text(
-                        'Oyuncu Skorları:',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      Text(
+                        '${AppLocalizations.playerScores}:',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                       ...gameLogic.currentRoom.players.map((player) => Text(
                         '${player.nickname}: ${player.quizScore} puan',
@@ -307,7 +314,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 title: Row(
                   children: [
-                    const Text('OYUN BİTTİ! ', style: TextStyle(color: Color(0xFF4CAF50), fontSize: 24)),
+                    Text('${AppLocalizations.gameOver}! ', style: const TextStyle(color: Color(0xFF4CAF50), fontSize: 24)),
                     AnimatedScale(
                       scale: animation1.value,
                       duration: const Duration(milliseconds: 300),
@@ -334,7 +341,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                     Row(
                       children: [
                         Text(
-                          'Oyun Sonu Skoru: ',
+                          '${AppLocalizations.endGameScore}: ',
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         Text(
@@ -407,7 +414,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
           IconButton(
             icon: const Icon(Icons.exit_to_app, color: Colors.white),
             onPressed: () => _confirmExit(context),
-            tooltip: 'Oyundan Çık',
+            tooltip: AppLocalizations.exitGame,
           ),
         ],
       ),
@@ -464,7 +471,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('Oyuncu: ${gameLogic.player.nickname}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                    Text('${AppLocalizations.player}: ${gameLogic.player.nickname}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                                     const SizedBox(height: 4),
                                     Row(
                                       mainAxisSize: MainAxisSize.min,
@@ -680,7 +687,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
   Widget _buildDiceArea(BuildContext context, dynamic gameLogic, BoardTile currentTile) {
 
     bool isDisabled = gameLogic.isDiceRolling || gameLogic.isGameFinished || gameLogic.isQuizActive;
-    String buttonText = 'Zar At!';
+    String buttonText = AppLocalizations.rollDiceEllipsis;
     String turnIndicator = '';
 
     if (widget.isMultiplayer) {
@@ -688,15 +695,15 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
       turnIndicator = 'Sıra: ${currentPlayer.nickname}';
       isDisabled = isDisabled || !gameLogic.isMyTurn || currentPlayer.turnsToSkip > 0;
       buttonText = gameLogic.isQuizActive
-          ? 'Quiz Açık...'
+          ? AppLocalizations.quizOpen
           : (!gameLogic.isMyTurn
               ? 'Bekleniyor...'
-              : (currentPlayer.turnsToSkip > 0 ? 'Pas Geçiliyor (${currentPlayer.turnsToSkip})' : 'Zar At!'));
+              : (currentPlayer.turnsToSkip > 0 ? '${AppLocalizations.skipTurns} (${currentPlayer.turnsToSkip})' : AppLocalizations.rollDiceEllipsis));
     } else {
       isDisabled = isDisabled || (gameLogic.currentPlayer?.turnsToSkip ?? 0) > 0;
       buttonText = gameLogic.isQuizActive
-          ? 'Quiz Açık...'
-          : ((gameLogic.currentPlayer?.turnsToSkip ?? 0) > 0 ? 'Pas Geçiliyor (${gameLogic.currentPlayer?.turnsToSkip ?? 0})' : 'Zar At!');
+          ? AppLocalizations.quizOpen
+          : ((gameLogic.currentPlayer?.turnsToSkip ?? 0) > 0 ? '${AppLocalizations.skipTurns} (${gameLogic.currentPlayer?.turnsToSkip ?? 0})' : AppLocalizations.rollDiceEllipsis);
     }
 
     return Column(

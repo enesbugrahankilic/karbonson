@@ -268,9 +268,9 @@ class _Karbon2AppState extends State<Karbon2App> {
             ? ThemeMode.light 
             : themeProvider.themeMode,
           locale: languageProvider.locale,
-          navigatorKey: GlobalKey<NavigatorState>(), // Add global navigator key
+          navigatorKey: GlobalKey<NavigatorState>(),
           navigatorObservers: [
-            AppNavigatorObserver(), // Register navigation observer
+            AppNavigatorObserver(),
           ],
           onGenerateRoute: AppRouter().generateRoute,
           initialRoute: _hasSeenTutorial ? AppRoutes.login : AppRoutes.tutorial,

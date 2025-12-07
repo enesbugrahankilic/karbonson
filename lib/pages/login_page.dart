@@ -1,7 +1,6 @@
-// lib/pages/login_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
+import 'package:provider/provider.dart';
 import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'board_game_page.dart';
@@ -16,7 +15,9 @@ import 'email_verification_page.dart';
 import '../services/profile_service.dart';
 import '../services/firebase_auth_service.dart';
 import '../services/authentication_state_service.dart';
+import '../services/app_localizations.dart';
 import '../theme/theme_colors.dart';
+import '../provides/language_provider.dart';
 
 import '../widgets/login_dialog.dart';
 
@@ -111,6 +112,11 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
+    // Listen for language changes and rebuild
+    context.read<LanguageProvider>().addListener(() {
+      if (mounted) setState(() {});
+    });
+    
     // Check for persistent authentication state first
     _checkPersistentAuth();
     

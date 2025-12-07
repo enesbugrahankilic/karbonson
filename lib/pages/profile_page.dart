@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../provides/profile_bloc.dart';
 import '../services/profile_service.dart';
 import '../services/presence_service.dart';
@@ -24,6 +25,8 @@ import '../widgets/home_button.dart';
 import 'register_page.dart';
 import 'login_page.dart';
 import 'email_otp_verification_page.dart';
+import '../services/app_localizations.dart';
+import '../provides/language_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -65,6 +68,11 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
     // Check registration status first
     _checkRegistrationStatus();
+    
+    // Listen to language changes
+    context.read<LanguageProvider>().addListener(() {
+      if (mounted) setState(() {});
+    });
   }
 
   Future<void> _checkRegistrationStatus() async {
@@ -151,7 +159,11 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     return Scaffold(
       appBar: AppBar(
         leading: const HomeButton(),
-        title: Text('Profil', style: TextStyle(color: ThemeColors.getAppBarText(context))),
+        title: Consumer<LanguageProvider>(
+          builder: (context, languageProvider, child) {
+            return Text(AppLocalizations.profile, style: TextStyle(color: ThemeColors.getAppBarText(context)));
+          },
+        ),
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 2,
         iconTheme: IconThemeData(color: ThemeColors.getAppBarIcon(context)),
@@ -1207,7 +1219,11 @@ class _UnregisteredUserScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profil', style: TextStyle(color: ThemeColors.getAppBarText(context))),
+        title: Consumer<LanguageProvider>(
+          builder: (context, languageProvider, child) {
+            return Text(AppLocalizations.profile, style: TextStyle(color: ThemeColors.getAppBarText(context)));
+          },
+        ),
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 2,
         iconTheme: IconThemeData(color: ThemeColors.getAppBarIcon(context)),

@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../models/game_board.dart';
 import '../models/user_data.dart';
 import '../services/firestore_service.dart';
@@ -11,6 +12,8 @@ import '../services/game_invitation_service.dart';
 import '../services/presence_service.dart';
 import '../widgets/game_invitation_dialog.dart';
 import '../widgets/home_button.dart';
+import '../services/app_localizations.dart';
+import '../provides/language_provider.dart';
 
 class FriendsPage extends StatefulWidget {
   final String userNickname;
@@ -48,6 +51,11 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
     _initializePresence();
     _startListeningToInvitations();
     _startListeningToFriendRequests();
+    
+    // Listen to language changes
+    context.read<LanguageProvider>().addListener(() {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
@@ -561,7 +569,11 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
     return Scaffold(
       appBar: AppBar(
         leading: const HomeButton(),
-        title: const Text('Arkadaşlar'),
+        title: Consumer<LanguageProvider>(
+          builder: (context, languageProvider, child) {
+            return Text(AppLocalizations.friends);
+          },
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [

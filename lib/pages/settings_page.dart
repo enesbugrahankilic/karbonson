@@ -17,12 +17,20 @@ class SettingsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: const HomeButton(),
-        title: const Text('Ayarlar'),
+        title: Consumer<LanguageProvider>(
+          builder: (context, languageProvider, child) {
+            return Text(languageProvider.currentLanguage == AppLanguage.turkish 
+              ? 'Ayarlar' 
+              : 'Settings');
+          },
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: Consumer2<ThemeProvider, LanguageProvider>(
         builder: (context, themeProvider, languageProvider, child) {
+          final isTurkish = languageProvider.currentLanguage == AppLanguage.turkish;
+          
           return Scrollbar(
             child: ListView(
               padding: const EdgeInsets.all(16.0),
@@ -33,9 +41,11 @@ class SettingsPage extends StatelessWidget {
                       themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
                       color: Theme.of(context).colorScheme.primary,
                     ),
-                    title: const Text('Tema Ayarları'),
+                    title: Text(isTurkish ? 'Tema Ayarları' : 'Theme Settings'),
                     subtitle: Text(
-                      themeProvider.isDarkMode ? 'Karanlık Mod Aktif' : 'Aydınlık Mod Aktif',
+                      isTurkish 
+                        ? (themeProvider.isDarkMode ? 'Karanlık Mod Aktif' : 'Aydınlık Mod Aktif')
+                        : (themeProvider.isDarkMode ? 'Dark Mode Active' : 'Light Mode Active'),
                     ),
                     trailing: Switch(
                       value: themeProvider.isDarkMode,
@@ -57,7 +67,7 @@ class SettingsPage extends StatelessWidget {
                           Icons.language,
                           color: Theme.of(context).colorScheme.primary,
                         ),
-                        title: const Text('Dil Ayarları'),
+                        title: Text(isTurkish ? 'Dil Ayarları' : 'Language Settings'),
                         subtitle: Text('${languageProvider.currentLanguageFlag} ${languageProvider.currentLanguageName}'),
                         trailing: const Icon(Icons.arrow_forward_ios),
                         onTap: () {
@@ -407,10 +417,12 @@ class SettingsPage extends StatelessWidget {
   }
 
   void _showLanguageSelection(BuildContext context, LanguageProvider languageProvider) {
+    final isTurkish = languageProvider.currentLanguage == AppLanguage.turkish;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Dil Seçin'),
+        title: Text(isTurkish ? 'Dil Seçin' : 'Select Language'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: AppLanguage.values.map((language) {
@@ -421,7 +433,9 @@ class SettingsPage extends StatelessWidget {
               onChanged: (AppLanguage? value) async {
                 if (value != null) {
                   await languageProvider.setLanguage(value);
-                  Navigator.of(context).pop();
+                  if (context.mounted) {
+                    Navigator.of(context).pop();
+                  }
                 }
               },
             );
@@ -430,7 +444,7 @@ class SettingsPage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('İptal'),
+            child: Text(isTurkish ? 'İptal' : 'Cancel'),
           ),
         ],
       ),

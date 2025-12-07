@@ -15,8 +15,10 @@ enum AppLanguage {
 class LanguageService extends ChangeNotifier {
   static const String _languageKey = 'selected_language';
   AppLanguage _currentLanguage = AppLanguage.turkish;
+  bool _isInitialized = false;
 
   AppLanguage get currentLanguage => _currentLanguage;
+  bool get isInitialized => _isInitialized;
 
   LanguageService() {
     _loadLanguage();
@@ -32,9 +34,11 @@ class LanguageService extends ChangeNotifier {
         orElse: () => AppLanguage.turkish,
       );
       
+      _isInitialized = true;
       notifyListeners();
     } catch (e) {
       debugPrint('Error loading language: $e');
+      _isInitialized = true;
     }
   }
 

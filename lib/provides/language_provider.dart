@@ -1,6 +1,7 @@
 // lib/provides/language_provider.dart
 import 'package:flutter/material.dart';
 import '../services/language_service.dart';
+import '../services/app_localizations.dart';
 
 class LanguageProvider extends ChangeNotifier {
   final LanguageService _languageService = LanguageService();
@@ -14,13 +15,15 @@ class LanguageProvider extends ChangeNotifier {
   String get currentLanguageFlag => _languageService.currentLanguageFlag;
 
   Future<void> setLanguage(AppLanguage language) async {
+    if (_languageService.currentLanguage == language) return;
     await _languageService.setLanguage(language);
+    // Update AppLocalizations too
+    AppLocalizations.setLanguage(language);
     notifyListeners();
   }
 
   @override
   void dispose() {
-    _languageService.dispose();
     super.dispose();
   }
 }

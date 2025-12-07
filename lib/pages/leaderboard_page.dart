@@ -2,10 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
  
 import '../widgets/leaderboard_item.dart';
 import '../widgets/home_button.dart';
 import 'login_page.dart';
+import '../services/app_localizations.dart';
+import '../provides/language_provider.dart';
 
 class LeaderboardPage extends StatelessWidget {
   // YENİ: Oyuncunun takma adını almak için eklendi
@@ -18,7 +21,11 @@ class LeaderboardPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: const HomeButton(),
-        title: const Text('Liderlik Tablosu'),
+        title: Consumer<LanguageProvider>(
+          builder: (context, languageProvider, child) {
+            return Text(AppLocalizations.leaderboard);
+          },
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.exit_to_app),
