@@ -15,6 +15,7 @@ import '../services/friendship_service.dart';
 import '../services/authentication_state_service.dart';
 import '../services/email_otp_service.dart';
 import '../services/biometric_user_service.dart';
+import '../services/biometric_service.dart';
 import '../models/profile_data.dart';
 import '../models/user_data.dart';
 import '../theme/theme_colors.dart';
@@ -572,6 +573,10 @@ class _IdentityCard extends StatelessWidget {
                 builder: (context) => ProfilePictureChangeDialog(
                   currentProfilePictureUrl: profileData.serverData?.profilePictureUrl,
                   onProfilePictureUpdated: (imageUrl) {
+                    // Image cache'i temizle
+                    imageCache.clearLiveImages();
+                    imageCache.clear();
+                    imageCache.clearLiveImages();
                     // Profil resmini hemen güncelle
                     context.read<ProfileBloc>().add(UpdateProfilePicture(imageUrl));
                     // Backend'i de senkronize et (arka planda)
@@ -597,10 +602,17 @@ class _IdentityCard extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 56,
                     backgroundColor: Colors.grey[200],
-                    backgroundImage: profileData.serverData?.profilePictureUrl != null
+                    backgroundImage: profileData.serverData?.profilePictureUrl != null && profileData.serverData!.profilePictureUrl!.isNotEmpty
                         ? NetworkImage(profileData.serverData!.profilePictureUrl!)
                         : null,
-                    child: profileData.serverData?.profilePictureUrl == null
+                    onBackgroundImageError: profileData.serverData?.profilePictureUrl != null 
+                        ? (exception, stackTrace) {
+                            if (kDebugMode) {
+                              print('❌ Failed to load profile picture: $exception');
+                            }
+                          }
+                        : null,
+                    child: (profileData.serverData?.profilePictureUrl == null || profileData.serverData!.profilePictureUrl!.isEmpty)
                         ? const Icon(Icons.person, size: 56, color: Colors.grey)
                         : null,
                   ),
@@ -1069,6 +1081,60 @@ class _BiometricSettingsSectionState extends State<_BiometricSettingsSection> {
     }
   }
 
+  Future<void> _enableBiometric() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Biyometrik kimlik doğrulama iste
+      final authenticated = await BiometricService.authenticate(
+        localizedReason: 'Biyometrik giriş etkinleştirmek için kimlik doğrulama gerekli',
+        useErrorDialogs: true,
+      );
+
+      if (authenticated) {
+        // Kurulumu kaydet
+        final success = await BiometricUserService.saveBiometricSetup();
+        
+        if (success) {
+          if (mounted) {
+            setState(() {
+              _isBiometricEnabled = true;
+            });
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Biyometrik giriş başarıyla etkinleştirildi'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Biyometrik kurulumu kaydetme başarısız'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Hata: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -1131,9 +1197,10 @@ class _BiometricSettingsSectionState extends State<_BiometricSettingsSection> {
                         value: _isBiometricEnabled,
                         onChanged: _isLoading ? null : (value) {
                           if (value) {
-                            // Biyometriyi tekrar etkinleştir
-                            _loadBiometricStatus();
+                            // Biyometriyi etkinleştir
+                            _enableBiometric();
                           } else {
+                            // Biyometriyi devre dışı bırak
                             _disableBiometric();
                           }
                         },

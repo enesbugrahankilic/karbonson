@@ -148,10 +148,16 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
         children: [
           CircleAvatar(
             radius: 30,
-            backgroundImage: widget.currentProfilePictureUrl != null
+            backgroundColor: Colors.grey[200],
+            backgroundImage: widget.currentProfilePictureUrl != null && widget.currentProfilePictureUrl!.isNotEmpty
                 ? NetworkImage(widget.currentProfilePictureUrl!)
                 : null,
-            child: widget.currentProfilePictureUrl == null
+            onBackgroundImageError: widget.currentProfilePictureUrl != null
+                ? (exception, stackTrace) {
+                    debugPrint('❌ Profile picture failed to load: $exception');
+                  }
+                : null,
+            child: (widget.currentProfilePictureUrl == null || widget.currentProfilePictureUrl!.isEmpty)
                 ? const Icon(Icons.person, size: 30, color: Colors.grey)
                 : null,
           ),
