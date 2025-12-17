@@ -1,10 +1,14 @@
 // lib/pages/quiz_page.dart
+// Updated to use Design System for consistent styling
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../services/quiz_logic.dart';
 import '../services/authentication_state_service.dart';
 import '../provides/quiz_bloc.dart';
 import '../widgets/custom_question_card.dart';
+import '../theme/theme_colors.dart';
+import '../theme/design_system.dart';
+import '../theme/app_theme.dart';
 
 class QuizPage extends StatefulWidget {
   final QuizLogic quizLogic;
@@ -15,13 +19,39 @@ class QuizPage extends StatefulWidget {
   State<QuizPage> createState() => _QuizPageState();
 }
 
-class _QuizPageState extends State<QuizPage> {
+class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
   bool _didLoadQuiz = false;
   final AuthenticationStateService _authStateService = AuthenticationStateService();
+  
+  // Animation controllers
+  late AnimationController _fadeController;
+  late AnimationController _slideController;
 
   @override
   void initState() {
     super.initState();
+    
+    // Initialize animation controllers
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    
+    // Start animations
+    _fadeController.forward();
+    _slideController.forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    _slideController.dispose();
+    super.dispose();
   }
 
   /// Get authenticated user nickname for display
@@ -44,19 +74,33 @@ class _QuizPageState extends State<QuizPage> {
 
     final bool? shouldExit = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Quizden Çıkış'),
-        content: const Text('Quizden çıkarsanız, ilerlemeniz kaydedilmeyecek. Devam etmek istiyor musunuz?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('İptal'),
+      builder: (context) => DesignSystem.semantic(
+        context,
+        label: 'Quiz çıkış onay dialog',
+        hint: 'Quizden çıkmak istediğinizi onaylamanız gerektiğini belirten dialog',
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignSystem.radiusL)),
+          title: DesignSystem.semantic(
+            context,
+            label: 'Quizden Çıkış başlığı',
+            child: const Text('Quizden Çıkış'),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Evet, Çık'),
+          content: DesignSystem.semantic(
+            context,
+            label: 'Dialog içeriği',
+            child: const Text('Quizden çıkarsanız, ilerlemeniz kaydedilmeyecek. Devam etmek istiyor musunuz?'),
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('İptal'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Evet, Çık'),
+            ),
+          ],
+        ),
       ),
     );
 
@@ -72,65 +116,56 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   Widget _buildScoreArea(QuizLoaded state) {
-    return Card(
-      elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      color: Colors.green.shade50,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
-        child: Column(
-          children: [
-            Text(
-              'Puan: ${state.score}',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-                shadows: [
-                  Shadow(
-                    offset: Offset(0, 2),
-                    blurRadius: 3,
-                    color: Colors.black26,
-                  ),
-                ],
+    return FadeTransition(
+      opacity: _fadeController,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.3),
+          end: Offset.zero,
+        ).animate(_slideController),
+        child: DesignSystem.card(
+          context,
+          backgroundColor: ThemeColors.getSuccessColor(context).withValues(alpha: 0.1),
+          child: Column(
+            children: [
+              Text(
+                'Puan: ${state.score}',
+                style: AppTheme.getGameScoreStyle(context),
+                overflow: TextOverflow.ellipsis,
               ),
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Soru ${state.currentQuestion + 1}/${state.questions.length}',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-                shadows: [
-                  Shadow(
-                    offset: Offset(0, 1),
-                    blurRadius: 2,
-                    color: Colors.black12,
-                  ),
-                ],
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 10),
-            if (state.currentQuestion == state.questions.length - 1 && state.answers[state.currentQuestion].isNotEmpty)
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 400),
-                curve: Curves.easeInOut,
-                child: ElevatedButton.icon(
-                  onPressed: () => Navigator.pop(context, state.score),
-                  icon: const Icon(Icons.check_circle, color: Colors.white),
-                  label: const Text('Quizi Bitir', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 48),
-                    backgroundColor: const Color(0xFF4CAF50),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    elevation: 6,
-                  ),
+              const SizedBox(height: DesignSystem.spacingS),
+              Text(
+                'Soru ${state.currentQuestion + 1}/${state.questions.length}',
+                style: DesignSystem.getTitleMedium(context).copyWith(
+                  color: ThemeColors.getTitleColor(context),
+                  shadows: [
+                    Shadow(
+                      offset: const Offset(0, 1),
+                      blurRadius: 2,
+                      color: Colors.black12,
+                    ),
+                  ],
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
-          ],
+              const SizedBox(height: DesignSystem.spacingM),
+              if (state.currentQuestion == state.questions.length - 1 && state.answers[state.currentQuestion].isNotEmpty)
+                AnimatedBuilder(
+                  animation: _fadeController,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: _fadeController.value,
+                      child: ElevatedButton.icon(
+                        onPressed: () => Navigator.pop(context, state.score),
+                        icon: const Icon(Icons.check_circle, color: Colors.white),
+                        label: const Text('Quizi Bitir', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        style: DesignSystem.getPrimaryButtonStyle(context),
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -141,11 +176,40 @@ class _QuizPageState extends State<QuizPage> {
     return BlocBuilder<QuizBloc, QuizState>(
       builder: (context, state) {
         if (state is QuizLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return Scaffold(
+            body: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: ThemeColors.getGradientColors(context),
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: DesignSystem.loadingIndicator(context, message: 'Quiz yükleniyor...'),
+            ),
+          );
         }
 
         if (state is QuizError) {
-          return Center(child: Text('Error: ${state.message}'));
+          return Scaffold(
+            body: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: ThemeColors.getGradientColors(context),
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: DesignSystem.errorState(
+                context,
+                message: 'Error: ${state.message}',
+                onRetry: () {
+                  context.read<QuizBloc>().add(LoadQuiz());
+                },
+                retryText: 'Tekrar Dene',
+              ),
+            ),
+          );
         }
 
         if (state is QuizLoaded) {
@@ -159,23 +223,28 @@ class _QuizPageState extends State<QuizPage> {
               centerTitle: true,
               actions: [
                 Container(
-                  margin: const EdgeInsets.only(right: 8),
+                  margin: const EdgeInsets.only(right: DesignSystem.spacingS),
                   decoration: BoxDecoration(
                     color: Colors.black87,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusS),
                   ),
-                  child: IconButton(
-                    icon: const Icon(Icons.exit_to_app, color: Colors.white),
-                    onPressed: () => _confirmExit(context),
-                    tooltip: 'Oyundan Çık',
+                  child: DesignSystem.semantic(
+                    context,
+                    label: 'Çıkış butonu',
+                    hint: 'Quizden çıkmak için kullanılır',
+                    child: IconButton(
+                      icon: const Icon(Icons.exit_to_app, color: Colors.white),
+                      onPressed: () => _confirmExit(context),
+                      tooltip: 'Oyundan Çık',
+                    ),
                   ),
                 ),
               ],
             ),
             body: Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
+                  colors: ThemeColors.getGradientColors(context),
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -185,28 +254,38 @@ class _QuizPageState extends State<QuizPage> {
                   child: Column(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 18.0),
-                        child: Card(
-                          elevation: 10,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                          color: Color.fromRGBO(255, 255, 255, 0.97),
-                          child: Padding(
-                            padding: const EdgeInsets.all(18.0),
-                            child: CustomQuestionCard(
-                              question: currentQuestion.text,
-                              options: currentQuestion.options.map((o) => o.text).toList(),
-                              onOptionSelected: (answer) => _onAnswerSelected(answer, state.currentQuestion),
-                              isAnswered: state.answers[state.currentQuestion].isNotEmpty,
-                              selectedAnswer: state.answers[state.currentQuestion],
-                              correctAnswer: currentQuestion.options
-                                  .firstWhere((o) => o.score > 0)
-                                  .text,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: DesignSystem.spacingM, 
+                          vertical: DesignSystem.spacingL
+                        ),
+                        child: FadeTransition(
+                          opacity: _fadeController,
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0, 0.2),
+                              end: Offset.zero,
+                            ).animate(_slideController),
+                            child: DesignSystem.glassCard(
+                              context,
+                              child: CustomQuestionCard(
+                                question: currentQuestion.text,
+                                options: currentQuestion.options.map((o) => o.text).toList(),
+                                onOptionSelected: (answer) => _onAnswerSelected(answer, state.currentQuestion),
+                                isAnswered: state.answers[state.currentQuestion].isNotEmpty,
+                                selectedAnswer: state.answers[state.currentQuestion],
+                                correctAnswer: currentQuestion.options
+                                    .firstWhere((o) => o.score > 0)
+                                    .text,
+                              ),
                             ),
                           ),
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: DesignSystem.spacingM, 
+                          vertical: DesignSystem.spacingS
+                        ),
                         child: _buildScoreArea(state),
                       ),
                     ],
@@ -217,7 +296,22 @@ class _QuizPageState extends State<QuizPage> {
           );
         }
 
-        return const Center(child: Text('Beklenmeyen durum'));
+        return Scaffold(
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: ThemeColors.getGradientColors(context),
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: DesignSystem.emptyState(
+              context,
+              message: 'Beklenmeyen durum',
+              icon: Icons.error_outline,
+            ),
+          ),
+        );
       },
     );
   }

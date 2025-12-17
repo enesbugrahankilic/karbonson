@@ -1,5 +1,6 @@
 // lib/pages/profile_page.dart
 // Enhanced with UID Centrality, Presence System, and Offline-First Strategy (III.1-III.4)
+// Updated to use Design System for consistent styling
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
@@ -19,6 +20,8 @@ import '../services/biometric_service.dart';
 import '../models/profile_data.dart';
 import '../models/user_data.dart';
 import '../theme/theme_colors.dart';
+import '../theme/design_system.dart';
+import '../theme/app_theme.dart';
 import '../widgets/copy_to_clipboard_widget.dart';
 import '../widgets/profile_picture_change_dialog.dart';
 import '../widgets/biometric_setup_widget.dart';
@@ -58,6 +61,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   @override
   void initState() {
     super.initState();
+    
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -162,24 +166,38 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         leading: const HomeButton(),
         title: Consumer<LanguageProvider>(
           builder: (context, languageProvider, child) {
-            return Text(AppLocalizations.profile, style: TextStyle(color: ThemeColors.getAppBarText(context)));
+            return DesignSystem.semantic(
+              context,
+              label: 'Profil sayfası başlığı',
+              child: Text(AppLocalizations.profile, style: TextStyle(color: ThemeColors.getAppBarText(context))),
+            );
           },
         ),
         backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 2,
+        elevation: DesignSystem.elevationS,
         iconTheme: IconThemeData(color: ThemeColors.getAppBarIcon(context)),
         actions: [
           // Change Password button
-          IconButton(
-            icon: const Icon(Icons.lock_reset),
-            onPressed: () => _showChangePasswordDialog(context),
-            tooltip: 'Şifre Değiştir',
+          DesignSystem.semantic(
+            context,
+            label: 'Şifre değiştir butonu',
+            hint: 'Şifre değiştirme dialogunu açar',
+            child: IconButton(
+              icon: const Icon(Icons.lock_reset),
+              onPressed: () => _showChangePasswordDialog(context),
+              tooltip: 'Şifre Değiştir',
+            ),
           ),
           // Logout button
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _showLogoutDialog(context),
-            tooltip: 'Çıkış Yap',
+          DesignSystem.semantic(
+            context,
+            label: 'Çıkış yap butonu',
+            hint: 'Kullanıcıyı uygulamadan çıkarır',
+            child: IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () => _showLogoutDialog(context),
+              tooltip: 'Çıkış Yap',
+            ),
           ),
         ],
       ),
@@ -196,9 +214,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     final user = FirebaseAuth.instance.currentUser;
     if (user == null || user.email == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Kullanıcı bilgileri bulunamadı'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: const Text('Kullanıcı bilgileri bulunamadı'),
+          backgroundColor: ThemeColors.getErrorColor(context),
         ),
       );
       return;
@@ -213,46 +231,54 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: const Text('Şifre Sıfırlama'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.email_outlined,
-                size: 48,
-                color: Colors.blue,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '${email.replaceRange(2, email.indexOf('@'), '***')} adresine 6 haneli doğrulama kodu gönderilecek.',
-                style: TextStyle(
-                  color: ThemeColors.getText(context),
+        return DesignSystem.semantic(
+          context,
+          label: 'Şifre sıfırlama dialog',
+          hint: 'E-posta ile şifre sıfırlama için kod gönderme dialog',
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+            ),
+            title: DesignSystem.semantic(
+              context,
+              label: 'Şifre Sıfırlama başlığı',
+              child: const Text('Şifre Sıfırlama'),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.email_outlined,
+                  size: 48,
+                  color: ThemeColors.getInfoColor(context),
                 ),
-                textAlign: TextAlign.center,
+                const SizedBox(height: DesignSystem.spacingM),
+                DesignSystem.semantic(
+                  context,
+                  label: 'E-posta açıklaması',
+                  child: Text(
+                    '${email.replaceRange(2, email.indexOf('@'), '***')} adresine 6 haneli doğrulama kodu gönderilecek.',
+                    style: DesignSystem.getBodyMedium(context),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('İptal'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  await _startEmailOtpFlow(context, email);
+                },
+                style: DesignSystem.getPrimaryButtonStyle(context),
+                child: const Text('Kod Gönder'),
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('İptal'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await _startEmailOtpFlow(context, email);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ThemeColors.getPrimaryButtonColor(context),
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Kod Gönder'),
-            ),
-          ],
         );
       },
     );
@@ -280,7 +306,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(result.message),
-              backgroundColor: Colors.red,
+              backgroundColor: ThemeColors.getErrorColor(context),
             ),
           );
         }
@@ -290,7 +316,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Kod gönderilemedi: ${e.toString()}'),
-            backgroundColor: Colors.red,
+            backgroundColor: ThemeColors.getErrorColor(context),
           ),
         );
       }
@@ -301,26 +327,39 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Çıkış Yap'),
-          content: const Text('Hesabınızdan çıkış yapmak istediğinizden emin misiniz?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('İptal'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.of(context).pop(); // Close dialog
-                await _logout(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ThemeColors.getLogoutButtonBackground(context),
-                foregroundColor: Colors.white,
-              ),
+        return DesignSystem.semantic(
+          context,
+          label: 'Çıkış onay dialog',
+          hint: 'Çıkış yapmak istediğinizi onaylamanız gerektiğini belirten dialog',
+          child: AlertDialog(
+            title: DesignSystem.semantic(
+              context,
+              label: 'Çıkış Yap başlığı',
               child: const Text('Çıkış Yap'),
             ),
-          ],
+            content: DesignSystem.semantic(
+              context,
+              label: 'Dialog içeriği',
+              child: const Text('Hesabınızdan çıkış yapmak istediğinizden emin misiniz?'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('İptal'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.of(context).pop(); // Close dialog
+                  await _logout(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ThemeColors.getLogoutButtonBackground(context),
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Çıkış Yap'),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -350,7 +389,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Çıkış yapılırken hata oluştu: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: ThemeColors.getErrorColor(context),
           ),
         );
       }
@@ -394,9 +433,9 @@ class _ProfileContentState extends State<ProfileContent> {
 
   Widget _buildProfileContent(BuildContext context, ProfileLoaded state) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
+          colors: ThemeColors.getGradientColors(context),
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -455,7 +494,7 @@ class _ProfileContentState extends State<ProfileContent> {
                 child: _GameHistoryList(games: state.profileData.localData.recentGames),
               ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 20)),
+            const SliverToBoxAdapter(child: SizedBox(height: DesignSystem.spacingL)),
           ],
         ),
       ),
@@ -469,24 +508,17 @@ class _LoadingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
+          colors: ThemeColors.getGradientColors(context),
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
       ),
-      child: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text(
-              'Profil yükleniyor...',
-              style: TextStyle(fontSize: 16, color: Colors.white),
-            ),
-          ],
+      child: Center(
+        child: DesignSystem.loadingIndicator(
+          context, 
+          message: 'Profil yükleniyor...',
         ),
       ),
     );
@@ -501,42 +533,22 @@ class _ErrorState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
+          colors: ThemeColors.getGradientColors(context),
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
       ),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  // Refresh or retry logic
-                  final nickname = 'Oyuncu'; // Default fallback
-                  context.read<ProfileBloc>().add(LoadProfile(nickname));
-                },
-                child: const Text('Tekrar Dene'),
-              ),
-            ],
-          ),
-        ),
+      child: DesignSystem.errorState(
+        context,
+        message: message,
+        onRetry: () {
+          // Refresh or retry logic
+          final nickname = 'Oyuncu'; // Default fallback
+          context.read<ProfileBloc>().add(LoadProfile(nickname));
+        },
+        retryText: 'Tekrar Dene',
       ),
     );
   }
@@ -549,20 +561,9 @@ class _IdentityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: ThemeColors.getCardBackground(context).withValues(alpha: 0.95),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha:0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
+    return DesignSystem.glassCard(
+      context,
+      padding: const EdgeInsets.all(DesignSystem.spacingXl),
       child: Column(
         children: [
           // Profile Picture with Level Ring
@@ -595,13 +596,13 @@ class _IdentityCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: const Color(0xFF4CAF50),
+                      color: ThemeColors.getPrimaryButtonColor(context),
                       width: 4,
                     ),
                   ),
                   child: CircleAvatar(
                     radius: 56,
-                    backgroundColor: Colors.grey[200],
+                    backgroundColor: ThemeColors.getCardBackgroundLight(context),
                     backgroundImage: profileData.serverData?.profilePictureUrl != null && profileData.serverData!.profilePictureUrl!.isNotEmpty
                         ? NetworkImage(profileData.serverData!.profilePictureUrl!)
                         : null,
@@ -613,7 +614,7 @@ class _IdentityCard extends StatelessWidget {
                           }
                         : null,
                     child: (profileData.serverData?.profilePictureUrl == null || profileData.serverData!.profilePictureUrl!.isEmpty)
-                        ? const Icon(Icons.person, size: 56, color: Colors.grey)
+                        ? Icon(Icons.person, size: 56, color: ThemeColors.getSecondaryText(context))
                         : null,
                   ),
                 ),
@@ -623,41 +624,41 @@ class _IdentityCard extends StatelessWidget {
                   right: 0,
                   child: Container(
                     padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.blue,
+                    decoration: BoxDecoration(
+                      color: ThemeColors.getInfoColor(context),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.edit,
                       size: 16,
                       color: Colors.white,
                     ),
                   ),
                 ),
-              // Level Badge
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4CAF50),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    'Lvl 1',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                // Level Badge
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: ThemeColors.getPrimaryButtonColor(context),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'Lvl 1',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          ),
-          const SizedBox(height: 20),
+          const SizedBox(height: DesignSystem.spacingL),
           
           // Nickname
           AnimatedSwitcher(
@@ -665,14 +666,10 @@ class _IdentityCard extends StatelessWidget {
             child: Text(
               profileData.serverData?.nickname ?? 'Yükleniyor...',
               key: ValueKey(profileData.serverData?.nickname),
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: ThemeColors.getTitleColor(context),
-              ),
+              style: AppTheme.getGameTitleStyle(context),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: DesignSystem.spacingS),
           
           // UID with copy button
           if (profileData.serverData?.uid != null)
@@ -684,8 +681,7 @@ class _IdentityCard extends StatelessWidget {
                 children: [
                   Text(
                     'UID: ${profileData.serverData!.uid}',
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: DesignSystem.getBodyMedium(context).copyWith(
                       color: ThemeColors.getStatsCardText(context),
                       fontFamily: 'monospace',
                     ),
@@ -696,20 +692,18 @@ class _IdentityCard extends StatelessWidget {
           else
             Text(
               'UID: Yükleniyor...',
-              style: TextStyle(
-                fontSize: 14,
+              style: DesignSystem.getBodyMedium(context).copyWith(
                 color: ThemeColors.getStatsCardText(context),
               ),
             ),
           
-          const SizedBox(height: 16),
+          const SizedBox(height: DesignSystem.spacingM),
           
           // Last Login
           if (profileData.serverData?.lastLogin != null)
             Text(
               'Son giriş: ${_formatDate(profileData.serverData!.lastLogin!)}',
-              style: TextStyle(
-                fontSize: 12,
+              style: Theme.of(context).textTheme.bodySmall ?? TextStyle().copyWith(
                 color: ThemeColors.getStatsCardText(context),
               ),
             ),
@@ -742,17 +736,15 @@ class _StatisticsCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingM),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
+          Padding(
+            padding: const EdgeInsets.all(DesignSystem.spacingM),
             child: Text(
               'Oyun İstatistikleri',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+              style: DesignSystem.getTitleLarge(context).copyWith(
                 color: Colors.white,
               ),
             ),
@@ -761,8 +753,8 @@ class _StatisticsCards extends StatelessWidget {
             crossAxisCount: 2,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
+            mainAxisSpacing: DesignSystem.spacingS,
+            crossAxisSpacing: DesignSystem.spacingS,
             childAspectRatio: 1.2,
             children: [
               _buildStatCard(
@@ -810,24 +802,14 @@ class _StatisticsCards extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 500),
       curve: Curves.easeInOut,
-      decoration: BoxDecoration(
-        color: ThemeColors.getStatsCardBackground(context),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha:0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
+      decoration: DesignSystem.getCardDecoration(context),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(DesignSystem.spacingM),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 32, color: color),
-            const SizedBox(height: 12),
+            const SizedBox(height: DesignSystem.spacingS),
             Text(
               value,
               style: TextStyle(
@@ -840,8 +822,7 @@ class _StatisticsCards extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
+              style: Theme.of(context).textTheme.bodySmall ?? TextStyle().copyWith(
                 color: ThemeColors.getStatsCardText(context),
                 fontWeight: FontWeight.w500,
               ),
@@ -861,17 +842,15 @@ class _GameHistoryList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(DesignSystem.spacingM),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
+          Padding(
+            padding: const EdgeInsets.all(DesignSystem.spacingM),
             child: Text(
               'Son Skorlar ve Geçmiş',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+              style: DesignSystem.getTitleLarge(context).copyWith(
                 color: Colors.white,
               ),
             ),
@@ -886,44 +865,22 @@ class _GameHistoryList extends StatelessWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: ThemeColors.getHistoryCardBackground(context),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          const Icon(
-            Icons.gamepad,
-            size: 48,
-            color: Colors.grey,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Henüz oyun geçmişi yok',
-            style: TextStyle(
-              fontSize: 16,
-              color: ThemeColors.getEmptyStateText(context),
-            ),
-          ),
-        ],
-      ),
+    return DesignSystem.emptyState(
+      context,
+      message: 'Henüz oyun geçmişi yok',
+      icon: Icons.gamepad,
     );
   }
 
   Widget _buildGameList(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: ThemeColors.getHistoryCardBackground(context),
-        borderRadius: BorderRadius.circular(16),
-      ),
+    return DesignSystem.card(
+      context,
+      backgroundColor: ThemeColors.getHistoryCardBackground(context),
       child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: games.length,
-        separatorBuilder: (context, index) => const Divider(height: 1),
+        separatorBuilder: (context, index) => DesignSystem.modernDivider(context),
         itemBuilder: (context, index) {
           final game = games[index];
           return _buildGameItem(context, game);
@@ -949,32 +906,21 @@ class _GameHistoryList extends StatelessWidget {
       ),
       title: Text(
         '${game.score} puan',
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-        ),
+        style: DesignSystem.getTitleMedium(context),
       ),
       subtitle: Text(
         '${_formatGameDate(game.playedAt)} • ${_getGameTypeText(game.gameType)}',
-        style: TextStyle(
+        style: Theme.of(context).textTheme.bodySmall ?? TextStyle().copyWith(
           color: ThemeColors.getStatsCardText(context),
-          fontSize: 12,
         ),
       ),
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: game.isWin ? Colors.green[100] : Colors.red[100],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          game.isWin ? 'Kazandın' : 'Kaybettin',
-          style: TextStyle(
-            color: game.isWin ? Colors.green[800] : Colors.red[800],
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+      trailing: DesignSystem.modernChip(
+        context,
+        label: game.isWin ? 'Kazandın' : 'Kaybettin',
+        backgroundColor: game.isWin 
+            ? ThemeColors.getSuccessColor(context).withValues(alpha: 0.1)
+            : ThemeColors.getErrorColor(context).withValues(alpha: 0.1),
+        isSelected: true,
       ),
     );
   }
@@ -1052,16 +998,16 @@ class _BiometricSettingsSectionState extends State<_BiometricSettingsSection> {
         });
         
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Biyometrik giriş devre dışı bırakıldı'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: const Text('Biyometrik giriş devre dışı bırakıldı'),
+            backgroundColor: ThemeColors.getSuccessColor(context),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Biyometrik giriş devre dışı bırakılamadı'),
-            backgroundColor: Colors.red,
+          SnackBar(
+            content: const Text('Biyometrik giriş devre dışı bırakılamadı'),
+            backgroundColor: ThemeColors.getErrorColor(context),
           ),
         );
       }
@@ -1069,7 +1015,7 @@ class _BiometricSettingsSectionState extends State<_BiometricSettingsSection> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Hata: ${e.toString()}'),
-          backgroundColor: Colors.red,
+          backgroundColor: ThemeColors.getErrorColor(context),
         ),
       );
     } finally {
@@ -1104,17 +1050,17 @@ class _BiometricSettingsSectionState extends State<_BiometricSettingsSection> {
             });
             
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Biyometrik giriş başarıyla etkinleştirildi'),
-                backgroundColor: Colors.green,
+              SnackBar(
+                content: const Text('Biyometrik giriş başarıyla etkinleştirildi'),
+                backgroundColor: ThemeColors.getSuccessColor(context),
               ),
             );
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Biyometrik kurulumu kaydetme başarısız'),
-              backgroundColor: Colors.red,
+            SnackBar(
+              content: const Text('Biyometrik kurulumu kaydetme başarısız'),
+              backgroundColor: ThemeColors.getErrorColor(context),
             ),
           );
         }
@@ -1123,7 +1069,7 @@ class _BiometricSettingsSectionState extends State<_BiometricSettingsSection> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Hata: ${e.toString()}'),
-          backgroundColor: Colors.red,
+          backgroundColor: ThemeColors.getErrorColor(context),
         ),
       );
     } finally {
@@ -1138,25 +1084,23 @@ class _BiometricSettingsSectionState extends State<_BiometricSettingsSection> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(DesignSystem.spacingM),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
+          Padding(
+            padding: const EdgeInsets.all(DesignSystem.spacingM),
             child: Text(
               'Güvenlik Ayarları',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+              style: DesignSystem.getTitleLarge(context).copyWith(
                 color: Colors.white,
               ),
             ),
           ),
-          Card(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
+          DesignSystem.card(
+            context,
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(DesignSystem.spacingM),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1167,26 +1111,21 @@ class _BiometricSettingsSectionState extends State<_BiometricSettingsSection> {
                         color: ThemeColors.getGreen(context),
                         size: 24,
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: DesignSystem.spacingM),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Biyometrik Giriş',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: ThemeColors.getText(context),
-                              ),
+                              style: DesignSystem.getTitleMedium(context),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               _isBiometricEnabled 
                                   ? 'Biyometrik kimlik doğrulama etkin'
                                   : 'Biyometrik kimlik doğrulama devre dışı',
-                              style: TextStyle(
-                                fontSize: 14,
+                              style: DesignSystem.getBodyMedium(context).copyWith(
                                 color: ThemeColors.getSecondaryText(context),
                               ),
                             ),
@@ -1204,31 +1143,32 @@ class _BiometricSettingsSectionState extends State<_BiometricSettingsSection> {
                             _disableBiometric();
                           }
                         },
-                        activeColor: ThemeColors.getGreen(context),
+                        activeThumbColor: ThemeColors.getGreen(context),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  BiometricSetupStatus(),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: DesignSystem.spacingM),
+                  const BiometricSetupStatus(),
+                  const SizedBox(height: DesignSystem.spacingM),
                   if (_isBiometricEnabled)
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(DesignSystem.spacingM),
                       decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.blue.shade200),
+                        color: ThemeColors.getInfoColor(context).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(DesignSystem.radiusS),
+                        border: Border.all(
+                          color: ThemeColors.getInfoColor(context).withValues(alpha: 0.3),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.info, color: Colors.blue.shade700, size: 20),
-                          const SizedBox(width: 8),
+                          Icon(Icons.info, color: ThemeColors.getInfoColor(context), size: 20),
+                          const SizedBox(width: DesignSystem.spacingS),
                           Expanded(
                             child: Text(
                               'Giriş yaparken biyometrik kimlik doğrulama seçeneği görünecektir.',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.blue.shade700,
+                              style: Theme.of(context).textTheme.bodySmall ?? TextStyle().copyWith(
+                                color: ThemeColors.getInfoColor(context),
                               ),
                             ),
                           ),
@@ -1253,25 +1193,16 @@ class _RegistrationCheckScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
+            colors: ThemeColors.getGradientColors(context),
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
-        child: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text(
-                'Profil kontrol ediliyor...',
-                style: TextStyle(fontSize: 16, color: Colors.white),
-              ),
-            ],
-          ),
+        child: DesignSystem.loadingIndicator(
+          context,
+          message: 'Profil kontrol ediliyor...',
         ),
       ),
     );
@@ -1288,65 +1219,53 @@ class _UnregisteredUserScreen extends StatelessWidget {
       appBar: AppBar(
         title: Consumer<LanguageProvider>(
           builder: (context, languageProvider, child) {
-            return Text(AppLocalizations.profile, style: TextStyle(color: ThemeColors.getAppBarText(context)));
+            return DesignSystem.semantic(
+              context,
+              label: 'Profil sayfası başlığı',
+              child: Text(AppLocalizations.profile, style: TextStyle(color: ThemeColors.getAppBarText(context))),
+            );
           },
         ),
         backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 2,
+        elevation: DesignSystem.elevationS,
         iconTheme: IconThemeData(color: ThemeColors.getAppBarIcon(context)),
       ),
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
+            colors: ThemeColors.getGradientColors(context),
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: ThemeColors.getCardBackground(context).withValues(alpha: 0.95),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
+            padding: const EdgeInsets.all(DesignSystem.spacingXl),
+            child: DesignSystem.glassCard(
+              context,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.person_add,
                     size: 80,
-                    color: Color(0xFF4CAF50),
+                    color: ThemeColors.getPrimaryButtonColor(context),
                   ),
-                  const SizedBox(height: 24),
-                  const Text(
+                  const SizedBox(height: DesignSystem.spacingL),
+                  Text(
                     'Kayıt Olmanız Gerekiyor',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2E7D32),
-                    ),
+                    style: AppTheme.getGameTitleStyle(context),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: DesignSystem.spacingM),
                   Text(
                     'Profil sayfasına erişebilmek için önce kayıt olmanız gerekiyor. Kayıt olarak daha fazla özellikten yararlanabilirsiniz.',
-                    style: TextStyle(
-                      fontSize: 16,
+                    style: DesignSystem.getBodyLarge(context).copyWith(
                       color: ThemeColors.getStatsCardText(context),
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: DesignSystem.spacingXl),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
@@ -1358,17 +1277,10 @@ class _UnregisteredUserScreen extends StatelessWidget {
                       },
                       icon: const Icon(Icons.person_add),
                       label: const Text('Kayıt Ol'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: ThemeColors.getPrimaryButtonColor(context),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
+                      style: DesignSystem.getPrimaryButtonStyle(context),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: DesignSystem.spacingS),
                   SizedBox(
                     width: double.infinity,
                     child: TextButton.icon(
@@ -1377,12 +1289,7 @@ class _UnregisteredUserScreen extends StatelessWidget {
                       },
                       icon: const Icon(Icons.arrow_back),
                       label: const Text('Geri Dön'),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
+                      style: DesignSystem.getTextButtonStyle(context),
                     ),
                   ),
                 ],

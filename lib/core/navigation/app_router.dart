@@ -180,9 +180,9 @@ class AppRouter {
     return PageRouteBuilder<T>(
       pageBuilder: (context, animation, secondaryAnimation) => 
         _ProtectedRouteWrapper(
-          child: page,
           authService: _authService,
           fallbackRoute: AppRoutes.login,
+          child: page,
           fallbackArguments: {'redirectTo': settings.name},
         ),
       transitionDuration: const Duration(milliseconds: 300),
@@ -257,9 +257,9 @@ class _ProtectedRouteWrapper extends StatefulWidget {
   final Map<String, dynamic>? fallbackArguments;
 
   const _ProtectedRouteWrapper({
-    required this.child,
     required this.authService,
     required this.fallbackRoute,
+    required this.child,
     this.fallbackArguments,
   });
 

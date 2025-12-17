@@ -4,16 +4,13 @@
 import 'dart:async';
 import 'dart:math';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firebase_2fa_service.dart';
-import '../services/profile_service.dart';
 import '../theme/theme_colors.dart';
 import '../widgets/phone_input_widget.dart';
 import '../widgets/home_button.dart';
@@ -70,10 +67,8 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
   final GlobalKey<FormState> _smsFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _totpFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _backupFormKey = GlobalKey<FormState>();
-  final GlobalKey<FormState> _hardwareFormKey = GlobalKey<FormState>();
   
   // Services
-  final ProfileService _profileService = ProfileService();
   
   // State variables
   bool _isLoading = true;
@@ -81,16 +76,11 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
   String? _verificationId;
   List<String>? _backupCodes;
   TOTPSetupResult? _totpSetup;
-  List<HardwareTokenResult> _hardwareTokens = [];
   
   // UI State
   int _currentStep = 0;
-  bool _waitingForSms = false;
-  bool _showBackupCodes = false;
-  bool _showAdvancedOptions = false;
   AuthenticationMethod _selectedMethod = AuthenticationMethod.sms;
   bool _generateBackupCodes = true;
-  bool _useBackupCode = false;
   bool _hasCompletedSetup = false;
   
   // Animations
@@ -100,11 +90,12 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
   late Animation<double> _pulseAnimation;
   late AnimationController _stepController;
   late Animation<double> _stepAnimation;
-  
   // Security data
-  Map<String, dynamic>? _securityStatus;
   List<String> _securityRecommendations = [];
   List<String> _securityWarnings = [];
+  Map<String, dynamic>? _securityStatus;
+  bool _waitingForSms = false;
+  bool _showBackupCodes = false;
 
   @override
   void initState() {
@@ -308,9 +299,8 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
       final digest = sha256.convert(bytes);
       
       // Accept codes that match the first 6 digits of hash (demo purposes)
-      final hashString = digest.toString().substring(0, 6);
+      final hashString = digest.toString().substring(0, 6); // Used for validation logic
       final codeNumeric = int.tryParse(code) ?? 0;
-      final hashNumeric = int.tryParse(hashString) ?? 0;
       
       // Allow 30-second window with ±1 tolerance for time sync
       for (int offset = -1; offset <= 1; offset++) {
