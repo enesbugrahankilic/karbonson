@@ -7,7 +7,7 @@ import '../services/connectivity_service.dart';
 import '../theme/theme_colors.dart';
 
 /// Network status widget that shows connectivity state and provides retry functionality
-/// 
+///
 /// Features:
 /// - Shows offline status with Turkish message: "Çevrimdışı durumdasınız. Lütfen internet bağlantınızı kontrol edin."
 /// - Continuous connectivity monitoring
@@ -39,7 +39,7 @@ class _NetworkStatusWidgetState extends State<NetworkStatusWidget>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  
+
   bool _wasOffline = false;
   StreamSubscription<bool>? _connectivitySubscription;
 
@@ -72,7 +72,8 @@ class _NetworkStatusWidgetState extends State<NetworkStatusWidget>
   }
 
   void _startMonitoring() {
-    _connectivitySubscription = widget.connectivityService.connectivityStateStream
+    _connectivitySubscription = widget
+        .connectivityService.connectivityStateStream
         .listen(_handleConnectivityChange);
   }
 
@@ -123,7 +124,8 @@ class _NetworkStatusWidgetState extends State<NetworkStatusWidget>
           ),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           margin: widget.padding,
           action: SnackBarAction(
             label: 'Yenile',

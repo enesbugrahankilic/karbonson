@@ -247,8 +247,9 @@ class ProfileImageDeleting extends ProfileImageState {
 class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
   final ProfileImageService _imageService = ProfileImageService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  
-  ImageOptimizationParams _currentOptimizationParams = const ImageOptimizationParams();
+
+  ImageOptimizationParams _currentOptimizationParams =
+      const ImageOptimizationParams();
   Map<String, dynamic> _performanceMetrics = {};
   ProfileImageData? _currentImage;
   StreamSubscription<UploadProgress>? _progressSubscription;
@@ -262,7 +263,7 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
     on<RetryUpload>(_onRetryUpload);
     on<ClearError>(_onClearError);
     on<LoadPerformanceMetrics>(_onLoadPerformanceMetrics);
-    
+
     // Listen to service streams
     _imageService.uploadProgressStream.listen((progress) {
       if (state is ProfileImageUploading) {
@@ -274,7 +275,7 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
         ));
       }
     });
-    
+
     _imageService.imageDataStream.listen((imageData) {
       _currentImage = imageData;
       if (state is ProfileImageUploading || state is ProfileImageOptimizing) {
@@ -301,7 +302,7 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
     Emitter<ProfileImageState> emit,
   ) async {
     emit(ProfileImageLoading());
-    
+
     try {
       // Validate user authentication
       final currentUser = _auth.currentUser;
@@ -317,10 +318,10 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
 
       // Load performance metrics
       _performanceMetrics = _imageService.getPerformanceMetrics();
-      
+
       // Check for existing image
       final hasExistingImage = event.existingImageUrl != null;
-      
+
       if (hasExistingImage) {
         _currentImage = ProfileImageData(
           id: 'existing_${DateTime.now().millisecondsSinceEpoch}',
@@ -347,7 +348,6 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
         performanceMetrics: _performanceMetrics,
         hasExistingImage: hasExistingImage,
       ));
-      
     } catch (e) {
       emit(ProfileImageError(
         message: 'Profil fotoğrafı başlatılamadı: $e',
@@ -364,8 +364,9 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
   ) async {
     try {
       // Update optimization parameters
-      _currentOptimizationParams = event.optimizationParams ?? _currentOptimizationParams;
-      
+      _currentOptimizationParams =
+          event.optimizationParams ?? _currentOptimizationParams;
+
       emit(ProfileImageUploading(
         uploadProgress: UploadProgress(
           bytesUploaded: 0,
@@ -384,12 +385,12 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
         event.imageData,
         event.format,
       );
-      
+
       if (!validation.isValid) {
         emit(ProfileImageError(
           message: validation.errorMessage ?? 'Geçersiz görüntü dosyası',
-          suggestion: validation.suggestions.isNotEmpty 
-              ? validation.suggestions.first 
+          suggestion: validation.suggestions.isNotEmpty
+              ? validation.suggestions.first
               : null,
           optimizationParams: _currentOptimizationParams,
           performanceMetrics: _performanceMetrics,
@@ -422,7 +423,6 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
           performanceMetrics: _imageService.getPerformanceMetrics(),
         ));
       }
-      
     } catch (e) {
       emit(ProfileImageError(
         message: 'Yükleme sırasında hata oluştu: $e',
@@ -477,7 +477,6 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
           performanceMetrics: _imageService.getPerformanceMetrics(),
         ));
       }
-      
     } catch (e) {
       emit(ProfileImageError(
         message: 'Silme işlemi sırasında hata oluştu: $e',
@@ -493,7 +492,7 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
     Emitter<ProfileImageState> emit,
   ) {
     _currentOptimizationParams = event.newParams;
-    
+
     if (state is ProfileImageLoaded) {
       emit((state as ProfileImageLoaded).copyWith(
         optimizationParams: _currentOptimizationParams,
@@ -545,7 +544,7 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
     Emitter<ProfileImageState> emit,
   ) {
     _performanceMetrics = _imageService.getPerformanceMetrics();
-    
+
     if (state is ProfileImageLoaded) {
       emit((state as ProfileImageLoaded).copyWith(
         performanceMetrics: _performanceMetrics,

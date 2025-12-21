@@ -8,7 +8,7 @@ extension LocalizedBuildContext on BuildContext {
   AppLanguage get currentLanguage => languageProvider.currentLanguage;
   bool get isTurkish => currentLanguage == AppLanguage.turkish;
   bool get isEnglish => currentLanguage == AppLanguage.english;
-  
+
   /// Get localized string based on current language
   String t(String turkish, String english) {
     return isTurkish ? turkish : english;

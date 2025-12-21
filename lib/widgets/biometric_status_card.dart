@@ -39,8 +39,9 @@ class _BiometricStatusCardState extends State<BiometricStatusCard> {
     try {
       // Biyometrik desteğini kontrol et
       final isAvailable = await BiometricService.isBiometricAvailable();
-      final availableBiometrics = await BiometricService.getAvailableBiometrics();
-      
+      final availableBiometrics =
+          await BiometricService.getAvailableBiometrics();
+
       // Biyometrik türü belirle
       String biometricType = 'Biyometrik';
       if (availableBiometrics.contains(BiometricType.face)) {
@@ -89,7 +90,8 @@ class _BiometricStatusCardState extends State<BiometricStatusCard> {
           widget.onBiometricDisabled?.call();
           _showMessage('Biyometrik giriş devre dışı bırakıldı', isError: false);
         } else {
-          _showMessage('Biyometrik giriş devre dışı bırakılamadı', isError: true);
+          _showMessage('Biyometrik giriş devre dışı bırakılamadı',
+              isError: true);
         }
       } else {
         // Biyometriyi etkinleştir
@@ -142,7 +144,9 @@ class _BiometricStatusCardState extends State<BiometricStatusCard> {
             Row(
               children: [
                 Icon(
-                  _isBiometricEnabled ? Icons.fingerprint : Icons.fingerprint_outlined,
+                  _isBiometricEnabled
+                      ? Icons.fingerprint
+                      : Icons.fingerprint_outlined,
                   color: _isBiometricEnabled
                       ? ThemeColors.getSuccessColor(context)
                       : ThemeColors.getSecondaryText(context),

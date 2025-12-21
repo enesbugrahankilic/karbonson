@@ -18,7 +18,8 @@ class ForgotPasswordPageEnhanced extends StatefulWidget {
   const ForgotPasswordPageEnhanced({super.key});
 
   @override
-  State<ForgotPasswordPageEnhanced> createState() => _ForgotPasswordPageEnhancedState();
+  State<ForgotPasswordPageEnhanced> createState() =>
+      _ForgotPasswordPageEnhancedState();
 }
 
 class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
@@ -78,7 +79,8 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
     if (userEmail != null && userEmail.isNotEmpty) {
       _emailController.text = userEmail;
       if (kDebugMode) {
-        debugPrint('ForgotPasswordPage: Auto-populated email: ${userEmail.replaceRange(2, userEmail.indexOf('@'), '***')}');
+        debugPrint(
+            'ForgotPasswordPage: Auto-populated email: ${userEmail.replaceRange(2, userEmail.indexOf('@'), '***')}');
       }
     }
   }
@@ -88,7 +90,7 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
     setState(() {
       _isConnected = isConnected;
     });
-    
+
     if (kDebugMode) {
       debugPrint('ForgotPasswordPage: Network connectivity: $_isConnected');
     }
@@ -124,9 +126,10 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
 
     try {
       final email = _emailController.text.trim();
-      
+
       if (kDebugMode) {
-        debugPrint('ForgotPasswordPage: Sending password reset to: ${email.replaceRange(2, email.indexOf('@'), '***')}');
+        debugPrint(
+            'ForgotPasswordPage: Sending password reset to: ${email.replaceRange(2, email.indexOf('@'), '***')}');
       }
 
       // ✅ SERVİS ÇAĞRISI (Service Call): Trigger FirebaseAuth.sendPasswordResetEmail
@@ -135,17 +138,18 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
       // Check email verification status for redirection logic
       final currentUser = FirebaseAuth.instance.currentUser;
       bool shouldRedirectToEmailInfo = false;
-      
+
       if (currentUser != null && !currentUser.emailVerified) {
         shouldRedirectToEmailInfo = true;
         if (kDebugMode) {
-          debugPrint('ForgotPasswordPage: User has unverified email, will show email verification info');
+          debugPrint(
+              'ForgotPasswordPage: User has unverified email, will show email verification info');
         }
       }
 
       // ✅ GERİ BİLDİRİM (Feedback): Hide loading and show success
       _hideLoadingOverlay();
-      
+
       setState(() {
         _isLoading = false;
       });
@@ -159,8 +163,9 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
           ),
         );
       } else {
-        _showEnhancedSuccessSnackbar(FirebaseAuthService.getPasswordResetSuccessMessage());
-        
+        _showEnhancedSuccessSnackbar(
+            FirebaseAuthService.getPasswordResetSuccessMessage());
+
         // Auto-navigate back to login after a short delay
         Future.delayed(const Duration(seconds: 3), () {
           if (mounted) {
@@ -168,11 +173,10 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
           }
         });
       }
-
     } catch (e) {
       // ✅ GERİ BİLDİRİM (Feedback): Hide loading and show error
       _hideLoadingOverlay();
-      
+
       setState(() {
         _isLoading = false;
       });
@@ -185,9 +189,12 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
       String errorMessage;
       if (e is FirebaseAuthException) {
         errorMessage = FirebaseAuthService.getPasswordResetErrorMessage(e);
-      } else if (e.toString().contains('network') || e.toString().contains('Network')) {
-        errorMessage = 'İnternet bağlantınızı kontrol edin. Ağ bağlantısı sorunu var.';
-      } else if (e.toString().contains('Timeout') || e.toString().contains('timeout')) {
+      } else if (e.toString().contains('network') ||
+          e.toString().contains('Network')) {
+        errorMessage =
+            'İnternet bağlantınızı kontrol edin. Ağ bağlantısı sorunu var.';
+      } else if (e.toString().contains('Timeout') ||
+          e.toString().contains('timeout')) {
         errorMessage = 'İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.';
       } else {
         errorMessage = 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
@@ -199,7 +206,7 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
 
   void _showValidationMessage() {
     if (!mounted) return;
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Lütfen geçerli bir e-posta adresi girin'),
@@ -365,7 +372,8 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
                             animation: _animationController,
                             builder: (context, child) {
                               return Transform.translate(
-                                offset: Offset(0, (1 - _fadeAnimation.value) * 30),
+                                offset:
+                                    Offset(0, (1 - _fadeAnimation.value) * 30),
                                 child: Icon(
                                   Icons.lock_reset,
                                   size: 60,
@@ -401,7 +409,8 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
                               decoration: BoxDecoration(
                                 color: Colors.red.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                                border: Border.all(
+                                    color: Colors.red.withValues(alpha: 0.3)),
                               ),
                               child: Row(
                                 children: [
@@ -451,7 +460,8 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
                                   decoration: InputDecoration(
                                     labelText: 'E-posta Adresi',
                                     filled: true,
-                                    fillColor: ThemeColors.getInputBackground(context),
+                                    fillColor:
+                                        ThemeColors.getInputBackground(context),
                                     labelStyle: TextStyle(
                                       color: ThemeColors.getGreen(context),
                                     ),
@@ -470,27 +480,34 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide(
-                                        color: ThemeColors.getPrimaryButtonColor(context),
+                                        color:
+                                            ThemeColors.getPrimaryButtonColor(
+                                                context),
                                         width: 2,
                                       ),
                                     ),
                                     errorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: Colors.red),
+                                      borderSide:
+                                          const BorderSide(color: Colors.red),
                                     ),
                                     focusedErrorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: Colors.red, width: 2),
+                                      borderSide: const BorderSide(
+                                          color: Colors.red, width: 2),
                                     ),
                                     prefixIcon: Icon(
                                       Icons.email,
-                                      color: ThemeColors.getSecondaryText(context),
+                                      color:
+                                          ThemeColors.getSecondaryText(context),
                                     ),
                                     suffixIcon: _emailController.text.isNotEmpty
                                         ? IconButton(
                                             icon: Icon(
                                               Icons.clear,
-                                              color: ThemeColors.getSecondaryText(context),
+                                              color:
+                                                  ThemeColors.getSecondaryText(
+                                                      context),
                                             ),
                                             onPressed: _isLoading
                                                 ? null
@@ -511,13 +528,15 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
                                     if (value.trim().isEmpty) {
                                       return 'E-posta adresi boş olamaz';
                                     }
-                                    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(value.trim())) {
+                                    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+                                        .hasMatch(value.trim())) {
                                       return 'Geçerli bir e-posta adresi girin';
                                     }
                                     return null;
                                   },
                                   onChanged: (value) {
-                                    setState(() {}); // Rebuild to update clear button
+                                    setState(
+                                        () {}); // Rebuild to update clear button
                                   },
                                 ),
                                 const SizedBox(height: 24),
@@ -527,21 +546,28 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
                                   width: double.infinity,
                                   height: 50,
                                   child: ElevatedButton.icon(
-                                    onPressed: (_isLoading || !_isConnected) ? null : _handleSendPasswordReset,
-                                    icon: _isLoading 
+                                    onPressed: (_isLoading || !_isConnected)
+                                        ? null
+                                        : _handleSendPasswordReset,
+                                    icon: _isLoading
                                         ? SizedBox(
                                             width: 20,
                                             height: 20,
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
-                                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                      Colors.white),
                                             ),
                                           )
                                         : const Icon(Icons.send),
-                                    label: Text(_isLoading ? 'Gönderiliyor...' : 'Şifre Sıfırlama E-postası Gönder'),
+                                    label: Text(_isLoading
+                                        ? 'Gönderiliyor...'
+                                        : 'Şifre Sıfırlama E-postası Gönder'),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: _isConnected
-                                          ? ThemeColors.getPrimaryButtonColor(context)
+                                          ? ThemeColors.getPrimaryButtonColor(
+                                              context)
                                           : Colors.grey,
                                       foregroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(
@@ -561,7 +587,8 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: ThemeColors.getDialogContentBackground(context),
+                              color: ThemeColors.getDialogContentBackground(
+                                  context),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: ThemeColors.getBorder(context),

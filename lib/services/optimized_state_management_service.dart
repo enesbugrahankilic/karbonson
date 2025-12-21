@@ -27,14 +27,14 @@ class StateMetrics {
   });
 
   Map<String, dynamic> toJson() => {
-    'state_changes': stateChanges,
-    'total_update_time_ms': totalUpdateTimeMs,
-    'average_update_time_ms': averageUpdateTimeMs,
-    'slow_state_changes_count': slowStateChanges.length,
-    'slow_state_changes': slowStateChanges,
-    'memory_usage_kb': memoryUsage ~/ 1024,
-    'active_blocs': activeBlocs,
-  };
+        'state_changes': stateChanges,
+        'total_update_time_ms': totalUpdateTimeMs,
+        'average_update_time_ms': averageUpdateTimeMs,
+        'slow_state_changes_count': slowStateChanges.length,
+        'slow_state_changes': slowStateChanges,
+        'memory_usage_kb': memoryUsage ~/ 1024,
+        'active_blocs': activeBlocs,
+      };
 }
 
 /// Cache entry for state data
@@ -58,13 +58,14 @@ class StateCacheEntry<T> {
     lastAccessed = DateTime.now();
   }
 
-  int get ageInSeconds => DateTime.now().difference(lastAccessed).inSeconds.abs();
+  int get ageInSeconds =>
+      DateTime.now().difference(lastAccessed).inSeconds.abs();
 }
 
 /// Performance-optimized event base class
 abstract class OptimizedEvent extends Equatable {
   final DateTime timestamp;
-  
+
   OptimizedEvent() : timestamp = DateTime.now();
 
   @override
@@ -99,7 +100,7 @@ class DebouncedEvent<T extends OptimizedEvent> extends OptimizedEvent {
 }
 
 /// Performance-optimized BLoC base class
-abstract class OptimizedBloc<E extends OptimizedEvent, S extends Equatable> 
+abstract class OptimizedBloc<E extends OptimizedEvent, S extends Equatable>
     extends Bloc<E, S> {
   final Duration _stateCacheTTL = const Duration(minutes: 5);
   static const int _maxStateCacheEntries = 100;
@@ -182,11 +183,12 @@ abstract class OptimizedBloc<E extends OptimizedEvent, S extends Equatable>
 
       // If still over limit, remove least accessed entries
       if (_stateCache.length > _maxStateCacheEntries) {
-        leastAccessedEntries.sort((a, b) => a.value.accessCount.compareTo(b.value.accessCount));
-        
-        final entriesToRemove = leastAccessedEntries.take(
-          _stateCache.length - _maxStateCacheEntries
-        ).toList();
+        leastAccessedEntries
+            .sort((a, b) => a.value.accessCount.compareTo(b.value.accessCount));
+
+        final entriesToRemove = leastAccessedEntries
+            .take(_stateCache.length - _maxStateCacheEntries)
+            .toList();
 
         for (final entry in entriesToRemove) {
           _stateCache.remove(entry.key);
@@ -208,17 +210,19 @@ abstract class OptimizedBloc<E extends OptimizedEvent, S extends Equatable>
     }
 
     final stopwatch = Stopwatch()..start();
-    
+
     super.emit(state);
-    
+
     stopwatch.stop();
-    
+
     _stateChangeCount++;
     _totalUpdateTimeMs += stopwatch.elapsedMilliseconds;
 
     // Track slow state changes
-    if (stopwatch.elapsedMilliseconds > 16) { // > 16ms (60fps)
-      _slowStateChanges.add('State change took ${stopwatch.elapsedMilliseconds}ms');
+    if (stopwatch.elapsedMilliseconds > 16) {
+      // > 16ms (60fps)
+      _slowStateChanges
+          .add('State change took ${stopwatch.elapsedMilliseconds}ms');
       if (kDebugMode) {
         debugPrint('🐌 Slow state change: ${stopwatch.elapsedMilliseconds}ms');
       }
@@ -227,14 +231,15 @@ abstract class OptimizedBloc<E extends OptimizedEvent, S extends Equatable>
 
   /// Get current performance metrics
   StateMetrics get metrics => StateMetrics(
-    stateChanges: _stateChangeCount,
-    totalUpdateTimeMs: _totalUpdateTimeMs,
-    averageUpdateTimeMs: _stateChangeCount > 0 ? 
-      (_totalUpdateTimeMs / _stateChangeCount).round() : 0,
-    slowStateChanges: List.from(_slowStateChanges),
-    memoryUsage: _estimateMemoryUsage(),
-    activeBlocs: _getActiveBlocCount(),
-  );
+        stateChanges: _stateChangeCount,
+        totalUpdateTimeMs: _totalUpdateTimeMs,
+        averageUpdateTimeMs: _stateChangeCount > 0
+            ? (_totalUpdateTimeMs / _stateChangeCount).round()
+            : 0,
+        slowStateChanges: List.from(_slowStateChanges),
+        memoryUsage: _estimateMemoryUsage(),
+        activeBlocs: _getActiveBlocCount(),
+      );
 
   /// Estimate memory usage for state management
   int _estimateMemoryUsage() {
@@ -255,25 +260,29 @@ abstract class OptimizedBloc<E extends OptimizedEvent, S extends Equatable>
   /// Get performance recommendations
   List<String> getPerformanceRecommendations() {
     final recommendations = <String>[];
-    
+
     final currentMetrics = metrics;
-    
+
     if (currentMetrics.slowStateChanges.isNotEmpty) {
-      recommendations.add('🐌 Slow state changes detected - consider optimizing event handlers');
+      recommendations.add(
+          '🐌 Slow state changes detected - consider optimizing event handlers');
       recommendations.add('📈 Implement debouncing for rapid state changes');
     }
-    
+
     if (currentMetrics.averageUpdateTimeMs > 16) {
-      recommendations.add('⚡ High average state update time - reduce state complexity');
+      recommendations
+          .add('⚡ High average state update time - reduce state complexity');
     }
-    
+
     if (_stateCache.length > 50) {
-      recommendations.add('🧠 Large state cache detected - consider reducing TTL or cache size');
+      recommendations.add(
+          '🧠 Large state cache detected - consider reducing TTL or cache size');
     }
-    
+
     recommendations.add('🔄 Use const constructors for immutable states');
-    recommendations.add('📦 Implement selective state updates to minimize rebuilds');
-    
+    recommendations
+        .add('📦 Implement selective state updates to minimize rebuilds');
+
     return recommendations;
   }
 
@@ -493,10 +502,10 @@ class _CachedBuilderState extends State<_CachedBuilder> {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    
+
     // Check if we can use cached widget
-    if (_cachedWidget != null && 
-        _lastBuildTime != null && 
+    if (_cachedWidget != null &&
+        _lastBuildTime != null &&
         now.difference(_lastBuildTime!) < widget.cacheDuration) {
       return _cachedWidget!;
     }
@@ -504,7 +513,7 @@ class _CachedBuilderState extends State<_CachedBuilder> {
     // Build new widget and cache it
     _cachedWidget = widget.builder(context);
     _lastBuildTime = now;
-    
+
     return _cachedWidget!;
   }
 }
@@ -529,7 +538,7 @@ class _LazyBuilderState extends State<_LazyBuilder> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
+
     // Build on first access
     if (!_isBuilt) {
       _cachedWidget = widget.builder(context);
@@ -555,7 +564,7 @@ class GlobalStateTracker {
   /// Register a BLoC's metrics
   void registerBlocMetrics(StateMetrics metrics) {
     _blocMetrics.add(metrics);
-    
+
     // Keep only last 100 metrics
     if (_blocMetrics.length > 100) {
       _blocMetrics.removeAt(0);
@@ -564,10 +573,14 @@ class GlobalStateTracker {
 
   /// Get global performance summary
   Map<String, dynamic> getGlobalPerformanceSummary() {
-    final totalStateChanges = _blocMetrics.fold<int>(0, (sum, m) => sum + m.stateChanges);
-    final averageUpdateTime = _blocMetrics.isNotEmpty ? 
-      _blocMetrics.fold<int>(0, (sum, m) => sum + m.averageUpdateTimeMs) / _blocMetrics.length : 0;
-    final slowChangesCount = _blocMetrics.fold<int>(0, (sum, m) => sum + m.slowStateChanges.length);
+    final totalStateChanges =
+        _blocMetrics.fold<int>(0, (sum, m) => sum + m.stateChanges);
+    final averageUpdateTime = _blocMetrics.isNotEmpty
+        ? _blocMetrics.fold<int>(0, (sum, m) => sum + m.averageUpdateTimeMs) /
+            _blocMetrics.length
+        : 0;
+    final slowChangesCount =
+        _blocMetrics.fold<int>(0, (sum, m) => sum + m.slowStateChanges.length);
 
     return {
       'total_blocs': _blocMetrics.length,
@@ -582,24 +595,29 @@ class GlobalStateTracker {
   /// Get global performance recommendations
   List<String> _getGlobalRecommendations() {
     final recommendations = <String>[];
-    
+
     final summary = getGlobalPerformanceSummary();
-    
+
     if (summary['total_state_changes'] > 1000) {
-      recommendations.add('📊 High state change frequency - consider batching updates');
+      recommendations
+          .add('📊 High state change frequency - consider batching updates');
     }
-    
+
     if (summary['average_update_time_ms'] > 20) {
-      recommendations.add('⚡ High average state update time - optimize event handlers');
+      recommendations
+          .add('⚡ High average state update time - optimize event handlers');
     }
-    
+
     if (summary['total_slow_changes'] > 10) {
-      recommendations.add('🐌 Multiple slow state changes - investigate performance bottlenecks');
+      recommendations.add(
+          '🐌 Multiple slow state changes - investigate performance bottlenecks');
     }
-    
-    recommendations.add('🎯 Implement selective state subscriptions to reduce unnecessary rebuilds');
-    recommendations.add('📦 Use const constructors and static widgets where possible');
-    
+
+    recommendations.add(
+        '🎯 Implement selective state subscriptions to reduce unnecessary rebuilds');
+    recommendations
+        .add('📦 Use const constructors and static widgets where possible');
+
     return recommendations;
   }
 

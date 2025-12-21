@@ -39,21 +39,23 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin {
+class _ProfilePageState extends State<ProfilePage>
+    with TickerProviderStateMixin {
   // Animation controllers
   late AnimationController _fadeController;
   late AnimationController _slideController;
-  
+
   // Services for enhanced functionality
   final PresenceService _presenceService = PresenceService();
   final FriendshipService _friendshipService = FriendshipService();
   final ProfileService _profileService = ProfileService();
-  final AuthenticationStateService _authStateService = AuthenticationStateService();
-  
+  final AuthenticationStateService _authStateService =
+      AuthenticationStateService();
+
   // Stream for real-time presence updates
   StreamSubscription? _presenceSubscription;
   Map<String, PresenceStatus> _friendPresence = {};
-  
+
   // Registration status
   bool _isRegistered = false;
   bool _isCheckingRegistration = true;
@@ -61,7 +63,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    
+
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -73,7 +75,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
     // Check registration status first
     _checkRegistrationStatus();
-    
+
     // Listen to language changes
     context.read<LanguageProvider>().addListener(() {
       if (mounted) setState(() {});
@@ -96,10 +98,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         // Start animations for registered users
         _fadeController.forward();
         _slideController.forward();
-        
+
         // Initialize presence service
         _initializePresenceService();
-        
+
         // Initialize authentication state service
         await _authStateService.initializeAuthState();
       }
@@ -113,10 +115,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
   Future<void> _initializePresenceService() async {
     await _presenceService.initialize();
-    
+
     // Set user as online
     _presenceService.setUserOnline();
-    
+
     // Listen to friends presence if available
     _setupFriendsPresenceListener();
   }
@@ -126,7 +128,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     _friendshipService.getFriends().then((friends) {
       if (friends.isNotEmpty) {
         final friendIds = friends.map((friend) => friend.id).toList();
-        _presenceSubscription = _presenceService.listenToFriendsPresence(friendIds).listen(
+        _presenceSubscription =
+            _presenceService.listenToFriendsPresence(friendIds).listen(
           (presenceMap) {
             if (mounted) {
               setState(() {
@@ -162,19 +165,22 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
     // Show profile page for registered users
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
         leading: const HomeButton(),
         title: Consumer<LanguageProvider>(
           builder: (context, languageProvider, child) {
             return DesignSystem.semantic(
               context,
               label: 'Profil sayfası başlığı',
-              child: Text(AppLocalizations.profile, style: TextStyle(color: ThemeColors.getAppBarText(context))),
+              child: Text(AppLocalizations.profile,
+                  style: TextStyle(color: ThemeColors.getAppBarText(context))),
             );
           },
         ),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: DesignSystem.elevationS,
         iconTheme: IconThemeData(color: ThemeColors.getAppBarIcon(context)),
         actions: [
           // Change Password button
@@ -201,11 +207,73 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           ),
         ],
       ),
-      body: BlocProvider(
-        create: (context) => ProfileBloc(
-          profileService: ProfileService(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
-        child: const ProfileContent(),
+        child: SafeArea(
+          child: Center(
+            child: Scrollbar(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: ThemeColors.getContainerBackground(context),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: ThemeColors.getShadow(context),
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Icon(
+                              Icons.person,
+                              size: 60,
+                              color: const Color(0xFF4CAF50),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Profil Bilgileri',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: ThemeColors.getTitleText(context),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            BlocProvider(
+                              create: (context) => ProfileBloc(
+                                profileService: ProfileService(),
+                              ),
+                              child: const ProfileContent(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -226,7 +294,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     _sendPasswordResetCode(context, user.email!);
   }
 
-  Future<void> _sendPasswordResetCode(BuildContext context, String email) async {
+  Future<void> _sendPasswordResetCode(
+      BuildContext context, String email) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -330,7 +399,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         return DesignSystem.semantic(
           context,
           label: 'Çıkış onay dialog',
-          hint: 'Çıkış yapmak istediğinizi onaylamanız gerektiğini belirten dialog',
+          hint:
+              'Çıkış yapmak istediğinizi onaylamanız gerektiğini belirten dialog',
           child: AlertDialog(
             title: DesignSystem.semantic(
               context,
@@ -340,7 +410,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             content: DesignSystem.semantic(
               context,
               label: 'Dialog içeriği',
-              child: const Text('Hesabınızdan çıkış yapmak istediğinizden emin misiniz?'),
+              child: const Text(
+                  'Hesabınızdan çıkış yapmak istediğinizden emin misiniz?'),
             ),
             actions: [
               TextButton(
@@ -353,7 +424,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                   await _logout(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: ThemeColors.getLogoutButtonBackground(context),
+                  backgroundColor:
+                      ThemeColors.getLogoutButtonBackground(context),
                   foregroundColor: Colors.white,
                 ),
                 child: const Text('Çıkış Yap'),
@@ -479,7 +551,7 @@ class _ProfileContentState extends State<ProfileContent> {
                   parent: ModalRoute.of(context)!.animation!,
                   curve: Curves.easeOut,
                 )),
-                child: const _BiometricSettingsSection(),
+                // Biyometrik ayarları ayarlar sayfasına taşındı
               ),
             ),
             SliverToBoxAdapter(
@@ -491,10 +563,12 @@ class _ProfileContentState extends State<ProfileContent> {
                   parent: ModalRoute.of(context)!.animation!,
                   curve: Curves.easeOut,
                 )),
-                child: _GameHistoryList(games: state.profileData.localData.recentGames),
+                child: _GameHistoryList(
+                    games: state.profileData.localData.recentGames),
               ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: DesignSystem.spacingL)),
+            const SliverToBoxAdapter(
+                child: SizedBox(height: DesignSystem.spacingL)),
           ],
         ),
       ),
@@ -517,7 +591,7 @@ class _LoadingState extends StatelessWidget {
       ),
       child: Center(
         child: DesignSystem.loadingIndicator(
-          context, 
+          context,
           message: 'Profil yükleniyor...',
         ),
       ),
@@ -572,14 +646,17 @@ class _IdentityCard extends StatelessWidget {
               showDialog(
                 context: context,
                 builder: (context) => ProfilePictureChangeDialog(
-                  currentProfilePictureUrl: profileData.serverData?.profilePictureUrl,
+                  currentProfilePictureUrl:
+                      profileData.serverData?.profilePictureUrl,
                   onProfilePictureUpdated: (imageUrl) {
                     // Image cache'i temizle
                     imageCache.clearLiveImages();
                     imageCache.clear();
                     imageCache.clearLiveImages();
                     // Profil resmini hemen güncelle
-                    context.read<ProfileBloc>().add(UpdateProfilePicture(imageUrl));
+                    context
+                        .read<ProfileBloc>()
+                        .add(UpdateProfilePicture(imageUrl));
                     // Backend'i de senkronize et (arka planda)
                     context.read<ProfileBloc>().add(RefreshServerData());
                   },
@@ -602,19 +679,29 @@ class _IdentityCard extends StatelessWidget {
                   ),
                   child: CircleAvatar(
                     radius: 56,
-                    backgroundColor: ThemeColors.getCardBackgroundLight(context),
-                    backgroundImage: profileData.serverData?.profilePictureUrl != null && profileData.serverData!.profilePictureUrl!.isNotEmpty
-                        ? NetworkImage(profileData.serverData!.profilePictureUrl!)
-                        : null,
-                    onBackgroundImageError: profileData.serverData?.profilePictureUrl != null 
-                        ? (exception, stackTrace) {
-                            if (kDebugMode) {
-                              print('❌ Failed to load profile picture: $exception');
-                            }
-                          }
-                        : null,
-                    child: (profileData.serverData?.profilePictureUrl == null || profileData.serverData!.profilePictureUrl!.isEmpty)
-                        ? Icon(Icons.person, size: 56, color: ThemeColors.getSecondaryText(context))
+                    backgroundColor:
+                        ThemeColors.getCardBackgroundLight(context),
+                    backgroundImage:
+                        profileData.serverData?.profilePictureUrl != null &&
+                                profileData
+                                    .serverData!.profilePictureUrl!.isNotEmpty
+                            ? NetworkImage(
+                                profileData.serverData!.profilePictureUrl!)
+                            : null,
+                    onBackgroundImageError:
+                        profileData.serverData?.profilePictureUrl != null
+                            ? (exception, stackTrace) {
+                                if (kDebugMode) {
+                                  print(
+                                      '❌ Failed to load profile picture: $exception');
+                                }
+                              }
+                            : null,
+                    child: (profileData.serverData?.profilePictureUrl == null ||
+                            profileData.serverData!.profilePictureUrl!.isEmpty)
+                        ? Icon(Icons.person,
+                            size: 56,
+                            color: ThemeColors.getSecondaryText(context))
                         : null,
                   ),
                 ),
@@ -640,7 +727,8 @@ class _IdentityCard extends StatelessWidget {
                   bottom: 0,
                   right: 0,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: ThemeColors.getPrimaryButtonColor(context),
                       borderRadius: BorderRadius.circular(12),
@@ -659,7 +747,7 @@ class _IdentityCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: DesignSystem.spacingL),
-          
+
           // Nickname
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 500),
@@ -667,10 +755,12 @@ class _IdentityCard extends StatelessWidget {
               profileData.serverData?.nickname ?? 'Yükleniyor...',
               key: ValueKey(profileData.serverData?.nickname),
               style: AppTheme.getGameTitleStyle(context),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           const SizedBox(height: DesignSystem.spacingS),
-          
+
           // UID with copy button
           if (profileData.serverData?.uid != null)
             CopyToClipboardWidget(
@@ -685,6 +775,8 @@ class _IdentityCard extends StatelessWidget {
                       color: ThemeColors.getStatsCardText(context),
                       fontFamily: 'monospace',
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -696,16 +788,17 @@ class _IdentityCard extends StatelessWidget {
                 color: ThemeColors.getStatsCardText(context),
               ),
             ),
-          
+
           const SizedBox(height: DesignSystem.spacingM),
-          
+
           // Last Login
           if (profileData.serverData?.lastLogin != null)
             Text(
               'Son giriş: ${_formatDate(profileData.serverData!.lastLogin!)}',
-              style: Theme.of(context).textTheme.bodySmall ?? TextStyle().copyWith(
-                color: ThemeColors.getStatsCardText(context),
-              ),
+              style: Theme.of(context).textTheme.bodySmall ??
+                  TextStyle().copyWith(
+                    color: ThemeColors.getStatsCardText(context),
+                  ),
             ),
         ],
       ),
@@ -715,7 +808,7 @@ class _IdentityCard extends StatelessWidget {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
-    
+
     if (difference.inMinutes < 1) {
       return 'Az önce';
     } else if (difference.inHours < 1) {
@@ -822,10 +915,11 @@ class _StatisticsCards extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall ?? TextStyle().copyWith(
-                color: ThemeColors.getStatsCardText(context),
-                fontWeight: FontWeight.w500,
-              ),
+              style: Theme.of(context).textTheme.bodySmall ??
+                  TextStyle().copyWith(
+                    color: ThemeColors.getStatsCardText(context),
+                    fontWeight: FontWeight.w500,
+                  ),
             ),
           ],
         ),
@@ -880,7 +974,8 @@ class _GameHistoryList extends StatelessWidget {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: games.length,
-        separatorBuilder: (context, index) => DesignSystem.modernDivider(context),
+        separatorBuilder: (context, index) =>
+            DesignSystem.modernDivider(context),
         itemBuilder: (context, index) {
           final game = games[index];
           return _buildGameItem(context, game);
@@ -896,7 +991,9 @@ class _GameHistoryList extends StatelessWidget {
         height: 40,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: game.isWin ? ThemeColors.getSuccessColor(context) : ThemeColors.getErrorColor(context),
+          color: game.isWin
+              ? ThemeColors.getSuccessColor(context)
+              : ThemeColors.getErrorColor(context),
         ),
         child: Icon(
           game.isWin ? Icons.check : Icons.close,
@@ -910,14 +1007,15 @@ class _GameHistoryList extends StatelessWidget {
       ),
       subtitle: Text(
         '${_formatGameDate(game.playedAt)} • ${_getGameTypeText(game.gameType)}',
-        style: Theme.of(context).textTheme.bodySmall ?? TextStyle().copyWith(
-          color: ThemeColors.getStatsCardText(context),
-        ),
+        style: Theme.of(context).textTheme.bodySmall ??
+            TextStyle().copyWith(
+              color: ThemeColors.getStatsCardText(context),
+            ),
       ),
       trailing: DesignSystem.modernChip(
         context,
         label: game.isWin ? 'Kazandın' : 'Kaybettin',
-        backgroundColor: game.isWin 
+        backgroundColor: game.isWin
             ? ThemeColors.getSuccessColor(context).withValues(alpha: 0.1)
             : ThemeColors.getErrorColor(context).withValues(alpha: 0.1),
         isSelected: true,
@@ -928,7 +1026,7 @@ class _GameHistoryList extends StatelessWidget {
   String _formatGameDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
-    
+
     if (difference.inMinutes < 1) {
       return 'Az önce';
     } else if (difference.inHours < 1) {
@@ -955,7 +1053,8 @@ class _BiometricSettingsSection extends StatefulWidget {
   const _BiometricSettingsSection();
 
   @override
-  State<_BiometricSettingsSection> createState() => _BiometricSettingsSectionState();
+  State<_BiometricSettingsSection> createState() =>
+      _BiometricSettingsSectionState();
 }
 
 class _BiometricSettingsSectionState extends State<_BiometricSettingsSection> {
@@ -991,12 +1090,12 @@ class _BiometricSettingsSectionState extends State<_BiometricSettingsSection> {
 
     try {
       final success = await BiometricUserService.disableBiometric();
-      
+
       if (success) {
         setState(() {
           _isBiometricEnabled = false;
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Biyometrik giriş devre dışı bırakıldı'),
@@ -1035,23 +1134,25 @@ class _BiometricSettingsSectionState extends State<_BiometricSettingsSection> {
     try {
       // Biyometrik kimlik doğrulama iste
       final authenticated = await BiometricService.authenticate(
-        localizedReason: 'Biyometrik giriş etkinleştirmek için kimlik doğrulama gerekli',
+        localizedReason:
+            'Biyometrik giriş etkinleştirmek için kimlik doğrulama gerekli',
         useErrorDialogs: true,
       );
 
       if (authenticated) {
         // Kurulumu kaydet
         final success = await BiometricUserService.saveBiometricSetup();
-        
+
         if (success) {
           if (mounted) {
             setState(() {
               _isBiometricEnabled = true;
             });
-            
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: const Text('Biyometrik giriş başarıyla etkinleştirildi'),
+                content:
+                    const Text('Biyometrik giriş başarıyla etkinleştirildi'),
                 backgroundColor: ThemeColors.getSuccessColor(context),
               ),
             );
@@ -1122,10 +1223,11 @@ class _BiometricSettingsSectionState extends State<_BiometricSettingsSection> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              _isBiometricEnabled 
+                              _isBiometricEnabled
                                   ? 'Biyometrik kimlik doğrulama etkin'
                                   : 'Biyometrik kimlik doğrulama devre dışı',
-                              style: DesignSystem.getBodyMedium(context).copyWith(
+                              style:
+                                  DesignSystem.getBodyMedium(context).copyWith(
                                 color: ThemeColors.getSecondaryText(context),
                               ),
                             ),
@@ -1134,15 +1236,17 @@ class _BiometricSettingsSectionState extends State<_BiometricSettingsSection> {
                       ),
                       Switch(
                         value: _isBiometricEnabled,
-                        onChanged: _isLoading ? null : (value) {
-                          if (value) {
-                            // Biyometriyi etkinleştir
-                            _enableBiometric();
-                          } else {
-                            // Biyometriyi devre dışı bırak
-                            _disableBiometric();
-                          }
-                        },
+                        onChanged: _isLoading
+                            ? null
+                            : (value) {
+                                if (value) {
+                                  // Biyometriyi etkinleştir
+                                  _enableBiometric();
+                                } else {
+                                  // Biyometriyi devre dışı bırak
+                                  _disableBiometric();
+                                }
+                              },
                         activeThumbColor: ThemeColors.getGreen(context),
                       ),
                     ],
@@ -1154,22 +1258,28 @@ class _BiometricSettingsSectionState extends State<_BiometricSettingsSection> {
                     Container(
                       padding: const EdgeInsets.all(DesignSystem.spacingM),
                       decoration: BoxDecoration(
-                        color: ThemeColors.getInfoColor(context).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(DesignSystem.radiusS),
+                        color: ThemeColors.getInfoColor(context)
+                            .withValues(alpha: 0.1),
+                        borderRadius:
+                            BorderRadius.circular(DesignSystem.radiusS),
                         border: Border.all(
-                          color: ThemeColors.getInfoColor(context).withValues(alpha: 0.3),
+                          color: ThemeColors.getInfoColor(context)
+                              .withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.info, color: ThemeColors.getInfoColor(context), size: 20),
+                          Icon(Icons.info,
+                              color: ThemeColors.getInfoColor(context),
+                              size: 20),
                           const SizedBox(width: DesignSystem.spacingS),
                           Expanded(
                             child: Text(
                               'Giriş yaparken biyometrik kimlik doğrulama seçeneği görünecektir.',
-                              style: Theme.of(context).textTheme.bodySmall ?? TextStyle().copyWith(
-                                color: ThemeColors.getInfoColor(context),
-                              ),
+                              style: Theme.of(context).textTheme.bodySmall ??
+                                  TextStyle().copyWith(
+                                    color: ThemeColors.getInfoColor(context),
+                                  ),
                             ),
                           ),
                         ],
@@ -1222,7 +1332,8 @@ class _UnregisteredUserScreen extends StatelessWidget {
             return DesignSystem.semantic(
               context,
               label: 'Profil sayfası başlığı',
-              child: Text(AppLocalizations.profile, style: TextStyle(color: ThemeColors.getAppBarText(context))),
+              child: Text(AppLocalizations.profile,
+                  style: TextStyle(color: ThemeColors.getAppBarText(context))),
             );
           },
         ),
@@ -1271,7 +1382,8 @@ class _UnregisteredUserScreen extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (context) => const RegisterPage()),
+                          MaterialPageRoute(
+                              builder: (context) => const RegisterPage()),
                           (route) => false,
                         );
                       },

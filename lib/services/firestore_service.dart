@@ -16,7 +16,7 @@ class FirestoreService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Collections with UID Centrality (Specification I.2)
-  // Legacy collection name for backward compatibility - now uses UID as document ID 
+  // Legacy collection name for backward compatibility - now uses UID as document ID
   static const String _roomsCollection = 'game_rooms';
 
   /// Yeni bir kullanıcının skorunu Firestore'a kaydeder.
@@ -27,10 +27,11 @@ class FirestoreService {
     try {
       await _db.collection(_usersCollection).doc().set({
         'nickname': nickname, // Oyuncu takma adı
-        'score': score,       // Oyun sonu skoru
+        'score': score, // Oyun sonu skoru
         'timestamp': FieldValue.serverTimestamp(), // Kayıt zamanı
       });
-      if (kDebugMode) debugPrint('Başarılı: Skor $nickname için kaydedildi: $score');
+      if (kDebugMode)
+        debugPrint('Başarılı: Skor $nickname için kaydedildi: $score');
       return 'Skor kaydedildi.';
     } catch (e) {
       if (kDebugMode) debugPrint('HATA: Skor kaydederken hata oluştu: $e');
@@ -49,9 +50,9 @@ class FirestoreService {
 
       // Dokümanlardan veri haritalarını listeye dönüştür.
       return querySnapshot.docs.map((doc) => doc.data()).toList();
-
     } catch (e) {
-      if (kDebugMode) debugPrint('HATA: Liderlik tablosu getirilirken hata oluştu: $e');
+      if (kDebugMode)
+        debugPrint('HATA: Liderlik tablosu getirilirken hata oluştu: $e');
       return [];
     }
   }
@@ -59,17 +60,20 @@ class FirestoreService {
   // Multiplayer Methods
 
   /// Yeni bir oyun odası oluşturur
-  Future<GameRoom?> createRoom(String hostId, String hostNickname, List<Map<String, dynamic>> boardTiles, {String? customRoomCode, String? customAccessCode}) async {
+  Future<GameRoom?> createRoom(
+      String hostId, String hostNickname, List<Map<String, dynamic>> boardTiles,
+      {String? customRoomCode, String? customAccessCode}) async {
     try {
-      if (kDebugMode) debugPrint('Creating room for host: $hostNickname ($hostId)');
-      
+      if (kDebugMode)
+        debugPrint('Creating room for host: $hostNickname ($hostId)');
+
       final roomId = _db.collection(_roomsCollection).doc().id;
       if (kDebugMode) debugPrint('Generated room ID: $roomId');
-      
+
       // Generate room codes if not provided
       final String roomCode = customRoomCode ?? await _generateUniqueRoomCode();
       final String accessCode = customAccessCode ?? _generateAccessCode();
-      
+
       final room = GameRoom(
         id: roomId,
         hostId: hostId,
@@ -85,7 +89,8 @@ class FirestoreService {
       if (kDebugMode) debugPrint('Room data to save: ${roomData.toString()}');
 
       await _db.collection(_roomsCollection).doc(roomId).set(roomData);
-      if (kDebugMode) debugPrint('✅ Room created successfully: $roomId with code: $roomCode');
+      if (kDebugMode)
+        debugPrint('✅ Room created successfully: $roomId with code: $roomCode');
       return room;
     } catch (e, stackTrace) {
       if (kDebugMode) {
@@ -99,8 +104,10 @@ class FirestoreService {
   /// Bir odaya katılır
   Future<bool> joinRoom(String roomId, MultiplayerPlayer player) async {
     try {
-      if (kDebugMode) debugPrint('Attempting to join room: $roomId with player: ${player.nickname}');
-      
+      if (kDebugMode)
+        debugPrint(
+            'Attempting to join room: $roomId with player: ${player.nickname}');
+
       final roomRef = _db.collection(_roomsCollection).doc(roomId);
       final roomDoc = await roomRef.get();
 
@@ -111,10 +118,11 @@ class FirestoreService {
 
       final roomData = roomDoc.data()!;
       if (kDebugMode) debugPrint('Room data found: ${roomData.toString()}');
-      
+
       final players = (roomData['players'] as List<dynamic>?)
-          ?.map((p) => MultiplayerPlayer.fromMap(p as Map<String, dynamic>))
-          .toList() ?? [];
+              ?.map((p) => MultiplayerPlayer.fromMap(p as Map<String, dynamic>))
+              .toList() ??
+          [];
 
       if (kDebugMode) debugPrint('Current players in room: ${players.length}');
 
@@ -126,18 +134,23 @@ class FirestoreService {
 
       // Maksimum oyuncu sayısı kontrolü (örneğin 4)
       if (players.length >= 4) {
-        if (kDebugMode) debugPrint('❌ Room is full (${players.length}/4 players)');
+        if (kDebugMode)
+          debugPrint('❌ Room is full (${players.length}/4 players)');
         return false;
       }
 
       players.add(player);
       final updatedPlayers = players.map((p) => p.toMap()).toList();
-      
-      if (kDebugMode) debugPrint('Adding player to room. Updated player count: ${players.length}');
-      
+
+      if (kDebugMode)
+        debugPrint(
+            'Adding player to room. Updated player count: ${players.length}');
+
       await roomRef.update({'players': updatedPlayers});
 
-      if (kDebugMode) debugPrint('✅ Player ${player.nickname} joined room $roomId successfully');
+      if (kDebugMode)
+        debugPrint(
+            '✅ Player ${player.nickname} joined room $roomId successfully');
       return true;
     } catch (e, stackTrace) {
       if (kDebugMode) {
@@ -163,7 +176,8 @@ class FirestoreService {
   }
 
   /// Oyuncu hazır durumunu günceller
-  Future<bool> updatePlayerReady(String roomId, String playerId, bool isReady) async {
+  Future<bool> updatePlayerReady(
+      String roomId, String playerId, bool isReady) async {
     try {
       final roomRef = _db.collection(_roomsCollection).doc(roomId);
       final roomDoc = await roomRef.get();
@@ -183,22 +197,27 @@ class FirestoreService {
 
       return true;
     } catch (e) {
-      if (kDebugMode) debugPrint('HATA: Oyuncu hazır durumu güncellenirken hata: $e');
+      if (kDebugMode)
+        debugPrint('HATA: Oyuncu hazır durumu güncellenirken hata: $e');
       return false;
     }
   }
 
   /// Oyun durumunu günceller
-  Future<bool> updateGameState(String roomId, {
+  Future<bool> updateGameState(
+    String roomId, {
     int? currentPlayerIndex,
     int? timeElapsedInSeconds,
     List<MultiplayerPlayer>? players,
   }) async {
     try {
       final updates = <String, dynamic>{};
-      if (currentPlayerIndex != null) updates['currentPlayerIndex'] = currentPlayerIndex;
-      if (timeElapsedInSeconds != null) updates['timeElapsedInSeconds'] = timeElapsedInSeconds;
-      if (players != null) updates['players'] = players.map((p) => p.toMap()).toList();
+      if (currentPlayerIndex != null)
+        updates['currentPlayerIndex'] = currentPlayerIndex;
+      if (timeElapsedInSeconds != null)
+        updates['timeElapsedInSeconds'] = timeElapsedInSeconds;
+      if (players != null)
+        updates['players'] = players.map((p) => p.toMap()).toList();
 
       if (updates.isNotEmpty) {
         await _db.collection(_roomsCollection).doc(roomId).update(updates);
@@ -244,7 +263,8 @@ class FirestoreService {
         await roomRef.delete();
         if (kDebugMode) debugPrint('Oda silindi: $roomId');
       } else {
-        await roomRef.update({'players': players.map((p) => p.toMap()).toList()});
+        await roomRef
+            .update({'players': players.map((p) => p.toMap()).toList()});
         if (kDebugMode) debugPrint('Oyuncu odadan ayrıldı: $playerId');
       }
 
@@ -270,7 +290,8 @@ class FirestoreService {
     try {
       final querySnapshot = await _db
           .collection(_roomsCollection)
-          .where('status', isEqualTo: GameStatus.waiting.toString().split('.').last)
+          .where('status',
+              isEqualTo: GameStatus.waiting.toString().split('.').last)
           .where('isActive', isEqualTo: true)
           .orderBy('createdAt', descending: true)
           .limit(20)
@@ -299,16 +320,19 @@ class FirestoreService {
       }
       return null;
     } catch (e) {
-      if (kDebugMode) debugPrint('HATA: Oda koduna göre arama yapılırken hata: $e');
+      if (kDebugMode)
+        debugPrint('HATA: Oda koduna göre arama yapılırken hata: $e');
       return null;
     }
   }
 
   /// Erişim koduna göre odaya katılır
-  Future<GameRoom?> joinRoomByAccessCode(String accessCode, MultiplayerPlayer player) async {
+  Future<GameRoom?> joinRoomByAccessCode(
+      String accessCode, MultiplayerPlayer player) async {
     try {
-      if (kDebugMode) debugPrint('Attempting to join room with access code: $accessCode');
-      
+      if (kDebugMode)
+        debugPrint('Attempting to join room with access code: $accessCode');
+
       final querySnapshot = await _db
           .collection(_roomsCollection)
           .where('accessCode', isEqualTo: accessCode)
@@ -316,19 +340,21 @@ class FirestoreService {
           .get();
 
       if (querySnapshot.docs.isEmpty) {
-        if (kDebugMode) debugPrint('❌ No room found with access code: $accessCode');
+        if (kDebugMode)
+          debugPrint('❌ No room found with access code: $accessCode');
         return null;
       }
 
       final roomDoc = querySnapshot.docs.first;
       final roomData = roomDoc.data();
-      
+
       if (kDebugMode) debugPrint('Room found with access code, joining...');
-      
+
       // Oyuncu zaten odada mı kontrol et
       final players = (roomData['players'] as List<dynamic>?)
-          ?.map((p) => MultiplayerPlayer.fromMap(p as Map<String, dynamic>))
-          .toList() ?? [];
+              ?.map((p) => MultiplayerPlayer.fromMap(p as Map<String, dynamic>))
+              .toList() ??
+          [];
 
       if (players.any((p) => p.id == player.id)) {
         if (kDebugMode) debugPrint('✅ Player already in room');
@@ -337,13 +363,14 @@ class FirestoreService {
 
       // Maksimum oyuncu sayısı kontrolü
       if (players.length >= 4) {
-        if (kDebugMode) debugPrint('❌ Room is full (${players.length}/4 players)');
+        if (kDebugMode)
+          debugPrint('❌ Room is full (${players.length}/4 players)');
         return null;
       }
 
       players.add(player);
       final updatedPlayers = players.map((p) => p.toMap()).toList();
-      
+
       await roomDoc.reference.update({'players': updatedPlayers});
 
       if (kDebugMode) debugPrint('✅ Player joined room successfully');
@@ -380,18 +407,18 @@ class FirestoreService {
   Future<String> _generateUniqueRoomCode() async {
     int attempts = 0;
     const maxAttempts = 100;
-    
+
     while (attempts < maxAttempts) {
       final code = RoomCodeGenerator.generateRoomCode();
       final existingRoom = await findRoomByCode(code);
-      
+
       if (existingRoom == null) {
         return code;
       }
-      
+
       attempts++;
     }
-    
+
     // Fallback: use timestamp-based code
     return DateTime.now().millisecondsSinceEpoch.toString().substring(0, 4);
   }
@@ -402,13 +429,13 @@ class FirestoreService {
   }
 
   // === IDENTITY MANAGEMENT AND DATA INTEGRITY (Specification I.1-I.4) ===
-  
+
   /// Get current authenticated user ID (Specification I.1)
   String? get currentUserId => _auth.currentUser?.uid;
-  
+
   /// Get current authenticated user (Specification I.1)
   User? get currentUser => _auth.currentUser;
-  
+
   /// Check if user is currently authenticated (Specification I.1)
   bool get isUserAuthenticated => _auth.currentUser != null;
 
@@ -429,14 +456,15 @@ class FirestoreService {
 
       // Specification I.1: Always use Auth UID as document ID
       final userDocRef = _db.collection(_usersCollection).doc(user.uid);
-      
+
       // Check if user profile already exists
       final existingDoc = await userDocRef.get();
-      
+
       // Validate nickname (Specification I.4)
       final validation = NicknameValidator.validate(nickname);
       if (!validation.isValid) {
-        if (kDebugMode) debugPrint('❌ Nickname validation failed: ${validation.error}');
+        if (kDebugMode)
+          debugPrint('❌ Nickname validation failed: ${validation.error}');
         return null;
       }
 
@@ -453,11 +481,12 @@ class FirestoreService {
       );
 
       await userDocRef.set(userData.toMap(), SetOptions(merge: true));
-      
+
       if (kDebugMode) {
-        debugPrint('✅ User profile created/updated with UID centrality: ${user.uid}');
+        debugPrint(
+            '✅ User profile created/updated with UID centrality: ${user.uid}');
       }
-      
+
       return userData;
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 Error creating/updating user profile: $e');
@@ -483,7 +512,8 @@ class FirestoreService {
       final userData = UserData.fromMap(userDoc.data()!, userDoc.id);
 
       if (kDebugMode) {
-        debugPrint('✅ User profile retrieved with UID centrality: ${userData.nickname}');
+        debugPrint(
+            '✅ User profile retrieved with UID centrality: ${userData.nickname}');
       }
 
       return userData;
@@ -502,7 +532,8 @@ class FirestoreService {
       // Validate nickname (Specification I.4)
       final validation = NicknameValidator.validate(newNickname);
       if (!validation.isValid) {
-        if (kDebugMode) debugPrint('❌ Nickname validation failed: ${validation.error}');
+        if (kDebugMode)
+          debugPrint('❌ Nickname validation failed: ${validation.error}');
         return false;
       }
 
@@ -553,7 +584,8 @@ class FirestoreService {
 
   /// Search users by nickname (Specification I.3)
   /// Returns user data while respecting privacy settings
-  Future<List<UserData>> searchUsersByNickname(String query, {int limit = 10}) async {
+  Future<List<UserData>> searchUsersByNickname(String query,
+      {int limit = 10}) async {
     try {
       final currentUser = _auth.currentUser;
       if (currentUser == null) return [];
@@ -570,16 +602,17 @@ class FirestoreService {
       for (final doc in querySnapshot.docs) {
         try {
           final userData = UserData.fromMap(doc.data(), doc.id);
-          
+
           // Skip current user
           if (userData.uid == currentUser.uid) continue;
-          
+
           // Respect privacy settings (Specification II.3)
           if (!userData.privacySettings.allowSearchByNickname) continue;
-          
+
           results.add(userData);
         } catch (e) {
-          if (kDebugMode) debugPrint('⚠️ Error parsing user data for UID: ${doc.id}');
+          if (kDebugMode)
+            debugPrint('⚠️ Error parsing user data for UID: ${doc.id}');
           continue;
         }
       }
@@ -608,7 +641,8 @@ class FirestoreService {
 
       // Check privacy settings
       if (!targetUser.privacySettings.allowFriendRequests) {
-        if (kDebugMode) debugPrint('❌ Target user does not allow friend requests');
+        if (kDebugMode)
+          debugPrint('❌ Target user does not allow friend requests');
         return false;
       }
 
@@ -628,7 +662,8 @@ class FirestoreService {
 
       return true;
     } catch (e) {
-      if (kDebugMode) debugPrint('🚨 Error checking friend request eligibility: $e');
+      if (kDebugMode)
+        debugPrint('🚨 Error checking friend request eligibility: $e');
       return false;
     }
   }
@@ -657,7 +692,7 @@ class FirestoreService {
   Future<bool> isNicknameAvailable(String nickname) async {
     try {
       final currentUser = _auth.currentUser;
-      
+
       // Reduced timeout for better UX
       final querySnapshot = await _db
           .collection(_usersCollection)
@@ -676,15 +711,18 @@ class FirestoreService {
       for (final doc in querySnapshot.docs) {
         try {
           final userData = UserData.fromMap(doc.data(), doc.id);
-          
+
           // If this is the current user, nickname is still "available" for them
           if (currentUser != null && userData.uid == currentUser.uid) {
-            if (kDebugMode) debugPrint('✅ Nickname "$nickname" belongs to current user');
+            if (kDebugMode)
+              debugPrint('✅ Nickname "$nickname" belongs to current user');
             return true;
           }
         } catch (parseError) {
           // Skip documents that can't be parsed
-          if (kDebugMode) debugPrint('⚠️ Skipping invalid document during nickname check: $parseError');
+          if (kDebugMode)
+            debugPrint(
+                '⚠️ Skipping invalid document during nickname check: $parseError');
           continue;
         }
       }
@@ -694,8 +732,10 @@ class FirestoreService {
     } catch (e) {
       if (kDebugMode) {
         debugPrint('🚨 Error checking nickname availability: $e');
-        if (e.toString().contains('network') || e.toString().contains('timeout')) {
-          debugPrint('⚠️ Network error during nickname check - allowing operation');
+        if (e.toString().contains('network') ||
+            e.toString().contains('timeout')) {
+          debugPrint(
+              '⚠️ Network error during nickname check - allowing operation');
         }
       }
       return true; // Fail open - allow the operation to continue
@@ -713,22 +753,23 @@ class FirestoreService {
         try {
           // Check if this UID corresponds to an actual Auth user
           final userData = UserData.fromMap(doc.data(), doc.id);
-          
+
           // This is a simple check - in production, you'd want to verify against Auth
           if (userData.uid != doc.id) {
             // Data integrity issue - document ID doesn't match stored UID
             await doc.reference.delete();
             cleanedCount++;
-            
+
             if (kDebugMode) {
-              debugPrint('🧹 Cleaned invalid user data with UID: ${userData.uid}');
+              debugPrint(
+                  '🧹 Cleaned invalid user data with UID: ${userData.uid}');
             }
           }
         } catch (e) {
           // Invalid data format - clean it up
           await doc.reference.delete();
           cleanedCount++;
-          
+
           if (kDebugMode) {
             debugPrint('🧹 Cleaned malformed user data: ${doc.id}');
           }
@@ -736,7 +777,8 @@ class FirestoreService {
       }
 
       if (kDebugMode) {
-        debugPrint('✅ Cleanup completed: $cleanedCount invalid records removed');
+        debugPrint(
+            '✅ Cleanup completed: $cleanedCount invalid records removed');
       }
 
       return cleanedCount;
@@ -753,7 +795,8 @@ class FirestoreService {
   static const String _notificationsCollection = 'notifications';
 
   /// Arkadaşlık isteği gönder
-  Future<bool> sendFriendRequest(String fromUserId, String fromNickname, String toUserId, String toNickname) async {
+  Future<bool> sendFriendRequest(String fromUserId, String fromNickname,
+      String toUserId, String toNickname) async {
     try {
       final requestId = _db.collection(_friendRequestsCollection).doc().id;
       final request = FriendRequest(
@@ -765,26 +808,36 @@ class FirestoreService {
         createdAt: DateTime.now(),
       );
 
-      await _db.collection(_friendRequestsCollection).doc(requestId).set(request.toMap());
-      
+      await _db
+          .collection(_friendRequestsCollection)
+          .doc(requestId)
+          .set(request.toMap());
+
       // Send notification to recipient about new friend request
       try {
-        await _createFriendRequestNotification(toUserId, fromUserId, fromNickname);
+        await _createFriendRequestNotification(
+            toUserId, fromUserId, fromNickname);
       } catch (notificationError) {
-        if (kDebugMode) debugPrint('⚠️ Bildirim gönderilemedi ama istek başarıyla oluşturuldu: $notificationError');
+        if (kDebugMode)
+          debugPrint(
+              '⚠️ Bildirim gönderilemedi ama istek başarıyla oluşturuldu: $notificationError');
         // Don't fail the entire operation if notification fails
       }
-      
-      if (kDebugMode) debugPrint('Arkadaşlık isteği gönderildi: $fromNickname -> $toNickname');
+
+      if (kDebugMode)
+        debugPrint(
+            'Arkadaşlık isteği gönderildi: $fromNickname -> $toNickname');
       return true;
     } catch (e) {
-      if (kDebugMode) debugPrint('HATA: Arkadaşlık isteği gönderilirken hata: $e');
+      if (kDebugMode)
+        debugPrint('HATA: Arkadaşlık isteği gönderilirken hata: $e');
       return false;
     }
   }
 
   /// Create friend request notification
-  Future<void> _createFriendRequestNotification(String recipientId, String fromUserId, String fromNickname) async {
+  Future<void> _createFriendRequestNotification(
+      String recipientId, String fromUserId, String fromNickname) async {
     final notificationDoc = _db
         .collection(_notificationsCollection)
         .doc(recipientId)
@@ -817,7 +870,8 @@ class FirestoreService {
   /// 4. Gönderene bildirim gönder
   Future<bool> acceptFriendRequest(String requestId, String recipientId) async {
     try {
-      final requestRef = _db.collection(_friendRequestsCollection).doc(requestId);
+      final requestRef =
+          _db.collection(_friendRequestsCollection).doc(requestId);
       final requestDoc = await requestRef.get();
 
       // Adım 1: İstek Durumunun Kontrolü
@@ -830,7 +884,9 @@ class FirestoreService {
 
       // İsteği kabul eden kişi gerçekten alıcı mı kontrol et
       if (request.toUserId != recipientId) {
-        if (kDebugMode) debugPrint('Yetkisiz işlem denemesi: $recipientId, istek alıcısı: ${request.toUserId}');
+        if (kDebugMode)
+          debugPrint(
+              'Yetkisiz işlem denemesi: $recipientId, istek alıcısı: ${request.toUserId}');
         return false;
       }
 
@@ -852,7 +908,7 @@ class FirestoreService {
           .doc(recipientId)
           .collection('friends')
           .doc(request.fromUserId);
-      
+
       batch.set(recipientFriendDoc, {
         'uid': request.fromUserId,
         'nickname': request.fromNickname,
@@ -865,7 +921,7 @@ class FirestoreService {
           .doc(request.fromUserId)
           .collection('friends')
           .doc(recipientId);
-      
+
       batch.set(senderFriendDoc, {
         'uid': recipientId,
         'nickname': request.toNickname,
@@ -895,19 +951,22 @@ class FirestoreService {
           acceptedByUserId: recipientId,
         );
       } catch (e) {
-        if (kDebugMode) debugPrint('⚠️ Push notification failed but operation succeeded: $e');
+        if (kDebugMode)
+          debugPrint('⚠️ Push notification failed but operation succeeded: $e');
       }
 
       // Tüm işlemleri atomik olarak commit et
       await batch.commit();
 
       if (kDebugMode) {
-        debugPrint('✅ Arkadaşlık isteği atomik olarak kabul edildi: ${request.fromNickname} -> ${request.toNickname}');
+        debugPrint(
+            '✅ Arkadaşlık isteği atomik olarak kabul edildi: ${request.fromNickname} -> ${request.toNickname}');
       }
       return true;
-
     } catch (e) {
-      if (kDebugMode) debugPrint('🚨 HATA: Arkadaşlık isteği kabul edilirken kritik hata: $e');
+      if (kDebugMode)
+        debugPrint(
+            '🚨 HATA: Arkadaşlık isteği kabul edilirken kritik hata: $e');
       return false;
     }
   }
@@ -917,12 +976,13 @@ class FirestoreService {
   /// 1. İstek belgesini sil
   /// 2. Opsiyonel: Gönderene bildirim gönder
   Future<bool> rejectFriendRequest(
-    String requestId, 
+    String requestId,
     String recipientId, {
     bool sendNotification = true,
   }) async {
     try {
-      final requestRef = _db.collection(_friendRequestsCollection).doc(requestId);
+      final requestRef =
+          _db.collection(_friendRequestsCollection).doc(requestId);
       final requestDoc = await requestRef.get();
 
       if (!requestDoc.exists) {
@@ -934,7 +994,9 @@ class FirestoreService {
 
       // İsteği reddeden kişi gerçekten alıcı mı kontrol et
       if (request.toUserId != recipientId) {
-        if (kDebugMode) debugPrint('Yetkisiz işlem denemesi: $recipientId, istek alıcısı: ${request.toUserId}');
+        if (kDebugMode)
+          debugPrint(
+              'Yetkisiz işlem denemesi: $recipientId, istek alıcısı: ${request.toUserId}');
         return false;
       }
 
@@ -964,7 +1026,8 @@ class FirestoreService {
           recipientNickname: request.fromNickname,
         );
 
-        final notificationWithId = notification.copyWith(id: notificationDoc.id);
+        final notificationWithId =
+            notification.copyWith(id: notificationDoc.id);
         batch.set(notificationDoc, notificationWithId.toMap());
 
         // Also send push notification (non-blocking)
@@ -974,7 +1037,9 @@ class FirestoreService {
             rejectedByUserId: recipientId,
           );
         } catch (e) {
-          if (kDebugMode) debugPrint('⚠️ Push notification failed but operation succeeded: $e');
+          if (kDebugMode)
+            debugPrint(
+                '⚠️ Push notification failed but operation succeeded: $e');
         }
       }
 
@@ -982,12 +1047,13 @@ class FirestoreService {
       await batch.commit();
 
       if (kDebugMode) {
-        debugPrint('✅ Arkadaşlık isteği atomik olarak reddedildi: ${request.fromNickname} -> ${request.toNickname}');
+        debugPrint(
+            '✅ Arkadaşlık isteği atomik olarak reddedildi: ${request.fromNickname} -> ${request.toNickname}');
       }
       return true;
-
     } catch (e) {
-      if (kDebugMode) debugPrint('🚨 HATA: Arkadaşlık isteği reddedilirken kritik hata: $e');
+      if (kDebugMode)
+        debugPrint('🚨 HATA: Arkadaşlık isteği reddedilirken kritik hata: $e');
       return false;
     }
   }
@@ -1022,7 +1088,8 @@ class FirestoreService {
       final querySnapshot = await _db
           .collection(_friendRequestsCollection)
           .where('toUserId', isEqualTo: userId)
-          .where('status', isEqualTo: FriendRequestStatus.pending.toString().split('.').last)
+          .where('status',
+              isEqualTo: FriendRequestStatus.pending.toString().split('.').last)
           .orderBy('createdAt', descending: true)
           .get();
 
@@ -1030,7 +1097,8 @@ class FirestoreService {
           .map((doc) => FriendRequest.fromMap(doc.data()))
           .toList();
     } catch (e) {
-      if (kDebugMode) debugPrint('HATA: Alınan arkadaşlık istekleri getirilirken hata: $e');
+      if (kDebugMode)
+        debugPrint('HATA: Alınan arkadaşlık istekleri getirilirken hata: $e');
       return [];
     }
   }
@@ -1039,7 +1107,8 @@ class FirestoreService {
   /// Optimized with better error handling and performance
   Stream<List<FriendRequest>> listenToReceivedFriendRequests(String userId) {
     if (userId.isEmpty) {
-      if (kDebugMode) debugPrint('❌ Empty userId provided to listenToReceivedFriendRequests');
+      if (kDebugMode)
+        debugPrint('❌ Empty userId provided to listenToReceivedFriendRequests');
       return const Stream.empty();
     }
 
@@ -1047,7 +1116,8 @@ class FirestoreService {
       return _db
           .collection(_friendRequestsCollection)
           .where('toUserId', isEqualTo: userId)
-          .where('status', isEqualTo: FriendRequestStatus.pending.toString().split('.').last)
+          .where('status',
+              isEqualTo: FriendRequestStatus.pending.toString().split('.').last)
           .orderBy('createdAt', descending: true)
           .limit(50) // Prevent memory issues with too many requests
           .snapshots()
@@ -1057,16 +1127,20 @@ class FirestoreService {
               .map((doc) => FriendRequest.fromMap(doc.data()))
               .toList();
         } catch (parseError) {
-          if (kDebugMode) debugPrint('⚠️ Error parsing friend request: $parseError');
+          if (kDebugMode)
+            debugPrint('⚠️ Error parsing friend request: $parseError');
           return <FriendRequest>[];
         }
       }).handleError((error) {
-        if (kDebugMode) debugPrint('🚨 Stream error in listenToReceivedFriendRequests: $error');
+        if (kDebugMode)
+          debugPrint(
+              '🚨 Stream error in listenToReceivedFriendRequests: $error');
         // Return empty list on error instead of crashing
         return <FriendRequest>[];
       });
     } catch (e) {
-      if (kDebugMode) debugPrint('🚨 Error setting up friend request listener: $e');
+      if (kDebugMode)
+        debugPrint('🚨 Error setting up friend request listener: $e');
       return const Stream.empty();
     }
   }
@@ -1077,7 +1151,8 @@ class FirestoreService {
       final querySnapshot = await _db
           .collection(_friendRequestsCollection)
           .where('fromUserId', isEqualTo: userId)
-          .where('status', isEqualTo: FriendRequestStatus.pending.toString().split('.').last)
+          .where('status',
+              isEqualTo: FriendRequestStatus.pending.toString().split('.').last)
           .orderBy('createdAt', descending: true)
           .get();
 
@@ -1085,13 +1160,16 @@ class FirestoreService {
           .map((doc) => FriendRequest.fromMap(doc.data()))
           .toList();
     } catch (e) {
-      if (kDebugMode) debugPrint('HATA: Gönderilen arkadaşlık istekleri getirilirken hata: $e');
+      if (kDebugMode)
+        debugPrint(
+            'HATA: Gönderilen arkadaşlık istekleri getirilirken hata: $e');
       return [];
     }
   }
 
   /// Kullanıcı adına göre arama yap
-  Future<List<Map<String, dynamic>>> searchUsers(String query, String currentUserId) async {
+  Future<List<Map<String, dynamic>>> searchUsers(
+      String query, String currentUserId) async {
     try {
       // Bu basit bir arama - gerçek uygulamada daha sofistike arama algoritmaları kullanılabilir
       final querySnapshot = await _db
@@ -1103,7 +1181,12 @@ class FirestoreService {
 
       final users = querySnapshot.docs
           .map((doc) => doc.data())
-          .where((user) => user['nickname'] != null && user['nickname'].toString().toLowerCase().contains(query.toLowerCase()))
+          .where((user) =>
+              user['nickname'] != null &&
+              user['nickname']
+                  .toString()
+                  .toLowerCase()
+                  .contains(query.toLowerCase()))
           .where((user) => user['nickname'] != null) // Null kontrolü
           .toList();
 
@@ -1113,7 +1196,9 @@ class FirestoreService {
 
       return users.where((user) {
         final userId = user['nickname'] as String?;
-        return userId != null && userId != currentUserId && !friendIds.contains(userId);
+        return userId != null &&
+            userId != currentUserId &&
+            !friendIds.contains(userId);
       }).toList();
     } catch (e) {
       if (kDebugMode) debugPrint('HATA: Kullanıcı arama yapılırken hata: $e');
@@ -1142,7 +1227,8 @@ class FirestoreService {
   }
 
   /// Bildirim okundu olarak işaretle
-  Future<bool> markNotificationAsRead(String userId, String notificationId) async {
+  Future<bool> markNotificationAsRead(
+      String userId, String notificationId) async {
     try {
       await _db
           .collection(_notificationsCollection)
@@ -1150,7 +1236,7 @@ class FirestoreService {
           .collection('notifications')
           .doc(notificationId)
           .update({'isRead': true});
-      
+
       return true;
     } catch (e) {
       if (kDebugMode) debugPrint('HATA: Bildirim işaretlenirken hata: $e');
@@ -1160,24 +1246,27 @@ class FirestoreService {
 
   /// Arkadaşlık isteğinin geçerliliğini kontrol et
   /// Specification: Race condition ve double-click koruması için
-  Future<bool> isFriendRequestValid(String requestId, String recipientId) async {
+  Future<bool> isFriendRequestValid(
+      String requestId, String recipientId) async {
     try {
-      final requestRef = _db.collection(_friendRequestsCollection).doc(requestId);
+      final requestRef =
+          _db.collection(_friendRequestsCollection).doc(requestId);
       final requestDoc = await requestRef.get();
 
       if (!requestDoc.exists) return false;
 
       final request = FriendRequest.fromMap(requestDoc.data()!);
-      
+
       // İsteğin hedef kişisi doğru mu?
       if (request.toUserId != recipientId) return false;
-      
+
       // İstek hala pending durumda mı?
       if (request.status != FriendRequestStatus.pending) return false;
 
       return true;
     } catch (e) {
-      if (kDebugMode) debugPrint('HATA: İstek geçerliliği kontrol edilirken hata: $e');
+      if (kDebugMode)
+        debugPrint('HATA: İstek geçerliliği kontrol edilirken hata: $e');
       return false;
     }
   }
@@ -1216,7 +1305,11 @@ class FirestoreService {
 
   /// Listen to duel room changes
   Stream<DuelRoom?> listenToDuelRoom(String roomId) {
-    return _db.collection(_duelRoomsCollection).doc(roomId).snapshots().map((doc) {
+    return _db
+        .collection(_duelRoomsCollection)
+        .doc(roomId)
+        .snapshots()
+        .map((doc) {
       if (doc.exists) {
         return DuelRoom.fromMap(doc.data()!);
       }
@@ -1225,7 +1318,8 @@ class FirestoreService {
   }
 
   /// Update duel game state
-  Future<bool> updateDuelGameState(String roomId, {
+  Future<bool> updateDuelGameState(
+    String roomId, {
     int? timeElapsedInSeconds,
     Map<String, dynamic>? currentQuestion,
     int? questionStartTime,
@@ -1235,10 +1329,13 @@ class FirestoreService {
   }) async {
     try {
       final updates = <String, dynamic>{};
-      if (timeElapsedInSeconds != null) updates['timeElapsedInSeconds'] = timeElapsedInSeconds;
+      if (timeElapsedInSeconds != null)
+        updates['timeElapsedInSeconds'] = timeElapsedInSeconds;
       if (currentQuestion != null) updates['currentQuestion'] = currentQuestion;
-      if (questionStartTime != null) updates['questionStartTime'] = questionStartTime;
-      if (currentQuestionIndex != null) updates['currentQuestionIndex'] = currentQuestionIndex;
+      if (questionStartTime != null)
+        updates['questionStartTime'] = questionStartTime;
+      if (currentQuestionIndex != null)
+        updates['currentQuestionIndex'] = currentQuestionIndex;
       if (questionAnswers != null) updates['questionAnswers'] = questionAnswers;
       if (players != null) updates['players'] = players;
 
@@ -1247,20 +1344,24 @@ class FirestoreService {
       }
       return true;
     } catch (e) {
-      if (kDebugMode) debugPrint('HATA: Duel game state güncellenirken hata: $e');
+      if (kDebugMode)
+        debugPrint('HATA: Duel game state güncellenirken hata: $e');
       return false;
     }
   }
 
   /// End duel game
-  Future<bool> endDuelGame(String roomId, String winnerName, int winnerScore) async {
+  Future<bool> endDuelGame(
+      String roomId, String winnerName, int winnerScore) async {
     try {
       await _db.collection(_duelRoomsCollection).doc(roomId).update({
         'status': 'finished',
         'winnerName': winnerName,
         'winnerScore': winnerScore,
       });
-      if (kDebugMode) debugPrint('Duel oyunu bitti: $roomId, Kazanan: $winnerName ($winnerScore puan)');
+      if (kDebugMode)
+        debugPrint(
+            'Duel oyunu bitti: $roomId, Kazanan: $winnerName ($winnerScore puan)');
       return true;
     } catch (e) {
       if (kDebugMode) debugPrint('HATA: Duel oyunu bitirilirken hata: $e');

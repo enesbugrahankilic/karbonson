@@ -80,8 +80,10 @@ class LocalStatisticsData {
       highestScore: map['highestScore'] ?? 0,
       averageScore: map['averageScore'] ?? 0,
       recentGames: (map['recentGames'] as List<dynamic>?)
-          ?.map((item) => GameHistoryItem.fromMap(item as Map<String, dynamic>))
-          .toList() ?? [],
+              ?.map((item) =>
+                  GameHistoryItem.fromMap(item as Map<String, dynamic>))
+              .toList() ??
+          [],
       lastUpdated: DateTime.parse(map['lastUpdated']),
     );
   }

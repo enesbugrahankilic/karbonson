@@ -7,16 +7,15 @@ import 'theme_colors.dart';
 
 /// Modern responsive design utilities
 class ResponsiveDesign {
-  
   /// Screen breakpoints following Material Design 3
   static const double mobileBreakpoint = 600;
   static const double tabletBreakpoint = 1024;
   static const double desktopBreakpoint = 1440;
-  
+
   /// Get current screen type
   static ScreenType getScreenType(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     if (screenWidth >= desktopBreakpoint) {
       return ScreenType.desktop;
     } else if (screenWidth >= tabletBreakpoint) {
@@ -25,11 +24,12 @@ class ResponsiveDesign {
       return ScreenType.mobile;
     }
   }
-  
+
   /// Get responsive spacing based on screen size
-  static double getResponsiveSpacing(BuildContext context, BaseSpacing spacing) {
+  static double getResponsiveSpacing(
+      BuildContext context, BaseSpacing spacing) {
     final screenType = getScreenType(context);
-    
+
     switch (screenType) {
       case ScreenType.mobile:
         return _getMobileSpacing(spacing);
@@ -39,11 +39,12 @@ class ResponsiveDesign {
         return _getDesktopSpacing(spacing);
     }
   }
-  
+
   /// Get responsive font size
-  static double getResponsiveFontSize(BuildContext context, BaseFontSize baseSize) {
+  static double getResponsiveFontSize(
+      BuildContext context, BaseFontSize baseSize) {
     final screenType = getScreenType(context);
-    
+
     switch (screenType) {
       case ScreenType.mobile:
         return _getMobileFontSize(baseSize);
@@ -53,7 +54,7 @@ class ResponsiveDesign {
         return _getDesktopFontSize(baseSize);
     }
   }
-  
+
   /// Create responsive grid based on screen size
   static Widget responsiveGrid({
     required BuildContext context,
@@ -69,16 +70,20 @@ class ResponsiveDesign {
     EdgeInsets? desktopPadding,
   }) {
     final screenType = getScreenType(context);
-    final columns = _getColumns(screenType, mobileColumns, tabletColumns, desktopColumns);
-    final spacing = _getSpacing(screenType, mobileSpacing, tabletSpacing, desktopSpacing);
-    final padding = _getPadding(screenType, mobilePadding, tabletPadding, desktopPadding);
-    
+    final columns =
+        _getColumns(screenType, mobileColumns, tabletColumns, desktopColumns);
+    final spacing =
+        _getSpacing(screenType, mobileSpacing, tabletSpacing, desktopSpacing);
+    final padding =
+        _getPadding(screenType, mobilePadding, tabletPadding, desktopPadding);
+
     return Container(
       padding: padding,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final itemWidth = (constraints.maxWidth - (spacing * (columns - 1))) / columns;
-          
+          final itemWidth =
+              (constraints.maxWidth - (spacing * (columns - 1))) / columns;
+
           return Wrap(
             spacing: spacing,
             runSpacing: spacing,
@@ -93,7 +98,7 @@ class ResponsiveDesign {
       ),
     );
   }
-  
+
   /// Create responsive card layout
   static Widget responsiveCard({
     required BuildContext context,
@@ -107,9 +112,11 @@ class ResponsiveDesign {
     double? desktopMargin,
   }) {
     final screenType = getScreenType(context);
-    final padding = _getPadding(screenType, mobilePadding, tabletPadding, desktopPadding);
-    final margin = _getMargin(screenType, mobileMargin, tabletMargin, desktopMargin);
-    
+    final padding =
+        _getPadding(screenType, mobilePadding, tabletPadding, desktopPadding);
+    final margin =
+        _getMargin(screenType, mobileMargin, tabletMargin, desktopMargin);
+
     return Container(
       margin: EdgeInsets.all(margin),
       padding: padding,
@@ -121,7 +128,7 @@ class ResponsiveDesign {
       child: child,
     );
   }
-  
+
   /// Create responsive text that adapts to screen size
   static Widget responsiveText(
     BuildContext context, {
@@ -134,7 +141,7 @@ class ResponsiveDesign {
     FontWeight? fontWeight,
   }) {
     final fontSize = getResponsiveFontSize(context, baseSize);
-    
+
     return Text(
       text,
       style: TextStyle(
@@ -148,7 +155,7 @@ class ResponsiveDesign {
       overflow: overflow,
     );
   }
-  
+
   /// Create responsive app bar
   static PreferredSizeWidget responsiveAppBar({
     required BuildContext context,
@@ -159,7 +166,7 @@ class ResponsiveDesign {
   }) {
     final screenType = getScreenType(context);
     final isMobile = screenType == ScreenType.mobile;
-    
+
     return AppBar(
       leading: leading,
       title: responsiveText(
@@ -181,7 +188,7 @@ class ResponsiveDesign {
       ),
     );
   }
-  
+
   /// Create responsive button
   static Widget responsiveButton(
     BuildContext context, {
@@ -193,7 +200,7 @@ class ResponsiveDesign {
   }) {
     final screenType = getScreenType(context);
     final buttonSize = _getButtonSize(screenType, baseSize);
-    
+
     return ElevatedButton(
       onPressed: isLoading ? null : onPressed,
       style: ElevatedButton.styleFrom(
@@ -224,7 +231,7 @@ class ResponsiveDesign {
       ),
     );
   }
-  
+
   // Private helper methods
   static double _getMobileSpacing(BaseSpacing spacing) {
     switch (spacing) {
@@ -240,7 +247,7 @@ class ResponsiveDesign {
         return DesignSystem.spacingXl;
     }
   }
-  
+
   static double _getTabletSpacing(BaseSpacing spacing) {
     switch (spacing) {
       case BaseSpacing.xs:
@@ -255,7 +262,7 @@ class ResponsiveDesign {
         return DesignSystem.spacingXl * 1.5;
     }
   }
-  
+
   static double _getDesktopSpacing(BaseSpacing spacing) {
     switch (spacing) {
       case BaseSpacing.xs:
@@ -270,7 +277,7 @@ class ResponsiveDesign {
         return DesignSystem.spacingXl * 2;
     }
   }
-  
+
   static double _getMobileFontSize(BaseFontSize baseSize) {
     switch (baseSize) {
       case BaseFontSize.display:
@@ -287,7 +294,7 @@ class ResponsiveDesign {
         return 12;
     }
   }
-  
+
   static double _getTabletFontSize(BaseFontSize baseSize) {
     switch (baseSize) {
       case BaseFontSize.display:
@@ -304,7 +311,7 @@ class ResponsiveDesign {
         return 14;
     }
   }
-  
+
   static double _getDesktopFontSize(BaseFontSize baseSize) {
     switch (baseSize) {
       case BaseFontSize.display:
@@ -321,7 +328,7 @@ class ResponsiveDesign {
         return 14;
     }
   }
-  
+
   static double _getLineHeight(BaseFontSize baseSize) {
     switch (baseSize) {
       case BaseFontSize.display:
@@ -338,7 +345,7 @@ class ResponsiveDesign {
         return 1.3;
     }
   }
-  
+
   static int _getColumns(
     ScreenType screenType,
     int mobileColumns,
@@ -354,7 +361,7 @@ class ResponsiveDesign {
         return desktopColumns ?? (mobileColumns * 3);
     }
   }
-  
+
   static double _getSpacing(
     ScreenType screenType,
     double? mobileSpacing,
@@ -370,7 +377,7 @@ class ResponsiveDesign {
         return desktopSpacing ?? DesignSystem.spacingXl;
     }
   }
-  
+
   static EdgeInsets _getPadding(
     ScreenType screenType,
     EdgeInsets? mobilePadding,
@@ -386,7 +393,7 @@ class ResponsiveDesign {
         return desktopPadding ?? const EdgeInsets.all(DesignSystem.spacingXl);
     }
   }
-  
+
   static double _getMargin(
     ScreenType screenType,
     double? mobileMargin,
@@ -402,8 +409,9 @@ class ResponsiveDesign {
         return desktopMargin ?? DesignSystem.spacingXl;
     }
   }
-  
-  static ButtonSize _getButtonSize(ScreenType screenType, BaseButtonSize baseSize) {
+
+  static ButtonSize _getButtonSize(
+      ScreenType screenType, BaseButtonSize baseSize) {
     switch (screenType) {
       case ScreenType.mobile:
         return _getMobileButtonSize(baseSize);
@@ -413,7 +421,7 @@ class ResponsiveDesign {
         return _getDesktopButtonSize(baseSize);
     }
   }
-  
+
   static ButtonSize _getMobileButtonSize(BaseButtonSize baseSize) {
     switch (baseSize) {
       case BaseButtonSize.small:
@@ -445,7 +453,7 @@ class ResponsiveDesign {
         );
     }
   }
-  
+
   static ButtonSize _getTabletButtonSize(BaseButtonSize baseSize) {
     switch (baseSize) {
       case BaseButtonSize.small:
@@ -477,7 +485,7 @@ class ResponsiveDesign {
         );
     }
   }
-  
+
   static ButtonSize _getDesktopButtonSize(BaseButtonSize baseSize) {
     switch (baseSize) {
       case BaseButtonSize.small:

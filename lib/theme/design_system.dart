@@ -12,20 +12,21 @@ class DesignSystem {
   static const double spacingM = 16.0;
   static const double spacingL = 24.0;
   static const double spacingXl = 32.0;
-  
+
   // Standard border radius values
   static const double radiusS = 8.0;
   static const double radiusM = 12.0;
   static const double radiusL = 16.0;
   static const double radiusXl = 24.0;
-  
+
   // Standard elevation values
   static const double elevationS = 2.0;
   static const double elevationM = 4.0;
   static const double elevationL = 8.0;
 
   /// Modern card decoration with enhanced shadows and styling
-  static BoxDecoration getCardDecoration(BuildContext context, {
+  static BoxDecoration getCardDecoration(
+    BuildContext context, {
     double? borderRadius,
     Color? backgroundColor,
     double? elevation,
@@ -33,7 +34,7 @@ class DesignSystem {
     bool hasGradient = false,
   }) {
     final bgColor = backgroundColor ?? ThemeColors.getCardBackground(context);
-    
+
     if (hasGradient) {
       return BoxDecoration(
         gradient: LinearGradient(
@@ -45,7 +46,8 @@ class DesignSystem {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(borderRadius ?? radiusL),
-        boxShadow: ThemeColors.getModernShadow(context, elevation: elevation ?? 1.0),
+        boxShadow:
+            ThemeColors.getModernShadow(context, elevation: elevation ?? 1.0),
         border: Border.all(
           color: Theme.of(context).brightness == Brightness.dark
               ? Colors.white.withValues(alpha: 0.05)
@@ -54,31 +56,32 @@ class DesignSystem {
         ),
       );
     }
-    
+
     return BoxDecoration(
       color: bgColor,
       borderRadius: BorderRadius.circular(borderRadius ?? radiusL),
-      boxShadow: ThemeColors.getModernShadow(context, elevation: elevation ?? 1.0),
-      border: isElevated ? Border.all(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? Colors.white.withValues(alpha: 0.1)
-            : Colors.black.withValues(alpha: 0.1),
-        width: 1,
-      ) : null,
+      boxShadow:
+          ThemeColors.getModernShadow(context, elevation: elevation ?? 1.0),
+      border: isElevated
+          ? Border.all(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : Colors.black.withValues(alpha: 0.1),
+              width: 1,
+            )
+          : null,
     );
   }
 
   /// Modern primary button style with enhanced states
   static ButtonStyle getPrimaryButtonStyle(BuildContext context) {
     final primaryColor = ThemeColors.getPrimaryButtonColor(context);
-    
+
     return ElevatedButton.styleFrom(
       backgroundColor: primaryColor,
       foregroundColor: Colors.white,
-      padding: const EdgeInsets.symmetric(
-        horizontal: spacingXl, 
-        vertical: spacingM
-      ),
+      padding:
+          const EdgeInsets.symmetric(horizontal: spacingXl, vertical: spacingM),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(radiusM),
       ),
@@ -99,15 +102,11 @@ class DesignSystem {
         }
         if (states.contains(WidgetState.pressed)) {
           return Color.alphaBlend(
-            Colors.black.withValues(alpha: 0.1), 
-            primaryColor
-          );
+              Colors.black.withValues(alpha: 0.1), primaryColor);
         }
         if (states.contains(WidgetState.hovered)) {
           return Color.alphaBlend(
-            Colors.white.withValues(alpha: 0.1), 
-            primaryColor
-          );
+              Colors.white.withValues(alpha: 0.1), primaryColor);
         }
         return primaryColor;
       }),
@@ -136,10 +135,8 @@ class DesignSystem {
     return ElevatedButton.styleFrom(
       backgroundColor: ThemeColors.getSecondaryButtonColor(context),
       foregroundColor: Colors.white,
-      padding: const EdgeInsets.symmetric(
-        horizontal: spacingXl, 
-        vertical: spacingM
-      ),
+      padding:
+          const EdgeInsets.symmetric(horizontal: spacingXl, vertical: spacingM),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(radiusM),
       ),
@@ -153,10 +150,8 @@ class DesignSystem {
     return ElevatedButton.styleFrom(
       backgroundColor: ThemeColors.getAccentButtonColor(context),
       foregroundColor: Colors.white,
-      padding: const EdgeInsets.symmetric(
-        horizontal: spacingXl, 
-        vertical: spacingM
-      ),
+      padding:
+          const EdgeInsets.symmetric(horizontal: spacingXl, vertical: spacingM),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(radiusM),
       ),
@@ -168,10 +163,8 @@ class DesignSystem {
   /// Standard button style for text buttons
   static ButtonStyle getTextButtonStyle(BuildContext context) {
     return TextButton.styleFrom(
-      padding: const EdgeInsets.symmetric(
-        horizontal: spacingL, 
-        vertical: spacingM
-      ),
+      padding:
+          const EdgeInsets.symmetric(horizontal: spacingL, vertical: spacingM),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(radiusM),
       ),
@@ -204,89 +197,120 @@ class DesignSystem {
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(radiusM),
         borderSide: BorderSide(
-          color: ThemeColors.getPrimaryButtonColor(context), 
-          width: 2
-        ),
+            color: ThemeColors.getPrimaryButtonColor(context), width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(radiusM),
-        borderSide: BorderSide(
-          color: ThemeColors.getErrorColor(context), 
-          width: 2
-        ),
+        borderSide:
+            BorderSide(color: ThemeColors.getErrorColor(context), width: 2),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(radiusM),
-        borderSide: BorderSide(
-          color: ThemeColors.getErrorColor(context), 
-          width: 2
-        ),
+        borderSide:
+            BorderSide(color: ThemeColors.getErrorColor(context), width: 2),
       ),
       prefixIcon: prefixIcon,
       suffixIcon: suffixIcon,
       labelStyle: TextStyle(color: ThemeColors.getSecondaryText(context)),
       hintStyle: TextStyle(color: ThemeColors.getSecondaryText(context)),
-      errorStyle: TextStyle(
-        color: ThemeColors.getErrorColor(context), 
-        fontSize: 12
-      ),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: spacingM, 
-        vertical: spacingM
-      ),
+      errorStyle:
+          TextStyle(color: ThemeColors.getErrorColor(context), fontSize: 12),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: spacingM, vertical: spacingM),
     );
   }
 
   /// Standard text styles for consistent typography
   static TextStyle getTitleLarge(BuildContext context) {
     return Theme.of(context).textTheme.titleLarge?.copyWith(
-      color: ThemeColors.getTitleColor(context),
-      fontWeight: FontWeight.bold,
-    ) ?? const TextStyle(
-      fontSize: 22,
-      fontWeight: FontWeight.bold,
-      color: Color(0xFF2E7D32),
-    );
+              color: ThemeColors.getTitleColor(context),
+              fontWeight: FontWeight.bold,
+            ) ??
+        const TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF2E7D32),
+        );
   }
 
   static TextStyle getTitleMedium(BuildContext context) {
     return Theme.of(context).textTheme.titleMedium?.copyWith(
-      color: ThemeColors.getText(context),
-      fontWeight: FontWeight.w600,
-    ) ?? const TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w600,
-      color: Colors.black87,
-    );
+              color: ThemeColors.getText(context),
+              fontWeight: FontWeight.w600,
+            ) ??
+        const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: Colors.black87,
+        );
   }
 
   static TextStyle getBodyLarge(BuildContext context) {
     return Theme.of(context).textTheme.bodyLarge?.copyWith(
-      color: ThemeColors.getText(context),
-    ) ?? const TextStyle(
-      fontSize: 16,
-      color: Colors.black87,
-    );
+              color: ThemeColors.getText(context),
+            ) ??
+        const TextStyle(
+          fontSize: 16,
+          color: Colors.black87,
+        );
   }
 
   static TextStyle getBodyMedium(BuildContext context) {
     return Theme.of(context).textTheme.bodyMedium?.copyWith(
-      color: ThemeColors.getText(context),
-    ) ?? const TextStyle(
-      fontSize: 14,
-      color: Colors.black87,
-    );
+              color: ThemeColors.getText(context),
+            ) ??
+        const TextStyle(
+          fontSize: 14,
+          color: Colors.black87,
+        );
   }
 
   static TextStyle getLabelLarge(BuildContext context) {
     return Theme.of(context).textTheme.labelLarge?.copyWith(
-      color: ThemeColors.getText(context),
-      fontWeight: FontWeight.w600,
-    ) ?? const TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.w600,
-      color: Colors.black87,
-    );
+              color: ThemeColors.getText(context),
+              fontWeight: FontWeight.w600,
+            ) ??
+        const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: Colors.black87,
+        );
+  }
+
+  static TextStyle getHeadlineSmall(BuildContext context) {
+    return Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: ThemeColors.getText(context),
+              fontWeight: FontWeight.w600,
+            ) ??
+        const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
+          color: Colors.black87,
+        );
+  }
+
+  static TextStyle getDisplaySmall(BuildContext context) {
+    return Theme.of(context).textTheme.displaySmall?.copyWith(
+              color: ThemeColors.getText(context),
+              fontWeight: FontWeight.w400,
+            ) ??
+        const TextStyle(
+          fontSize: 36,
+          fontWeight: FontWeight.w400,
+          color: Colors.black87,
+        );
+  }
+
+  static TextStyle getBodySmall(BuildContext context) {
+    return Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: ThemeColors.getText(context),
+              fontWeight: FontWeight.w400,
+            ) ??
+        const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+          color: Colors.black87,
+        );
   }
 
   /// Standard container decoration for pages
@@ -376,7 +400,7 @@ class DesignSystem {
     double? maxWidth,
   }) {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     Widget child;
     if (screenWidth > 1024 && desktop != null) {
       child = desktop;
@@ -429,7 +453,8 @@ class DesignSystem {
   }
 
   /// Create a loading indicator with consistent styling
-  static Widget loadingIndicator(BuildContext context, {
+  static Widget loadingIndicator(
+    BuildContext context, {
     String? message,
     double size = 32.0,
   }) {
@@ -649,8 +674,9 @@ class DesignSystem {
     double? size,
   }) {
     final fabSize = size ?? 56.0;
-    final bgColor = backgroundColor ?? ThemeColors.getAccentButtonColor(context);
-    
+    final bgColor =
+        backgroundColor ?? ThemeColors.getAccentButtonColor(context);
+
     return Tooltip(
       message: tooltip ?? '',
       child: Material(
@@ -685,7 +711,7 @@ class DesignSystem {
     double strokeWidth = 4,
   }) {
     final progressColor = color ?? ThemeColors.getPrimaryButtonColor(context);
-    
+
     if (value != null) {
       return SizedBox(
         width: 40,
@@ -700,7 +726,7 @@ class DesignSystem {
         ),
       );
     }
-    
+
     return SizedBox(
       width: 32,
       height: 32,
@@ -720,14 +746,13 @@ class DesignSystem {
     Color? backgroundColor,
     bool isSelected = false,
   }) {
-    final bgColor = backgroundColor ?? (isSelected
-        ? ThemeColors.getPrimaryButtonColor(context)
-        : ThemeColors.getCardBackgroundLight(context));
-    
-    final fgColor = isSelected
-        ? Colors.white
-        : ThemeColors.getText(context);
-    
+    final bgColor = backgroundColor ??
+        (isSelected
+            ? ThemeColors.getPrimaryButtonColor(context)
+            : ThemeColors.getCardBackgroundLight(context));
+
+    final fgColor = isSelected ? Colors.white : ThemeColors.getText(context);
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -737,9 +762,7 @@ class DesignSystem {
           color: bgColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected
-                ? bgColor
-                : ThemeColors.getBorder(context),
+            color: isSelected ? bgColor : ThemeColors.getBorder(context),
             width: 1,
           ),
         ),
@@ -806,8 +829,7 @@ class Shimmer extends StatefulWidget {
   State<Shimmer> createState() => _ShimmerState();
 }
 
-class _ShimmerState extends State<Shimmer>
-    with SingleTickerProviderStateMixin {
+class _ShimmerState extends State<Shimmer> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 

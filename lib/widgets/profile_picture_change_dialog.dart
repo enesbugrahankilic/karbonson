@@ -17,13 +17,15 @@ class ProfilePictureChangeDialog extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<ProfilePictureChangeDialog> createState() => _ProfilePictureChangeDialogState();
+  State<ProfilePictureChangeDialog> createState() =>
+      _ProfilePictureChangeDialogState();
 }
 
-class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog> {
+class _ProfilePictureChangeDialogState
+    extends State<ProfilePictureChangeDialog> {
   final ProfilePictureService _profilePictureService = ProfilePictureService();
   final ProfileService _profileService = ProfileService();
-  
+
   bool _isLoading = false;
   bool _isUploading = false;
   bool _hasError = false;
@@ -37,7 +39,8 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
         borderRadius: BorderRadius.circular(16),
       ),
       child: Container(
-        height: MediaQuery.of(context).size.height * 0.6, // Ekran yüksekliğinin %60'ı
+        height: MediaQuery.of(context).size.height *
+            0.6, // Ekran yüksekliğinin %60'ı
         padding: const EdgeInsets.all(16),
         child: _isLoading ? _buildLoadingState() : _buildContent(),
       ),
@@ -95,11 +98,11 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
           ),
         ),
         const SizedBox(height: 20),
-        
+
         // Current Profile Picture Preview
         _buildCurrentPicturePreview(),
         const SizedBox(height: 20),
-        
+
         // Scrollable Action Buttons
         Expanded(
           child: SingleChildScrollView(
@@ -149,7 +152,8 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
           CircleAvatar(
             radius: 30,
             backgroundColor: Colors.grey[200],
-            backgroundImage: widget.currentProfilePictureUrl != null && widget.currentProfilePictureUrl!.isNotEmpty
+            backgroundImage: widget.currentProfilePictureUrl != null &&
+                    widget.currentProfilePictureUrl!.isNotEmpty
                 ? NetworkImage(widget.currentProfilePictureUrl!)
                 : null,
             onBackgroundImageError: widget.currentProfilePictureUrl != null
@@ -157,7 +161,8 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
                     debugPrint('❌ Profile picture failed to load: $exception');
                   }
                 : null,
-            child: (widget.currentProfilePictureUrl == null || widget.currentProfilePictureUrl!.isEmpty)
+            child: (widget.currentProfilePictureUrl == null ||
+                    widget.currentProfilePictureUrl!.isEmpty)
                 ? const Icon(Icons.person, size: 30, color: Colors.grey)
                 : null,
           ),
@@ -173,9 +178,9 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
                   ),
                 ),
                 Text(
-                  widget.currentProfilePictureUrl != null 
-                    ? 'Guncel fotografiniz' 
-                    : 'Varsayilan avatar',
+                  widget.currentProfilePictureUrl != null
+                      ? 'Guncel fotografiniz'
+                      : 'Varsayilan avatar',
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: 14,
@@ -286,7 +291,7 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
 
   Future<void> _uploadAndUpdateImage(File imageFile) async {
     if (!mounted) return;
-    
+
     setState(() {
       _isLoading = true;
       _isUploading = true;
@@ -296,8 +301,9 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
 
     try {
       // Firebase Storage'a yükle
-      final String? imageUrl = await _profilePictureService.uploadImageToFirebase(imageFile);
-      
+      final String? imageUrl =
+          await _profilePictureService.uploadImageToFirebase(imageFile);
+
       if (imageUrl != null && mounted) {
         setState(() {
           _uploadStatus = 'Profil güncelleniyor...';
@@ -329,7 +335,7 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
 
   Future<void> _updateProfilePicture(String imageUrl) async {
     if (!mounted) return;
-    
+
     setState(() {
       _isLoading = true;
       _isUploading = true;
@@ -339,8 +345,9 @@ class _ProfilePictureChangeDialogState extends State<ProfilePictureChangeDialog>
 
     try {
       // Eski fotoğrafı temizle ve yenisini yükle
-      final updatedUrl = await _profilePictureService.replaceProfilePicture(imageUrl, _profileService);
-      
+      final updatedUrl = await _profilePictureService.replaceProfilePicture(
+          imageUrl, _profileService);
+
       if (updatedUrl != null && mounted) {
         widget.onProfilePictureUpdated?.call(updatedUrl);
         if (mounted) {

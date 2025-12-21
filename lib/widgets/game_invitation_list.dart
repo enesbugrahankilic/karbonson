@@ -26,7 +26,7 @@ class _GameInvitationListState extends State<GameInvitationList> {
   /// Load received game invitations
   Future<void> _loadInvitations() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final invitations = await _invitationService.getReceivedInvitations();
       setState(() {
@@ -51,7 +51,7 @@ class _GameInvitationListState extends State<GameInvitationList> {
   Future<void> _acceptInvitation(GameInvitation invitation) async {
     try {
       final result = await _invitationService.acceptInvitation(invitation.id);
-      
+
       if (mounted) {
         if (result.success) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -61,7 +61,7 @@ class _GameInvitationListState extends State<GameInvitationList> {
             ),
           );
           _loadInvitations(); // Refresh list
-          
+
           // Navigate to game room if room ID is provided
           if (result.roomId != null) {
             // You can implement navigation to game room here
@@ -93,7 +93,7 @@ class _GameInvitationListState extends State<GameInvitationList> {
   Future<void> _declineInvitation(GameInvitation invitation) async {
     try {
       final result = await _invitationService.declineInvitation(invitation.id);
-      
+
       if (mounted) {
         if (result.success) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -129,7 +129,7 @@ class _GameInvitationListState extends State<GameInvitationList> {
   String _formatTimeAgo(DateTime dateTime) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
-    
+
     if (difference.inMinutes < 1) {
       return 'Az önce';
     } else if (difference.inHours < 1) {
@@ -201,7 +201,8 @@ class _GameInvitationListState extends State<GameInvitationList> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         '${invitation.fromNickname} size oyun daveti gönderdi',
@@ -228,7 +229,8 @@ class _GameInvitationListState extends State<GameInvitationList> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 TextButton(
-                                  onPressed: () => _declineInvitation(invitation),
+                                  onPressed: () =>
+                                      _declineInvitation(invitation),
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.grey[600],
                                     padding: const EdgeInsets.symmetric(
@@ -240,7 +242,8 @@ class _GameInvitationListState extends State<GameInvitationList> {
                                 ),
                                 const SizedBox(width: 8),
                                 ElevatedButton(
-                                  onPressed: () => _acceptInvitation(invitation),
+                                  onPressed: () =>
+                                      _acceptInvitation(invitation),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.green,
                                     foregroundColor: Colors.white,

@@ -36,10 +36,12 @@ class UserCollectionTest {
         return;
       }
 
-      debugPrint('✅ Test user profile created: ${userData.nickname} (${userData.uid})');
+      debugPrint(
+          '✅ Test user profile created: ${userData.nickname} (${userData.uid})');
 
       // Test 3: Retrieve the created user profile
-      final retrievedUserData = await _firestoreService.getUserProfile(currentUser.uid);
+      final retrievedUserData =
+          await _firestoreService.getUserProfile(currentUser.uid);
       if (retrievedUserData == null) {
         debugPrint('❌ Failed to retrieve user profile');
         return;
@@ -55,15 +57,16 @@ class UserCollectionTest {
       }
 
       // Test 5: Test nickname uniqueness check
-      final isAvailable = await _firestoreService.isNicknameAvailable('unique_nickname_test_12345');
+      final isAvailable = await _firestoreService
+          .isNicknameAvailable('unique_nickname_test_12345');
       debugPrint('✅ Nickname availability check: $isAvailable');
 
       // Test 6: Search users functionality
-      final searchResults = await _firestoreService.searchUsersByNickname('TestUser', limit: 5);
+      final searchResults =
+          await _firestoreService.searchUsersByNickname('TestUser', limit: 5);
       debugPrint('✅ User search returned ${searchResults.length} results');
 
       debugPrint('🎉 All user collection tests completed successfully!');
-
     } catch (e, stackTrace) {
       debugPrint('🚨 User collection test failed: $e');
       debugPrint('Stack trace: $stackTrace');

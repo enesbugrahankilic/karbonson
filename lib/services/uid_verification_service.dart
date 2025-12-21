@@ -22,33 +22,34 @@ class UIDVerificationService {
     }
 
     final stats = UIDCleanupStatistics();
-    
+
     try {
       // 1. Check users collection for UID inconsistencies
       await _verifyUsersCollection(stats);
-      
+
       // 2. Check friend_requests collection
       await _verifyFriendRequestsCollection(stats);
-      
+
       // 3. Check notifications collection
       await _verifyNotificationsCollection(stats);
-      
+
       // 4. Check game_rooms collection for host/player UID issues
       await _verifyGameRoomsCollection(stats);
-      
+
       // 5. Verify Auth users exist for all Firestore documents
       await _verifyAuthUsersExist(stats);
-      
+
       _lastCleanupStats = stats;
-      
+
       if (kDebugMode) {
         debugPrint('✅ UID cleanup completed:');
-        debugPrint('   📊 Invalid documents removed: ${stats.invalidDocumentsRemoved}');
+        debugPrint(
+            '   📊 Invalid documents removed: ${stats.invalidDocumentsRemoved}');
         debugPrint('   🔧 Documents fixed: ${stats.documentsFixed}');
         debugPrint('   ⚠️ Orphaned data cleaned: ${stats.orphanedDataCleaned}');
         debugPrint('   👥 Missing Auth users: ${stats.missingAuthUsers}');
       }
-      
+
       return stats;
     } catch (e) {
       if (kDebugMode) {
@@ -73,7 +74,7 @@ class UIDVerificationService {
 
       try {
         final userData = UserData.fromMap(doc.data(), doc.id);
-        
+
         // Check 1: Document ID matches stored UID
         if (userData.uid != doc.id) {
           stats.invalidDocumentsRemoved++;
@@ -106,7 +107,6 @@ class UIDVerificationService {
           stats.documentsFixed++;
           await _fixUserDataIntegrity(doc.reference, userData, validation);
         }
-
       } catch (e) {
         // Malformed document - remove it
         stats.invalidDocumentsRemoved++;
@@ -123,7 +123,8 @@ class UIDVerificationService {
   }
 
   /// Verify friend_requests collection
-  Future<void> _verifyFriendRequestsCollection(UIDCleanupStatistics stats) async {
+  Future<void> _verifyFriendRequestsCollection(
+      UIDCleanupStatistics stats) async {
     if (kDebugMode) debugPrint('🔍 Checking friend_requests collection...');
 
     final querySnapshot = await _firestore.collection('friend_requests').get();
@@ -131,7 +132,7 @@ class UIDVerificationService {
     for (final doc in querySnapshot.docs) {
       try {
         final data = doc.data();
-        
+
         // Verify required fields exist
         if (!_hasRequiredFields(data, ['fromUserId', 'toUserId', 'status'])) {
           stats.invalidDocumentsRemoved++;
@@ -160,7 +161,6 @@ class UIDVerificationService {
           stats.documentsFixed++;
           await doc.reference.update({'status': 'pending'});
         }
-
       } catch (e) {
         stats.invalidDocumentsRemoved++;
         await doc.reference.delete();
@@ -172,7 +172,8 @@ class UIDVerificationService {
   }
 
   /// Verify notifications collection
-  Future<void> _verifyNotificationsCollection(UIDCleanupStatistics stats) async {
+  Future<void> _verifyNotificationsCollection(
+      UIDCleanupStatistics stats) async {
     if (kDebugMode) debugPrint('🔍 Checking notifications collection...');
 
     final querySnapshot = await _firestore.collection('notifications').get();
@@ -183,23 +184,24 @@ class UIDVerificationService {
         final userExists = await _userDocExists(doc.id);
         if (!userExists) {
           stats.orphanedDataCleaned++;
-          
+
           // Delete notifications subcollection
-          final subcollection = await doc.reference.collection('notifications').get();
+          final subcollection =
+              await doc.reference.collection('notifications').get();
           final batch = _firestore.batch();
-          
+
           for (final subDoc in subcollection.docs) {
             batch.delete(subDoc.reference);
           }
-          
+
           batch.delete(doc.reference);
           await batch.commit();
-          
+
           if (kDebugMode) {
-            debugPrint('🗑️ Removed orphaned notifications for user: ${doc.id}');
+            debugPrint(
+                '🗑️ Removed orphaned notifications for user: ${doc.id}');
           }
         }
-
       } catch (e) {
         stats.invalidDocumentsRemoved++;
         await doc.reference.delete();
@@ -219,7 +221,7 @@ class UIDVerificationService {
     for (final doc in querySnapshot.docs) {
       try {
         final data = doc.data();
-        
+
         // Check hostId
         final hostId = data['hostId'] as String?;
         if (hostId != null) {
@@ -238,7 +240,7 @@ class UIDVerificationService {
         final players = data['players'] as List?;
         if (players != null) {
           final validPlayers = <String>[];
-          
+
           for (final player in players) {
             if (player is Map<String, dynamic>) {
               final playerId = player['id'] as String?;
@@ -257,7 +259,6 @@ class UIDVerificationService {
             }
           }
         }
-
       } catch (e) {
         stats.invalidDocumentsRemoved++;
         await doc.reference.delete();
@@ -270,7 +271,8 @@ class UIDVerificationService {
 
   /// Verify all Firestore users have corresponding Auth users
   Future<void> _verifyAuthUsersExist(UIDCleanupStatistics stats) async {
-    if (kDebugMode) debugPrint('🔍 Verifying Auth users exist for all Firestore docs...');
+    if (kDebugMode)
+      debugPrint('🔍 Verifying Auth users exist for all Firestore docs...');
 
     final querySnapshot = await _firestore.collection('users').get();
     final List<String> missingAuthUsers = [];
@@ -280,7 +282,7 @@ class UIDVerificationService {
         final userData = UserData.fromMap(doc.data(), doc.id);
         // Check UID format validity (since we can't directly verify Auth users)
         final isValidUID = _isValidFirebaseUID(userData.uid);
-        
+
         if (!isValidUID) {
           missingAuthUsers.add(userData.uid);
           stats.missingAuthUsers++;
@@ -292,8 +294,10 @@ class UIDVerificationService {
     }
 
     if (missingAuthUsers.isNotEmpty && kDebugMode) {
-      debugPrint('⚠️ Found ${missingAuthUsers.length} Firestore docs with invalid UIDs:');
-      for (final uid in missingAuthUsers.take(10)) { // Show first 10
+      debugPrint(
+          '⚠️ Found ${missingAuthUsers.length} Firestore docs with invalid UIDs:');
+      for (final uid in missingAuthUsers.take(10)) {
+        // Show first 10
         debugPrint('   - $uid');
       }
       if (missingAuthUsers.length > 10) {
@@ -305,24 +309,24 @@ class UIDVerificationService {
   /// Validate user data integrity
   DataIntegrityValidation _validateUserDataIntegrity(UserData userData) {
     final issues = <String>[];
-    
+
     // Check nickname validity
     if (userData.nickname.isEmpty) {
       issues.add('empty_nickname');
     }
-    
+
     // Check UID format (basic Firebase UID format check)
     if (!_isValidFirebaseUID(userData.uid)) {
       issues.add('invalid_uid_format');
     }
-    
+
     // Check timestamps
     if (userData.createdAt != null && userData.updatedAt != null) {
       if (userData.updatedAt!.isBefore(userData.createdAt!)) {
         issues.add('timestamp_inconsistency');
       }
     }
-    
+
     return DataIntegrityValidation(
       isValid: issues.isEmpty,
       issues: issues,
@@ -337,7 +341,7 @@ class UIDVerificationService {
     DataIntegrityValidation validation,
   ) async {
     final updates = <String, dynamic>{};
-    
+
     for (final issue in validation.issues) {
       switch (issue) {
         case 'empty_nickname':
@@ -348,7 +352,7 @@ class UIDVerificationService {
           break;
       }
     }
-    
+
     if (updates.isNotEmpty) {
       updates['lastVerifiedAt'] = FieldValue.serverTimestamp();
       await userDocRef.update(updates);
@@ -363,16 +367,16 @@ class UIDVerificationService {
     if (kDebugMode) debugPrint('🏥 Performing quick UID health check...');
 
     final report = UIDHealthReport();
-    
+
     try {
       // Check users collection size and obvious issues
       final usersSnapshot = await _firestore.collection('users').get();
       report.totalUsers = usersSnapshot.size;
-      
+
       // Sample check for obvious issues
       int sampleSize = usersSnapshot.size > 100 ? 100 : usersSnapshot.size;
       int obviousIssues = 0;
-      
+
       for (int i = 0; i < sampleSize; i++) {
         final doc = usersSnapshot.docs[i];
         try {
@@ -384,22 +388,22 @@ class UIDVerificationService {
           obviousIssues++;
         }
       }
-      
+
       report.estimatedIssuesPercentage = (obviousIssues / sampleSize) * 100;
       report.needsFullCleanup = obviousIssues > 0;
-      
+
       if (kDebugMode) {
         debugPrint('📊 Quick health check completed:');
         debugPrint('   👥 Total users: ${report.totalUsers}');
-        debugPrint('   ⚠️ Estimated issues: ${report.estimatedIssuesPercentage.toStringAsFixed(1)}%');
+        debugPrint(
+            '   ⚠️ Estimated issues: ${report.estimatedIssuesPercentage.toStringAsFixed(1)}%');
         debugPrint('   🔧 Needs full cleanup: ${report.needsFullCleanup}');
       }
-      
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 Error during health check: $e');
       report.error = e.toString();
     }
-    
+
     return report;
   }
 
@@ -415,7 +419,8 @@ class UIDVerificationService {
   }
 
   bool _hasRequiredFields(Map<String, dynamic> data, List<String> fields) {
-    return fields.every((field) => data.containsKey(field) && data[field] != null);
+    return fields
+        .every((field) => data.containsKey(field) && data[field] != null);
   }
 
   bool _isValidFriendRequestStatus(String status) {
@@ -424,8 +429,9 @@ class UIDVerificationService {
 
   bool _isValidFirebaseUID(String uid) {
     // Basic Firebase UID format check
-    return uid.length >= 28 && uid.length <= 128 && 
-           RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(uid);
+    return uid.length >= 28 &&
+        uid.length <= 128 &&
+        RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(uid);
   }
 
   String _getSuggestedFix(List<String> issues) {
@@ -441,10 +447,10 @@ class UIDCleanupStatistics {
   int missingAuthUsers = 0;
   DateTime? completedAt;
 
-  bool get hasIssues => 
-      invalidDocumentsRemoved > 0 || 
-      documentsFixed > 0 || 
-      orphanedDataCleaned > 0 || 
+  bool get hasIssues =>
+      invalidDocumentsRemoved > 0 ||
+      documentsFixed > 0 ||
+      orphanedDataCleaned > 0 ||
       missingAuthUsers > 0;
 
   String get summary {
@@ -483,7 +489,7 @@ class UIDHealthReport {
     if (error != null) {
       return 'Health check failed: $error';
     }
-    
+
     return '''UID Health Report:
 - Total users: $totalUsers
 - Estimated issues: ${estimatedIssuesPercentage.toStringAsFixed(1)}%

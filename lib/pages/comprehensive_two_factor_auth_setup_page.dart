@@ -49,40 +49,42 @@ class ComprehensiveTwoFactorAuthSetupPage extends StatefulWidget {
   const ComprehensiveTwoFactorAuthSetupPage({super.key});
 
   @override
-  State<ComprehensiveTwoFactorAuthSetupPage> createState() => _ComprehensiveTwoFactorAuthSetupPageState();
+  State<ComprehensiveTwoFactorAuthSetupPage> createState() =>
+      _ComprehensiveTwoFactorAuthSetupPageState();
 }
 
-class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFactorAuthSetupPage>
+class _ComprehensiveTwoFactorAuthSetupPageState
+    extends State<ComprehensiveTwoFactorAuthSetupPage>
     with TickerProviderStateMixin {
-  
   // Form controllers
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _smsCodeController = TextEditingController();
   final TextEditingController _totpCodeController = TextEditingController();
   final TextEditingController _backupCodeController = TextEditingController();
-  final TextEditingController _hardwareTokenController = TextEditingController();
-  
+  final TextEditingController _hardwareTokenController =
+      TextEditingController();
+
   // Form keys
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _smsFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _totpFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _backupFormKey = GlobalKey<FormState>();
-  
+
   // Services
-  
+
   // State variables
   bool _isLoading = true;
   bool _isProcessing = false;
   String? _verificationId;
   List<String>? _backupCodes;
   TOTPSetupResult? _totpSetup;
-  
+
   // UI State
   int _currentStep = 0;
   AuthenticationMethod _selectedMethod = AuthenticationMethod.sms;
   bool _generateBackupCodes = true;
   bool _hasCompletedSetup = false;
-  
+
   // Animations
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -169,10 +171,10 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
       // Load current 2FA status
       final isEnabled = await Firebase2FAService.is2FAEnabled();
       final phoneNumbers = await Firebase2FAService.getEnrolledPhoneNumbers();
-      
+
       // Generate security recommendations and warnings
       _generateSecurityAnalysis(isEnabled);
-      
+
       if (mounted) {
         setState(() {
           _securityStatus = {
@@ -187,12 +189,12 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
       if (kDebugMode) {
         debugPrint('Error loading security status: $e');
       }
-      
+
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
-        
+
         _showErrorSnackBar('Security status could not be loaded: $e');
       }
     }
@@ -202,7 +204,7 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
   void _generateSecurityAnalysis(bool is2FAEnabled) {
     _securityRecommendations.clear();
     _securityWarnings.clear();
-    
+
     if (!is2FAEnabled) {
       _securityRecommendations.addAll([
         'Enable two-factor authentication to secure your account',
@@ -210,7 +212,7 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
         'Use authenticator apps instead of SMS when possible',
         'Store backup codes in a secure location',
       ]);
-      
+
       _securityWarnings.addAll([
         '⚠️ Your account is not protected by 2FA',
         '⚠️ Anyone with your password can access your account',
@@ -223,9 +225,10 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
         'Review your security settings monthly',
         'Update your authenticator app when possible',
       ]);
-      
+
       if (_selectedMethod == AuthenticationMethod.sms) {
-        _securityWarnings.add('⚠️ SMS can be intercepted - consider using authenticator apps');
+        _securityWarnings.add(
+            '⚠️ SMS can be intercepted - consider using authenticator apps');
       }
     }
   }
@@ -236,8 +239,12 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
       // Generate a secure random secret
       final random = Random.secure();
       final bytes = List<int>.generate(32, (i) => random.nextInt(256));
-      final secret = base64.encode(bytes).replaceAll('=', '').replaceAll('+', 'A').replaceAll('/', 'B');
-      
+      final secret = base64
+          .encode(bytes)
+          .replaceAll('=', '')
+          .replaceAll('+', 'A')
+          .replaceAll('/', 'B');
+
       // Get current user
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
@@ -249,14 +256,15 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
           errorMessage: 'User not authenticated',
         );
       }
-      
+
       // Create TOTP parameters
       final issuer = 'KarbonSon';
       final accountName = user.email ?? 'user@example.com';
-      
+
       // Create otpauth URL for QR code
-      final otpUrl = 'otpauth://totp/$issuer:$accountName?secret=$secret&issuer=$issuer&digits=6&period=30';
-      
+      final otpUrl =
+          'otpauth://totp/$issuer:$accountName?secret=$secret&issuer=$issuer&digits=6&period=30';
+
       return TOTPSetupResult(
         isSuccess: true,
         secret: secret,
@@ -281,27 +289,28 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
       if (secret.isEmpty || code.isEmpty) {
         return false;
       }
-      
+
       // Check if code format is valid (6 digits)
       if (!RegExp(r'^\d{6}$').hasMatch(code)) {
         return false;
       }
-      
+
       // For production, this should use proper TOTP algorithm with HMAC-SHA1
       // This is a more secure implementation with time-based validation
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       final timeStep = now ~/ 30;
-      
+
       // Generate a more secure hash for demonstration
       // In production, replace with proper TOTP library
       final message = '$secret:$timeStep';
       final bytes = utf8.encode(message);
       final digest = sha256.convert(bytes);
-      
+
       // Accept codes that match the first 6 digits of hash (demo purposes)
-      final hashString = digest.toString().substring(0, 6); // Used for validation logic
+      final hashString =
+          digest.toString().substring(0, 6); // Used for validation logic
       final codeNumeric = int.tryParse(code) ?? 0;
-      
+
       // Allow 30-second window with ±1 tolerance for time sync
       for (int offset = -1; offset <= 1; offset++) {
         final testMessage = '$secret:${timeStep + offset}';
@@ -309,12 +318,12 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
         final testDigest = sha256.convert(testBytes);
         final testHashString = testDigest.toString().substring(0, 6);
         final testHashNumeric = int.tryParse(testHashString) ?? 0;
-        
+
         if (testHashNumeric == codeNumeric) {
           return true;
         }
       }
-      
+
       return false;
     } catch (e) {
       // Log error in debug mode
@@ -330,14 +339,13 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
     final codes = <String>[];
     final random = Random.secure();
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    
+
     for (int i = 0; i < 10; i++) {
-      final code = String.fromCharCodes(
-        Iterable.generate(8, (_) => chars.codeUnitAt(random.nextInt(chars.length)))
-      );
+      final code = String.fromCharCodes(Iterable.generate(
+          8, (_) => chars.codeUnitAt(random.nextInt(chars.length))));
       codes.add(code);
     }
-    
+
     return codes;
   }
 
@@ -368,7 +376,8 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
         if (result.isSuccess) {
           setState(() {
             // Generate a mock verification ID for this demo
-            _verificationId = 'demo_verification_${DateTime.now().millisecondsSinceEpoch}';
+            _verificationId =
+                'demo_verification_${DateTime.now().millisecondsSinceEpoch}';
             if (_generateBackupCodes) {
               _backupCodes = _generateSecureBackupCodes();
             }
@@ -387,7 +396,7 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
       if (kDebugMode) {
         debugPrint('Error starting SMS verification: $e');
       }
-      
+
       if (mounted) {
         _showErrorSnackBar('SMS verification failed: $e');
         setState(() {
@@ -418,7 +427,8 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
 
       if (mounted) {
         if (result.isSuccess) {
-          _showSuccessSnackBar('Two-factor authentication successfully enabled');
+          _showSuccessSnackBar(
+              'Two-factor authentication successfully enabled');
           setState(() {
             _hasCompletedSetup = true;
             _isProcessing = false;
@@ -436,7 +446,7 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
       if (kDebugMode) {
         debugPrint('Error finalizing SMS setup: $e');
       }
-      
+
       if (mounted) {
         _showErrorSnackBar('Setup finalization failed: $e');
         setState(() {
@@ -454,7 +464,7 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
 
     try {
       final result = await _createTOTPSetup();
-      
+
       if (mounted) {
         if (result.isSuccess) {
           setState(() {
@@ -474,7 +484,7 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
       if (kDebugMode) {
         debugPrint('Error starting TOTP setup: $e');
       }
-      
+
       if (mounted) {
         _showErrorSnackBar('TOTP setup failed: $e');
         setState(() {
@@ -497,8 +507,9 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
     });
 
     try {
-      final isValid = await _verifyTOTPCode(_totpSetup!.secret, _totpCodeController.text.trim());
-      
+      final isValid = await _verifyTOTPCode(
+          _totpSetup!.secret, _totpCodeController.text.trim());
+
       if (mounted) {
         if (isValid) {
           _showSuccessSnackBar('Authenticator app verification successful');
@@ -518,7 +529,7 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
       if (kDebugMode) {
         debugPrint('Error verifying TOTP: $e');
       }
-      
+
       if (mounted) {
         _showErrorSnackBar('TOTP verification failed: $e');
         setState(() {
@@ -550,7 +561,7 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
   /// Show success snackbar with performance optimization
   void _showSuccessSnackBar(String message) {
     if (!mounted) return;
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -572,7 +583,7 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
   /// Show error snackbar with performance optimization
   void _showErrorSnackBar(String message) {
     if (!mounted) return;
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -627,9 +638,9 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
         child: SafeArea(
           child: FadeTransition(
             opacity: _fadeAnimation,
-            child: _isLoading 
-              ? const Center(child: CircularProgressIndicator())
-              : _buildSetupFlow(),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _buildSetupFlow(),
           ),
         ),
       ),
@@ -660,7 +671,7 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
         if (_currentStep == 4) {
           return const SizedBox.shrink();
         }
-        
+
         return Padding(
           padding: const EdgeInsets.only(top: 20),
           child: Row(
@@ -705,8 +716,8 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
             ),
           ),
           const SizedBox(height: 24),
-          ...AuthenticationMethod.values.map((method) => 
-            RadioListTile<AuthenticationMethod>(
+          ...AuthenticationMethod.values.map(
+            (method) => RadioListTile<AuthenticationMethod>(
               title: Text(_getMethodTitle(method)),
               subtitle: Text(_getMethodSubtitle(method)),
               value: method,
@@ -780,14 +791,15 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: _isProcessing ? null : _startSMSVerification,
-                icon: _isProcessing 
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.send),
-                label: Text(_isProcessing ? 'Sending...' : 'Send Verification Code'),
+                icon: _isProcessing
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.send),
+                label: Text(
+                    _isProcessing ? 'Sending...' : 'Send Verification Code'),
               ),
             ),
           ],
@@ -824,14 +836,15 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: _isProcessing ? null : _startTOTPSetup,
-                icon: _isProcessing 
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.qr_code_scanner),
-                label: Text(_isProcessing ? 'Setting up...' : 'Generate QR Code'),
+                icon: _isProcessing
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.qr_code_scanner),
+                label:
+                    Text(_isProcessing ? 'Setting up...' : 'Generate QR Code'),
               ),
             )
           else
@@ -891,9 +904,8 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
                   ),
                   IconButton(
                     onPressed: () => _copyToClipboard(
-                      _totpSetup!.manualEntryKey, 
-                      'Secret key copied to clipboard'
-                    ),
+                        _totpSetup!.manualEntryKey,
+                        'Secret key copied to clipboard'),
                     icon: const Icon(Icons.copy),
                     tooltip: 'Copy to clipboard',
                   ),
@@ -937,13 +949,13 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
           width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: _isProcessing ? null : _finalizeTOTPSetup,
-            icon: _isProcessing 
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.check),
+            icon: _isProcessing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.check),
             label: Text(_isProcessing ? 'Verifying...' : 'Verify & Enable'),
           ),
         ),
@@ -990,7 +1002,8 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
                   ),
                 ),
                 SizedBox(height: 8),
-                Text('Hardware token support will be available in a future update.'),
+                Text(
+                    'Hardware token support will be available in a future update.'),
               ],
             ),
           ),
@@ -1045,13 +1058,13 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: _isProcessing ? null : _verifyBackupCode,
-              icon: _isProcessing 
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.check),
+              icon: _isProcessing
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.check),
               label: Text(_isProcessing ? 'Verifying...' : 'Verify Code'),
             ),
           ),
@@ -1135,13 +1148,13 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: _isProcessing ? null : _finalizeSMSSetup,
-                icon: _isProcessing 
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.check_circle),
+                icon: _isProcessing
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.check_circle),
                 label: Text(_isProcessing ? 'Verifying...' : 'Verify & Enable'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
@@ -1309,8 +1322,8 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
                   Text(
                     'Backup Codes',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -1320,7 +1333,8 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
                   const SizedBox(height: 16),
                   SwitchListTile(
                     title: const Text('Generate Backup Codes'),
-                    subtitle: const Text('Create 10 backup codes for emergency use'),
+                    subtitle:
+                        const Text('Create 10 backup codes for emergency use'),
                     value: _generateBackupCodes,
                     onChanged: (value) {
                       setState(() {
@@ -1399,9 +1413,8 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () => _copyToClipboard(
-                          _backupCodes!.join('\n'),
-                          'Backup codes copied to clipboard'
-                        ),
+                            _backupCodes!.join('\n'),
+                            'Backup codes copied to clipboard'),
                         icon: const Icon(Icons.copy),
                         label: const Text('Copy All Codes'),
                         style: ElevatedButton.styleFrom(
@@ -1476,16 +1489,17 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ..._securityRecommendations.map((rec) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(Icons.lightbulb, color: Colors.amber, size: 20),
-                          const SizedBox(width: 8),
-                          Expanded(child: Text(rec)),
-                        ],
-                      ),
-                    )),
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.lightbulb,
+                                  color: Colors.amber, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text(rec)),
+                            ],
+                          ),
+                        )),
                   ],
                 ),
               ),
@@ -1522,7 +1536,7 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
 
     // Simulate backup code verification
     await Future.delayed(const Duration(seconds: 1));
-    
+
     if (mounted) {
       _showSuccessSnackBar('Backup code verified successfully');
       setState(() {
@@ -1610,7 +1624,8 @@ class _ComprehensiveTwoFactorAuthSetupPageState extends State<ComprehensiveTwoFa
               ),
               SizedBox(height: 8),
               Text('• SMS Verification: Receive codes via text message'),
-              Text('• Authenticator App: Use apps like Google Authenticator or Authy'),
+              Text(
+                  '• Authenticator App: Use apps like Google Authenticator or Authy'),
               Text('• Hardware Token: Physical security keys (coming soon)'),
               Text('• Backup Codes: Emergency access codes'),
               SizedBox(height: 16),

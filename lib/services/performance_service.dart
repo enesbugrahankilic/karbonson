@@ -9,22 +9,23 @@ import 'package:flutter/scheduler.dart';
 
 class PerformanceService {
   static PerformanceService? _instance;
-  static PerformanceService get instance => _instance ??= PerformanceService._();
-  
+  static PerformanceService get instance =>
+      _instance ??= PerformanceService._();
+
   PerformanceService._();
 
   // Performance Metrics
   final Map<String, PerformanceMetric> _metrics = {};
-  final StreamController<PerformanceReport> _reportController = 
-    StreamController<PerformanceReport>.broadcast();
-  
+  final StreamController<PerformanceReport> _reportController =
+      StreamController<PerformanceReport>.broadcast();
+
   Stream<PerformanceReport> get reportStream => _reportController.stream;
 
   // Memory Management
   Timer? _memoryCleanupTimer;
   int _maxCacheSize = 50; // Maximum number of cached items
   int _optimizedCacheSize = 100; // Optimized cache size
-  
+
   // Image Caching
   final Map<String, ImageCacheEntry> _imageCache = {};
   final Map<String, int> _imageAccessCount = {};
@@ -32,7 +33,7 @@ class PerformanceService {
   void initialize() {
     _startMemoryMonitoring();
     _startPerformanceReporting();
-    
+
     developer.log('PerformanceService initialized');
   }
 
@@ -47,23 +48,23 @@ class PerformanceService {
     // Clean up expired cache entries
     final now = DateTime.now();
     final expiredKeys = <String>[];
-    
+
     for (final entry in _imageCache.entries) {
       if (now.difference(entry.value.createdAt).inMinutes > 30) {
         expiredKeys.add(entry.key);
       }
     }
-    
+
     for (final key in expiredKeys) {
       _imageCache.remove(key);
       _imageAccessCount.remove(key);
     }
-    
+
     // Enforce cache size limit
     if (_imageCache.length > _maxCacheSize) {
       _evictLeastRecentlyUsed();
     }
-    
+
     if (expiredKeys.isNotEmpty || _imageCache.length > _maxCacheSize) {
       developer.log('Memory cleanup completed: ${expiredKeys.length} expired, '
           'cache size: ${_imageCache.length}');
@@ -74,9 +75,10 @@ class PerformanceService {
     // Sort by access count and remove least frequently used
     final sortedEntries = _imageAccessCount.entries.toList()
       ..sort((a, b) => a.value.compareTo(b.value));
-    
-    final toRemove = sortedEntries.take((_imageCache.length - _maxCacheSize ~/ 2)).toList();
-    
+
+    final toRemove =
+        sortedEntries.take((_imageCache.length - _maxCacheSize ~/ 2)).toList();
+
     for (final entry in toRemove) {
       _imageCache.remove(entry.key);
       _imageAccessCount.remove(entry.key);
@@ -84,21 +86,22 @@ class PerformanceService {
   }
 
   // Lazy Loading for Images
-  Future<ImageInfo?> loadImageWithCache(String url, {int? width, int? height}) async {
+  Future<ImageInfo?> loadImageWithCache(String url,
+      {int? width, int? height}) async {
     final cacheKey = _generateCacheKey(url, width, height);
-    
+
     // Check cache first
     final cachedEntry = _imageCache[cacheKey];
     if (cachedEntry != null) {
       _imageAccessCount[cacheKey] = (_imageAccessCount[cacheKey] ?? 0) + 1;
       return cachedEntry.imageInfo;
     }
-    
+
     try {
       // In a real implementation, you would load the image from network/local storage
       // For now, we'll simulate image loading
       final imageInfo = await _loadImageFromNetwork(url);
-      
+
       if (imageInfo != null) {
         _imageCache[cacheKey] = ImageCacheEntry(
           imageInfo: imageInfo,
@@ -106,7 +109,7 @@ class PerformanceService {
         );
         _imageAccessCount[cacheKey] = 1;
       }
-      
+
       return imageInfo;
     } catch (e) {
       developer.log('Failed to load image: $url, Error: $e');
@@ -129,7 +132,7 @@ class PerformanceService {
     final optimizedWidget = RepaintBoundary(
       child: widget,
     );
-    
+
     // Add performance monitoring for complex widgets
     return PerformanceMonitor(
       name: debugName ?? 'Widget',
@@ -151,8 +154,9 @@ class PerformanceService {
       metric.endTime = DateTime.now();
       metric.duration = metric.endTime!.difference(metric.startTime);
       _metrics[operation] = metric;
-      
-      developer.log('Performance: $operation took ${metric.duration?.inMilliseconds ?? 0}ms');
+
+      developer.log(
+          'Performance: $operation took ${metric.duration?.inMilliseconds ?? 0}ms');
     }
   }
 
@@ -175,16 +179,16 @@ class PerformanceService {
 
   void _generatePerformanceReport() {
     if (_metrics.isEmpty) return;
-    
+
     final report = PerformanceReport(
       timestamp: DateTime.now(),
       metrics: Map.from(_metrics),
       memoryUsage: _getMemoryUsage(),
       cacheSize: _imageCache.length,
     );
-    
+
     _reportController.add(report);
-    
+
     // Log significant performance issues
     for (final metric in _metrics.values) {
       if (metric.duration != null && metric.duration!.inMilliseconds > 100) {
@@ -207,17 +211,18 @@ class PerformanceService {
   void monitorFrameRate(VoidCallback frameCallback) {
     WidgetsBinding.instance.addPersistentFrameCallback((duration) {
       final fps = 1000 / duration.inMilliseconds;
-      
+
       if (fps < 30) {
         developer.log('Low FPS detected: ${fps.toStringAsFixed(1)}');
       }
-      
+
       frameCallback();
     });
   }
 
   // ⚡ HIZLANDIRMA: Async İşlemleri Optimize Et
-  Future<T> measureNetworkOperation<T>(String operation, Future<T> Function() fn) async {
+  Future<T> measureNetworkOperation<T>(
+      String operation, Future<T> Function() fn) async {
     startMeasure('network_$operation');
     try {
       // Network timeout ve retry logic
@@ -232,7 +237,8 @@ class PerformanceService {
   }
 
   // ⚡ HIZLANDIRMA: Database İşlemlerini Ölç
-  Future<T> measureDatabaseOperation<T>(String operation, Future<T> Function() fn) async {
+  Future<T> measureDatabaseOperation<T>(
+      String operation, Future<T> Function() fn) async {
     startMeasure('db_$operation');
     try {
       final result = await fn().timeout(const Duration(seconds: 15));
@@ -246,13 +252,16 @@ class PerformanceService {
   }
 
   // ⚡ HIZLANDIRMA: Widget Build Performansı İzleme
-  void trackWidgetBuildPerformance(String widgetName, VoidCallback buildCallback) {
+  void trackWidgetBuildPerformance(
+      String widgetName, VoidCallback buildCallback) {
     final stopwatch = Stopwatch()..start();
     buildCallback();
     stopwatch.stop();
-    
-    if (stopwatch.elapsedMilliseconds > 16) { // 60 FPS threshold
-      developer.log('Slow widget build detected: $widgetName took ${stopwatch.elapsedMilliseconds}ms');
+
+    if (stopwatch.elapsedMilliseconds > 16) {
+      // 60 FPS threshold
+      developer.log(
+          'Slow widget build detected: $widgetName took ${stopwatch.elapsedMilliseconds}ms');
       startMeasure('slow_build_$widgetName');
       endMeasure('slow_build_$widgetName');
     }
@@ -279,15 +288,16 @@ class PerformanceService {
   void _detectMemoryLeaks() {
     final now = DateTime.now();
     final suspiciousObjects = <String>[];
-    
+
     for (final entry in _activeObjects.entries) {
       if (now.difference(entry.value).inMinutes > 60) {
         suspiciousObjects.add(entry.key);
       }
     }
-    
+
     if (suspiciousObjects.isNotEmpty) {
-      developer.log('Potential memory leaks detected: ${suspiciousObjects.join(', ')}');
+      developer.log(
+          'Potential memory leaks detected: ${suspiciousObjects.join(', ')}');
     }
   }
 
@@ -300,7 +310,7 @@ class PerformanceService {
     if (_optimizedCache.length >= _optimizedMaxCacheSize) {
       _evictOldestCache();
     }
-    
+
     _optimizedCache[key] = CacheEntry(
       data: data,
       createdAt: DateTime.now(),
@@ -312,18 +322,18 @@ class PerformanceService {
   T? getFromCache<T>(String key) {
     final entry = _optimizedCache[key];
     if (entry == null) return null;
-    
-    if (entry.expiry != null && 
+
+    if (entry.expiry != null &&
         DateTime.now().difference(entry.createdAt) > entry.expiry!) {
       _optimizedCache.remove(key);
       _lruQueue.remove(key);
       return null;
     }
-    
+
     // Move to end (most recently used)
     _lruQueue.remove(key);
     _lruQueue.add(key);
-    
+
     return entry.data as T;
   }
 
@@ -341,20 +351,17 @@ class PerformanceService {
     int batchSize = 10,
   }) async {
     final results = <T>[];
-    
+
     for (int i = 0; i < items.length; i += batchSize) {
       final batch = items.sublist(
-        i, 
-        i + batchSize < items.length ? i + batchSize : items.length
-      );
-      
-      final batchResults = await Future.wait(
-        batch.map((item) => processor(item))
-      );
-      
+          i, i + batchSize < items.length ? i + batchSize : items.length);
+
+      final batchResults =
+          await Future.wait(batch.map((item) => processor(item)));
+
       results.addAll(batchResults);
     }
-    
+
     return results;
   }
 
@@ -363,7 +370,7 @@ class PerformanceService {
     for (final metric in _metrics.values) {
       if (metric.duration != null) {
         final durationMs = metric.duration!.inMilliseconds;
-        
+
         if (durationMs > 1000) {
           developer.log('⚠️ CRITICAL: ${metric.name} took ${durationMs}ms');
         } else if (durationMs > 500) {
@@ -378,8 +385,10 @@ class PerformanceService {
   // Lazy List Building
   Widget buildLazyList<T>({
     required List<T> items,
-    required Widget Function(BuildContext context, T item, int index) itemBuilder,
-    required Widget Function(BuildContext context, int index) placeholderBuilder,
+    required Widget Function(BuildContext context, T item, int index)
+        itemBuilder,
+    required Widget Function(BuildContext context, int index)
+        placeholderBuilder,
     int preloadDistance = 5,
   }) {
     return LazyLoadListView<T>(
@@ -476,17 +485,18 @@ class _PerformanceMonitorState extends State<PerformanceMonitor> {
   Widget build(BuildContext context) {
     _buildCount++;
     _buildStopwatch.start();
-    
+
     final result = widget.child;
-    
+
     _buildStopwatch.stop();
-    if (_buildStopwatch.elapsedMilliseconds > 16) { // 60 FPS threshold
+    if (_buildStopwatch.elapsedMilliseconds > 16) {
+      // 60 FPS threshold
       PerformanceService.instance.endMeasure('${widget.name}_render');
       developer.log('Slow render detected: ${widget.name} took '
           '${_buildStopwatch.elapsedMilliseconds}ms');
       PerformanceService.instance.startMeasure('${widget.name}_render');
     }
-    
+
     return result;
   }
 }
@@ -518,7 +528,7 @@ class _LazyLoadListViewState<T> extends State<LazyLoadListView<T>> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    
+
     // Initially load first few items
     _preloadItems(0, widget.preloadDistance);
   }
@@ -526,8 +536,8 @@ class _LazyLoadListViewState<T> extends State<LazyLoadListView<T>> {
   void _onScroll() {
     final startIndex = _getVisibleStart();
     final endIndex = _getVisibleEnd();
-    _preloadItems(startIndex - widget.preloadDistance, 
-                  endIndex + widget.preloadDistance);
+    _preloadItems(
+        startIndex - widget.preloadDistance, endIndex + widget.preloadDistance);
   }
 
   int _getVisibleStart() {
@@ -593,6 +603,7 @@ class ImageInfo {
 // Performance Optimized Widget Extensions
 extension PerformanceExtensions on Widget {
   Widget optimize({String? debugName}) {
-    return PerformanceService.instance.optimizeWidget(this, debugName: debugName);
+    return PerformanceService.instance
+        .optimizeWidget(this, debugName: debugName);
   }
 }

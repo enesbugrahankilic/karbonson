@@ -21,7 +21,8 @@ class AIRecommendationWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Category: ${recommendation.category}'),
-            Text('Confidence: ${(recommendation.confidenceScore * 100).toStringAsFixed(1)}%'),
+            Text(
+                'Confidence: ${(recommendation.confidenceScore * 100).toStringAsFixed(1)}%'),
             Text('Reason: ${recommendation.reason}'),
           ],
         ),

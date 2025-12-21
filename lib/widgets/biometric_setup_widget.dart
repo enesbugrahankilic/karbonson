@@ -39,7 +39,7 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
       if (available) {
         _biometricType = await BiometricService.getBiometricTypeName();
       }
-      
+
       if (mounted) {
         setState(() {
           _isAvailable = available;
@@ -54,7 +54,8 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
 
   Future<void> _setupBiometric() async {
     if (!_isAvailable) {
-      _showMessage('Bu cihazda biyometrik kimlik doğrulama mevcut değil.', Colors.orange);
+      _showMessage('Bu cihazda biyometrik kimlik doğrulama mevcut değil.',
+          Colors.orange);
       return;
     }
 
@@ -65,7 +66,8 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
     try {
       // Biyometrik kimlik doğrulama iste
       final success = await BiometricService.authenticate(
-        localizedReason: 'Biyometrik kimlik doğrulama kurulumu için $_biometricType kullanımına izin verin',
+        localizedReason:
+            'Biyometrik kimlik doğrulama kurulumu için $_biometricType kullanımına izin verin',
         useErrorDialogs: true,
       );
 
@@ -78,7 +80,8 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
             setState(() {
               _isSetup = true;
             });
-            _showMessage('Biyometrik kimlik doğrulama başarıyla kuruldu! 🎉', Colors.green);
+            _showMessage('Biyometrik kimlik doğrulama başarıyla kuruldu! 🎉',
+                Colors.green);
             widget.onSetupCompleted?.call();
           }
         } else {
@@ -86,41 +89,74 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
           final user = fb_auth.FirebaseAuth.instance.currentUser;
           if (mounted) {
             if (user == null) {
-              _showMessage('Biyometri bilgileri kaydedilemedi. Lütfen oturum açın ve tekrar deneyin.', Colors.red);
+              _showMessage(
+                  'Biyometri bilgileri kaydedilemedi. Lütfen oturum açın ve tekrar deneyin.',
+                  Colors.red);
             } else {
-              _showMessage('Biyometri bilgileri kaydedilemedi. Lütfen daha sonra tekrar deneyin.', Colors.red);
+              _showMessage(
+                  'Biyometri bilgileri kaydedilemedi. Lütfen daha sonra tekrar deneyin.',
+                  Colors.red);
             }
           }
         }
       } else {
-        _showMessage('Biyometrik kimlik doğrulama iptal edildi.', Colors.orange);
+        _showMessage(
+            'Biyometrik kimlik doğrulama iptal edildi.', Colors.orange);
       }
-
     } catch (e) {
       // Daha spesifik hata mesajları için hata türünü kontrol et
       if (mounted) {
-        if (e.toString().contains('user-not-found') || e.toString().contains('null')) {
-          _showMessage('Kullanıcı oturumu bulunamadı. Lütfen giriş yapın.', Colors.red);
-        } else if (e.toString().contains('network') || e.toString().contains('timeout')) {
-          _showMessage('Ağ bağlantı hatası. İnternet bağlantınızı kontrol edin.', Colors.red);
+        if (e.toString().contains('user-not-found') ||
+            e.toString().contains('null')) {
+          _showMessage(
+              'Kullanıcı oturumu bulunamadı. Lütfen giriş yapın.', Colors.red);
+        } else if (e.toString().contains('network') ||
+            e.toString().contains('timeout')) {
+          _showMessage(
+              'Ağ bağlantı hatası. İnternet bağlantınızı kontrol edin.',
+              Colors.red);
         } else if (e.toString().contains('biometric')) {
-          _showMessage('Biyometrik cihaz desteği bulunamadı. Cihazınızı kontrol edin.', Colors.red);
-        } else if (e.toString().contains('Firestore') || e.toString().contains('Firebase')) {
-          _showMessage('Veritabanı bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.', Colors.red);
-        } else if (e.toString().contains('version') || e.toString().contains('update')) {
-          _showMessage('Yazılım güncellemesi gerekiyor. Lütfen uygulamanızı güncelleyin.', Colors.red);
-        } else if (e.toString().contains('reset') || e.toString().contains('clear')) {
-          _showMessage('Biyometrik veriler sıfırlandı. Lütfen yeniden kaydedin.', Colors.orange);
-        } else if (e.toString().contains('cache') || e.toString().contains('storage')) {
-          _showMessage('Önbellek temizleme işlemi gerekiyor. Lütfen uygulama önbelleğini temizleyin.', Colors.orange);
-        } else if (e.toString().contains('security') || e.toString().contains('antivirus')) {
-          _showMessage('Güvenlik yazılımı engellemesi tespit edildi. Lütfen güvenlik yazılımınızı kontrol edin.', Colors.orange);
-        } else if (e.toString().contains('factory') || e.toString().contains('reset')) {
-          _showMessage('Fabrika ayarlarına sıfırlama gerekebilir. Lütfen yedek alın ve sıfırlayın.', Colors.red);
-        } else if (e.toString().contains('support') || e.toString().contains('contact')) {
-          _showMessage('Teknik destek gerekiyor. Lütfen destek ekibiyle iletişime geçin.', Colors.red);
+          _showMessage(
+              'Biyometrik cihaz desteği bulunamadı. Cihazınızı kontrol edin.',
+              Colors.red);
+        } else if (e.toString().contains('Firestore') ||
+            e.toString().contains('Firebase')) {
+          _showMessage(
+              'Veritabanı bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.',
+              Colors.red);
+        } else if (e.toString().contains('version') ||
+            e.toString().contains('update')) {
+          _showMessage(
+              'Yazılım güncellemesi gerekiyor. Lütfen uygulamanızı güncelleyin.',
+              Colors.red);
+        } else if (e.toString().contains('reset') ||
+            e.toString().contains('clear')) {
+          _showMessage(
+              'Biyometrik veriler sıfırlandı. Lütfen yeniden kaydedin.',
+              Colors.orange);
+        } else if (e.toString().contains('cache') ||
+            e.toString().contains('storage')) {
+          _showMessage(
+              'Önbellek temizleme işlemi gerekiyor. Lütfen uygulama önbelleğini temizleyin.',
+              Colors.orange);
+        } else if (e.toString().contains('security') ||
+            e.toString().contains('antivirus')) {
+          _showMessage(
+              'Güvenlik yazılımı engellemesi tespit edildi. Lütfen güvenlik yazılımınızı kontrol edin.',
+              Colors.orange);
+        } else if (e.toString().contains('factory') ||
+            e.toString().contains('reset')) {
+          _showMessage(
+              'Fabrika ayarlarına sıfırlama gerekebilir. Lütfen yedek alın ve sıfırlayın.',
+              Colors.red);
+        } else if (e.toString().contains('support') ||
+            e.toString().contains('contact')) {
+          _showMessage(
+              'Teknik destek gerekiyor. Lütfen destek ekibiyle iletişime geçin.',
+              Colors.red);
         } else {
-          _showMessage('Kurulum sırasında hata oluştu: ${e.toString()}', Colors.red);
+          _showMessage(
+              'Kurulum sırasında hata oluştu: ${e.toString()}', Colors.red);
         }
       }
     } finally {
@@ -150,7 +186,8 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
   @override
   Widget build(BuildContext context) {
     if (!_isAvailable) {
-      return const SizedBox.shrink(); // Biyometri mevcut değilse widget gösterme
+      return const SizedBox
+          .shrink(); // Biyometri mevcut değilse widget gösterme
     }
 
     if (_isSetup) {
@@ -201,7 +238,9 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
           Row(
             children: [
               Icon(
-                _biometricType.toLowerCase().contains('face') ? Icons.face : Icons.fingerprint,
+                _biometricType.toLowerCase().contains('face')
+                    ? Icons.face
+                    : Icons.fingerprint,
                 color: Colors.blue.shade700,
                 size: 32,
               ),
@@ -239,7 +278,8 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
                           height: 16,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : const Icon(Icons.security),
@@ -287,7 +327,7 @@ class BiometricSetupStatus extends StatelessWidget {
       future: BiometricUserService.isUserBiometricEnabled(),
       builder: (context, snapshot) {
         final isEnabled = snapshot.data ?? false;
-        
+
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -308,12 +348,14 @@ class BiometricSetupStatus extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  isEnabled 
+                  isEnabled
                       ? 'Biyometrik giriş etkin'
                       : 'Biyometrik giriş devre dışı',
                   style: TextStyle(
                     fontSize: 14,
-                    color: isEnabled ? Colors.green.shade700 : Colors.grey.shade700,
+                    color: isEnabled
+                        ? Colors.green.shade700
+                        : Colors.grey.shade700,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -338,7 +380,8 @@ class BiometricOnlyLoginWidget extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<BiometricOnlyLoginWidget> createState() => _BiometricOnlyLoginWidgetState();
+  State<BiometricOnlyLoginWidget> createState() =>
+      _BiometricOnlyLoginWidgetState();
 }
 
 class _BiometricOnlyLoginWidgetState extends State<BiometricOnlyLoginWidget> {
@@ -358,7 +401,7 @@ class _BiometricOnlyLoginWidgetState extends State<BiometricOnlyLoginWidget> {
       if (available) {
         _biometricType = await BiometricService.getBiometricTypeName();
       }
-      
+
       if (mounted) {
         setState(() {
           _isAvailable = available;
@@ -373,7 +416,8 @@ class _BiometricOnlyLoginWidgetState extends State<BiometricOnlyLoginWidget> {
 
   Future<void> _biometricLogin() async {
     if (!_isAvailable) {
-      _showMessage('Bu cihazda biyometrik kimlik doğrulama mevcut değil.', Colors.orange);
+      _showMessage('Bu cihazda biyometrik kimlik doğrulama mevcut değil.',
+          Colors.orange);
       return;
     }
 
@@ -383,7 +427,8 @@ class _BiometricOnlyLoginWidgetState extends State<BiometricOnlyLoginWidget> {
 
     try {
       final success = await BiometricService.authenticate(
-        localizedReason: '$_biometricType ile giriş yapmak için kimlik bilgilerinizi doğrulayın',
+        localizedReason:
+            '$_biometricType ile giriş yapmak için kimlik bilgilerinizi doğrulayın',
         useErrorDialogs: true,
       );
 
@@ -397,7 +442,6 @@ class _BiometricOnlyLoginWidgetState extends State<BiometricOnlyLoginWidget> {
         _showMessage('Kimlik doğrulama başarısız.', Colors.red);
         widget.onError?.call();
       }
-
     } catch (e) {
       _showMessage('Giriş sırasında hata oluştu: ${e.toString()}', Colors.red);
       widget.onError?.call();
@@ -442,7 +486,9 @@ class _BiometricOnlyLoginWidgetState extends State<BiometricOnlyLoginWidget> {
                 ),
               )
             : Icon(
-                _biometricType.toLowerCase().contains('face') ? Icons.face : Icons.fingerprint,
+                _biometricType.toLowerCase().contains('face')
+                    ? Icons.face
+                    : Icons.fingerprint,
                 color: Colors.white,
               ),
         label: Text(

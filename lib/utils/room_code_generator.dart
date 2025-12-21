@@ -27,11 +27,11 @@ class RoomCodeGenerator {
 
   static String _generateCode(int length) {
     StringBuffer code = StringBuffer();
-    
+
     for (int i = 0; i < length; i++) {
       code.write(_digits[_random.nextInt(_digits.length)]);
     }
-    
+
     return code.toString();
   }
 }

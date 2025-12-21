@@ -28,9 +28,9 @@ class LeaderboardItem extends StatelessWidget {
           username,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: rank <= 3 ? FontWeight.bold : FontWeight.normal,
-                color: isCurrentPlayerInTop10 
-                  ? Theme.of(context).colorScheme.error 
-                  : Theme.of(context).textTheme.titleMedium?.color,
+                color: isCurrentPlayerInTop10
+                    ? Theme.of(context).colorScheme.error
+                    : Theme.of(context).textTheme.titleMedium?.color,
               ),
         ),
         trailing: Text(

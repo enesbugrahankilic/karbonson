@@ -56,7 +56,8 @@ class TwoFactorAuthResult {
     );
   }
 
-  factory TwoFactorAuthResult.failure(String message, {Map<String, dynamic>? metadata}) {
+  factory TwoFactorAuthResult.failure(String message,
+      {Map<String, dynamic>? metadata}) {
     return TwoFactorAuthResult(
       isSuccess: false,
       message: message,
@@ -78,35 +79,35 @@ class Firebase2FAService {
   /// Validate Turkish phone number format
   static bool isValidPhoneNumber(String phoneNumber) {
     if (phoneNumber.isEmpty) return false;
-    
+
     // Clean the phone number
     String cleaned = phoneNumber.replaceAll(RegExp(r'[\s\-\(\)]'), '');
-    
+
     // Turkish numbers with country code: +90 followed by 5 and 9 more digits (13 total chars)
     if (cleaned.startsWith('+90')) {
-      return cleaned.length == 13 && 
-             cleaned[3] == '5' && 
-             RegExp(r'^\+90\d{9}$').hasMatch(cleaned);
+      return cleaned.length == 13 &&
+          cleaned[3] == '5' &&
+          RegExp(r'^\+90\d{9}$').hasMatch(cleaned);
     }
-    
+
     // Turkish numbers without country code: 05 followed by 9 digits (11 total chars)
     if (cleaned.startsWith('05')) {
-      return cleaned.length == 11 && 
-             cleaned[2] == '5' && 
-             RegExp(r'^05\d{9}$').hasMatch(cleaned);
+      return cleaned.length == 11 &&
+          cleaned[2] == '5' &&
+          RegExp(r'^05\d{9}$').hasMatch(cleaned);
     }
-    
+
     return false;
   }
 
   /// Convert Turkish phone number to international format
   static String convertToInternationalFormat(String phoneNumber) {
     String cleaned = phoneNumber.replaceAll(RegExp(r'[\s\-\(\)]'), '');
-    
+
     if (cleaned.startsWith('05')) {
       return '+90${cleaned.substring(1)}';
     }
-    
+
     return phoneNumber;
   }
 
@@ -124,16 +125,16 @@ class Firebase2FAService {
 
       // Get enrolled factors
       final enrolledFactors = await user.multiFactor.getEnrolledFactors();
-      
+
       if (enrolledFactors.isEmpty) {
-        return TwoFactorAuthResult.failure('Henüz doğrulama yöntemi tanımlanmamış');
+        return TwoFactorAuthResult.failure(
+            'Henüz doğrulama yöntemi tanımlanmamış');
       }
 
       return TwoFactorAuthResult.success(
         message: 'İki faktörlü doğrulama zaten etkin',
         userId: user.uid,
       );
-
     } on FirebaseAuthException catch (e) {
       return TwoFactorAuthResult.failure(getTurkishErrorMessage(e.code));
     } catch (e) {
@@ -153,7 +154,7 @@ class Firebase2FAService {
 
       // Get enrolled factors
       final enrolledFactors = await user.multiFactor.getEnrolledFactors();
-      
+
       if (enrolledFactors.isNotEmpty) {
         // Unenroll from multi-factor authentication
         await user.multiFactor.unenroll();
@@ -163,7 +164,6 @@ class Firebase2FAService {
         message: 'İki faktörlü doğrulama başarıyla devre dışı bırakıldı',
         userId: user.uid,
       );
-
     } on FirebaseAuthException catch (e) {
       return TwoFactorAuthResult.failure(getTurkishErrorMessage(e.code));
     } catch (e) {
@@ -187,14 +187,13 @@ class Firebase2FAService {
       }
 
       final internationalNumber = convertToInternationalFormat(phoneNumber);
-      
+
       // This would typically be handled by the auth flow
       // For now, return success to simulate the flow
       return TwoFactorAuthResult.success(
         message: 'Doğrulama kodu $internationalNumber numarasına gönderildi',
         userId: user.uid,
       );
-
     } on FirebaseAuthException catch (e) {
       return TwoFactorAuthResult.failure(getTurkishErrorMessage(e.code));
     } catch (e) {
@@ -229,7 +228,6 @@ class Firebase2FAService {
         message: 'Doğrulama başarılı. 2FA kurulumu tamamlandı',
         userId: user.uid,
       );
-
     } on FirebaseAuthException catch (e) {
       return TwoFactorAuthResult.failure(getTurkishErrorMessage(e.code));
     } catch (e) {
@@ -308,7 +306,8 @@ class Firebase2FAService {
   }
 
   /// Update user 2FA status in Firestore
-  static Future<void> updateUserData2FAStatus(bool isEnabled, String? phoneNumber) async {
+  static Future<void> updateUserData2FAStatus(
+      bool isEnabled, String? phoneNumber) async {
     try {
       final user = _auth.currentUser;
       if (user == null) return;
@@ -316,7 +315,8 @@ class Firebase2FAService {
       // This would typically update Firestore user document
       // For now, just log the action
       if (kDebugMode) {
-        debugPrint('Updating 2FA status: enabled=$isEnabled, phone=$phoneNumber');
+        debugPrint(
+            'Updating 2FA status: enabled=$isEnabled, phone=$phoneNumber');
       }
     } catch (e) {
       if (kDebugMode) {

@@ -14,7 +14,7 @@ class PresenceService {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   StreamSubscription<QuerySnapshot>? _presenceSubscription;
   bool _isInitialized = false;
   Timer? _presenceUpdateTimer;
@@ -33,13 +33,14 @@ class PresenceService {
     try {
       final user = _auth.currentUser;
       if (user == null) {
-        if (kDebugMode) debugPrint('⚠️ Cannot initialize presence - user not authenticated');
+        if (kDebugMode)
+          debugPrint('⚠️ Cannot initialize presence - user not authenticated');
         return;
       }
 
       _isInitialized = true;
       _setupPresenceTracking(user.uid);
-      
+
       if (kDebugMode) {
         debugPrint('✅ Presence service initialized for user: ${user.uid}');
       }
@@ -70,16 +71,17 @@ class PresenceService {
         'lastUpdated': FieldValue.serverTimestamp(),
         'lastSeen': FieldValue.serverTimestamp(),
         'deviceInfo': {
-          'platform': 'mobile', // Could be enhanced with actual platform detection
+          'platform':
+              'mobile', // Could be enhanced with actual platform detection
           'appVersion': '1.0.0', // Could be enhanced with actual app version
         },
       };
 
       await _firestore.collection(_presenceCollection).doc(userId).set(
-        presenceData, 
-        SetOptions(merge: true),
-      );
-      
+            presenceData,
+            SetOptions(merge: true),
+          );
+
       if (kDebugMode) {
         debugPrint('👤 Presence updated for $userId: $status');
       }
@@ -107,15 +109,18 @@ class PresenceService {
   /// Get user's current presence status
   Future<PresenceStatus?> getUserPresence(String userId) async {
     try {
-      final doc = await _firestore.collection(_presenceCollection).doc(userId).get();
-      
+      final doc =
+          await _firestore.collection(_presenceCollection).doc(userId).get();
+
       if (doc.exists) {
         final data = doc.data()!;
-        data['lastUpdated'] = (data['lastUpdated'] as Timestamp).millisecondsSinceEpoch;
-        data['lastSeen'] = (data['lastSeen'] as Timestamp).millisecondsSinceEpoch;
+        data['lastUpdated'] =
+            (data['lastUpdated'] as Timestamp).millisecondsSinceEpoch;
+        data['lastSeen'] =
+            (data['lastSeen'] as Timestamp).millisecondsSinceEpoch;
         return PresenceStatus.fromMap(data);
       }
-      
+
       return null;
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 Error getting user presence: $e');
@@ -124,9 +129,10 @@ class PresenceService {
   }
 
   /// Listen to multiple users' presence status
-  Stream<Map<String, PresenceStatus>> listenToFriendsPresence(List<String> friendIds) {
+  Stream<Map<String, PresenceStatus>> listenToFriendsPresence(
+      List<String> friendIds) {
     final controller = StreamController<Map<String, PresenceStatus>>();
-    
+
     if (friendIds.isEmpty) {
       controller.add({});
       return controller.stream;
@@ -137,25 +143,26 @@ class PresenceService {
           .collection(_presenceCollection)
           .where(FieldPath.documentId, whereIn: friendIds)
           .limit(friendIds.length);
-      
+
       _presenceSubscription = query.snapshots().listen((snapshot) {
         final Map<String, PresenceStatus> presenceMap = {};
-        
+
         for (final doc in snapshot.docs) {
           final data = doc.data();
-          data['lastUpdated'] = (data['lastUpdated'] as Timestamp).millisecondsSinceEpoch;
-          data['lastSeen'] = (data['lastSeen'] as Timestamp).millisecondsSinceEpoch;
+          data['lastUpdated'] =
+              (data['lastUpdated'] as Timestamp).millisecondsSinceEpoch;
+          data['lastSeen'] =
+              (data['lastSeen'] as Timestamp).millisecondsSinceEpoch;
           presenceMap[doc.id] = PresenceStatus.fromMap(data);
         }
-        
+
         controller.add(presenceMap);
       });
-      
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 Error listening to friends presence: $e');
       controller.addError(e);
     }
-    
+
     return controller.stream;
   }
 
@@ -163,12 +170,12 @@ class PresenceService {
   Future<bool> isUserOnline(String userId) async {
     final presence = await getUserPresence(userId);
     if (presence == null) return false;
-    
+
     // Check if status is online and last update was recent
     final now = DateTime.now().millisecondsSinceEpoch;
-    final isRecent = presence.lastUpdated != null && 
-                     (now - presence.lastUpdated!) < _offlineTimeout;
-    
+    final isRecent = presence.lastUpdated != null &&
+        (now - presence.lastUpdated!) < _offlineTimeout;
+
     return presence.status == _onlineStatus && isRecent;
   }
 
@@ -177,10 +184,10 @@ class PresenceService {
     try {
       final presenceMap = await listenToFriendsPresence(friendIds).first;
       final now = DateTime.now().millisecondsSinceEpoch;
-      
+
       return presenceMap.values.where((status) {
-        final isRecent = status.lastUpdated != null && 
-                         (now - status.lastUpdated!) < _offlineTimeout;
+        final isRecent = status.lastUpdated != null &&
+            (now - status.lastUpdated!) < _offlineTimeout;
         return status.status == _onlineStatus && isRecent;
       }).length;
     } catch (e) {
@@ -192,27 +199,30 @@ class PresenceService {
   /// Clean up presence data for offline users
   Future<void> cleanupOfflinePresence() async {
     try {
-      final cutoffTime = DateTime.now().millisecondsSinceEpoch - _offlineTimeout;
-      
+      final cutoffTime =
+          DateTime.now().millisecondsSinceEpoch - _offlineTimeout;
+
       final snapshot = await _firestore
           .collection(_presenceCollection)
           .where('status', isEqualTo: _onlineStatus)
-          .where('lastUpdated', isLessThan: Timestamp.fromMillisecondsSinceEpoch(cutoffTime))
+          .where('lastUpdated',
+              isLessThan: Timestamp.fromMillisecondsSinceEpoch(cutoffTime))
           .get();
-      
+
       final batch = FirebaseFirestore.instance.batch();
-      
+
       for (final doc in snapshot.docs) {
         batch.update(doc.reference, {
           'status': _offlineStatus,
           'lastSeen': FieldValue.serverTimestamp(),
         });
       }
-      
+
       if (snapshot.docs.isNotEmpty) {
         await batch.commit();
         if (kDebugMode) {
-          debugPrint('🧹 Cleaned up ${snapshot.docs.length} stale presence records');
+          debugPrint(
+              '🧹 Cleaned up ${snapshot.docs.length} stale presence records');
         }
       }
     } catch (e) {
@@ -225,13 +235,13 @@ class PresenceService {
     _presenceSubscription?.cancel();
     _presenceUpdateTimer?.cancel();
     _isInitialized = false;
-    
+
     // Set user as offline when disposing
     final user = _auth.currentUser;
     if (user != null) {
       setUserOffline();
     }
-    
+
     if (kDebugMode) {
       debugPrint('🗑️ Presence service disposed');
     }

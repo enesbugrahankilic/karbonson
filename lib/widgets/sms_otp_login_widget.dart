@@ -96,7 +96,8 @@ class _SmsOtpLoginWidgetState extends State<SmsOtpLoginWidget> {
           _canResend = false;
           _resendCountdown = 60; // 60 saniye bekleme
         });
-        _showSuccess('SMS kodu gönderildi: ${PhoneNumberValidator.format(e164Number)}');
+        _showSuccess(
+            'SMS kodu gönderildi: ${PhoneNumberValidator.format(e164Number)}');
         _startResendCountdown();
       } else {
         _showError(result.message);
@@ -248,17 +249,22 @@ class _SmsOtpLoginWidgetState extends State<SmsOtpLoginWidget> {
                   fillColor: ThemeColors.getInputBackground(context),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getBorder(context)),
+                    borderSide:
+                        BorderSide(color: ThemeColors.getBorder(context)),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getBorder(context)),
+                    borderSide:
+                        BorderSide(color: ThemeColors.getBorder(context)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getPrimaryButtonColor(context), width: 2),
+                    borderSide: BorderSide(
+                        color: ThemeColors.getPrimaryButtonColor(context),
+                        width: 2),
                   ),
-                  prefixIcon: Icon(Icons.phone, color: ThemeColors.getSecondaryText(context)),
+                  prefixIcon: Icon(Icons.phone,
+                      color: ThemeColors.getSecondaryText(context)),
                 ),
                 style: TextStyle(color: ThemeColors.getText(context)),
                 readOnly: _otpSent, // OTP gönderildikten sonra değiştirilemez
@@ -269,7 +275,9 @@ class _SmsOtpLoginWidgetState extends State<SmsOtpLoginWidget> {
               onPressed: _otpSent ? null : _showPhoneValidationDialog,
               icon: Icon(
                 Icons.edit,
-                color: _otpSent ? Colors.grey : ThemeColors.getPrimaryButtonColor(context),
+                color: _otpSent
+                    ? Colors.grey
+                    : ThemeColors.getPrimaryButtonColor(context),
               ),
               tooltip: 'Numara Düzenle',
             ),
@@ -311,7 +319,8 @@ class _SmsOtpLoginWidgetState extends State<SmsOtpLoginWidget> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: ThemeColors.getPrimaryButtonColor(context), width: 2),
+              borderSide: BorderSide(
+                  color: ThemeColors.getPrimaryButtonColor(context), width: 2),
             ),
             counterText: '',
           ),
@@ -335,7 +344,8 @@ class _SmsOtpLoginWidgetState extends State<SmsOtpLoginWidget> {
             ? const SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: Colors.white),
               )
             : const Icon(Icons.send),
         label: Text(
@@ -368,7 +378,8 @@ class _SmsOtpLoginWidgetState extends State<SmsOtpLoginWidget> {
             ? const SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: Colors.white),
               )
             : const Icon(Icons.verified),
         label: Text(
@@ -434,21 +445,29 @@ class _SmsOtpLoginWidgetState extends State<SmsOtpLoginWidget> {
                   _buildVerifyButton(),
                   const SizedBox(height: 8),
                   TextButton.icon(
-                    onPressed: _canResend ? () {
-                      setState(() {
-                        _otpSent = false;
-                        _otpController.clear();
-                      });
-                    } : null,
+                    onPressed: _canResend
+                        ? () {
+                            setState(() {
+                              _otpSent = false;
+                              _otpController.clear();
+                            });
+                          }
+                        : null,
                     icon: Icon(
                       Icons.refresh,
                       size: 18,
-                      color: _canResend ? ThemeColors.getInfoColor(context) : Colors.grey,
+                      color: _canResend
+                          ? ThemeColors.getInfoColor(context)
+                          : Colors.grey,
                     ),
                     label: Text(
-                      _canResend ? 'Farklı Numara Kullan' : 'Yeni Kod (${_resendCountdown}s)',
+                      _canResend
+                          ? 'Farklı Numara Kullan'
+                          : 'Yeni Kod (${_resendCountdown}s)',
                       style: TextStyle(
-                        color: _canResend ? ThemeColors.getInfoColor(context) : Colors.grey,
+                        color: _canResend
+                            ? ThemeColors.getInfoColor(context)
+                            : Colors.grey,
                       ),
                     ),
                   ),
@@ -523,21 +542,29 @@ class _SmsOtpLoginWidgetState extends State<SmsOtpLoginWidget> {
               const SizedBox(height: 12),
               Center(
                 child: TextButton.icon(
-                  onPressed: _canResend ? () {
-                    setState(() {
-                      _otpSent = false;
-                      _otpController.clear();
-                    });
-                  } : null,
+                  onPressed: _canResend
+                      ? () {
+                          setState(() {
+                            _otpSent = false;
+                            _otpController.clear();
+                          });
+                        }
+                      : null,
                   icon: Icon(
                     Icons.refresh,
                     size: 18,
-                    color: _canResend ? ThemeColors.getInfoColor(context) : Colors.grey,
+                    color: _canResend
+                        ? ThemeColors.getInfoColor(context)
+                        : Colors.grey,
                   ),
                   label: Text(
-                    _canResend ? 'Farklı Numara Kullan' : 'Yeni Kod (${_resendCountdown}s)',
+                    _canResend
+                        ? 'Farklı Numara Kullan'
+                        : 'Yeni Kod (${_resendCountdown}s)',
                     style: TextStyle(
-                      color: _canResend ? ThemeColors.getInfoColor(context) : Colors.grey,
+                      color: _canResend
+                          ? ThemeColors.getInfoColor(context)
+                          : Colors.grey,
                     ),
                   ),
                 ),

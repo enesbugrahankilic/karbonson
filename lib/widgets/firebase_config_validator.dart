@@ -16,7 +16,8 @@ class FirebaseConfigValidator extends StatefulWidget {
   });
 
   @override
-  State<FirebaseConfigValidator> createState() => _FirebaseConfigValidatorState();
+  State<FirebaseConfigValidator> createState() =>
+      _FirebaseConfigValidatorState();
 }
 
 class _FirebaseConfigValidatorState extends State<FirebaseConfigValidator> {
@@ -34,10 +35,13 @@ class _FirebaseConfigValidatorState extends State<FirebaseConfigValidator> {
     try {
       final isValid = await FirebaseAuthService.validateFirebaseConfig();
       final configCheck = await FirebaseAuthService.checkAuthConfiguration();
-      
+
       setState(() {
         _isConfigValid = isValid;
-        _validationResults = {'isValid': configCheck, 'checkedAt': DateTime.now().toIso8601String()};
+        _validationResults = {
+          'isValid': configCheck,
+          'checkedAt': DateTime.now().toIso8601String()
+        };
         _isValidating = false;
       });
 
@@ -54,7 +58,7 @@ class _FirebaseConfigValidatorState extends State<FirebaseConfigValidator> {
         _validationResults = {'error': e.toString()};
         _isValidating = false;
       });
-      
+
       if (!widget.showOnlyOnError) {
         _showConfigErrorDialog(e.toString());
       }
@@ -66,7 +70,8 @@ class _FirebaseConfigValidatorState extends State<FirebaseConfigValidator> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
               Icon(Icons.warning, color: Colors.orange[600], size: 28),
@@ -102,7 +107,8 @@ class _FirebaseConfigValidatorState extends State<FirebaseConfigValidator> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
               Icon(Icons.error, color: Colors.red[600], size: 28),
@@ -139,20 +145,27 @@ class _FirebaseConfigValidatorState extends State<FirebaseConfigValidator> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text('Firebase Yapılandırma Detayları'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildConfigRow('Firebase İlklendi', _validationResults!['firebase_initialized']),
-                _buildConfigRow('Mevcut Kullanıcı', _validationResults!['current_user_available']),
-                _buildConfigRow('Anonim Giriş Aktif', _validationResults!['anonymous_signin_enabled']),
+                _buildConfigRow('Firebase İlklendi',
+                    _validationResults!['firebase_initialized']),
+                _buildConfigRow('Mevcut Kullanıcı',
+                    _validationResults!['current_user_available']),
+                _buildConfigRow('Anonim Giriş Aktif',
+                    _validationResults!['anonymous_signin_enabled']),
                 if (_validationResults!.containsKey('anonymous_signin_error'))
-                  _buildConfigRow('Anonim Giriş Hatası', _validationResults!['anonymous_signin_error'], isError: true),
+                  _buildConfigRow('Anonim Giriş Hatası',
+                      _validationResults!['anonymous_signin_error'],
+                      isError: true),
                 if (_validationResults!.containsKey('error'))
-                  _buildConfigRow('Genel Hata', _validationResults!['error'], isError: true),
+                  _buildConfigRow('Genel Hata', _validationResults!['error'],
+                      isError: true),
                 const SizedBox(height: 16),
                 const Text(
                   'Çözüm Önerileri:',
@@ -187,8 +200,10 @@ class _FirebaseConfigValidatorState extends State<FirebaseConfigValidator> {
 
   Widget _buildConfigRow(String label, dynamic value, {bool isError = false}) {
     final bool isTrue = value is bool ? value : false;
-    final Color color = isError ? Colors.red : (isTrue ? Colors.green : Colors.orange);
-    final IconData icon = isError ? Icons.error : (isTrue ? Icons.check_circle : Icons.warning);
+    final Color color =
+        isError ? Colors.red : (isTrue ? Colors.green : Colors.orange);
+    final IconData icon =
+        isError ? Icons.error : (isTrue ? Icons.check_circle : Icons.warning);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -271,7 +286,7 @@ class FirebaseConfigCheck extends StatelessWidget {
           if (onInvalidConfig != null) {
             onInvalidConfig!();
           }
-          
+
           return Center(
             child: Card(
               margin: const EdgeInsets.all(16),

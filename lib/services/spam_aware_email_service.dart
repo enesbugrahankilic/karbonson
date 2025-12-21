@@ -6,11 +6,11 @@ class SpamAwareEmailService {
   // ⚡ COOLDOWN SÜRESİ 1 DAKİKADAN 15 SANİYEYE DÜŞÜRÜLDÜ
   static const Duration _emailCooldown = Duration(seconds: 15);
   static final Map<String, DateTime> _lastEmailSent = {};
-  
+
   // 🚀 PERFORMANCE OPTİMİZASYONU - CACHE EKLEMESİ
   static final Map<String, bool> _emailSendCache = {};
   static const Duration _cacheTimeout = Duration(seconds: 30);
-  
+
   /// ⚡ HIZLANDIRILMIŞ Rate limiting ile güvenli şifre sıfırlama e-postası gönderir
   static Future<bool> sendPasswordResetSpamSafe({
     required String email,
@@ -25,27 +25,26 @@ class SpamAwareEmailService {
         return true;
       }
     }
-    
+
     // Rate limiting kontrolü (15 saniye cooldown)
     if (!_canSendEmail(email)) {
       _showCooldownMessage(context);
       return false;
     }
-    
+
     try {
       // E-posta adresini normalize et
       final normalizedEmail = _normalizeEmail(email);
-      
+
       // ⚡ PARALEL İŞLEM - Firebase email gönderimini hızlandır
       await Future.wait([
         FirebaseAuth.instance.sendPasswordResetEmail(email: normalizedEmail),
         _updateCacheAsync(cacheKey, true),
       ]);
-      
+
       _recordEmailSent(email);
       _showSuccessMessage(context);
       return true;
-      
     } on FirebaseAuthException catch (e) {
       _handleFirebaseError(e, context);
       // 🚀 HATA DURUMUNDA DA CACHE'İ GÜNCELLE
@@ -53,7 +52,7 @@ class SpamAwareEmailService {
       return false;
     }
   }
-  
+
   /// 🚀 CACHE İÇİN ASYNC GÜNCELLEME
   static Future<void> _updateCacheAsync(String cacheKey, bool success) async {
     _emailSendCache[cacheKey] = success;
@@ -62,7 +61,7 @@ class SpamAwareEmailService {
       _emailSendCache.remove(cacheKey);
     });
   }
-  
+
   /// 🚀 CACHE'DEN BAŞARILI MESAJI GÖSTER
   static void _showCachedSuccessMessage(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -83,58 +82,58 @@ class SpamAwareEmailService {
       _showErrorMessage(context, 'Kullanıcı oturumu bulunamadı');
       return false;
     }
-    
+
     // 🚀 CACHE KONTROLÜ
     final cacheKey = 'verify_${user.email}';
     if (_emailSendCache.containsKey(cacheKey)) {
       _showCachedSuccessMessage(context);
       return true;
     }
-    
+
     // Rate limiting kontrolü (15 saniye cooldown)
     if (!_canSendEmail(user.email!)) {
       _showCooldownMessage(context);
       return false;
     }
-    
+
     try {
       // ⚡ PARALEL İŞLEM - Email gönderimi ve cache güncelleme
       await Future.wait([
         user.sendEmailVerification(),
         _updateCacheAsync(cacheKey, true),
       ]);
-      
+
       _recordEmailSent(user.email!);
       _showSuccessMessage(context, 'Doğrulama e-postası gönderildi ⚡');
       return true;
-      
     } on FirebaseAuthException catch (e) {
       _handleFirebaseError(e, context);
       await _updateCacheAsync(cacheKey, false);
       return false;
     }
   }
-  
+
   /// E-posta adresini normalize eder
   static String _normalizeEmail(String email) {
     return email.toLowerCase().trim();
   }
-  
+
   /// E-posta gönderim sıklığını kontrol eder
   static bool _canSendEmail(String email) {
     final lastSent = _lastEmailSent[email];
     if (lastSent == null) return true;
-    
+
     return DateTime.now().difference(lastSent) >= _emailCooldown;
   }
-  
+
   /// E-posta gönderimini kaydeder
   static void _recordEmailSent(String email) {
     _lastEmailSent[email] = DateTime.now();
   }
-  
+
   /// Başarı mesajı gösterir
-  static void _showSuccessMessage(BuildContext context, [String? customMessage]) {
+  static void _showSuccessMessage(BuildContext context,
+      [String? customMessage]) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(customMessage ?? 'E-posta başarıyla gönderildi'),
@@ -148,7 +147,7 @@ class SpamAwareEmailService {
       ),
     );
   }
-  
+
   /// Soğutma süresi mesajı gösterir (15 saniye)
   static void _showCooldownMessage(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -159,7 +158,7 @@ class SpamAwareEmailService {
       ),
     );
   }
-  
+
   /// Hata mesajı gösterir
   static void _showErrorMessage(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -170,9 +169,10 @@ class SpamAwareEmailService {
       ),
     );
   }
-  
+
   /// Firebase hatalarını spam context'inde işler
-  static void _handleFirebaseError(FirebaseAuthException e, BuildContext context) {
+  static void _handleFirebaseError(
+      FirebaseAuthException e, BuildContext context) {
     String message;
     switch (e.code) {
       case 'user-not-found':
@@ -208,26 +208,26 @@ class SpamAwareEmailService {
       default:
         message = 'Bir hata oluştu: ${e.message}';
     }
-    
+
     _showErrorMessage(context, message);
   }
-  
+
   /// E-posta gönderim istatistiklerini getirir
   static Map<String, dynamic> getEmailStats() {
     final now = DateTime.now();
     final last24Hours = now.subtract(Duration(hours: 24));
-    
+
     final recentSends = _lastEmailSent.values
         .where((timestamp) => timestamp.isAfter(last24Hours))
         .length;
-    
+
     return {
       'total_unique_emails': _lastEmailSent.keys.length,
       'last_24h_sends': recentSends,
       'cooldown_period_minutes': _emailCooldown.inMinutes,
     };
   }
-  
+
   /// E-posta gönderim geçmişini temizler (admin function)
   static void clearEmailHistory() {
     _lastEmailSent.clear();
@@ -244,19 +244,19 @@ class SpamRiskAnalyzer {
     final issues = <String>[];
     final warnings = <String>[];
     final suggestions = <String>[];
-    
+
     // Subject line analizi
     _analyzeSubject(subject, issues, warnings, suggestions);
-    
-    // Body analizi  
+
+    // Body analizi
     _analyzeBody(body, issues, warnings, suggestions);
-    
+
     // HTML/Düz metin oranı
     _analyzeHtmlRatio(body, warnings, suggestions);
-    
+
     // Genel risk skoru hesapla
     final riskScore = _calculateRiskScore(issues, warnings);
-    
+
     return SpamAnalysis(
       riskScore: riskScore,
       issues: issues,
@@ -265,46 +265,45 @@ class SpamRiskAnalyzer {
       riskLevel: _determineRiskLevel(riskScore),
     );
   }
-  
-  static void _analyzeSubject(String subject, List<String> issues, 
+
+  static void _analyzeSubject(String subject, List<String> issues,
       List<String> warnings, List<String> suggestions) {
-    
     // Aşırı ünlem işareti
     if (subject.contains('!!')) {
       issues.add('Konu satırında çok fazla ünlem işareti (!!) kullanılmış');
       suggestions.add('Ünlem işareti sayısını 1\'e düşürün');
     }
-    
+
     // Tamamen büyük harf
     if (subject == subject.toUpperCase() && subject.isNotEmpty) {
       issues.add('Konu satırı tamamen büyük harfle yazılmış');
       suggestions.add('Normal büyük/küçük harf kullanımına geçin');
     }
-    
+
     // Spam tetikleyici kelimeler
     final spamWords = ['ACİL', 'ÜCRETSİZ', 'HEMEN', 'SON FIRSAT', 'MİLYONER'];
     for (final word in spamWords) {
       if (subject.toUpperCase().contains(word)) {
         issues.add('Spam tetikleyici kelime tespit edildi: $word');
-        suggestions.add('"$word" kelimesini daha nötr bir ifade ile değiştirin');
+        suggestions
+            .add('"$word" kelimesini daha nötr bir ifade ile değiştirin');
       }
     }
-    
+
     // Konu uzunluğu
     if (subject.length > 70) {
       warnings.add('Konu satırı çok uzun (70 karakter üzeri)');
       suggestions.add('Konu satırını 50-60 karakter arası tutun');
     }
-    
+
     if (subject.length < 10) {
       warnings.add('Konu satırı çok kısa');
       suggestions.add('Konu satırını en az 20 karakter yapın');
     }
   }
-  
-  static void _analyzeBody(String body, List<String> issues, 
+
+  static void _analyzeBody(String body, List<String> issues,
       List<String> warnings, List<String> suggestions) {
-    
     // Spam tetikleyici kelimeler
     final spamWords = {
       'ACİL': 'Acil durumlarda daha resmi dil kullanın',
@@ -314,7 +313,7 @@ class SpamRiskAnalyzer {
       '\$': 'Para sembolü yerine "TL" yazın',
       '€': 'Euro sembolü yerine "EUR" yazın',
     };
-    
+
     final upperBody = body.toUpperCase();
     for (final entry in spamWords.entries) {
       if (upperBody.contains(entry.key)) {
@@ -322,15 +321,16 @@ class SpamRiskAnalyzer {
         suggestions.add(entry.value);
       }
     }
-    
+
     // Çok fazla büyük harf
-    final uppercaseRatio = upperBody.replaceAll(RegExp(r'[^A-Z]'), '').length / 
-                          upperBody.replaceAll(RegExp(r'[^A-Z]'), '').length;
+    final uppercaseRatio = upperBody.replaceAll(RegExp(r'[^A-Z]'), '').length /
+        upperBody.replaceAll(RegExp(r'[^A-Z]'), '').length;
     if (uppercaseRatio > 0.3) {
-      warnings.add('Metinde çok fazla büyük harf kullanımı (%${(uppercaseRatio * 100).toInt()})');
+      warnings.add(
+          'Metinde çok fazla büyük harf kullanımı (%${(uppercaseRatio * 100).toInt()})');
       suggestions.add('Normal yazım stilini benimseyin');
     }
-    
+
     // Çok fazla link
     final linkCount = RegExp(r'https?://').allMatches(body).length;
     if (linkCount > 3) {
@@ -338,34 +338,35 @@ class SpamRiskAnalyzer {
       suggestions.add('Bağlantı sayısını 1-2\'ye düşürün');
     }
   }
-  
-  static void _analyzeHtmlRatio(String body, List<String> warnings, 
-      List<String> suggestions) {
+
+  static void _analyzeHtmlRatio(
+      String body, List<String> warnings, List<String> suggestions) {
     final htmlTags = RegExp(r'<[^>]+>').allMatches(body).length;
     final textContent = body.replaceAll(RegExp(r'<[^>]+>'), '');
     final textLength = textContent.trim().length;
-    
+
     if (textLength == 0) return;
-    
+
     final htmlRatio = htmlTags / textLength;
-    
+
     if (htmlRatio > 0.5) {
       warnings.add('Çok fazla HTML etiketi kullanılmış');
       suggestions.add('HTML kullanımını azaltın, daha fazla düz metin ekleyin');
     }
-    
+
     if (htmlRatio < 0.1) {
       warnings.add('Çok az HTML etiketi (görsel sunumu zayıf)');
       suggestions.add('Daha iyi görsel sunum için HTML kullanın');
     }
   }
-  
-  static double _calculateRiskScore(List<String> issues, List<String> warnings) {
+
+  static double _calculateRiskScore(
+      List<String> issues, List<String> warnings) {
     final issueScore = issues.length * 3.0;
     final warningScore = warnings.length * 1.0;
     return issueScore + warningScore;
   }
-  
+
   static SpamRiskLevel _determineRiskLevel(double score) {
     if (score >= 10) return SpamRiskLevel.HIGH;
     if (score >= 5) return SpamRiskLevel.MEDIUM;
@@ -379,7 +380,7 @@ class SpamAnalysis {
   final List<String> warnings;
   final List<String> suggestions;
   final SpamRiskLevel riskLevel;
-  
+
   SpamAnalysis({
     required this.riskScore,
     required this.issues,
@@ -387,11 +388,11 @@ class SpamAnalysis {
     required this.suggestions,
     required this.riskLevel,
   });
-  
+
   bool get isHighRisk => riskLevel == SpamRiskLevel.HIGH;
   bool get isMediumRisk => riskLevel == SpamRiskLevel.MEDIUM;
   bool get isLowRisk => riskLevel == SpamRiskLevel.LOW;
-  
+
   String get riskDescription {
     switch (riskLevel) {
       case SpamRiskLevel.HIGH:
@@ -409,7 +410,7 @@ enum SpamRiskLevel { LOW, MEDIUM, HIGH }
 /// E-posta gönderimini monitör eden servis
 class EmailMonitoringService {
   static final List<EmailSendLog> _logs = [];
-  
+
   static void logEmailSend({
     required String email,
     required EmailType type,
@@ -425,36 +426,39 @@ class EmailMonitoringService {
       errorCode: errorCode,
       errorMessage: errorMessage,
     ));
-    
+
     // Sadece son 1000 log'u tut
     if (_logs.length > 1000) {
       _logs.removeAt(0);
     }
   }
-  
+
   static EmailStats getStats() {
     final now = DateTime.now();
     final last24h = now.subtract(Duration(hours: 24));
     final last7d = now.subtract(Duration(days: 7));
-    
-    final last24hLogs = _logs.where((log) => log.timestamp.isAfter(last24h)).toList();
-    final last7dLogs = _logs.where((log) => log.timestamp.isAfter(last7d)).toList();
-    
+
+    final last24hLogs =
+        _logs.where((log) => log.timestamp.isAfter(last24h)).toList();
+    final last7dLogs =
+        _logs.where((log) => log.timestamp.isAfter(last7d)).toList();
+
     final successful24h = last24hLogs.where((log) => log.success).length;
     final successful7d = last7dLogs.where((log) => log.success).length;
-    
+
     return EmailStats(
       totalSent: _logs.length,
       last24hSent: last24hLogs.length,
       last7dSent: last7dLogs.length,
-      last24hSuccessRate: last24hLogs.isNotEmpty ? 
-          (successful24h / last24hLogs.length * 100) : 0,
-      last7dSuccessRate: last7dLogs.isNotEmpty ? 
-          (successful7d / last7dLogs.length * 100) : 0,
+      last24hSuccessRate: last24hLogs.isNotEmpty
+          ? (successful24h / last24hLogs.length * 100)
+          : 0,
+      last7dSuccessRate:
+          last7dLogs.isNotEmpty ? (successful7d / last7dLogs.length * 100) : 0,
       uniqueEmails: _logs.map((log) => log.email).toSet().length,
     );
   }
-  
+
   static List<EmailSendLog> getRecentFailures({int limit = 10}) {
     return _logs
         .where((log) => !log.success)
@@ -463,7 +467,7 @@ class EmailMonitoringService {
         .take(limit)
         .toList();
   }
-  
+
   static void clearLogs() {
     _logs.clear();
   }
@@ -476,7 +480,7 @@ class EmailSendLog {
   final DateTime timestamp;
   final String? errorCode;
   final String? errorMessage;
-  
+
   EmailSendLog({
     required this.email,
     required this.type,
@@ -494,7 +498,7 @@ class EmailStats {
   final double last24hSuccessRate;
   final double last7dSuccessRate;
   final int uniqueEmails;
-  
+
   EmailStats({
     required this.totalSent,
     required this.last24hSent,

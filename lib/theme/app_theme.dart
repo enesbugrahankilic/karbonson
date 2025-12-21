@@ -4,17 +4,19 @@ class AppTheme {
   // Light theme colors
   static const Color _lightText = Colors.black87;
   static const Color _lightSecondaryText = Colors.black54;
-  
+
   // Dark theme colors
   static const Color _darkText = Colors.white;
   static const Color _darkSecondaryText = Colors.white70;
-  
+
   // High contrast colors for accessibility
   static const Color _highContrastText = Colors.black;
   static const Color _highContrastBackground = Colors.white;
-  static const Color _highContrastAccent = Color(0xFF0066CC); // WCAG AA compliant blue
-  static const Color _highContrastError = Color(0xFFCC0000); // WCAG AA compliant red
-  
+  static const Color _highContrastAccent =
+      Color(0xFF0066CC); // WCAG AA compliant blue
+  static const Color _highContrastError =
+      Color(0xFFCC0000); // WCAG AA compliant red
+
   // Enhanced text styles for LIGHT theme with improved hierarchy
   static const TextStyle _lightDisplayLarge = TextStyle(
     fontSize: 64, // Increased from 57
@@ -23,7 +25,7 @@ class AppTheme {
     color: _lightText,
     height: 1.1, // Tighter line height
   );
-  
+
   static const TextStyle _lightDisplayMedium = TextStyle(
     fontSize: 48, // Increased from 45
     fontWeight: FontWeight.w300,
@@ -31,7 +33,7 @@ class AppTheme {
     color: _lightText,
     height: 1.15,
   );
-  
+
   static const TextStyle _lightDisplaySmall = TextStyle(
     fontSize: 40, // Increased from 36
     fontWeight: FontWeight.w400,
@@ -39,7 +41,7 @@ class AppTheme {
     color: _lightText,
     height: 1.2,
   );
-  
+
   static const TextStyle _lightHeadlineLarge = TextStyle(
     fontSize: 36, // Increased from 32
     fontWeight: FontWeight.w500, // Reduced weight for modern look
@@ -47,7 +49,7 @@ class AppTheme {
     color: _lightText,
     height: 1.25,
   );
-  
+
   static const TextStyle _lightHeadlineMedium = TextStyle(
     fontSize: 30, // Increased from 28
     fontWeight: FontWeight.w500,
@@ -55,7 +57,7 @@ class AppTheme {
     color: _lightText,
     height: 1.3,
   );
-  
+
   static const TextStyle _lightHeadlineSmall = TextStyle(
     fontSize: 26, // Increased from 24
     fontWeight: FontWeight.w500,
@@ -63,7 +65,7 @@ class AppTheme {
     color: _lightText,
     height: 1.35,
   );
-  
+
   static const TextStyle _lightTitleLarge = TextStyle(
     fontSize: 24, // Increased from 22
     fontWeight: FontWeight.w600,
@@ -71,21 +73,21 @@ class AppTheme {
     color: _lightText,
     height: 1.4,
   );
-  
+
   static const TextStyle _lightTitleMedium = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.15,
     color: _lightSecondaryText,
   );
-  
+
   static const TextStyle _lightTitleSmall = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.1,
     color: _lightSecondaryText,
   );
-  
+
   static const TextStyle _lightBodyLarge = TextStyle(
     fontSize: 17, // Increased from 16 for better readability
     fontWeight: FontWeight.w400,
@@ -93,7 +95,7 @@ class AppTheme {
     color: _lightText,
     height: 1.5, // Improved line height
   );
-  
+
   static const TextStyle _lightBodyMedium = TextStyle(
     fontSize: 15, // Increased from 14
     fontWeight: FontWeight.w400,
@@ -101,7 +103,7 @@ class AppTheme {
     color: _lightText,
     height: 1.5,
   );
-  
+
   static const TextStyle _lightBodySmall = TextStyle(
     fontSize: 13, // Increased from 12
     fontWeight: FontWeight.w400,
@@ -109,7 +111,7 @@ class AppTheme {
     color: _lightSecondaryText,
     height: 1.4,
   );
-  
+
   static const TextStyle _lightLabelLarge = TextStyle(
     fontSize: 15, // Increased from 14
     fontWeight: FontWeight.w600,
@@ -117,21 +119,21 @@ class AppTheme {
     color: _lightText,
     height: 1.4,
   );
-  
+
   static const TextStyle _lightLabelMedium = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.5,
     color: _lightText,
   );
-  
+
   static const TextStyle _lightLabelSmall = TextStyle(
     fontSize: 11,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.5,
     color: _lightSecondaryText,
   );
-  
+
   // Custom text styles for DARK theme
   static const TextStyle _darkDisplayLarge = TextStyle(
     fontSize: 57,
@@ -139,105 +141,105 @@ class AppTheme {
     letterSpacing: -0.25,
     color: _darkText,
   );
-  
+
   static const TextStyle _darkDisplayMedium = TextStyle(
     fontSize: 45,
     fontWeight: FontWeight.w400,
     letterSpacing: 0,
     color: _darkText,
   );
-  
+
   static const TextStyle _darkDisplaySmall = TextStyle(
     fontSize: 36,
     fontWeight: FontWeight.w400,
     letterSpacing: 0,
     color: _darkText,
   );
-  
+
   static const TextStyle _darkHeadlineLarge = TextStyle(
     fontSize: 32,
     fontWeight: FontWeight.w600,
     letterSpacing: 0,
     color: _darkText,
   );
-  
+
   static const TextStyle _darkHeadlineMedium = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.w600,
     letterSpacing: 0,
     color: _darkText,
   );
-  
+
   static const TextStyle _darkHeadlineSmall = TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.w600,
     letterSpacing: 0,
     color: _darkText,
   );
-  
+
   static const TextStyle _darkTitleLarge = TextStyle(
     fontSize: 22,
     fontWeight: FontWeight.w600,
     letterSpacing: 0,
     color: _darkText,
   );
-  
+
   static const TextStyle _darkTitleMedium = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.15,
     color: _darkSecondaryText,
   );
-  
+
   static const TextStyle _darkTitleSmall = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.1,
     color: _darkSecondaryText,
   );
-  
+
   static const TextStyle _darkBodyLarge = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w400,
     letterSpacing: 0.5,
     color: _darkText,
   );
-  
+
   static const TextStyle _darkBodyMedium = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w400,
     letterSpacing: 0.25,
     color: _darkText,
   );
-  
+
   static const TextStyle _darkBodySmall = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w400,
     letterSpacing: 0.4,
     color: _darkSecondaryText,
   );
-  
+
   static const TextStyle _darkLabelLarge = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.1,
     color: _darkText,
   );
-  
+
   static const TextStyle _darkLabelMedium = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.5,
     color: _darkText,
   );
-  
+
   static const TextStyle _darkLabelSmall = TextStyle(
     fontSize: 11,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.5,
     color: _darkSecondaryText,
   );
-  
+
   // High contrast text styles for accessibility
   static const TextStyle _highContrastDisplayLarge = TextStyle(
     fontSize: 61,
@@ -245,105 +247,105 @@ class AppTheme {
     letterSpacing: -0.25,
     color: _highContrastText,
   );
-  
+
   static const TextStyle _highContrastDisplayMedium = TextStyle(
     fontSize: 49,
     fontWeight: FontWeight.w700,
     letterSpacing: 0,
     color: _highContrastText,
   );
-  
+
   static const TextStyle _highContrastDisplaySmall = TextStyle(
     fontSize: 40,
     fontWeight: FontWeight.w700,
     letterSpacing: 0,
     color: _highContrastText,
   );
-  
+
   static const TextStyle _highContrastHeadlineLarge = TextStyle(
     fontSize: 36,
     fontWeight: FontWeight.w800,
     letterSpacing: 0,
     color: _highContrastText,
   );
-  
+
   static const TextStyle _highContrastHeadlineMedium = TextStyle(
     fontSize: 32,
     fontWeight: FontWeight.w800,
     letterSpacing: 0,
     color: _highContrastText,
   );
-  
+
   static const TextStyle _highContrastHeadlineSmall = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.w800,
     letterSpacing: 0,
     color: _highContrastText,
   );
-  
+
   static const TextStyle _highContrastTitleLarge = TextStyle(
     fontSize: 26,
     fontWeight: FontWeight.w800,
     letterSpacing: 0,
     color: _highContrastText,
   );
-  
+
   static const TextStyle _highContrastTitleMedium = TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.w800,
     letterSpacing: 0.15,
     color: _highContrastText,
   );
-  
+
   static const TextStyle _highContrastTitleSmall = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.w800,
     letterSpacing: 0.1,
     color: _highContrastText,
   );
-  
+
   static const TextStyle _highContrastBodyLarge = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.5,
     color: _highContrastText,
   );
-  
+
   static const TextStyle _highContrastBodyMedium = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.25,
     color: _highContrastText,
   );
-  
+
   static const TextStyle _highContrastBodySmall = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.4,
     color: _highContrastText,
   );
-  
+
   static const TextStyle _highContrastLabelLarge = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w800,
     letterSpacing: 0.1,
     color: _highContrastText,
   );
-  
+
   static const TextStyle _highContrastLabelMedium = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w800,
     letterSpacing: 0.5,
     color: _highContrastText,
   );
-  
+
   static const TextStyle _highContrastLabelSmall = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w800,
     letterSpacing: 0.5,
     color: _highContrastText,
   );
-  
+
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
@@ -522,7 +524,7 @@ class AppTheme {
   static double getAccessibleFontSize(BuildContext context, double baseSize) {
     final mediaQuery = MediaQuery.of(context);
     final textScaler = mediaQuery.textScaler.scale(baseSize) / baseSize;
-    
+
     // Ensure minimum readable size for accessibility
     if (textScaler < 1.0) {
       return baseSize * 1.2;
@@ -537,38 +539,45 @@ class AppTheme {
   }
 
   // Enhanced Typography Utilities
-  
+
   /// Get responsive text size based on screen width and base size
   static double getResponsiveTextSize(BuildContext context, double baseSize) {
     final screenWidth = MediaQuery.of(context).size.width;
     double scaleFactor = 1.0;
-    
+
     if (screenWidth > 600) {
       scaleFactor = 1.1; // Tablet
     } else if (screenWidth > 1024) {
       scaleFactor = 1.2; // Desktop
     }
-    
+
     return baseSize * scaleFactor;
   }
 
   /// Get semantic text style for different content types
-  static TextStyle getSemanticTextStyle(BuildContext context, String semanticType) {
+  static TextStyle getSemanticTextStyle(
+      BuildContext context, String semanticType) {
     final textTheme = Theme.of(context).textTheme;
-    
+
     switch (semanticType) {
       case 'heading':
-        return textTheme.headlineMedium ?? const TextStyle(fontSize: 24, fontWeight: FontWeight.w600);
+        return textTheme.headlineMedium ??
+            const TextStyle(fontSize: 24, fontWeight: FontWeight.w600);
       case 'subheading':
-        return textTheme.titleLarge ?? const TextStyle(fontSize: 20, fontWeight: FontWeight.w500);
+        return textTheme.titleLarge ??
+            const TextStyle(fontSize: 20, fontWeight: FontWeight.w500);
       case 'body':
-        return textTheme.bodyLarge ?? const TextStyle(fontSize: 16, fontWeight: FontWeight.w400);
+        return textTheme.bodyLarge ??
+            const TextStyle(fontSize: 16, fontWeight: FontWeight.w400);
       case 'caption':
-        return textTheme.bodySmall ?? const TextStyle(fontSize: 12, fontWeight: FontWeight.w400);
+        return textTheme.bodySmall ??
+            const TextStyle(fontSize: 12, fontWeight: FontWeight.w400);
       case 'button':
-        return textTheme.labelLarge ?? const TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
+        return textTheme.labelLarge ??
+            const TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
       default:
-        return textTheme.bodyMedium ?? const TextStyle(fontSize: 14, fontWeight: FontWeight.w400);
+        return textTheme.bodyMedium ??
+            const TextStyle(fontSize: 14, fontWeight: FontWeight.w400);
     }
   }
 
@@ -582,7 +591,7 @@ class AppTheme {
     double? letterSpacing,
   }) {
     final baseStyle = getSemanticTextStyle(context, 'body');
-    
+
     return baseStyle.copyWith(
       fontSize: getAccessibleFontSize(context, fontSize),
       fontWeight: fontWeight,
@@ -628,7 +637,8 @@ class AppTheme {
   }
 
   /// Create gradient text style for special elements
-  static TextStyle getGradientTextStyle(BuildContext context, List<Color> colors) {
+  static TextStyle getGradientTextStyle(
+      BuildContext context, List<Color> colors) {
     return getSemanticTextStyle(context, 'heading').copyWith(
       fontSize: getAccessibleFontSize(context, 24),
       fontWeight: FontWeight.w600,
@@ -655,7 +665,7 @@ class AppTheme {
   static TextStyle getDisabledTextStyle(BuildContext context) {
     final brightness = Theme.of(context).brightness;
     return getSemanticTextStyle(context, 'body').copyWith(
-      color: brightness == Brightness.dark 
+      color: brightness == Brightness.dark
           ? Colors.white.withOpacity(0.38)
           : Colors.black.withOpacity(0.38),
     );

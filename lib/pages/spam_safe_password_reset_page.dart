@@ -7,14 +7,15 @@ class SpamSafePasswordResetPage extends StatefulWidget {
   const SpamSafePasswordResetPage({Key? key}) : super(key: key);
 
   @override
-  State<SpamSafePasswordResetPage> createState() => _SpamSafePasswordResetPageState();
+  State<SpamSafePasswordResetPage> createState() =>
+      _SpamSafePasswordResetPageState();
 }
 
 class _SpamSafePasswordResetPageState extends State<SpamSafePasswordResetPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   bool _isLoading = false;
-  
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -37,45 +38,45 @@ class _SpamSafePasswordResetPageState extends State<SpamSafePasswordResetPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(height: 40),
-              
+
               // Başlık
               Text(
                 'Şifrenizi mi unuttunuz?',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue[800],
-                ),
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue[800],
+                    ),
                 textAlign: TextAlign.center,
               ),
-              
+
               SizedBox(height: 16),
-              
+
               // Açıklama
               Text(
                 'E-posta adresinizi girin, size güvenli bir şifre sıfırlama bağlantısı gönderelim.',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                      color: Colors.grey[600],
+                    ),
                 textAlign: TextAlign.center,
               ),
-              
+
               SizedBox(height: 32),
-              
+
               // E-posta input
               _buildEmailField(),
-              
+
               SizedBox(height: 24),
-              
+
               // Gönder butonu
               _buildSendButton(),
-              
+
               SizedBox(height: 16),
-              
+
               // Spam önleme bilgisi
               _buildSpamInfoCard(),
-              
+
               SizedBox(height: 24),
-              
+
               // Geri dön
               _buildBackButton(),
             ],
@@ -94,11 +95,11 @@ class _SpamSafePasswordResetPageState extends State<SpamSafePasswordResetPage> {
         if (value == null || value.trim().isEmpty) {
           return 'E-posta adresi gereklidir';
         }
-        
+
         if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
           return 'Geçerli bir e-posta adresi girin';
         }
-        
+
         return null;
       },
       decoration: InputDecoration(
@@ -125,7 +126,7 @@ class _SpamSafePasswordResetPageState extends State<SpamSafePasswordResetPage> {
         ),
         elevation: _isLoading ? 0 : 2,
       ),
-      child: _isLoading 
+      child: _isLoading
           ? Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -232,10 +233,9 @@ class _SpamSafePasswordResetPageState extends State<SpamSafePasswordResetPage> {
           type: EmailType.PASSWORD_RESET,
           success: true,
         );
-        
+
         _showSuccessDialog();
       }
-
     } catch (e) {
       EmailMonitoringService.logEmailSend(
         email: _emailController.text.trim(),
@@ -243,7 +243,7 @@ class _SpamSafePasswordResetPageState extends State<SpamSafePasswordResetPage> {
         success: false,
         errorMessage: e.toString(),
       );
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Beklenmeyen bir hata oluştu'),
@@ -284,11 +284,13 @@ class _SpamSafePasswordResetPageState extends State<SpamSafePasswordResetPage> {
               ),
               SizedBox(height: 12),
               if (analysis.issues.isNotEmpty) ...[
-                Text('Sorunlar:', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('Sorunlar:',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 SizedBox(height: 4),
-                ...analysis.issues.map((issue) => 
-                  Text('• $issue', style: TextStyle(fontSize: 12))
-                ).toList(),
+                ...analysis.issues
+                    .map((issue) =>
+                        Text('• $issue', style: TextStyle(fontSize: 12)))
+                    .toList(),
                 SizedBox(height: 8),
               ],
               Text(
@@ -364,15 +366,14 @@ class _SpamSafePasswordResetPageState extends State<SpamSafePasswordResetPage> {
       await FirebaseAuth.instance.sendPasswordResetEmail(
         email: _emailController.text.trim(),
       );
-      
+
       EmailMonitoringService.logEmailSend(
         email: _emailController.text.trim(),
         type: EmailType.PASSWORD_RESET,
         success: true,
       );
-      
+
       _showSuccessDialog();
-      
     } catch (e) {
       EmailMonitoringService.logEmailSend(
         email: _emailController.text.trim(),
@@ -380,7 +381,7 @@ class _SpamSafePasswordResetPageState extends State<SpamSafePasswordResetPage> {
         success: false,
         errorMessage: e.toString(),
       );
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Gönderim başarısız: ${e.toString()}'),
@@ -448,7 +449,8 @@ class EmailStatsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -539,8 +541,11 @@ class EmailStatsPage extends StatelessWidget {
           value: percentage / 100,
           backgroundColor: Colors.grey[300],
           valueColor: AlwaysStoppedAnimation<Color>(
-            percentage >= 90 ? Colors.green : 
-            percentage >= 70 ? Colors.orange : Colors.red,
+            percentage >= 90
+                ? Colors.green
+                : percentage >= 70
+                    ? Colors.orange
+                    : Colors.red,
           ),
           minHeight: 8,
         ),
@@ -550,7 +555,7 @@ class EmailStatsPage extends StatelessWidget {
 
   Widget _buildRecentFailuresCard(BuildContext context) {
     final failures = EmailMonitoringService.getRecentFailures(limit: 5);
-    
+
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -569,8 +574,8 @@ class EmailStatsPage extends StatelessWidget {
             ),
             SizedBox(height: 16),
             if (failures.isEmpty)
-              Text('Son zamanlarda başarısızlık yok', 
-                   style: TextStyle(color: Colors.green))
+              Text('Son zamanlarda başarısızlık yok',
+                  style: TextStyle(color: Colors.green))
             else
               ...failures.map((failure) => _buildFailureItem(failure)).toList(),
           ],

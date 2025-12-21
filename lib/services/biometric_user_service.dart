@@ -38,11 +38,12 @@ class BiometricUserData {
     return BiometricUserData(
       userId: map['userId'] ?? '',
       isBiometricEnabled: map['isBiometricEnabled'] ?? false,
-      availableBiometricTypes: List<String>.from(map['availableBiometricTypes'] ?? []),
-      lastBiometricSetup: map['lastBiometricSetup'] != null 
+      availableBiometricTypes:
+          List<String>.from(map['availableBiometricTypes'] ?? []),
+      lastBiometricSetup: map['lastBiometricSetup'] != null
           ? DateTime.parse(map['lastBiometricSetup'])
           : null,
-      lastBiometricLogin: map['lastBiometricLogin'] != null 
+      lastBiometricLogin: map['lastBiometricLogin'] != null
           ? DateTime.parse(map['lastBiometricLogin'])
           : null,
       deviceInfo: map['deviceInfo'] ?? '',
@@ -127,10 +128,7 @@ class BiometricUserService {
       final user = _auth.currentUser;
       if (user == null) return;
 
-      await _firestore
-          .collection(_collectionName)
-          .doc(user.uid)
-          .update({
+      await _firestore.collection(_collectionName).doc(user.uid).update({
         'lastBiometricLogin': FieldValue.serverTimestamp(),
         'isBiometricEnabled': true,
       });
@@ -151,10 +149,8 @@ class BiometricUserService {
       final user = _auth.currentUser;
       if (user == null) return null;
 
-      final doc = await _firestore
-          .collection(_collectionName)
-          .doc(user.uid)
-          .get();
+      final doc =
+          await _firestore.collection(_collectionName).doc(user.uid).get();
 
       if (!doc.exists) return null;
 
@@ -173,10 +169,8 @@ class BiometricUserService {
       final user = _auth.currentUser;
       if (user == null) return false;
 
-      final doc = await _firestore
-          .collection(_collectionName)
-          .doc(user.uid)
-          .get();
+      final doc =
+          await _firestore.collection(_collectionName).doc(user.uid).get();
 
       if (!doc.exists) return false;
 
@@ -196,10 +190,7 @@ class BiometricUserService {
       final user = _auth.currentUser;
       if (user == null) return false;
 
-      await _firestore
-          .collection(_collectionName)
-          .doc(user.uid)
-          .update({
+      await _firestore.collection(_collectionName).doc(user.uid).update({
         'isBiometricEnabled': false,
         'updatedAt': FieldValue.serverTimestamp(),
       });
@@ -236,14 +227,14 @@ class BiometricUserService {
           .get();
 
       final totalUsers = snapshot.docs.length;
-      
+
       // Biyometri türlerine göre dağılım
       final Map<String, int> biometricTypeCount = {};
-      
+
       for (final doc in snapshot.docs) {
         final data = doc.data();
         final types = List<String>.from(data['availableBiometricTypes'] ?? []);
-        
+
         for (final type in types) {
           biometricTypeCount[type] = (biometricTypeCount[type] ?? 0) + 1;
         }

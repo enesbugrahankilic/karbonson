@@ -28,10 +28,11 @@ class _FirebaseConfigCheckerState extends State<FirebaseConfigChecker> {
     try {
       // Get comprehensive debug info
       final debugInfo = await FirebaseAuthService.getDebugInfo();
-      
+
       // Check anonymous auth specifically
-      final anonymousCheck = await FirebaseAuthService.checkAnonymousAuthEnabled();
-      
+      final anonymousCheck =
+          await FirebaseAuthService.checkAnonymousAuthEnabled();
+
       // Check general auth configuration
       final configCheck = await FirebaseAuthService.checkAuthConfiguration();
 
@@ -44,7 +45,6 @@ class _FirebaseConfigCheckerState extends State<FirebaseConfigChecker> {
         };
         _statusMessage = 'Tanı tamamlandı';
       });
-
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Firebase diagnostic failed: $e');
@@ -87,7 +87,8 @@ class _FirebaseConfigCheckerState extends State<FirebaseConfigChecker> {
               ),
             ],
             const SizedBox(height: 16),
-            if (_diagnosticResults.isNotEmpty && _diagnosticResults['anonymous_check']?['enabled'] == false)
+            if (_diagnosticResults.isNotEmpty &&
+                _diagnosticResults['anonymous_check']?['enabled'] == false)
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -155,7 +156,7 @@ class _FirebaseConfigCheckerState extends State<FirebaseConfigChecker> {
   Widget _buildDiagnosticResults() {
     final anonymousCheck = _diagnosticResults['anonymous_check'];
     final configCheck = _diagnosticResults['config_check'];
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

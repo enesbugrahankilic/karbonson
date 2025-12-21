@@ -45,7 +45,7 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
               ),
             ),
           ),
-          
+
           // Scrollable Content
           Expanded(
             child: SingleChildScrollView(
@@ -55,15 +55,15 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
                   // Default Avatars Section
                   _buildSectionTitle('Varsayilan Avatar'),
                   _buildAvatarGrid(_profilePictureService.defaultAvatars),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Emoji Avatars Section
                   _buildSectionTitle('Emoji Avatar'),
                   _buildAvatarGrid(_profilePictureService.emojiAvatars),
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   // Action Buttons
                   _buildActionButtons(),
                 ],
@@ -154,8 +154,8 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
               ),
               child: ClipOval(
                 child: avatarUrl.endsWith('.svg')
-                  ? _buildSvgWidget(avatarUrl)
-                  : _buildImageWidget(avatarUrl),
+                    ? _buildSvgWidget(avatarUrl)
+                    : _buildImageWidget(avatarUrl),
               ),
             ),
           ),
@@ -236,8 +236,9 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
           child: Center(
             child: CircularProgressIndicator(
               value: loadingProgress.expectedTotalBytes != null
-                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                : null,
+                  ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
+                  : null,
               strokeWidth: 2,
             ),
           ),
@@ -276,12 +277,12 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
           const SizedBox(width: 12),
           Expanded(
             child: ElevatedButton.icon(
-              onPressed: _selectedAvatar != null 
-                ? () {
-                    widget.onAvatarSelected(_selectedAvatar!);
-                    Navigator.of(context).pop();
-                  }
-                : null,
+              onPressed: _selectedAvatar != null
+                  ? () {
+                      widget.onAvatarSelected(_selectedAvatar!);
+                      Navigator.of(context).pop();
+                    }
+                  : null,
               icon: const Icon(Icons.check),
               label: const Text('Sec'),
             ),

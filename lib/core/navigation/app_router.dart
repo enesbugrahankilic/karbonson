@@ -16,6 +16,7 @@ import '../../pages/duel_page.dart';
 import '../../pages/duel_invitation_page.dart';
 import '../../pages/room_management_page.dart';
 import '../../pages/settings_page.dart';
+import '../../pages/home_dashboard.dart';
 import '../../pages/register_page.dart';
 import '../../pages/register_page_refactored.dart';
 import '../../pages/email_verification_page.dart';
@@ -28,6 +29,8 @@ import '../../pages/enhanced_two_factor_auth_verification_page.dart';
 import '../../pages/comprehensive_two_factor_auth_setup_page.dart';
 import '../../pages/comprehensive_2fa_verification_page.dart';
 import '../../pages/ai_recommendations_page.dart';
+import '../../pages/achievement_page.dart';
+import '../../pages/daily_challenge_page.dart';
 import '../../services/authentication_state_service.dart';
 import '../../services/quiz_logic.dart';
 
@@ -41,16 +44,18 @@ class AppRoutes {
   static const String emailVerification = '/email-verification';
   static const String forgotPassword = '/forgot-password';
   static const String forgotPasswordEnhanced = '/forgot-password-enhanced';
-  
+
   // 2FA routes
   static const String twoFactorAuthSetup = '/2fa-setup';
   static const String twoFactorAuthVerification = '/2fa-verification';
   static const String enhanced2FASetup = '/enhanced-2fa-setup';
   static const String enhanced2FAVerification = '/enhanced-2fa-verification';
   static const String comprehensive2FASetup = '/comprehensive-2fa-setup';
-  static const String comprehensive2FAVerification = '/comprehensive-2fa-verification';
-  
+  static const String comprehensive2FAVerification =
+      '/comprehensive-2fa-verification';
+
   // Main app routes
+  static const String home = '/home';
   static const String profile = '/profile';
   static const String boardGame = '/board-game';
   static const String quiz = '/quiz';
@@ -62,6 +67,8 @@ class AppRoutes {
   static const String roomManagement = '/room-management';
   static const String settings = '/settings';
   static const String aiRecommendations = '/ai-recommendations';
+  static const String achievement = '/achievement';
+  static const String dailyChallenge = '/daily-challenge';
 }
 
 /// Navigation configuration with route definitions
@@ -90,7 +97,7 @@ class AppRouter {
         return _createRoute(const ForgotPasswordPage());
       case AppRoutes.forgotPasswordEnhanced:
         return _createRoute(const ForgotPasswordPageEnhanced());
-      
+
       // 2FA routes
       case AppRoutes.twoFactorAuthSetup:
         return _createRoute(const TwoFactorAuthSetupPage());
@@ -98,27 +105,34 @@ class AppRouter {
         // For 2FA verification, we need to provide a default auth result for development
         // In production, this should come from the login flow
         final authResult = settings.arguments ?? _createDefaultAuthResult();
-        return _createRoute(TwoFactorAuthVerificationPage(authResult: authResult));
+        return _createRoute(
+            TwoFactorAuthVerificationPage(authResult: authResult));
       case AppRoutes.enhanced2FASetup:
         return _createRoute(const EnhancedTwoFactorAuthSetupPage());
       case AppRoutes.enhanced2FAVerification:
         final authResult = settings.arguments ?? _createDefaultAuthResult();
-        return _createRoute(EnhancedTwoFactorAuthVerificationPage(authResult: authResult));
+        return _createRoute(
+            EnhancedTwoFactorAuthVerificationPage(authResult: authResult));
       case AppRoutes.comprehensive2FASetup:
         return _createRoute(const ComprehensiveTwoFactorAuthSetupPage());
       case AppRoutes.comprehensive2FAVerification:
         final arguments = settings.arguments as Map<String, dynamic>? ?? {};
         return _createRoute(Comprehensive2FAVerificationPage(
           initialMethod: arguments['initialMethod'] ?? VerificationMethod.sms,
-          availableMethods: arguments['availableMethods'] ?? [VerificationMethod.sms, VerificationMethod.backupCode],
+          availableMethods: arguments['availableMethods'] ??
+              [VerificationMethod.sms, VerificationMethod.backupCode],
         ));
-      
+
       // Main app routes
+      case AppRoutes.home:
+        return _createProtectedRoute(const HomeDashboard(), settings);
       case AppRoutes.profile:
         return _createProtectedRoute(const ProfilePage(), settings);
       case AppRoutes.boardGame:
         return _createRoute(BoardGamePage(
-          userNickname: settings.arguments is String ? settings.arguments as String : 'Player',
+          userNickname: settings.arguments is String
+              ? settings.arguments as String
+              : 'Player',
         ));
       case AppRoutes.quiz:
         return _createRoute(QuizPage(
@@ -128,24 +142,34 @@ class AppRouter {
         return _createRoute(const LeaderboardPage());
       case AppRoutes.friends:
         return _createRoute(FriendsPage(
-          userNickname: settings.arguments is String ? settings.arguments as String : 'Player',
+          userNickname: settings.arguments is String
+              ? settings.arguments as String
+              : 'Player',
         ));
       case AppRoutes.multiplayerLobby:
         return _createRoute(MultiplayerLobbyPage(
-          userNickname: settings.arguments is String ? settings.arguments as String : 'Player',
+          userNickname: settings.arguments is String
+              ? settings.arguments as String
+              : 'Player',
         ));
       case AppRoutes.duel:
         return _createRoute(const DuelPage());
       case AppRoutes.duelInvitation:
         return _createRoute(const DuelInvitationPage());
       case AppRoutes.roomManagement:
-        final userNickname = settings.arguments is String ? settings.arguments as String : 'Player';
+        final userNickname = settings.arguments is String
+            ? settings.arguments as String
+            : 'Player';
         return _createRoute(RoomManagementPage(userNickname: userNickname));
       case AppRoutes.settings:
         return _createRoute(const SettingsPage());
       case AppRoutes.aiRecommendations:
         return _createRoute(const AIRecommendationsPage());
-      
+      case AppRoutes.achievement:
+        return _createRoute(const AchievementPage());
+      case AppRoutes.dailyChallenge:
+        return _createRoute(const DailyChallengePage());
+
       default:
         // Default route
         return _createRoute(const LoginPage());
@@ -178,13 +202,13 @@ class AppRouter {
   /// Create a protected route that requires authentication
   PageRoute<T> _createProtectedRoute<T>(Widget page, RouteSettings settings) {
     return PageRouteBuilder<T>(
-      pageBuilder: (context, animation, secondaryAnimation) => 
-        _ProtectedRouteWrapper(
-          authService: _authService,
-          fallbackRoute: AppRoutes.login,
-          child: page,
-          fallbackArguments: {'redirectTo': settings.name},
-        ),
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          _ProtectedRouteWrapper(
+        authService: _authService,
+        fallbackRoute: AppRoutes.login,
+        child: page,
+        fallbackArguments: {'redirectTo': settings.name},
+      ),
       transitionDuration: const Duration(milliseconds: 300),
       reverseTransitionDuration: const Duration(milliseconds: 300),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -301,7 +325,7 @@ class _ProtectedRouteWrapperState extends State<_ProtectedRouteWrapper> {
         _isAuthenticated = false;
         _isLoading = false;
       });
-      
+
       if (mounted) {
         Navigator.of(context).pushNamedAndRemoveUntil(
           widget.fallbackRoute,

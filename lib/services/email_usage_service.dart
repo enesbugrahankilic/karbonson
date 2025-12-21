@@ -23,8 +23,8 @@ class EmailUsage {
     return EmailUsage(
       email: data['email'] ?? '',
       usageCount: data['usageCount'] ?? 0,
-      lastUsed: data['lastUsed'] != null 
-          ? (data['lastUsed'] as Timestamp).toDate() 
+      lastUsed: data['lastUsed'] != null
+          ? (data['lastUsed'] as Timestamp).toDate()
           : null,
       usedUserIds: List<String>.from(data['usedUserIds'] ?? []),
     );
@@ -89,7 +89,7 @@ class EmailUsageValidationResult {
 class EmailUsageService {
   static const int maxEmailUses = 2;
   static const String collectionName = 'email_usage';
-  
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   /// Check if email can be used (has been used less than 2 times)
@@ -114,19 +114,18 @@ class EmailUsageService {
       }
 
       final emailUsage = EmailUsage.fromDocument(doc);
-      
+
       if (emailUsage.canBeUsed) {
         return EmailUsageValidationResult.success(emailUsage);
       } else {
         return EmailUsageValidationResult.failure(
-          'Bu e-posta adresi zaten 2 kez kullanılmış. Maksimum kullanım sayısına ulaşıldı.'
-        );
+            'Bu e-posta adresi zaten 2 kez kullanılmış. Maksimum kullanım sayısına ulaşıldı.');
       }
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Error checking email usage: $e');
       }
-      
+
       // On error, allow registration to proceed (fail-open approach)
       return EmailUsageValidationResult.success(
         EmailUsage(
@@ -146,7 +145,7 @@ class EmailUsageService {
       await _firestore.runTransaction((transaction) async {
         // Get current document
         final docSnapshot = await transaction.get(docRef);
-        
+
         if (!docSnapshot.exists) {
           // First time using this email
           transaction.set(docRef, {
@@ -161,7 +160,7 @@ class EmailUsageService {
           final data = docSnapshot.data() as Map<String, dynamic>;
           final currentCount = data['usageCount'] ?? 0;
           final usedUserIds = List<String>.from(data['usedUserIds'] ?? []);
-          
+
           // Only increment if userId is not already in the list (prevent duplicates)
           if (!usedUserIds.contains(userId)) {
             usedUserIds.add(userId);
@@ -177,7 +176,8 @@ class EmailUsageService {
       });
 
       if (kDebugMode) {
-        debugPrint('Recorded email usage for: $normalizedEmail (user: $userId)');
+        debugPrint(
+            'Recorded email usage for: $normalizedEmail (user: $userId)');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -191,12 +191,15 @@ class EmailUsageService {
   Future<EmailUsage?> getEmailUsage(String email) async {
     try {
       final normalizedEmail = email.toLowerCase().trim();
-      final doc = await _firestore.collection(collectionName).doc(normalizedEmail).get();
-      
+      final doc = await _firestore
+          .collection(collectionName)
+          .doc(normalizedEmail)
+          .get();
+
       if (doc.exists) {
         return EmailUsage.fromDocument(doc);
       }
-      
+
       return null;
     } catch (e) {
       if (kDebugMode) {
@@ -211,7 +214,7 @@ class EmailUsageService {
     try {
       final normalizedEmail = email.toLowerCase().trim();
       await _firestore.collection(collectionName).doc(normalizedEmail).delete();
-      
+
       if (kDebugMode) {
         debugPrint('Reset email usage for: $normalizedEmail');
       }
@@ -248,7 +251,8 @@ class EmailUsageService {
       // This would require cross-referencing with Firebase Auth users
       // For now, just log the intent
       if (kDebugMode) {
-        debugPrint('Email usage cleanup not implemented - would require Firebase Admin SDK');
+        debugPrint(
+            'Email usage cleanup not implemented - would require Firebase Admin SDK');
       }
     } catch (e) {
       if (kDebugMode) {

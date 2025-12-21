@@ -8,6 +8,9 @@ import '../pages/uid_debug_page.dart';
 import '../pages/two_factor_auth_setup_page.dart';
 import '../services/firebase_auth_service.dart';
 import '../widgets/home_button.dart';
+import '../services/biometric_service.dart';
+import '../services/biometric_user_service.dart';
+import '../widgets/biometric_setup_widget.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -19,9 +22,9 @@ class SettingsPage extends StatelessWidget {
         leading: const HomeButton(),
         title: Consumer<LanguageProvider>(
           builder: (context, languageProvider, child) {
-            return Text(languageProvider.currentLanguage == AppLanguage.turkish 
-              ? 'Ayarlar' 
-              : 'Settings');
+            return Text(languageProvider.currentLanguage == AppLanguage.turkish
+                ? 'Ayarlar'
+                : 'Settings');
           },
         ),
         backgroundColor: Colors.transparent,
@@ -29,8 +32,9 @@ class SettingsPage extends StatelessWidget {
       ),
       body: Consumer2<ThemeProvider, LanguageProvider>(
         builder: (context, themeProvider, languageProvider, child) {
-          final isTurkish = languageProvider.currentLanguage == AppLanguage.turkish;
-          
+          final isTurkish =
+              languageProvider.currentLanguage == AppLanguage.turkish;
+
           return Scrollbar(
             child: ListView(
               padding: const EdgeInsets.all(16.0),
@@ -38,14 +42,20 @@ class SettingsPage extends StatelessWidget {
                 Card(
                   child: ListTile(
                     leading: Icon(
-                      themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                      themeProvider.isDarkMode
+                          ? Icons.dark_mode
+                          : Icons.light_mode,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                     title: Text(isTurkish ? 'Tema Ayarları' : 'Theme Settings'),
                     subtitle: Text(
-                      isTurkish 
-                        ? (themeProvider.isDarkMode ? 'Karanlık Mod Aktif' : 'Aydınlık Mod Aktif')
-                        : (themeProvider.isDarkMode ? 'Dark Mode Active' : 'Light Mode Active'),
+                      isTurkish
+                          ? (themeProvider.isDarkMode
+                              ? 'Karanlık Mod Aktif'
+                              : 'Aydınlık Mod Aktif')
+                          : (themeProvider.isDarkMode
+                              ? 'Dark Mode Active'
+                              : 'Light Mode Active'),
                     ),
                     trailing: Switch(
                       value: themeProvider.isDarkMode,
@@ -67,8 +77,13 @@ class SettingsPage extends StatelessWidget {
                           Icons.language,
                           color: Theme.of(context).colorScheme.primary,
                         ),
-                        title: Text(isTurkish ? 'Dil Ayarları' : 'Language Settings'),
-                        subtitle: Text('${languageProvider.currentLanguageFlag} ${languageProvider.currentLanguageName}'),
+                        title: Text(
+                            isTurkish ? 'Dil Ayarları' : 'Language Settings'),
+                        subtitle: Text(
+                          '${languageProvider.currentLanguageFlag} ${languageProvider.currentLanguageName}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                         trailing: const Icon(Icons.arrow_forward_ios),
                         onTap: () {
                           _showLanguageSelection(context, languageProvider);
@@ -96,7 +111,8 @@ class SettingsPage extends StatelessWidget {
                           color: Theme.of(context).colorScheme.tertiary,
                         ),
                         title: const Text('Tema Önizleme'),
-                        subtitle: const Text('Mevcut tema renklerini görüntüle'),
+                        subtitle:
+                            const Text('Mevcut tema renklerini görüntüle'),
                         trailing: const Icon(Icons.arrow_forward_ios),
                         onTap: () {
                           _showThemePreview(context);
@@ -141,10 +157,25 @@ class SettingsPage extends StatelessWidget {
                           color: Theme.of(context).colorScheme.primary,
                         ),
                         title: const Text('Güvenlik Ayarları'),
-                        subtitle: const Text('İki faktörlü doğrulama ve diğer güvenlik seçenekleri'),
+                        subtitle: const Text(
+                            'İki faktörlü doğrulama ve diğer güvenlik seçenekleri'),
                         trailing: const Icon(Icons.arrow_forward_ios),
                         onTap: () {
                           _showSecuritySettings(context);
+                        },
+                      ),
+                      const Divider(),
+                      ListTile(
+                        leading: Icon(
+                          Icons.fingerprint,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        title: const Text('Biyometrik Kimlik Doğrulama'),
+                        subtitle:
+                            const Text('Parmak izi veya yüz tanıma ile giriş'),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                        onTap: () {
+                          _showBiometricSettings(context);
                         },
                       ),
                     ],
@@ -172,7 +203,8 @@ class SettingsPage extends StatelessWidget {
                             color: Colors.red,
                           ),
                           title: const Text('UID Debug & Cleanup'),
-                          subtitle: const Text('UID tutarsızlıklarını kontrol et ve temizle'),
+                          subtitle: const Text(
+                              'UID tutarsızlıklarını kontrol et ve temizle'),
                           trailing: const Icon(Icons.arrow_forward_ios),
                           onTap: () {
                             Navigator.of(context).push(
@@ -243,7 +275,8 @@ class SettingsPage extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Theme.of(context).colorScheme.outline),
+                border:
+                    Border.all(color: Theme.of(context).colorScheme.outline),
               ),
               child: Center(
                 child: Text(
@@ -296,12 +329,15 @@ class SettingsPage extends StatelessWidget {
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                               Text(
-                                themeProvider.isHighContrast 
-                                  ? 'Aktif - WCAG AA uyumlu renkler' 
-                                  : 'Kapalı - Standart renkler',
+                                themeProvider.isHighContrast
+                                    ? 'Aktif - WCAG AA uyumlu renkler'
+                                    : 'Kapalı - Standart renkler',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.7),
                                 ),
                               ),
                             ],
@@ -337,7 +373,10 @@ class SettingsPage extends StatelessWidget {
                                 'Sistem ayarlarını takip et',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.7),
                                 ),
                               ),
                             ],
@@ -366,13 +405,17 @@ class SettingsPage extends StatelessWidget {
                                 '48dp minimum dokunma alanı',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.7),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const Icon(Icons.check_circle, size: 16, color: Colors.green),
+                        const Icon(Icons.check_circle,
+                            size: 16, color: Colors.green),
                       ],
                     ),
                   ],
@@ -416,9 +459,10 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  void _showLanguageSelection(BuildContext context, LanguageProvider languageProvider) {
+  void _showLanguageSelection(
+      BuildContext context, LanguageProvider languageProvider) {
     final isTurkish = languageProvider.currentLanguage == AppLanguage.turkish;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -487,6 +531,37 @@ class SettingsPage extends StatelessWidget {
             const Text('• Düzenli olarak şifrenizi güncelleyin'),
             const Text('• İki faktörlü doğrulamayı etkinleştirin'),
             const Text('• Şüpheli aktiviteleri bildirin'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Kapat'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBiometricSettings(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Biyometrik Kimlik Doğrulama'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            BiometricSetupStatus(),
+            SizedBox(height: 16),
+            Text(
+              'Güvenlik ipuçları:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text('• Biyometrik veriler cihazınızda güvenle saklanır'),
+            Text('• Sadece kimlik doğrulama için kullanılır'),
+            Text('• İstediğiniz zaman devre dışı bırakabilirsiniz'),
           ],
         ),
         actions: [

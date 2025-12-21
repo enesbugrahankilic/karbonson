@@ -23,9 +23,11 @@ class RoomManagementPage extends StatefulWidget {
 class _RoomManagementPageState extends State<RoomManagementPage> {
   final FirestoreService _firestoreService = FirestoreService();
   final TextEditingController _accessCodeController = TextEditingController();
-  final TextEditingController _customRoomCodeController = TextEditingController();
-  final TextEditingController _customAccessCodeController = TextEditingController();
-  
+  final TextEditingController _customRoomCodeController =
+      TextEditingController();
+  final TextEditingController _customAccessCodeController =
+      TextEditingController();
+
   bool _isLoading = false;
   GameRoom? _currentRoom;
   bool _isHost = false;
@@ -44,18 +46,22 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
   }
 
   /// Oda oluşturma
-  Future<void> _createRoom({String? customRoomCode, String? customAccessCode}) async {
+  Future<void> _createRoom(
+      {String? customRoomCode, String? customAccessCode}) async {
     setState(() => _isLoading = true);
 
     try {
-      if (kDebugMode) debugPrint('Starting room creation for: ${widget.userNickname}');
+      if (kDebugMode)
+        debugPrint('Starting room creation for: ${widget.userNickname}');
 
       final gameBoard = GameBoard();
-      final boardTiles = gameBoard.tiles.map((tile) => {
-        'index': tile.index,
-        'type': tile.type.toString().split('.').last,
-        'label': tile.label,
-      }).toList();
+      final boardTiles = gameBoard.tiles
+          .map((tile) => {
+                'index': tile.index,
+                'type': tile.type.toString().split('.').last,
+                'label': tile.label,
+              })
+          .toList();
 
       final playerId = const Uuid().v4();
       final player = MultiplayerPlayer(
@@ -75,19 +81,21 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
       );
 
       if (room != null && mounted) {
-        if (kDebugMode) debugPrint('Room created successfully, joining as host...');
-        
+        if (kDebugMode)
+          debugPrint('Room created successfully, joining as host...');
+
         final success = await _firestoreService.joinRoom(room.id, player);
         if (success) {
-          if (kDebugMode) debugPrint('Successfully joined created room, navigating to game');
-          
+          if (kDebugMode)
+            debugPrint('Successfully joined created room, navigating to game');
+
           setState(() {
             _currentRoom = room;
             _isHost = true;
           });
-          
+
           _showRoomDetailsDialog(room, customAccessCode);
-          
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -102,7 +110,8 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
           if (kDebugMode) debugPrint('Failed to join the created room');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Oda oluşturuldu ama katılım başarısız oldu. Lütfen tekrar deneyin.'),
+              content: Text(
+                  'Oda oluşturuldu ama katılım başarısız oldu. Lütfen tekrar deneyin.'),
               backgroundColor: Colors.orange,
             ),
           );
@@ -111,7 +120,8 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
         if (kDebugMode) debugPrint('Room creation failed');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Oda oluşturulamadı. İnternet bağlantınızı kontrol edin ve tekrar deneyin.'),
+            content: Text(
+                'Oda oluşturulamadı. İnternet bağlantınızı kontrol edin ve tekrar deneyin.'),
             backgroundColor: Colors.red,
           ),
         );
@@ -121,7 +131,7 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
         debugPrint('Error in _createRoom: $e');
         debugPrint('Stack trace: $stackTrace');
       }
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -140,7 +150,7 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
   /// Erişim kodu ile odaya katılma
   Future<void> _joinRoomByAccessCode() async {
     final accessCode = _accessCodeController.text.trim();
-    
+
     if (accessCode.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Lütfen erişim kodunu girin')),
@@ -150,7 +160,8 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
 
     if (!RoomCodeGenerator.isValidAccessCode(accessCode)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Geçersiz kod formatı. 4 haneli kod girin.')),
+        const SnackBar(
+            content: Text('Geçersiz kod formatı. 4 haneli kod girin.')),
       );
       return;
     }
@@ -164,14 +175,15 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
         nickname: widget.userNickname,
       );
 
-      final room = await _firestoreService.joinRoomByAccessCode(accessCode, player);
+      final room =
+          await _firestoreService.joinRoomByAccessCode(accessCode, player);
 
       if (room != null && mounted) {
         setState(() {
           _currentRoom = room;
           _isHost = false;
         });
-        
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -195,7 +207,7 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
         debugPrint('Error in _joinRoomByAccessCode: $e');
         debugPrint('Stack trace: $stackTrace');
       }
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -214,7 +226,7 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
   /// Oda detaylarını gösteren dialog
   void _showRoomDetailsDialog(GameRoom room, String? customAccessCode) {
     final accessCode = customAccessCode ?? room.accessCode ?? 'N/A';
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -232,20 +244,23 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
                   children: [
                     const Text(
                       'Oda Bilgileri',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                     ),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Oda Kodu:', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Text('Oda Kodu:',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
                         Flexible(
                           child: CopyToClipboardWidget(
                             textToCopy: room.roomCode,
                             successMessage: 'Oda kodu kopyalandı!',
                             child: Text(
-                              room.roomCode, 
-                              style: const TextStyle(fontSize: 18, color: Colors.blue),
+                              room.roomCode,
+                              style: const TextStyle(
+                                  fontSize: 18, color: Colors.blue),
                               textAlign: TextAlign.right,
                             ),
                           ),
@@ -256,14 +271,16 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Erişim Kodu:', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Text('Erişim Kodu:',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
                         Flexible(
                           child: CopyToClipboardWidget(
                             textToCopy: accessCode,
                             successMessage: 'Erişim kodu kopyalandı!',
                             child: SelectableText(
                               accessCode,
-                              style: const TextStyle(fontSize: 18, color: Colors.green),
+                              style: const TextStyle(
+                                  fontSize: 18, color: Colors.green),
                               textAlign: TextAlign.right,
                             ),
                           ),
@@ -297,7 +314,8 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
               children: [
                 const Icon(Icons.person_add, size: 18, color: Colors.green),
                 const SizedBox(width: 4),
-                Text('Arkadaş Davet Et', style: TextStyle(color: Colors.green.shade700)),
+                Text('Arkadaş Davet Et',
+                    style: TextStyle(color: Colors.green.shade700)),
               ],
             ),
           ),
@@ -324,10 +342,11 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
       setState(() {
         _currentRoom = _currentRoom!.copyWith(isActive: newStatus);
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Oda ${newStatus ? 'aktif' : 'pasif'} olarak işaretlendi'),
+          content:
+              Text('Oda ${newStatus ? 'aktif' : 'pasif'} olarak işaretlendi'),
           backgroundColor: newStatus ? Colors.green : Colors.orange,
         ),
       );
@@ -404,21 +423,23 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
             onPressed: () {
               final roomCode = _customRoomCodeController.text.trim();
               final accessCode = _customAccessCodeController.text.trim();
-              
-              if (roomCode.isNotEmpty && !RoomCodeGenerator.isValidRoomCode(roomCode)) {
+
+              if (roomCode.isNotEmpty &&
+                  !RoomCodeGenerator.isValidRoomCode(roomCode)) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Geçersiz oda kodu formatı')),
                 );
                 return;
               }
-              
-              if (accessCode.isNotEmpty && !RoomCodeGenerator.isValidAccessCode(accessCode)) {
+
+              if (accessCode.isNotEmpty &&
+                  !RoomCodeGenerator.isValidAccessCode(accessCode)) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Geçersiz erişim kodu formatı')),
                 );
                 return;
               }
-              
+
               Navigator.pop(context);
               _createRoom(
                 customRoomCode: roomCode.isEmpty ? null : roomCode,
@@ -441,16 +462,20 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
     return Scaffold(
       appBar: AppBar(
         leading: const HomeButton(),
-        title: const Text('Oda Yönetimi', style: TextStyle(color: Colors.black)),
+        title:
+            const Text('Oda Yönetimi', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
         actions: [
           if (_currentRoom != null && _isHost) ...[
             IconButton(
-              icon: Icon(_currentRoom!.isActive ? Icons.pause : Icons.play_arrow),
+              icon:
+                  Icon(_currentRoom!.isActive ? Icons.pause : Icons.play_arrow),
               onPressed: _toggleRoomStatus,
-              tooltip: _currentRoom!.isActive ? 'Odayı Pasifleştir' : 'Odayı Aktifleştir',
+              tooltip: _currentRoom!.isActive
+                  ? 'Odayı Pasifleştir'
+                  : 'Odayı Aktifleştir',
             ),
             IconButton(
               icon: const Icon(Icons.person_add),
@@ -573,7 +598,8 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF2196F3),
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
@@ -634,18 +660,21 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
                                 FutureBuilder<List<GameRoom>>(
                                   future: _firestoreService.getActiveRooms(),
                                   builder: (context, snapshot) {
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return const Center(child: CircularProgressIndicator());
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const Center(
+                                          child: CircularProgressIndicator());
                                     }
-                                    
+
                                     if (snapshot.hasError) {
                                       return const Center(
-                                        child: Text('Aktif odalar yüklenirken hata oluştu'),
+                                        child: Text(
+                                            'Aktif odalar yüklenirken hata oluştu'),
                                       );
                                     }
-                                    
+
                                     final activeRooms = snapshot.data ?? [];
-                                    
+
                                     if (activeRooms.isEmpty) {
                                       return Center(
                                         child: Text(
@@ -657,32 +686,39 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
                                         ),
                                       );
                                     }
-                                    
+
                                     return ConstrainedBox(
-                                      constraints: const BoxConstraints(maxHeight: 300),
+                                      constraints:
+                                          const BoxConstraints(maxHeight: 300),
                                       child: ListView.builder(
                                         shrinkWrap: true,
                                         itemCount: activeRooms.length,
                                         itemBuilder: (context, index) {
                                           final room = activeRooms[index];
                                           return Card(
-                                            margin: const EdgeInsets.only(bottom: 8),
+                                            margin: const EdgeInsets.only(
+                                                bottom: 8),
                                             child: ListTile(
                                               title: Text(
                                                 '${room.hostNickname}\'ın Odası',
-                                                style: const TextStyle(color: Colors.black),
+                                                style: const TextStyle(
+                                                    color: Colors.black),
                                               ),
                                               subtitle: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
                                                     '${room.players.length}/4 oyuncu',
-                                                    style: TextStyle(color: Colors.grey[600]),
+                                                    style: TextStyle(
+                                                        color:
+                                                            Colors.grey[600]),
                                                   ),
                                                   const SizedBox(height: 2),
                                                   CopyToClipboardWidget(
                                                     textToCopy: room.roomCode,
-                                                    successMessage: 'Oda kodu kopyalandı!',
+                                                    successMessage:
+                                                        'Oda kodu kopyalandı!',
                                                     child: Text(
                                                       'Kod: ${room.roomCode}',
                                                       style: TextStyle(
@@ -695,22 +731,29 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
                                                 ],
                                               ),
                                               trailing: ElevatedButton(
-                                                onPressed: room.players.length >= 4
-                                                    ? null
-                                                    : () {
-                                                        // Oyunu başlatabilir veya özel bir işlem yapabilirsiniz
-                                                        ScaffoldMessenger.of(context).showSnackBar(
-                                                          SnackBar(
-                                                            content: Text('Bu odaya katılmak için kod: ${room.accessCode}'),
-                                                            backgroundColor: Colors.blue,
-                                                          ),
-                                                        );
-                                                      },
+                                                onPressed:
+                                                    room.players.length >= 4
+                                                        ? null
+                                                        : () {
+                                                            // Oyunu başlatabilir veya özel bir işlem yapabilirsiniz
+                                                            ScaffoldMessenger
+                                                                    .of(context)
+                                                                .showSnackBar(
+                                                              SnackBar(
+                                                                content: Text(
+                                                                    'Bu odaya katılmak için kod: ${room.accessCode}'),
+                                                                backgroundColor:
+                                                                    Colors.blue,
+                                                              ),
+                                                            );
+                                                          },
                                                 style: ElevatedButton.styleFrom(
                                                   backgroundColor: Colors.green,
                                                   foregroundColor: Colors.white,
                                                   shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(8),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
                                                   ),
                                                 ),
                                                 child: const Text('Kod Gör'),

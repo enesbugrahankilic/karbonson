@@ -13,7 +13,7 @@ class ResponsiveUtils {
   /// Get current screen type based on width
   static ScreenType getScreenType(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     if (screenWidth < mobileBreakpoint) {
       return ScreenType.mobile;
     } else if (screenWidth < tabletBreakpoint) {
@@ -34,12 +34,13 @@ class ResponsiveUtils {
   }
 
   /// Get appropriate spacing based on screen size
-  static double getSpacing(BuildContext context, {SpacingType type = SpacingType.medium}) {
+  static double getSpacing(BuildContext context,
+      {SpacingType type = SpacingType.medium}) {
     final screenType = getScreenType(context);
     final landscape = isLandscape(context);
-    
+
     double multiplier = 1.0;
-    
+
     // Adjust spacing based on screen type
     switch (screenType) {
       case ScreenType.mobile:
@@ -52,7 +53,7 @@ class ResponsiveUtils {
         multiplier = landscape ? 1.4 : 1.3;
         break;
     }
-    
+
     // Base spacing values
     final spacingMap = {
       SpacingType.extraSmall: 4.0,
@@ -62,34 +63,46 @@ class ResponsiveUtils {
       SpacingType.extraLarge: 32.0,
       SpacingType.huge: 48.0,
     };
-    
+
     return spacingMap[type]! * multiplier;
   }
 
   /// Get appropriate font size based on screen size
   static double getFontSize(
-    BuildContext context, 
+    BuildContext context,
     double baseSize, {
     FontSizeType type = FontSizeType.medium,
   }) {
     final screenType = getScreenType(context);
     final textScaler = MediaQuery.of(context).textScaler.scale(1.0);
-    
+
     double multiplier = 1.0;
-    
+
     // Adjust font size based on screen type and type
     switch (screenType) {
       case ScreenType.mobile:
-        multiplier = type == FontSizeType.large ? 1.1 : type == FontSizeType.small ? 0.9 : 1.0;
+        multiplier = type == FontSizeType.large
+            ? 1.1
+            : type == FontSizeType.small
+                ? 0.9
+                : 1.0;
         break;
       case ScreenType.tablet:
-        multiplier = type == FontSizeType.large ? 1.2 : type == FontSizeType.small ? 0.95 : 1.1;
+        multiplier = type == FontSizeType.large
+            ? 1.2
+            : type == FontSizeType.small
+                ? 0.95
+                : 1.1;
         break;
       case ScreenType.desktop:
-        multiplier = type == FontSizeType.large ? 1.3 : type == FontSizeType.small ? 1.0 : 1.2;
+        multiplier = type == FontSizeType.large
+            ? 1.3
+            : type == FontSizeType.small
+                ? 1.0
+                : 1.2;
         break;
     }
-    
+
     return baseSize * multiplier * textScaler;
   }
 
@@ -102,7 +115,7 @@ class ResponsiveUtils {
     double? maxWidth,
   }) {
     final screenType = getScreenType(context);
-    
+
     Widget child;
     if (screenType == ScreenType.desktop && desktop != null) {
       child = desktop;
@@ -138,7 +151,7 @@ class ResponsiveUtils {
     double? mainAxisSpacing,
   }) {
     final screenType = getScreenType(context);
-    
+
     int columns;
     switch (screenType) {
       case ScreenType.mobile:
@@ -228,17 +241,19 @@ class ResponsiveUtils {
     VoidCallback? onTap,
   }) {
     final screenType = getScreenType(context);
-    
+
     // Adjust card properties based on screen type
-    final cardMargin = margin ?? EdgeInsets.symmetric(
-      horizontal: getSpacing(context, type: SpacingType.medium),
-      vertical: getSpacing(context, type: SpacingType.small),
-    );
-    
-    final cardPadding = padding ?? EdgeInsets.all(
-      getSpacing(context, type: SpacingType.medium) * 
-      (screenType == ScreenType.mobile ? 1.0 : 1.2),
-    );
+    final cardMargin = margin ??
+        EdgeInsets.symmetric(
+          horizontal: getSpacing(context, type: SpacingType.medium),
+          vertical: getSpacing(context, type: SpacingType.small),
+        );
+
+    final cardPadding = padding ??
+        EdgeInsets.all(
+          getSpacing(context, type: SpacingType.medium) *
+              (screenType == ScreenType.mobile ? 1.0 : 1.2),
+        );
 
     Widget card = Card(
       margin: cardMargin,
@@ -277,11 +292,13 @@ class ResponsiveUtils {
     EdgeInsets? padding,
     double? height,
   }) {
-    final buttonHeight = height ?? getSpacing(context, type: SpacingType.extraLarge);
-    final buttonPadding = padding ?? EdgeInsets.symmetric(
-      horizontal: getSpacing(context, type: SpacingType.large),
-      vertical: getSpacing(context, type: SpacingType.small),
-    );
+    final buttonHeight =
+        height ?? getSpacing(context, type: SpacingType.extraLarge);
+    final buttonPadding = padding ??
+        EdgeInsets.symmetric(
+          horizontal: getSpacing(context, type: SpacingType.large),
+          vertical: getSpacing(context, type: SpacingType.small),
+        );
 
     Widget button = SizedBox(
       height: buttonHeight,
@@ -311,7 +328,7 @@ class ResponsiveUtils {
   static double getAppBarHeight(BuildContext context) {
     final screenType = getScreenType(context);
     final landscape = isLandscape(context);
-    
+
     switch (screenType) {
       case ScreenType.mobile:
         return landscape ? 56.0 : kToolbarHeight;
@@ -325,7 +342,7 @@ class ResponsiveUtils {
   /// Get appropriate bottom navigation bar height
   static double getBottomNavBarHeight(BuildContext context) {
     final screenType = getScreenType(context);
-    
+
     switch (screenType) {
       case ScreenType.mobile:
         return kBottomNavigationBarHeight;
@@ -347,7 +364,7 @@ class ResponsiveUtils {
     double? groupAlignment,
   }) {
     final screenType = getScreenType(context);
-    
+
     if (screenType == ScreenType.mobile) {
       // Return empty on mobile - should use bottom navigation instead
       return const SizedBox.shrink();
@@ -360,8 +377,8 @@ class ResponsiveUtils {
       leading: leading,
       trailing: trailing,
       groupAlignment: groupAlignment ?? -1.0,
-      labelType: screenType == ScreenType.desktop 
-          ? NavigationRailLabelType.none 
+      labelType: screenType == ScreenType.desktop
+          ? NavigationRailLabelType.none
           : NavigationRailLabelType.all,
     );
   }
@@ -375,7 +392,7 @@ class ResponsiveUtils {
     FloatingActionButtonLocation? location,
   }) {
     final screenType = getScreenType(context);
-    
+
     // Hide FAB on desktop - use different interaction pattern
     if (screenType == ScreenType.desktop) {
       return const SizedBox.shrink();
@@ -397,7 +414,7 @@ class ResponsiveUtils {
   }) {
     final screenType = getScreenType(context);
     final screenSize = MediaQuery.of(context).size;
-    
+
     double dialogMaxWidth;
     if (maxWidth != null) {
       dialogMaxWidth = maxWidth;
@@ -418,7 +435,8 @@ class ResponsiveUtils {
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: dialogMaxWidth),
       child: Padding(
-        padding: padding ?? EdgeInsets.all(getSpacing(context, type: SpacingType.large)),
+        padding: padding ??
+            EdgeInsets.all(getSpacing(context, type: SpacingType.large)),
         child: child,
       ),
     );
@@ -433,8 +451,9 @@ class ResponsiveUtils {
   }) {
     final screenType = getScreenType(context);
     final landscape = isLandscape(context);
-    
-    if (screenType == ScreenType.mobile || (screenType == ScreenType.tablet && !landscape)) {
+
+    if (screenType == ScreenType.mobile ||
+        (screenType == ScreenType.tablet && !landscape)) {
       // Stack layout for mobile/portrait
       return responsiveLayout(
         context: context,
@@ -497,12 +516,12 @@ class ResponsiveUtils {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        
-        if ((minWidth == null || width >= minWidth) && 
+
+        if ((minWidth == null || width >= minWidth) &&
             (maxWidth == null || width <= maxWidth)) {
           return builder(context);
         }
-        
+
         return const SizedBox.shrink();
       },
     );

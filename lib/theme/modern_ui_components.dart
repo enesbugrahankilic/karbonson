@@ -7,7 +7,6 @@ import 'design_system.dart';
 
 /// Modern UI bileşenleri ve animasyon efektleri
 class ModernUI {
-  
   /// Modern animated button with hover effects
   static Widget animatedButton(
     BuildContext context, {
@@ -26,28 +25,32 @@ class ModernUI {
       child: ElevatedButton(
         onPressed: (isLoading || onPressed == null) ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? ThemeColors.getPrimaryButtonColor(context),
+          backgroundColor:
+              backgroundColor ?? ThemeColors.getPrimaryButtonColor(context),
           foregroundColor: textColor ?? Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(DesignSystem.radiusM),
           ),
           elevation: isLoading ? 0 : 2,
-          shadowColor: (backgroundColor ?? ThemeColors.getPrimaryButtonColor(context)).withOpacity(0.3),
+          shadowColor:
+              (backgroundColor ?? ThemeColors.getPrimaryButtonColor(context))
+                  .withOpacity(0.3),
         ).copyWith(
           backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
             if (states.contains(WidgetState.hovered)) {
               return Color.alphaBlend(
-                Colors.white.withOpacity(0.1),
-                backgroundColor ?? ThemeColors.getPrimaryButtonColor(context)
-              );
+                  Colors.white.withOpacity(0.1),
+                  backgroundColor ??
+                      ThemeColors.getPrimaryButtonColor(context));
             }
             if (states.contains(WidgetState.pressed)) {
               return Color.alphaBlend(
-                Colors.black.withOpacity(0.1),
-                backgroundColor ?? ThemeColors.getPrimaryButtonColor(context)
-              );
+                  Colors.black.withOpacity(0.1),
+                  backgroundColor ??
+                      ThemeColors.getPrimaryButtonColor(context));
             }
-            return backgroundColor ?? ThemeColors.getPrimaryButtonColor(context);
+            return backgroundColor ??
+                ThemeColors.getPrimaryButtonColor(context);
           }),
         ),
         child: isLoading
@@ -108,7 +111,7 @@ class ModernUI {
     );
 
     Widget finalWidget = cardWidget;
-    
+
     if (onTap != null) {
       finalWidget = InkWell(
         onTap: onTap,
@@ -215,7 +218,7 @@ class ModernUI {
     Duration duration = const Duration(seconds: 3),
   }) {
     final color = _getToastColor(context, type);
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -259,8 +262,9 @@ class ModernUI {
     double? size,
   }) {
     final fabSize = size ?? 56.0;
-    final bgColor = backgroundColor ?? ThemeColors.getAccentButtonColor(context);
-    
+    final bgColor =
+        backgroundColor ?? ThemeColors.getAccentButtonColor(context);
+
     return StatefulBuilder(
       builder: (context, setState) {
         return GestureDetector(
@@ -312,8 +316,9 @@ class ModernUI {
     Duration? animationDuration,
   }) {
     final bgColor = backgroundColor ?? ThemeColors.getNeumorphismLight(context);
-    final progColor = progressColor ?? ThemeColors.getPrimaryButtonColor(context);
-    
+    final progColor =
+        progressColor ?? ThemeColors.getPrimaryButtonColor(context);
+
     return Container(
       height: height,
       decoration: BoxDecoration(
@@ -339,7 +344,7 @@ class ModernUI {
     double size = 12,
   }) {
     final color = _getStatusColor(context, status);
-    
+
     return Container(
       width: size,
       height: size,
@@ -384,7 +389,7 @@ class ModernUI {
 
   // Private helper methods
   static bool _isAnimating = false;
-  
+
   static Color _getToastColor(BuildContext context, ToastType type) {
     switch (type) {
       case ToastType.success:
@@ -397,7 +402,7 @@ class ModernUI {
         return ThemeColors.getInfoColor(context);
     }
   }
-  
+
   static IconData _getToastIcon(ToastType type) {
     switch (type) {
       case ToastType.success:
@@ -410,7 +415,7 @@ class ModernUI {
         return Icons.info;
     }
   }
-  
+
   static Color _getStatusColor(BuildContext context, StatusType status) {
     switch (status) {
       case StatusType.online:

@@ -47,7 +47,7 @@ class NotificationData {
       senderId: map['senderId'],
       senderNickname: map['senderNickname'],
       additionalData: map['additionalData'],
-      createdAt: map['createdAt'] != null 
+      createdAt: map['createdAt'] != null
           ? (map['createdAt'] as Timestamp).toDate()
           : DateTime.now(),
       isRead: map['isRead'] ?? false,
@@ -78,7 +78,8 @@ class NotificationData {
       id: '', // Will be set when created
       type: NotificationType.friendRequestAccepted,
       title: 'Arkadaşlık İsteği Kabul Edildi',
-      message: '$senderNickname arkadaşlık isteğinizi kabul etti. Artık arkadaşsınız!',
+      message:
+          '$senderNickname arkadaşlık isteğinizi kabul etti. Artık arkadaşsınız!',
       senderId: senderId,
       senderNickname: senderNickname,
       additionalData: {

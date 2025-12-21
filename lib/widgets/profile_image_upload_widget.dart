@@ -2,11 +2,14 @@
 
 import 'dart:typed_data';
 import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/profile_image_data.dart';
 import '../services/profile_image_service.dart';
+import 'drawing_canvas.dart';
+import 'default_avatar_selector.dart';
 
 /// Profile image upload widget with real-time preview and crop tools
 class ProfileImageUploadWidget extends StatefulWidget {
@@ -34,19 +37,20 @@ class ProfileImageUploadWidget extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<ProfileImageUploadWidget> createState() => _ProfileImageUploadWidgetState();
+  State<ProfileImageUploadWidget> createState() =>
+      _ProfileImageUploadWidgetState();
 }
 
 class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
     with TickerProviderStateMixin {
   final ProfileImageService _imageService = ProfileImageService();
-  
+
   ImageUploadStatus _uploadStatus = ImageUploadStatus.idle;
   UploadProgress? _uploadProgress;
   ProfileImageData? _currentImage;
   Uint8List? _selectedImage;
   String? _errorMessage;
-  
+
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
@@ -64,7 +68,7 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
     _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    
+
     // Listen to upload progress
     _imageService.uploadProgressStream.listen((progress) {
       if (mounted) {
@@ -77,7 +81,7 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
         });
       }
     });
-    
+
     // Listen to image data updates
     _imageService.imageDataStream.listen((imageData) {
       if (mounted) {
@@ -89,7 +93,7 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
         widget.onUploadComplete?.call();
       }
     });
-    
+
     _animationController.forward();
   }
 
@@ -162,6 +166,95 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
     );
   }
 
+  void _openDefaultAvatarSelector() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.9,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Varsayılan Avatar Seç',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Seç ve Çık'),
+                    ),
+                  ],
+                ),
+              ),
+              // Avatar Selector
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: DefaultAvatarSelector(
+                      selectedAvatarPath: _currentImage?.originalUrl,
+                      onAvatarSelected: (avatarPath) async {
+                        // Load SVG as image data
+                        try {
+                          final svgString = await DefaultAssetBundle.of(context)
+                              .loadString(avatarPath);
+                          // For now, we'll use a placeholder approach
+                          // In a real implementation, you'd convert SVG to PNG
+                          Navigator.of(context).pop();
+
+                          // Show a message that this feature is coming soon
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content:
+                                  Text('SVG avatar seçimi yakında eklenecek'),
+                            ),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Avatar yüklenirken hata: $e'),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _uploadImage(Uint8List imageData) async {
     try {
       Navigator.of(context).pop(); // Close preview sheet
@@ -183,7 +276,6 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
           _errorMessage = 'Resim yüklenirken hata oluştu';
         });
       }
-
     } catch (e) {
       setState(() {
         _uploadStatus = ImageUploadStatus.error;
@@ -194,12 +286,13 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
 
   Future<void> _deleteCurrentImage() async {
     if (_currentImage == null) return;
-    
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Resmi Sil'),
-        content: const Text('Profil fotoğrafınızı silmek istediğinizden emin misiniz?'),
+        content: const Text(
+            'Profil fotoğrafınızı silmek istediğinizden emin misiniz?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -235,6 +328,80 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
         });
       }
     }
+  }
+
+  void _openDrawingCanvas() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Profil Fotoğrafı Çiz',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Kaydet ve Çık'),
+                    ),
+                  ],
+                ),
+              ),
+              // Drawing Canvas
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: DrawingCanvas(
+                      onSave: (image) async {
+                        // Convert ui.Image to Uint8List
+                        final byteData = await image.toByteData(
+                            format: ui.ImageByteFormat.png);
+                        if (byteData != null) {
+                          final bytes = byteData.buffer.asUint8List();
+                          Navigator.of(context).pop();
+                          _uploadImage(bytes);
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -273,10 +440,10 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
 
   Widget _buildAvatarWidget() {
     final size = widget.avatarSize!;
-    
+
     Widget avatarWidget;
-    
-    if (_uploadStatus == ImageUploadStatus.selecting || 
+
+    if (_uploadStatus == ImageUploadStatus.selecting ||
         _uploadStatus == ImageUploadStatus.uploading ||
         _uploadStatus == ImageUploadStatus.optimizing ||
         _uploadStatus == ImageUploadStatus.processing) {
@@ -329,20 +496,21 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
       );
     } else {
       // Show placeholder
-      avatarWidget = widget.customPlaceholder ?? Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.grey.shade200,
-          border: Border.all(color: Colors.grey.shade300, width: 2),
-        ),
-        child: Icon(
-          Icons.person,
-          size: size * 0.6,
-          color: Colors.grey.shade600,
-        ),
-      );
+      avatarWidget = widget.customPlaceholder ??
+          Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey.shade200,
+              border: Border.all(color: Colors.grey.shade300, width: 2),
+            ),
+            child: Icon(
+              Icons.person,
+              size: size * 0.6,
+              color: Colors.grey.shade600,
+            ),
+          );
     }
 
     return Stack(
@@ -364,7 +532,7 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
               ),
             ),
           ),
-        if (_uploadStatus == ImageUploadStatus.idle || 
+        if (_uploadStatus == ImageUploadStatus.idle ||
             _uploadStatus == ImageUploadStatus.completed)
           Positioned(
             right: 0,
@@ -470,7 +638,7 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
           ),
           const SizedBox(width: 16),
           ElevatedButton.icon(
-            onPressed: _uploadStatus == ImageUploadStatus.idle 
+            onPressed: _uploadStatus == ImageUploadStatus.idle
                 ? () => _uploadImage(_selectedImage!)
                 : null,
             icon: const Icon(Icons.cloud_upload),
@@ -481,13 +649,35 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
     }
 
     if (_uploadStatus == ImageUploadStatus.idle) {
-      return ElevatedButton.icon(
-        onPressed: _pickImage,
-        icon: const Icon(Icons.photo_library),
-        label: const Text('Fotoğraf Seç'),
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        ),
+      return Column(
+        children: [
+          ElevatedButton.icon(
+            onPressed: _pickImage,
+            icon: const Icon(Icons.photo_library),
+            label: const Text('Fotoğraf Seç'),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: _openDrawingCanvas,
+            icon: const Icon(Icons.brush),
+            label: const Text('Çizim Yap'),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: _openDefaultAvatarSelector,
+            icon: const Icon(Icons.face),
+            label: const Text('Varsayılan Avatar'),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+          ),
+        ],
       );
     }
 
@@ -676,7 +866,7 @@ class _ImagePreviewSheetState extends State<_ImagePreviewSheet> {
 
   Widget _buildCropButton(String label, double aspectRatio) {
     final isSelected = _cropConfig?.aspectRatio == aspectRatio;
-    
+
     return ElevatedButton(
       onPressed: () {
         setState(() {
@@ -690,9 +880,8 @@ class _ImagePreviewSheetState extends State<_ImagePreviewSheet> {
         });
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected 
-            ? Theme.of(context).primaryColor 
-            : Colors.grey.shade200,
+        backgroundColor:
+            isSelected ? Theme.of(context).primaryColor : Colors.grey.shade200,
         foregroundColor: isSelected ? Colors.white : Colors.black,
         minimumSize: const Size(60, 36),
       ),

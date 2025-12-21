@@ -40,7 +40,8 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static final firebase_core.FirebaseOptions web = firebase_core.FirebaseOptions(
+  static final firebase_core.FirebaseOptions web =
+      firebase_core.FirebaseOptions(
     apiKey: 'AIzaSyCVlcHBwMjQ6cQSTXlvHNwEAZEhlVdHV20',
     appId: '1:523262104471:web:b0845c7efb193f712eead2',
     messagingSenderId: '523262104471',
@@ -50,7 +51,8 @@ class DefaultFirebaseOptions {
     measurementId: 'G-KS0BHVZPQ3',
   );
 
-  static final firebase_core.FirebaseOptions android = firebase_core.FirebaseOptions(
+  static final firebase_core.FirebaseOptions android =
+      firebase_core.FirebaseOptions(
     apiKey: 'AIzaSyDd6CWJLN__xASlFHo6aNQVGghjGaQqg0c',
     appId: '1:523262104471:android:cd1cf27fe02259302eead2',
     messagingSenderId: '523262104471',
@@ -58,7 +60,8 @@ class DefaultFirebaseOptions {
     storageBucket: 'karbon2-c39e7.appspot.com',
   );
 
-  static final firebase_core.FirebaseOptions ios = firebase_core.FirebaseOptions(
+  static final firebase_core.FirebaseOptions ios =
+      firebase_core.FirebaseOptions(
     apiKey: 'AIzaSyAJofoTHi1wOdulPmW0ZQxdr3O8nOEAdHI',
     appId: '1:523262104471:ios:349f07eb68af53d82eead2',
     messagingSenderId: '523262104471',
@@ -67,7 +70,8 @@ class DefaultFirebaseOptions {
     iosBundleId: 'com.example.karbonson',
   );
 
-  static final firebase_core.FirebaseOptions macos = firebase_core.FirebaseOptions(
+  static final firebase_core.FirebaseOptions macos =
+      firebase_core.FirebaseOptions(
     apiKey: 'AIzaSyAJofoTHi1wOdulPmW0ZQxdr3O8nOEAdHI',
     appId: '1:523262104471:ios:349f07eb68af53d82eead2',
     messagingSenderId: '523262104471',
@@ -76,7 +80,8 @@ class DefaultFirebaseOptions {
     iosBundleId: 'com.example.karbonson',
   );
 
-  static final firebase_core.FirebaseOptions windows = firebase_core.FirebaseOptions(
+  static final firebase_core.FirebaseOptions windows =
+      firebase_core.FirebaseOptions(
     apiKey: 'AIzaSyCVlcHBwMjQ6cQSTXlvHNwEAZEhlVdHV20',
     appId: '1:523262104471:web:30bce558b6f3094a2eead2',
     messagingSenderId: '523262104471',
@@ -85,5 +90,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'karbon2-c39e7.appspot.com',
     measurementId: 'G-08WE3MPZ5Y',
   );
-
 }

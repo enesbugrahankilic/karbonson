@@ -7,20 +7,22 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 
 class ErrorHandlingService {
   static ErrorHandlingService? _instance;
-  static ErrorHandlingService get instance => _instance ??= ErrorHandlingService._();
-  
+  static ErrorHandlingService get instance =>
+      _instance ??= ErrorHandlingService._();
+
   ErrorHandlingService._();
 
-  final StreamController<ConnectivityResult> _connectivityController = 
-    StreamController<ConnectivityResult>.broadcast();
-  
-  final StreamController<AppError> _errorController = 
-    StreamController<AppError>.broadcast();
+  final StreamController<ConnectivityResult> _connectivityController =
+      StreamController<ConnectivityResult>.broadcast();
+
+  final StreamController<AppError> _errorController =
+      StreamController<AppError>.broadcast();
 
   // Connectivity Stream
-  Stream<ConnectivityResult> get connectivityStream => _connectivityController.stream;
+  Stream<ConnectivityResult> get connectivityStream =>
+      _connectivityController.stream;
   Stream<AppError> get errorStream => _errorController.stream;
-  
+
   ConnectivityResult? _lastConnectivityResult;
   Timer? _offlineDetectionTimer;
 
@@ -29,13 +31,13 @@ class ErrorHandlingService {
     Connectivity().onConnectivityChanged.listen((result) {
       _handleConnectivityChange(result.first);
     });
-    
+
     _startOfflineDetection();
   }
 
   void _handleConnectivityChange(ConnectivityResult result) {
     _lastConnectivityResult = result;
-    
+
     if (result == ConnectivityResult.none) {
       _errorController.add(AppError(
         type: AppErrorType.network,
@@ -50,7 +52,7 @@ class ErrorHandlingService {
         severity: ErrorSeverity.info,
       ));
     }
-    
+
     _connectivityController.add(result);
   }
 
@@ -64,8 +66,9 @@ class ErrorHandlingService {
     try {
       final result = await Connectivity().checkConnectivity();
       final hasConnection = result.first != ConnectivityResult.none;
-      
-      if (!hasConnection && _lastConnectivityResult != ConnectivityResult.none) {
+
+      if (!hasConnection &&
+          _lastConnectivityResult != ConnectivityResult.none) {
         // Network was lost
         _errorController.add(AppError(
           type: AppErrorType.network,
@@ -82,7 +85,7 @@ class ErrorHandlingService {
   Future<void> handleError(dynamic error, {StackTrace? stackTrace}) async {
     final appError = _convertToAppError(error, stackTrace);
     _errorController.add(appError);
-    
+
     // Log error for debugging
     debugPrint('App Error: ${appError.message}');
     if (stackTrace != null) {
@@ -145,7 +148,7 @@ class ErrorHandlingService {
         return await operation();
       } catch (error) {
         retryCount++;
-        
+
         if (retryCount > maxRetries) {
           await handleError(error);
           rethrow;
@@ -153,10 +156,10 @@ class ErrorHandlingService {
 
         // Wait before retrying
         await Future.delayed(delay);
-        
+
         // Exponential backoff
         delay = Duration(milliseconds: delay.inMilliseconds * 2);
-        
+
         // Add retry error
         _errorController.add(AppError(
           type: AppErrorType.retry,
@@ -175,7 +178,7 @@ class ErrorHandlingService {
     T Function()? offlineFallback,
   ) async {
     final connectivityResult = await Connectivity().checkConnectivity();
-    
+
     if (connectivityResult.first == ConnectivityResult.none) {
       if (offlineFallback != null) {
         return offlineFallback();
@@ -196,7 +199,7 @@ class ErrorHandlingService {
       if (offlineFallback != null) {
         return offlineFallback();
       }
-      
+
       await handleError(error);
       return null;
     }

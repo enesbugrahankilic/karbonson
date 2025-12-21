@@ -7,7 +7,8 @@ class AIService {
 
   AIService({required this.baseUrl});
 
-  Future<Map<String, dynamic>> getPersonalizedQuizRecommendations(String userId) async {
+  Future<Map<String, dynamic>> getPersonalizedQuizRecommendations(
+      String userId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/recommendations?user_id=$userId'),
     );

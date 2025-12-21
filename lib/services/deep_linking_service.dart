@@ -86,7 +86,7 @@ class DeepLinkingService {
       // Please migrate to alternative solutions like Firebase App Links or custom deep linking
       // For now, we'll skip initialization to avoid deprecation warnings
       // await FirebaseDynamicLinks.instance.getInitialLink();
-      
+
       // Listen for incoming links when app is in foreground
       _linkSubscription = linkStream.listen(_onLinkReceived, onError: (err) {
         if (kDebugMode) {
@@ -123,7 +123,8 @@ class DeepLinkingService {
       final mode = queryParams['mode'];
 
       if (kDebugMode) {
-        debugPrint('Query parameters: mode=$mode, email=${email?.replaceRange(2, email.indexOf('@'), '***')}, oobCode=${oobCode?.substring(0, 8) ?? 'null'}...');
+        debugPrint(
+            'Query parameters: mode=$mode, email=${email?.replaceRange(2, email.indexOf('@'), '***')}, oobCode=${oobCode?.substring(0, 8) ?? 'null'}...');
       }
 
       // Determine link type from mode or path
@@ -153,23 +154,28 @@ class DeepLinkingService {
       // Validate oobCode for password reset
       if (linkType == DeepLinkType.passwordReset) {
         if (oobCode == null || oobCode.isEmpty) {
-          return DeepLinkResult.failure('Geçersiz şifre sıfırlama bağlantısı. Kod bulunamadı.');
+          return DeepLinkResult.failure(
+              'Geçersiz şifre sıfırlama bağlantısı. Kod bulunamadı.');
         }
         if (oobCode.length < 10) {
-          return DeepLinkResult.failure('Geçersiz şifre sıfırlama kodu. Kod çok kısa.');
+          return DeepLinkResult.failure(
+              'Geçersiz şifre sıfırlama kodu. Kod çok kısa.');
         }
 
         // Optionally verify the code
         try {
-          final verifiedEmail = await FirebaseAuth.instance.verifyPasswordResetCode(oobCode);
+          final verifiedEmail =
+              await FirebaseAuth.instance.verifyPasswordResetCode(oobCode);
           if (kDebugMode) {
-            debugPrint('Password reset code verified for email: ${verifiedEmail.replaceRange(2, verifiedEmail.indexOf('@'), '***')}');
+            debugPrint(
+                'Password reset code verified for email: ${verifiedEmail.replaceRange(2, verifiedEmail.indexOf('@'), '***')}');
           }
         } catch (e) {
           if (kDebugMode) {
             debugPrint('Password reset code verification failed: $e');
           }
-          return DeepLinkResult.failure('Şifre sıfırlama kodu geçersiz veya süresi dolmuş. Lütfen yeni bir şifre sıfırlama e-postası gönderin.');
+          return DeepLinkResult.failure(
+              'Şifre sıfırlama kodu geçersiz veya süresi dolmuş. Lütfen yeni bir şifre sıfırlama e-postası gönderin.');
         }
       }
 
@@ -178,7 +184,6 @@ class DeepLinkingService {
         oobCode: oobCode,
         email: email,
       );
-
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Deep link processing error: $e');
@@ -198,7 +203,7 @@ class DeepLinkingService {
         }
         return handleDeepLink(initialUri);
       }
-      
+
       return DeepLinkResult.failure('İlk bağlantı bulunamadı');
     } catch (e) {
       if (kDebugMode) {
@@ -217,7 +222,7 @@ class DeepLinkingService {
         if (kDebugMode) {
           debugPrint('Deep link result: $result');
         }
-        
+
         // Here you would typically navigate to the appropriate screen
         _onDeepLinkProcessed(result);
       } catch (e) {
@@ -256,10 +261,11 @@ class DeepLinkingService {
     if (kDebugMode) {
       debugPrint('Deep link result ready for password reset navigation');
       debugPrint('oobCode: ${result.oobCode?.substring(0, 8) ?? 'null'}...');
-      debugPrint('email: ${result.email?.replaceRange(2, result.email!.indexOf('@'), '***') ?? 'null'}');
+      debugPrint(
+          'email: ${result.email?.replaceRange(2, result.email!.indexOf('@'), '***') ?? 'null'}');
       debugPrint('Navigation will be handled by route management system');
     }
-    
+
     // Store the deep link result for when navigation is available
     _storeDeepLinkResult(result);
   }
@@ -269,7 +275,7 @@ class DeepLinkingService {
     if (kDebugMode) {
       debugPrint('Deep link result ready for email verification navigation');
     }
-    
+
     _storeDeepLinkResult(result);
   }
 
@@ -298,9 +304,9 @@ class DeepLinkingService {
 
   /// Check if a URI is a valid Firebase Auth action URL
   static bool isFirebaseAuthAction(Uri uri) {
-    return uri.host.contains('firebaseapp.com') || 
-           uri.host.contains('web.app') ||
-           uri.host.contains('page.link');
+    return uri.host.contains('firebaseapp.com') ||
+        uri.host.contains('web.app') ||
+        uri.host.contains('page.link');
   }
 
   /// Create a test deep link for development purposes
@@ -310,9 +316,11 @@ class DeepLinkingService {
   }) {
     try {
       // Create a test URL structure that mimics Firebase Auth format
-      final testUrl = 'https://karbonson.page.link/reset-password?oobCode=$oobCode&email=${Uri.encodeComponent(email)}&mode=resetPassword';
+      final testUrl =
+          'https://karbonson.page.link/reset-password?oobCode=$oobCode&email=${Uri.encodeComponent(email)}&mode=resetPassword';
       if (kDebugMode) {
-        debugPrint('Test deep link created: ${testUrl.replaceRange(testUrl.indexOf('oobCode='), testUrl.indexOf('oobCode=') + 20, 'oobCode=***...')}');
+        debugPrint(
+            'Test deep link created: ${testUrl.replaceRange(testUrl.indexOf('oobCode='), testUrl.indexOf('oobCode=') + 20, 'oobCode=***...')}');
       }
       return testUrl;
     } catch (e) {
@@ -350,7 +358,7 @@ class DeepLinkingService {
       'firebase_configuration': {
         'domains': [
           'firebaseapp.com',
-          'web.app', 
+          'web.app',
           'page.link',
           'karbonson.page.link'
         ],
@@ -396,11 +404,12 @@ class DeepLinkingService {
       // This is a placeholder implementation
       final domain = customDomain ?? 'https://karbonson.page.link';
       final link = '$domain/reset-password?email=${Uri.encodeComponent(email)}';
-      
+
       if (kDebugMode) {
-        debugPrint('Created Firebase Dynamic Link: ${link.replaceRange(link.indexOf('email='), link.indexOf('email=') + 15, 'email=***@***')}');
+        debugPrint(
+            'Created Firebase Dynamic Link: ${link.replaceRange(link.indexOf('email='), link.indexOf('email=') + 15, 'email=***@***')}');
       }
-      
+
       return link;
     } catch (e) {
       if (kDebugMode) {

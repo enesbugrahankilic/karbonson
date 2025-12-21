@@ -13,9 +13,9 @@ import 'sms_provider_config.dart';
 
 /// OTP kod durumu enum
 enum OtpStatus {
-  active,      // Kod aktif ve kullanılabilir
-  used,        // Kod kullanılmış
-  expired,     // Kod süresi dolmuş
+  active, // Kod aktif ve kullanılabilir
+  used, // Kod kullanılmış
+  expired, // Kod süresi dolmuş
 }
 
 /// OTP kod modeli
@@ -38,7 +38,7 @@ class OtpCode {
 
   /// Kod süresi dolmuş mu?
   bool get isExpired => DateTime.now().isAfter(expiresAt);
-  
+
   /// Kod kullanılabilir mi?
   bool get isUsable => status == OtpStatus.active && !isExpired;
 
@@ -150,10 +150,10 @@ class EmailOtpVerificationResult {
 class EmailOtpService {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   // OTP kod süresi (5 dakika)
   static const Duration _otpDuration = Duration(minutes: 5);
-  
+
   // Kod uzunluğu
   static const int _codeLength = 6;
 
@@ -176,7 +176,7 @@ class EmailOtpService {
 
       // OTP kodunu Firestore'a kaydet (cleanup tamamlanana kadar bekle)
       await cleanupFuture;
-      
+
       final otpCode = OtpCode(
         code: code,
         email: email,
@@ -192,12 +192,14 @@ class EmailOtpService {
           .set(otpCode.toMap());
 
       if (kDebugMode) {
-        debugPrint('Email OTP: Kod oluşturuldu: ***$code (email: ${email.replaceRange(2, email.indexOf('@'), '***')})');
+        debugPrint(
+            'Email OTP: Kod oluşturuldu: ***$code (email: ${email.replaceRange(2, email.indexOf('@'), '***')})');
       }
 
       // E-posta ile kodu gönder (paralel)
-      final emailSendFuture = _sendEmailWithCode(email: email, code: code, purpose: purpose);
-      
+      final emailSendFuture =
+          _sendEmailWithCode(email: email, code: code, purpose: purpose);
+
       // Her iki işlemi de bekle
       await Future.wait([firestoreWrite, emailSendFuture]);
 
@@ -206,16 +208,17 @@ class EmailOtpService {
       if (kDebugMode && purpose == 'debug') {
         successMessage = 'Kod gönderildi: $code (Debug modu)';
       } else {
-        successMessage = '6 haneli doğrulama kodu e-posta adresinize gönderildi. Lütfen gelen kutunuzu kontrol edin. 📧';
+        successMessage =
+            '6 haneli doğrulama kodu e-posta adresinize gönderildi. Lütfen gelen kutunuzu kontrol edin. 📧';
       }
 
       return EmailOtpResult.success(successMessage, email);
-
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Email OTP gönderme hatası: $e');
       }
-      return EmailOtpResult.failure('Kod gönderilemedi. Lütfen tekrar deneyin.');
+      return EmailOtpResult.failure(
+          'Kod gönderilemedi. Lütfen tekrar deneyin.');
     }
   }
 
@@ -233,7 +236,8 @@ class EmailOtpService {
           .get();
 
       if (querySnapshot.docs.isEmpty) {
-        return EmailOtpVerificationResult.invalid('Doğrulama kodu bulunamadı. Lütfen yeni bir kod isteyin.');
+        return EmailOtpVerificationResult.invalid(
+            'Doğrulama kodu bulunamadı. Lütfen yeni bir kod isteyin.');
       }
 
       final docs = querySnapshot.docs;
@@ -249,7 +253,8 @@ class EmailOtpService {
       }
 
       if (matchingCode == null) {
-        return EmailOtpVerificationResult.invalid('Geçersiz doğrulama kodu. Lütfen kodu tekrar kontrol edin.');
+        return EmailOtpVerificationResult.invalid(
+            'Geçersiz doğrulama kodu. Lütfen kodu tekrar kontrol edin.');
       }
 
       // Süre kontrolü
@@ -257,32 +262,36 @@ class EmailOtpService {
         // Kodu expired olarak güncelle
         await _firestore
             .collection('email_otp_codes')
-            .doc('${matchingCode.email}-${matchingCode.createdAt.millisecondsSinceEpoch}')
+            .doc(
+                '${matchingCode.email}-${matchingCode.createdAt.millisecondsSinceEpoch}')
             .update({'status': OtpStatus.expired.name});
-            
-        return EmailOtpVerificationResult.expired('Doğrulama kodunun süresi dolmuş. Lütfen yeni bir kod isteyin.');
+
+        return EmailOtpVerificationResult.expired(
+            'Doğrulama kodunun süresi dolmuş. Lütfen yeni bir kod isteyin.');
       }
 
       // Kodu kullanılmış olarak işaretle
       await _firestore
           .collection('email_otp_codes')
-          .doc('${matchingCode.email}-${matchingCode.createdAt.millisecondsSinceEpoch}')
+          .doc(
+              '${matchingCode.email}-${matchingCode.createdAt.millisecondsSinceEpoch}')
           .update({
-            'status': OtpStatus.used.name,
-            'usedAt': DateTime.now().millisecondsSinceEpoch,
-          });
+        'status': OtpStatus.used.name,
+        'usedAt': DateTime.now().millisecondsSinceEpoch,
+      });
 
       if (kDebugMode) {
-        debugPrint('Email OTP: Kod doğrulandı (email: ${email.replaceRange(2, email.indexOf('@'), '***')})');
+        debugPrint(
+            'Email OTP: Kod doğrulandı (email: ${email.replaceRange(2, email.indexOf('@'), '***')})');
       }
 
       return EmailOtpVerificationResult.valid(email);
-
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Email OTP doğrulama hatası: $e');
       }
-      return EmailOtpVerificationResult.invalid('Doğrulama işlemi başarısız. Lütfen tekrar deneyin.');
+      return EmailOtpVerificationResult.invalid(
+          'Doğrulama işlemi başarısız. Lütfen tekrar deneyin.');
     }
   }
 
@@ -318,7 +327,8 @@ class EmailOtpService {
 
       final otpCode = OtpCode(
         code: code,
-        email: e164Phone, // SMS için 'email' field'ını kullanıyoruz (telefon numarası tutuyor)
+        email:
+            e164Phone, // SMS için 'email' field'ını kullanıyoruz (telefon numarası tutuyor)
         createdAt: now,
         expiresAt: expiresAt,
         status: OtpStatus.active,
@@ -331,11 +341,13 @@ class EmailOtpService {
           .set(otpCode.toMap());
 
       if (kDebugMode) {
-        debugPrint('SMS OTP: Kod oluşturuldu: ***$code (telefon: ${e164Phone.replaceRange(3, e164Phone.length - 3, '***')})');
+        debugPrint(
+            'SMS OTP: Kod oluşturuldu: ***$code (telefon: ${e164Phone.replaceRange(3, e164Phone.length - 3, '***')})');
       }
 
       // SMS gönderim simülasyonu (production'da gerçek SMS API kullan: Twilio, Firebase SMS, vb.)
-      final smsSendFuture = _sendSmsWithCode(phoneNumber: e164Phone, code: code, purpose: purpose);
+      final smsSendFuture = _sendSmsWithCode(
+          phoneNumber: e164Phone, code: code, purpose: purpose);
 
       await Future.wait([firestoreWrite, smsSendFuture]);
 
@@ -343,16 +355,17 @@ class EmailOtpService {
       if (kDebugMode && purpose == 'debug') {
         successMessage = 'SMS kodu gönderildi: $code (Debug modu)';
       } else {
-        successMessage = '6 haneli doğrulama kodu SMS ile gönderildi. Lütfen mesajları kontrol edin. 📱';
+        successMessage =
+            '6 haneli doğrulama kodu SMS ile gönderildi. Lütfen mesajları kontrol edin. 📱';
       }
 
       return EmailOtpResult.success(successMessage, e164Phone);
-
     } catch (e) {
       if (kDebugMode) {
         debugPrint('SMS OTP gönderme hatası: $e');
       }
-      return EmailOtpResult.failure('SMS gönderilemedi. Lütfen tekrar deneyin.');
+      return EmailOtpResult.failure(
+          'SMS gönderilemedi. Lütfen tekrar deneyin.');
     }
   }
 
@@ -364,24 +377,28 @@ class EmailOtpService {
     try {
       // Telefon numarasını doğrula
       if (!PhoneNumberValidator.isValid(phoneNumber)) {
-        return EmailOtpVerificationResult.invalid('Geçerli bir telefon numarası girin');
+        return EmailOtpVerificationResult.invalid(
+            'Geçerli bir telefon numarası girin');
       }
 
       // E.164 formatına dönüştür
       final e164Phone = PhoneNumberValidator.toE164(phoneNumber);
       if (e164Phone == null) {
-        return EmailOtpVerificationResult.invalid('Telefon numarası dönüştürülmedi');
+        return EmailOtpVerificationResult.invalid(
+            'Telefon numarası dönüştürülmedi');
       }
 
       // Firestore'dan telefon için aktif kodları bul
       final querySnapshot = await _firestore
           .collection('sms_otp_codes')
-          .where('email', isEqualTo: e164Phone) // 'email' field'ında telefon numarası var
+          .where('email',
+              isEqualTo: e164Phone) // 'email' field'ında telefon numarası var
           .where('status', isEqualTo: OtpStatus.active.name)
           .get();
 
       if (querySnapshot.docs.isEmpty) {
-        return EmailOtpVerificationResult.invalid('Doğrulama kodu bulunamadı. Lütfen yeni bir kod isteyin.');
+        return EmailOtpVerificationResult.invalid(
+            'Doğrulama kodu bulunamadı. Lütfen yeni bir kod isteyin.');
       }
 
       final docs = querySnapshot.docs;
@@ -397,39 +414,44 @@ class EmailOtpService {
       }
 
       if (matchingCode == null) {
-        return EmailOtpVerificationResult.invalid('Geçersiz doğrulama kodu. Lütfen kodu tekrar kontrol edin.');
+        return EmailOtpVerificationResult.invalid(
+            'Geçersiz doğrulama kodu. Lütfen kodu tekrar kontrol edin.');
       }
 
       // Süre kontrolü
       if (matchingCode.isExpired) {
         await _firestore
             .collection('sms_otp_codes')
-            .doc('${matchingCode.email}-${matchingCode.createdAt.millisecondsSinceEpoch}')
+            .doc(
+                '${matchingCode.email}-${matchingCode.createdAt.millisecondsSinceEpoch}')
             .update({'status': OtpStatus.expired.name});
 
-        return EmailOtpVerificationResult.expired('Doğrulama kodunun süresi dolmuş. Lütfen yeni bir kod isteyin.');
+        return EmailOtpVerificationResult.expired(
+            'Doğrulama kodunun süresi dolmuş. Lütfen yeni bir kod isteyin.');
       }
 
       // Kodu kullanılmış olarak işaretle
       await _firestore
           .collection('sms_otp_codes')
-          .doc('${matchingCode.email}-${matchingCode.createdAt.millisecondsSinceEpoch}')
+          .doc(
+              '${matchingCode.email}-${matchingCode.createdAt.millisecondsSinceEpoch}')
           .update({
-            'status': OtpStatus.used.name,
-            'usedAt': DateTime.now().millisecondsSinceEpoch,
-          });
+        'status': OtpStatus.used.name,
+        'usedAt': DateTime.now().millisecondsSinceEpoch,
+      });
 
       if (kDebugMode) {
-        debugPrint('SMS OTP: Kod doğrulandı (telefon: ${e164Phone.replaceRange(3, e164Phone.length - 3, '***')})');
+        debugPrint(
+            'SMS OTP: Kod doğrulandı (telefon: ${e164Phone.replaceRange(3, e164Phone.length - 3, '***')})');
       }
 
       return EmailOtpVerificationResult.valid(e164Phone);
-
     } catch (e) {
       if (kDebugMode) {
         debugPrint('SMS OTP doğrulama hatası: $e');
       }
-      return EmailOtpVerificationResult.invalid('Doğrulama işlemi başarısız. Lütfen tekrar deneyin.');
+      return EmailOtpVerificationResult.invalid(
+          'Doğrulama işlemi başarısız. Lütfen tekrar deneyin.');
     }
   }
 
@@ -438,7 +460,8 @@ class EmailOtpService {
     try {
       final querySnapshot = await _firestore
           .collection('sms_otp_codes')
-          .where('email', isEqualTo: phoneNumber) // 'email' field'ında telefon var
+          .where('email',
+              isEqualTo: phoneNumber) // 'email' field'ında telefon var
           .where('status', isEqualTo: OtpStatus.active.name)
           .limit(10)
           .get();
@@ -453,7 +476,8 @@ class EmailOtpService {
         await batch.commit();
 
         if (kDebugMode) {
-          debugPrint('SMS OTP: ${querySnapshot.docs.length} eski kod temizlendi');
+          debugPrint(
+              'SMS OTP: ${querySnapshot.docs.length} eski kod temizlendi');
         }
       }
     } catch (e) {
@@ -473,7 +497,8 @@ class EmailOtpService {
     try {
       // DEBUG MODE'de simülasyon
       if (kDebugMode) {
-        debugPrint('SMS OTP: SMS gönderildi (telefon: $phoneNumber, purpose: $purpose)');
+        debugPrint(
+            'SMS OTP: SMS gönderildi (telefon: $phoneNumber, purpose: $purpose)');
         debugPrint('SMS OTP: Mesaj içeriği: "Karbonson doğrulama kodu: $code"');
       }
 
@@ -483,14 +508,16 @@ class EmailOtpService {
       }
 
       // Firestore'a SMS gönderim logu kaydet
-      await _firestore.collection('sms_logs').doc('${phoneNumber}-${DateTime.now().millisecondsSinceEpoch}').set({
+      await _firestore
+          .collection('sms_logs')
+          .doc('${phoneNumber}-${DateTime.now().millisecondsSinceEpoch}')
+          .set({
         'phoneNumber': phoneNumber,
         'code': code,
         'purpose': purpose,
         'sentAt': DateTime.now().millisecondsSinceEpoch,
         'status': 'sent',
       });
-
     } catch (e) {
       if (kDebugMode) {
         debugPrint('SMS OTP SMS gönderme hatası: $e');
@@ -512,16 +539,17 @@ class EmailOtpService {
 
       if (querySnapshot.docs.isNotEmpty) {
         final batch = _firestore.batch();
-        
+
         for (final doc in querySnapshot.docs) {
           batch.update(doc.reference, {'status': OtpStatus.expired.name});
         }
-        
+
         // ⚡ Tek seferde commit et
         await batch.commit();
-        
+
         if (kDebugMode) {
-          debugPrint('Email OTP: ${querySnapshot.docs.length} eski kod temizlendi');
+          debugPrint(
+              'Email OTP: ${querySnapshot.docs.length} eski kod temizlendi');
         }
       }
     } catch (e) {
@@ -551,7 +579,8 @@ class EmailOtpService {
     try {
       // Firebase Action Code Settings kullanarak e-posta gönder
       final actionCodeSettings = ActionCodeSettings(
-        url: 'https://karbonson.page.link/otp-verification?email=${Uri.encodeComponent(email)}&code=${Uri.encodeComponent(code)}',
+        url:
+            'https://karbonson.page.link/otp-verification?email=${Uri.encodeComponent(email)}&code=${Uri.encodeComponent(code)}',
         handleCodeInApp: true,
         androidPackageName: 'com.example.karbonson',
         androidMinimumVersion: '21',
@@ -598,7 +627,8 @@ class EmailOtpService {
       if (querySnapshot.docs.isNotEmpty) {
         await batch.commit();
         if (kDebugMode) {
-          debugPrint('Email OTP: ${querySnapshot.docs.length} süresi dolmuş kod temizlendi');
+          debugPrint(
+              'Email OTP: ${querySnapshot.docs.length} süresi dolmuş kod temizlendi');
         }
       }
     } catch (e) {
@@ -626,7 +656,8 @@ class EmailOtpService {
         return;
       }
 
-      final url = Uri.parse('https://api.twilio.com/2010-04-01/Accounts/$accountSid/Messages.json');
+      final url = Uri.parse(
+          'https://api.twilio.com/2010-04-01/Accounts/$accountSid/Messages.json');
 
       final auth = base64Encode(utf8.encode('$accountSid:$authToken'));
 
@@ -649,7 +680,8 @@ class EmailOtpService {
         }
       } else {
         if (kDebugMode) {
-          debugPrint('❌ Twilio error: ${response.statusCode} - ${response.body}');
+          debugPrint(
+              '❌ Twilio error: ${response.statusCode} - ${response.body}');
         }
         throw Exception('Twilio SMS failed: ${response.statusCode}');
       }

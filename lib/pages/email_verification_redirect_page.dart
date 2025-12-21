@@ -11,11 +11,12 @@ class EmailVerificationRedirectPage extends StatefulWidget {
   const EmailVerificationRedirectPage({super.key});
 
   @override
-  State<EmailVerificationRedirectPage> createState() => _EmailVerificationRedirectPageState();
+  State<EmailVerificationRedirectPage> createState() =>
+      _EmailVerificationRedirectPageState();
 }
 
-class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirectPage>
-    with TickerProviderStateMixin {
+class _EmailVerificationRedirectPageState
+    extends State<EmailVerificationRedirectPage> with TickerProviderStateMixin {
   bool _isLoading = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -32,7 +33,7 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -40,7 +41,7 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
       parent: _animationController,
       curve: Curves.easeIn,
     ));
-    
+
     _slideAnimation = Tween<double>(
       begin: 50.0,
       end: 0.0,
@@ -48,7 +49,7 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
       parent: _animationController,
       curve: Curves.easeOutBack,
     ));
-    
+
     _animationController.forward();
   }
 
@@ -61,7 +62,7 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null && !currentUser.emailVerified) {
         await currentUser.sendEmailVerification();
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -75,7 +76,8 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Kullanıcı oturumu bulunamadı veya e-posta zaten doğrulanmış'),
+              content: Text(
+                  'Kullanıcı oturumu bulunamadı veya e-posta zaten doğrulanmış'),
               backgroundColor: Colors.orange,
             ),
           );
@@ -96,8 +98,6 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
       });
     }
   }
-
-
 
   @override
   void dispose() {
@@ -164,9 +164,9 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
                                 color: Colors.blue,
                               ),
                             ),
-                            
+
                             const SizedBox(height: 24),
-                            
+
                             // Title
                             Text(
                               'Şifre Sıfırlama Başarılı!',
@@ -177,9 +177,9 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            
+
                             const SizedBox(height: 16),
-                            
+
                             // Password Reset Information
                             Container(
                               padding: const EdgeInsets.all(16),
@@ -212,16 +212,17 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
                                     'Şifre sıfırlama bağlantısı e-postanıza gönderildi.',
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: ThemeColors.getSecondaryText(context),
+                                      color:
+                                          ThemeColors.getSecondaryText(context),
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
                                 ],
                               ),
                             ),
-                            
+
                             const SizedBox(height: 20),
-                            
+
                             // Email Verification Information
                             Container(
                               padding: const EdgeInsets.all(16),
@@ -254,22 +255,24 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
                                     'Hesabınızın güvenliği için e-posta adresinizin doğrulanmamış olduğunu görüyoruz.',
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: ThemeColors.getSecondaryText(context),
+                                      color:
+                                          ThemeColors.getSecondaryText(context),
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
                                 ],
                               ),
                             ),
-                            
+
                             const SizedBox(height: 20),
-                            
+
                             // User Email Display
                             if (userEmail != null) ...[
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: ThemeColors.getDialogContentBackground(context),
+                                  color: ThemeColors.getDialogContentBackground(
+                                      context),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: Colors.blue.withValues(alpha: 0.3),
@@ -298,14 +301,15 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
                               ),
                               const SizedBox(height: 24),
                             ],
-                            
+
                             // Action Buttons
                             // Send Verification Email Button
                             SizedBox(
                               width: double.infinity,
                               height: 50,
                               child: ElevatedButton.icon(
-                                onPressed: _isLoading ? null : _sendVerificationEmail,
+                                onPressed:
+                                    _isLoading ? null : _sendVerificationEmail,
                                 icon: _isLoading
                                     ? const SizedBox(
                                         width: 20,
@@ -317,7 +321,9 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
                                       )
                                     : const Icon(Icons.send),
                                 label: Text(
-                                  _isLoading ? 'Gönderiliyor...' : 'Doğrulama E-postasını Tekrar Gönder',
+                                  _isLoading
+                                      ? 'Gönderiliyor...'
+                                      : 'Doğrulama E-postasını Tekrar Gönder',
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
@@ -329,21 +335,24 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
                                 ),
                               ),
                             ),
-                            
+
                             const SizedBox(height: 12),
-                            
+
                             // Later Button
                             SizedBox(
                               width: double.infinity,
                               height: 50,
                               child: OutlinedButton.icon(
-                                onPressed: _isLoading ? null : () {
-                                  Navigator.of(context).pop();
-                                },
+                                onPressed: _isLoading
+                                    ? null
+                                    : () {
+                                        Navigator.of(context).pop();
+                                      },
                                 icon: const Icon(Icons.arrow_forward),
                                 label: const Text('Daha Sonra Yap'),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: ThemeColors.getSecondaryText(context),
+                                  foregroundColor:
+                                      ThemeColors.getSecondaryText(context),
                                   side: BorderSide(
                                     color: ThemeColors.getBorder(context),
                                   ),
@@ -353,9 +362,9 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
                                 ),
                               ),
                             ),
-                            
+
                             const SizedBox(height: 20),
-                            
+
                             // Help Information
                             Container(
                               padding: const EdgeInsets.all(16),
@@ -385,14 +394,16 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
                                 ],
                               ),
                             ),
-                            
+
                             const SizedBox(height: 16),
-                            
+
                             // Back Navigation
                             TextButton(
-                              onPressed: _isLoading ? null : () {
-                                Navigator.of(context).pop();
-                              },
+                              onPressed: _isLoading
+                                  ? null
+                                  : () {
+                                      Navigator.of(context).pop();
+                                    },
                               child: Text(
                                 'Geri Dön',
                                 style: TextStyle(

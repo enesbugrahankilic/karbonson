@@ -5,17 +5,19 @@ import 'package:karbonson/models/user_data.dart';
 void main() {
   group('AIService Integration Tests', () {
     late AIService aiService;
-    
+
     setUp(() {
       // For integration tests, we'll use the actual service with a mock base URL
       aiService = AIService(baseUrl: 'http://localhost:5000');
     });
-    
-    test('getPersonalizedQuizRecommendations returns a valid response', () async {
+
+    test('getPersonalizedQuizRecommendations returns a valid response',
+        () async {
       try {
         // Test with a user that should have recommendations
-        final recommendations = await aiService.getPersonalizedQuizRecommendations('user1');
-        
+        final recommendations =
+            await aiService.getPersonalizedQuizRecommendations('user1');
+
         // If we get here without throwing an exception, the service is working
         expect(recommendations, isNotNull);
         expect(recommendations, isA<Map<String, dynamic>>());
@@ -27,12 +29,12 @@ void main() {
         expect(e, isA<Exception>());
       }
     });
-    
+
     test('analyzeUserBehavior returns a valid response', () async {
       try {
         // Test with a user that should have analysis data
         final analysis = await aiService.analyzeUserBehavior('user1');
-        
+
         // If we get here without throwing an exception, the service is working
         expect(analysis, isNotNull);
         expect(analysis, isA<Map<String, dynamic>>());
@@ -44,7 +46,7 @@ void main() {
         expect(e, isA<Exception>());
       }
     });
-    
+
     test('sendUserData handles a valid UserData object', () async {
       // Create a test user
       final testUser = UserData(
@@ -52,11 +54,11 @@ void main() {
         nickname: 'Test User',
         isEmailVerified: true,
       );
-      
+
       try {
         // Try to send the user data
         await aiService.sendUserData(testUser);
-        
+
         // If we get here without throwing an exception, the service is working
         expect(true, true); // This will always pass
       } catch (e) {

@@ -50,16 +50,22 @@ void main() {
           toNickname,
         );
 
-        expect(sendResult, isTrue, reason: 'Friend request should be sent successfully');
+        expect(sendResult, isTrue,
+            reason: 'Friend request should be sent successfully');
         debugPrint('✅ Friend request sent successfully');
 
         // Step 2: Test retrieving received requests
         debugPrint('📥 Step 2: Testing getReceivedFriendRequests...');
-        final receivedRequests = await firestoreService.getReceivedFriendRequests(toUserId);
-        
-        expect(receivedRequests, isNotEmpty, reason: 'Should have received friend requests');
-        expect(receivedRequests.first.fromUserId, equals(fromUserId), reason: 'Should be from correct user');
-        expect(receivedRequests.first.status, equals(FriendRequestStatus.pending), reason: 'Request should be pending');
+        final receivedRequests =
+            await firestoreService.getReceivedFriendRequests(toUserId);
+
+        expect(receivedRequests, isNotEmpty,
+            reason: 'Should have received friend requests');
+        expect(receivedRequests.first.fromUserId, equals(fromUserId),
+            reason: 'Should be from correct user');
+        expect(
+            receivedRequests.first.status, equals(FriendRequestStatus.pending),
+            reason: 'Request should be pending');
         debugPrint('✅ Received friend request retrieved successfully');
 
         // Step 3: Test accepting friend request
@@ -69,7 +75,8 @@ void main() {
           toUserId,
         );
 
-        expect(acceptResult, isTrue, reason: 'Friend request should be accepted successfully');
+        expect(acceptResult, isTrue,
+            reason: 'Friend request should be accepted successfully');
         debugPrint('✅ Friend request accepted successfully');
 
         // Step 4: Verify friendship is created
@@ -79,8 +86,10 @@ void main() {
 
         expect(friends, isNotEmpty, reason: 'From user should have friends');
         expect(friendsTo, isNotEmpty, reason: 'To user should have friends');
-        expect(friends.first.id, equals(toUserId), reason: 'From user should be friends with toUser');
-        expect(friendsTo.first.id, equals(fromUserId), reason: 'To user should be friends with fromUser');
+        expect(friends.first.id, equals(toUserId),
+            reason: 'From user should be friends with toUser');
+        expect(friendsTo.first.id, equals(fromUserId),
+            reason: 'To user should be friends with fromUser');
         debugPrint('✅ Friendship created successfully for both users');
 
         // Step 5: Test rejecting friend request (with different users)
@@ -97,12 +106,15 @@ void main() {
           rejectToUserId,
           rejectToNickname,
         );
-        
-        expect(rejectSendResult, isTrue, reason: 'Friend request should be sent for rejection test');
+
+        expect(rejectSendResult, isTrue,
+            reason: 'Friend request should be sent for rejection test');
 
         // Get the request
-        final rejectRequests = await firestoreService.getReceivedFriendRequests(rejectToUserId);
-        expect(rejectRequests, isNotEmpty, reason: 'Should have request to reject');
+        final rejectRequests =
+            await firestoreService.getReceivedFriendRequests(rejectToUserId);
+        expect(rejectRequests, isNotEmpty,
+            reason: 'Should have request to reject');
 
         // Reject the request
         final rejectResult = await firestoreService.rejectFriendRequest(
@@ -110,20 +122,23 @@ void main() {
           rejectToUserId,
         );
 
-        expect(rejectResult, isTrue, reason: 'Friend request should be rejected successfully');
+        expect(rejectResult, isTrue,
+            reason: 'Friend request should be rejected successfully');
         debugPrint('✅ Friend request rejected successfully');
 
         // Step 6: Test friend statistics
         debugPrint('📊 Step 6: Testing friend statistics...');
         final statistics = await friendshipService.getFriendStatistics();
-        
-        expect(statistics['totalFriends'], isNotNull, reason: 'Should have friend statistics');
-        expect(statistics['pendingReceived'], isNotNull, reason: 'Should have pending received statistics');
-        expect(statistics['pendingSent'], isNotNull, reason: 'Should have pending sent statistics');
+
+        expect(statistics['totalFriends'], isNotNull,
+            reason: 'Should have friend statistics');
+        expect(statistics['pendingReceived'], isNotNull,
+            reason: 'Should have pending received statistics');
+        expect(statistics['pendingSent'], isNotNull,
+            reason: 'Should have pending sent statistics');
         debugPrint('✅ Friend statistics retrieved successfully');
 
         debugPrint('🎉 All friendship request tests passed successfully!');
-
       } catch (e, stackTrace) {
         debugPrint('🚨 Test failed with error: $e');
         debugPrint('Stack trace: $stackTrace');
@@ -136,23 +151,24 @@ void main() {
 
       try {
         const String testUserId = 'test_listener_user';
-        
+
         // Test real-time listener
-        final stream = firestoreService.listenToReceivedFriendRequests(testUserId);
-        
+        final stream =
+            firestoreService.listenToReceivedFriendRequests(testUserId);
+
         // Listen for changes (this would normally be tested with actual UI)
         final subscription = stream.listen((requests) {
-          debugPrint('📨 Received ${requests.length} friend requests in real-time');
+          debugPrint(
+              '📨 Received ${requests.length} friend requests in real-time');
           // Test would verify that new requests appear immediately
         });
 
         // Keep subscription alive for a short time
         await Future.delayed(Duration(seconds: 2));
-        
-        await subscription.cancel();
-        
-        debugPrint('✅ Real-time listener test completed');
 
+        await subscription.cancel();
+
+        debugPrint('✅ Real-time listener test completed');
       } catch (e, stackTrace) {
         debugPrint('🚨 Real-time listener test failed: $e');
         debugPrint('Stack trace: $stackTrace');
@@ -169,7 +185,7 @@ void main() {
           fromNickname: 'TestUser',
           fromUserId: 'test_user',
         );
-        
+
         debugPrint('✅ Friend request notification test passed');
 
         // Test friend request accepted notification
@@ -177,7 +193,7 @@ void main() {
           acceptedByNickname: 'TestUser2',
           acceptedByUserId: 'test_user_2',
         );
-        
+
         debugPrint('✅ Friend request accepted notification test passed');
 
         // Test friend request rejected notification
@@ -185,9 +201,8 @@ void main() {
           rejectedByNickname: 'TestUser3',
           rejectedByUserId: 'test_user_3',
         );
-        
-        debugPrint('✅ Friend request rejected notification test passed');
 
+        debugPrint('✅ Friend request rejected notification test passed');
       } catch (e, stackTrace) {
         debugPrint('🚨 Notification service test failed: $e');
         debugPrint('Stack trace: $stackTrace');
@@ -204,16 +219,17 @@ void main() {
 
         // Test canSendFriendRequest with valid conditions
         final canSend = await firestoreService.canSendFriendRequest(toUserId);
-        
+
         // Note: This test might fail if users don't exist, which is expected
         // The important part is that the method doesn't crash
         debugPrint('✅ Friend request validation completed (result: $canSend)');
 
         // Test isFriendRequestValid with non-existent request
-        final isValid = await firestoreService.isFriendRequestValid('non_existent_id', fromUserId);
-        expect(isValid, isFalse, reason: 'Non-existent request should be invalid');
+        final isValid = await firestoreService.isFriendRequestValid(
+            'non_existent_id', fromUserId);
+        expect(isValid, isFalse,
+            reason: 'Non-existent request should be invalid');
         debugPrint('✅ Non-existent request validation test passed');
-
       } catch (e, stackTrace) {
         debugPrint('🚨 Friend request validation test failed: $e');
         debugPrint('Stack trace: $stackTrace');
@@ -228,21 +244,21 @@ void main() {
 
       // This test simulates the protection mechanisms in FriendsPage
       final processingRequests = <String>{};
-      
+
       // Simulate processing request
       const String requestId = 'test_request_123';
       processingRequests.add(requestId);
-      
+
       // Try to process again - should be prevented
-      expect(processingRequests.contains(requestId), isTrue, 
-             reason: 'Request should be marked as processing');
-      
+      expect(processingRequests.contains(requestId), isTrue,
+          reason: 'Request should be marked as processing');
+
       // Remove after processing
       processingRequests.remove(requestId);
-      
-      expect(processingRequests.isEmpty, isTrue, 
-             reason: 'Request should be removed after processing');
-      
+
+      expect(processingRequests.isEmpty, isTrue,
+          reason: 'Request should be removed after processing');
+
       debugPrint('✅ Double-click protection test passed');
     });
   });
@@ -253,27 +269,28 @@ class TestCleanup {
   static Future<void> cleanupTestData() async {
     try {
       final FirebaseFirestore db = FirebaseFirestore.instance;
-      
+
       // Clean up test friend requests
-      final requestsQuery = await db.collection('friend_requests')
-          .where('fromNickname', whereIn: ['TestUser1', 'TestUser2', 'TestUser3', 'TestUser4'])
-          .get();
-      
+      final requestsQuery = await db.collection('friend_requests').where(
+          'fromNickname',
+          whereIn: ['TestUser1', 'TestUser2', 'TestUser3', 'TestUser4']).get();
+
       for (final doc in requestsQuery.docs) {
         await doc.reference.delete();
       }
-      
+
       // Clean up test notifications
       final notificationsQuery = await db.collection('notifications').get();
-      
+
       for (final doc in notificationsQuery.docs) {
         // Delete notifications subcollection
-        final notificationsSub = await doc.reference.collection('notifications').get();
+        final notificationsSub =
+            await doc.reference.collection('notifications').get();
         for (final notifDoc in notificationsSub.docs) {
           await notifDoc.reference.delete();
         }
       }
-      
+
       debugPrint('🧹 Test data cleaned up successfully');
     } catch (e) {
       debugPrint('⚠️ Test cleanup failed: $e');

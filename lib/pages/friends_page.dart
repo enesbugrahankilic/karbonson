@@ -4,12 +4,15 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import '../models/game_board.dart';
 import '../models/user_data.dart';
 import '../services/firestore_service.dart';
 import '../services/game_invitation_service.dart';
 import '../services/presence_service.dart';
+import '../services/notification_service.dart';
+import '../services/achievement_service.dart';
 import '../widgets/game_invitation_dialog.dart';
 import '../widgets/home_button.dart';
 import '../services/app_localizations.dart';
@@ -24,12 +27,14 @@ class FriendsPage extends StatefulWidget {
   State<FriendsPage> createState() => _FriendsPageState();
 }
 
-class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin {
+class _FriendsPageState extends State<FriendsPage>
+    with TickerProviderStateMixin {
   final FirestoreService _firestoreService = FirestoreService();
   final GameInvitationService _invitationService = GameInvitationService();
   final PresenceService _presenceService = PresenceService();
   final TextEditingController _searchController = TextEditingController();
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
 
   List<Friend> _friends = [];
   List<FriendRequest> _receivedRequests = [];
@@ -40,7 +45,7 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
   bool _isLoading = false;
   StreamSubscription<List<GameInvitation>>? _invitationSubscription;
   StreamSubscription<List<FriendRequest>>? _friendRequestSubscription;
-  
+
   // Button protection against double-clicks and race conditions
   final Set<String> _processingRequests = {};
 
@@ -51,7 +56,7 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
     _initializePresence();
     _startListeningToInvitations();
     _startListeningToFriendRequests();
-    
+
     // Listen to language changes
     context.read<LanguageProvider>().addListener(() {
       if (mounted) setState(() {});
@@ -71,7 +76,8 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
   }
 
   void _startListeningToInvitations() {
-    _invitationSubscription = _invitationService.listenToInvitations().listen((invitations) {
+    _invitationSubscription =
+        _invitationService.listenToInvitations().listen((invitations) {
       if (mounted) {
         setState(() {
           _gameInvitations = invitations;
@@ -101,7 +107,7 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
 
     // Keep track of previous request IDs to detect new requests
     final Set<String> previousRequestIds = <String>{};
-    
+
     // Listen to real-time changes in friend requests for current user
     _friendRequestSubscription = _firestoreService
         .listenToReceivedFriendRequests(currentUser.uid)
@@ -113,9 +119,10 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
 
         // Show notification for new friend requests
         final currentRequestIds = requests.map((r) => r.id).toSet();
-        final newRequests = requests.where((request) => 
-          !previousRequestIds.contains(request.id)).toList();
-        
+        final newRequests = requests
+            .where((request) => !previousRequestIds.contains(request.id))
+            .toList();
+
         if (newRequests.isNotEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             for (final request in newRequests) {
@@ -123,7 +130,7 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
             }
           });
         }
-        
+
         // Update previous request IDs for next comparison
         previousRequestIds.clear();
         previousRequestIds.addAll(currentRequestIds);
@@ -197,7 +204,7 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
       }
 
       final userId = currentUser.uid;
-      
+
       // Load all data in parallel for better performance
       final results = await Future.wait([
         _firestoreService.getFriends(userId),
@@ -210,16 +217,14 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
       _receivedRequests = results[1] as List<FriendRequest>;
       _sentRequests = results[2] as List<FriendRequest>;
       _allRegisteredUsers = results[3] as List<UserData>;
-      
+
       // Filter out current user and existing friends
       final friendIds = _friends.map((f) => f.id).toSet();
-      _allRegisteredUsers.removeWhere((user) => 
-        user.uid == currentUser.uid || friendIds.contains(user.uid)
-      );
-      
+      _allRegisteredUsers.removeWhere((user) =>
+          user.uid == currentUser.uid || friendIds.contains(user.uid));
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 Error loading friends data: $e');
-      
+
       // Show error to user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -244,7 +249,7 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
   Future<void> _refreshData() async {
     if (kDebugMode) debugPrint('🔄 Refreshing friend data...');
     await _loadFriendsData();
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -266,8 +271,9 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) return;
-      
-      _searchResults = await _firestoreService.searchUsers(query, currentUser.uid);
+
+      _searchResults =
+          await _firestoreService.searchUsers(query, currentUser.uid);
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 Error searching users: $e');
     } finally {
@@ -281,8 +287,9 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
       if (currentUser == null) return;
 
       // Search for user by nickname
-      final searchResults = await _firestoreService.searchUsers(toNickname, currentUser.uid);
-      
+      final searchResults =
+          await _firestoreService.searchUsers(toNickname, currentUser.uid);
+
       if (searchResults.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -316,7 +323,9 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
 
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$toNickname kullanıcısına arkadaşlık isteği gönderildi')),
+          SnackBar(
+              content: Text(
+                  '$toNickname kullanıcısına arkadaşlık isteği gönderildi')),
         );
         _loadFriendsData(); // Refresh all data including registered users
       }
@@ -432,8 +441,9 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
       if (currentUser == null) return;
 
       // İlk önce isteğin geçerliliğini kontrol et
-      final isValid = await _firestoreService.isFriendRequestValid(requestId, currentUser.uid);
-      
+      final isValid = await _firestoreService.isFriendRequestValid(
+          requestId, currentUser.uid);
+
       if (!isValid) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -448,10 +458,34 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
       }
 
       // Atomik kabul işlemi
-      final success = await _firestoreService.acceptFriendRequest(requestId, currentUser.uid);
+      final success = await _firestoreService.acceptFriendRequest(
+          requestId, currentUser.uid);
 
       if (mounted) {
         if (success) {
+          // Update achievement for adding friend
+          AchievementService().updateProgress(
+            friendsCount: 1,
+          );
+
+          // Get request details for notification
+          final requestDoc = await FirebaseFirestore.instance
+              .collection('friend_requests')
+              .doc(requestId)
+              .get();
+
+          if (requestDoc.exists) {
+            final requestData = requestDoc.data()!;
+            final fromNickname = requestData['fromNickname'] as String;
+            final fromUserId = requestData['fromUserId'] as String;
+
+            // Send friend request accepted notification
+            await NotificationService.showFriendRequestAcceptedNotification(
+              acceptedByNickname: currentUser.displayName ?? 'Kullanıcı',
+              acceptedByUserId: currentUser.uid,
+            );
+          }
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('✅ Arkadaşlık isteği başarıyla kabul edildi!'),
@@ -505,8 +539,9 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
       if (currentUser == null) return;
 
       // İlk önce isteğin geçerliliğini kontrol et
-      final isValid = await _firestoreService.isFriendRequestValid(requestId, currentUser.uid);
-      
+      final isValid = await _firestoreService.isFriendRequestValid(
+          requestId, currentUser.uid);
+
       if (!isValid) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -520,11 +555,26 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
         return;
       }
 
+      // Get request details for notification before rejecting
+      final requestDoc = await FirebaseFirestore.instance
+          .collection('friend_requests')
+          .doc(requestId)
+          .get();
+
+      String? fromNickname;
+      String? fromUserId;
+      if (requestDoc.exists) {
+        final requestData = requestDoc.data()!;
+        fromNickname = requestData['fromNickname'] as String;
+        fromUserId = requestData['fromUserId'] as String;
+      }
+
       // Atomik reddetme işlemi (bildirim ile)
       final success = await _firestoreService.rejectFriendRequest(
-        requestId, 
+        requestId,
         currentUser.uid,
-        sendNotification: true, // Bildirim gönder
+        sendNotification:
+            true, // Bildirim gönder (FirestoreService içinde NotificationService çağrısı yapılır)
       );
 
       if (mounted) {
@@ -689,7 +739,8 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     filled: true,
-                                    fillColor: Colors.white.withValues(alpha: 0.9),
+                                    fillColor:
+                                        Colors.white.withValues(alpha: 0.9),
                                   ),
                                   onChanged: _searchUsers,
                                 ),
@@ -725,21 +776,28 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                                 final nickname = user['nickname'] as String;
 
                                 return Card(
-                                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 4),
                                   elevation: 2,
                                   child: ListTile(
                                     leading: CircleAvatar(
-                                      backgroundColor: Colors.green.withValues(alpha: 0.1),
-                                      child: Icon(Icons.person_add, color: Colors.green),
+                                      backgroundColor:
+                                          Colors.green.withValues(alpha: 0.1),
+                                      child: Icon(Icons.person_add,
+                                          color: Colors.green),
                                     ),
                                     title: Text(nickname),
                                     trailing: ElevatedButton(
-                                      onPressed: _isLoading ? null : () => _sendFriendRequest(nickname),
+                                      onPressed: _isLoading
+                                          ? null
+                                          : () => _sendFriendRequest(nickname),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.blue,
                                         foregroundColor: Colors.white,
                                       ),
-                                      child: Text(_isLoading ? 'Yükleniyor...' : 'İstek Gönder'),
+                                      child: Text(_isLoading
+                                          ? 'Yükleniyor...'
+                                          : 'İstek Gönder'),
                                     ),
                                   ),
                                 );
@@ -774,7 +832,9 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                                                     padding: EdgeInsets.all(3),
                                                     decoration: BoxDecoration(
                                                       color: Colors.red,
-                                                      borderRadius: BorderRadius.circular(8),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8),
                                                       border: Border.all(
                                                         color: Colors.white,
                                                         width: 1,
@@ -789,9 +849,11 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                                                       style: TextStyle(
                                                         color: Colors.white,
                                                         fontSize: 8,
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                       ),
-                                                      textAlign: TextAlign.center,
+                                                      textAlign:
+                                                          TextAlign.center,
                                                     ),
                                                   ),
                                                 ),
@@ -816,20 +878,34 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                                         children: [
                                           // Friends Tab
                                           _friends.isEmpty
-                                              ? const Center(child: Text('Henüz arkadaşın yok'))
+                                              ? const Center(
+                                                  child: Text(
+                                                      'Henüz arkadaşın yok'))
                                               : ListView.builder(
                                                   itemCount: _friends.length,
-                                                  itemBuilder: (context, index) {
-                                                    final friend = _friends[index];
+                                                  itemBuilder:
+                                                      (context, index) {
+                                                    final friend =
+                                                        _friends[index];
                                                     return Card(
-                                                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                                      margin: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 16,
+                                                          vertical: 4),
                                                       child: ListTile(
-                                                        leading: const Icon(Icons.person),
-                                                        title: Text(friend.nickname),
-                                                        subtitle: Text('Arkadaşlık: ${friend.addedAt.day}/${friend.addedAt.month}/${friend.addedAt.year}'),
-                                                        trailing: ElevatedButton(
-                                                          onPressed: () => _inviteFriendToGame(friend),
-                                                          child: const Text('Davet Et'),
+                                                        leading: const Icon(
+                                                            Icons.person),
+                                                        title: Text(
+                                                            friend.nickname),
+                                                        subtitle: Text(
+                                                            'Arkadaşlık: ${friend.addedAt.day}/${friend.addedAt.month}/${friend.addedAt.year}'),
+                                                        trailing:
+                                                            ElevatedButton(
+                                                          onPressed: () =>
+                                                              _inviteFriendToGame(
+                                                                  friend),
+                                                          child: const Text(
+                                                              'Davet Et'),
                                                         ),
                                                       ),
                                                     );
@@ -839,7 +915,9 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                                           _receivedRequests.isEmpty
                                               ? const Center(
                                                   child: Column(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
                                                     children: [
                                                       Icon(
                                                         Icons.person_add_alt,
@@ -866,18 +944,33 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                                                   ),
                                                 )
                                               : ListView.builder(
-                                                  itemCount: _receivedRequests.length,
-                                                  itemBuilder: (context, index) {
-                                                    final request = _receivedRequests[index];
-                                                    final isProcessing = _processingRequests.contains(request.id);
-                                                    
+                                                  itemCount:
+                                                      _receivedRequests.length,
+                                                  itemBuilder:
+                                                      (context, index) {
+                                                    final request =
+                                                        _receivedRequests[
+                                                            index];
+                                                    final isProcessing =
+                                                        _processingRequests
+                                                            .contains(
+                                                                request.id);
+
                                                     return Card(
-                                                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                                      margin: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 16,
+                                                          vertical: 6),
                                                       elevation: 2,
                                                       child: ListTile(
-                                                        contentPadding: EdgeInsets.all(16),
+                                                        contentPadding:
+                                                            EdgeInsets.all(16),
                                                         leading: CircleAvatar(
-                                                          backgroundColor: Colors.blue.withValues(alpha: 0.1),
+                                                          backgroundColor:
+                                                              Colors.blue
+                                                                  .withValues(
+                                                                      alpha:
+                                                                          0.1),
                                                           child: Icon(
                                                             Icons.person_add,
                                                             color: Colors.blue,
@@ -886,17 +979,21 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                                                         title: Text(
                                                           '${request.fromNickname}',
                                                           style: TextStyle(
-                                                            fontWeight: FontWeight.bold,
+                                                            fontWeight:
+                                                                FontWeight.bold,
                                                             fontSize: 16,
                                                           ),
                                                         ),
                                                         subtitle: Column(
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
                                                           children: [
                                                             Text(
                                                               'Arkadaşlık isteği gönderdi',
                                                               style: TextStyle(
-                                                                color: Colors.grey[600],
+                                                                color: Colors
+                                                                    .grey[600],
                                                               ),
                                                             ),
                                                             SizedBox(height: 4),
@@ -904,56 +1001,84 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                                                               'Tarih: ${request.createdAt.day}/${request.createdAt.month}/${request.createdAt.year} ${request.createdAt.hour}:${request.createdAt.minute.toString().padLeft(2, '0')}',
                                                               style: TextStyle(
                                                                 fontSize: 12,
-                                                                color: Colors.grey[500],
+                                                                color: Colors
+                                                                    .grey[500],
                                                               ),
                                                             ),
                                                           ],
                                                         ),
-                                                        trailing: isProcessing 
+                                                        trailing: isProcessing
                                                             ? SizedBox(
                                                                 width: 80,
                                                                 height: 32,
                                                                 child: Center(
-                                                                  child: SizedBox(
+                                                                  child:
+                                                                      SizedBox(
                                                                     width: 16,
                                                                     height: 16,
-                                                                    child: CircularProgressIndicator(
-                                                                      strokeWidth: 2,
-                                                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                                                                    child:
+                                                                        CircularProgressIndicator(
+                                                                      strokeWidth:
+                                                                          2,
+                                                                      valueColor: AlwaysStoppedAnimation<
+                                                                              Color>(
+                                                                          Colors
+                                                                              .blue),
                                                                     ),
                                                                   ),
                                                                 ),
                                                               )
                                                             : Row(
-                                                                mainAxisSize: MainAxisSize.min,
+                                                                mainAxisSize:
+                                                                    MainAxisSize
+                                                                        .min,
                                                                 children: [
                                                                   // Kabul butonu
                                                                   IconButton(
                                                                     icon: Icon(
-                                                                      Icons.check_circle,
-                                                                      color: Colors.green,
+                                                                      Icons
+                                                                          .check_circle,
+                                                                      color: Colors
+                                                                          .green,
                                                                       size: 32,
                                                                     ),
-                                                                    onPressed: isProcessing ? null : () => _acceptFriendRequest(request.id),
-                                                                    tooltip: 'Kabul Et',
-                                                                    constraints: BoxConstraints(
-                                                                      minWidth: 48,
-                                                                      minHeight: 48,
+                                                                    onPressed: isProcessing
+                                                                        ? null
+                                                                        : () =>
+                                                                            _acceptFriendRequest(request.id),
+                                                                    tooltip:
+                                                                        'Kabul Et',
+                                                                    constraints:
+                                                                        BoxConstraints(
+                                                                      minWidth:
+                                                                          48,
+                                                                      minHeight:
+                                                                          48,
                                                                     ),
                                                                   ),
-                                                                  SizedBox(width: 4),
+                                                                  SizedBox(
+                                                                      width: 4),
                                                                   // Red butonu
                                                                   IconButton(
                                                                     icon: Icon(
-                                                                      Icons.cancel,
-                                                                      color: Colors.red,
+                                                                      Icons
+                                                                          .cancel,
+                                                                      color: Colors
+                                                                          .red,
                                                                       size: 32,
                                                                     ),
-                                                                    onPressed: isProcessing ? null : () => _rejectFriendRequest(request.id),
-                                                                    tooltip: 'Reddet',
-                                                                    constraints: BoxConstraints(
-                                                                      minWidth: 48,
-                                                                      minHeight: 48,
+                                                                    onPressed: isProcessing
+                                                                        ? null
+                                                                        : () =>
+                                                                            _rejectFriendRequest(request.id),
+                                                                    tooltip:
+                                                                        'Reddet',
+                                                                    constraints:
+                                                                        BoxConstraints(
+                                                                      minWidth:
+                                                                          48,
+                                                                      minHeight:
+                                                                          48,
                                                                     ),
                                                                   ),
                                                                 ],
@@ -964,17 +1089,28 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                                                 ),
                                           // Sent Requests Tab
                                           _sentRequests.isEmpty
-                                              ? const Center(child: Text('Gönderilmiş arkadaşlık isteği yok'))
+                                              ? const Center(
+                                                  child: Text(
+                                                      'Gönderilmiş arkadaşlık isteği yok'))
                                               : ListView.builder(
-                                                  itemCount: _sentRequests.length,
-                                                  itemBuilder: (context, index) {
-                                                    final request = _sentRequests[index];
+                                                  itemCount:
+                                                      _sentRequests.length,
+                                                  itemBuilder:
+                                                      (context, index) {
+                                                    final request =
+                                                        _sentRequests[index];
                                                     return Card(
-                                                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                                      margin: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 16,
+                                                          vertical: 4),
                                                       child: ListTile(
-                                                        leading: const Icon(Icons.schedule),
-                                                        title: Text('${request.toNickname} kullanıcısına istek gönderildi'),
-                                                        subtitle: Text('Tarih: ${request.createdAt.day}/${request.createdAt.month}/${request.createdAt.year}'),
+                                                        leading: const Icon(
+                                                            Icons.schedule),
+                                                        title: Text(
+                                                            '${request.toNickname} kullanıcısına istek gönderildi'),
+                                                        subtitle: Text(
+                                                            'Tarih: ${request.createdAt.day}/${request.createdAt.month}/${request.createdAt.year}'),
                                                       ),
                                                     );
                                                   },
@@ -982,20 +1118,36 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
 
                                           // All Registered Users Tab
                                           _allRegisteredUsers.isEmpty
-                                              ? const Center(child: Text('Kayıtlı kullanıcı bulunamadı'))
+                                              ? const Center(
+                                                  child: Text(
+                                                      'Kayıtlı kullanıcı bulunamadı'))
                                               : ListView.builder(
-                                                  itemCount: _allRegisteredUsers.length,
-                                                  itemBuilder: (context, index) {
-                                                    final user = _allRegisteredUsers[index];
+                                                  itemCount: _allRegisteredUsers
+                                                      .length,
+                                                  itemBuilder:
+                                                      (context, index) {
+                                                    final user =
+                                                        _allRegisteredUsers[
+                                                            index];
                                                     return Card(
-                                                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                                      margin: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 16,
+                                                          vertical: 4),
                                                       child: ListTile(
-                                                        leading: const Icon(Icons.people),
-                                                        title: Text(user.nickname),
-                                                        subtitle: Text('Kayıt Tarihi: ${user.createdAt != null ? "${user.createdAt!.day}/${user.createdAt!.month}/${user.createdAt!.year}" : "Bilinmiyor"}'),
-                                                        trailing: ElevatedButton(
-                                                          onPressed: () => _sendFriendRequest(user.nickname),
-                                                          child: const Text('Arkadaş Ekle'),
+                                                        leading: const Icon(
+                                                            Icons.people),
+                                                        title:
+                                                            Text(user.nickname),
+                                                        subtitle: Text(
+                                                            'Kayıt Tarihi: ${user.createdAt != null ? "${user.createdAt!.day}/${user.createdAt!.month}/${user.createdAt!.year}" : "Bilinmiyor"}'),
+                                                        trailing:
+                                                            ElevatedButton(
+                                                          onPressed: () =>
+                                                              _sendFriendRequest(
+                                                                  user.nickname),
+                                                          child: const Text(
+                                                              'Arkadaş Ekle'),
                                                         ),
                                                       ),
                                                     );
@@ -1034,7 +1186,8 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                     final invitation = _gameInvitations[index];
                     return Card(
                       child: ListTile(
-                        title: Text('${invitation.fromNickname} tarafından davet'),
+                        title:
+                            Text('${invitation.fromNickname} tarafından davet'),
                         subtitle: Text('Oda: ${invitation.roomId}'),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -1043,14 +1196,16 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                               icon: Icon(Icons.check, color: Colors.green),
                               onPressed: () async {
                                 Navigator.of(context).pop();
-                                await _invitationService.acceptInvitation(invitation.id);
+                                await _invitationService
+                                    .acceptInvitation(invitation.id);
                               },
                             ),
                             IconButton(
                               icon: Icon(Icons.close, color: Colors.red),
                               onPressed: () async {
                                 Navigator.of(context).pop();
-                                await _invitationService.declineInvitation(invitation.id);
+                                await _invitationService
+                                    .declineInvitation(invitation.id);
                               },
                             ),
                           ],
@@ -1069,4 +1224,6 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
       ),
     );
   }
+
+
 }

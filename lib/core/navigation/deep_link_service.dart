@@ -15,7 +15,8 @@ class DeepLinkService {
   final Set<DeepLinkListener> _listeners = {};
 
   /// Register a deep link handler
-  void registerHandler(String pattern, Function(Map<String, String> params) handler) {
+  void registerHandler(
+      String pattern, Function(Map<String, String> params) handler) {
     _handlers[pattern] = handler;
     if (kDebugMode) {
       debugPrint('Registered deep link handler for pattern: $pattern');
@@ -46,7 +47,7 @@ class DeepLinkService {
     try {
       final uri = Uri.parse(url);
       final routeName = _extractRouteName(uri);
-      
+
       if (routeName == null) {
         if (kDebugMode) {
           debugPrint('Could not extract route name from URL: $url');
@@ -97,10 +98,7 @@ class DeepLinkService {
 
   /// Handle built-in application routes
   bool _handleBuiltInRoute(
-    String routeName, 
-    Map<String, String> params, 
-    BuildContext context
-  ) {
+      String routeName, Map<String, String> params, BuildContext context) {
     switch (routeName) {
       case 'login':
         Navigator.of(context).pushNamedAndRemoveUntil(
@@ -184,7 +182,7 @@ class DeepLinkService {
             .split(',')
             .map((m) => m.trim())
             .toList();
-        
+
         Navigator.of(context).pushNamedAndRemoveUntil(
           AppRoutes.comprehensive2FAVerification,
           (route) => false,
@@ -257,10 +255,12 @@ class DeepLinkService {
   String generateDeepLink(String routeName, [Map<String, String>? parameters]) {
     final baseUrl = 'https://eco-game.app'; // Replace with actual app URL
     final queryString = parameters?.entries
-        .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
-        .join('&') ?? '';
-    
-    return queryString.isEmpty 
+            .map((e) =>
+                '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+            .join('&') ??
+        '';
+
+    return queryString.isEmpty
         ? '$baseUrl/$routeName'
         : '$baseUrl/$routeName?$queryString';
   }
@@ -276,7 +276,8 @@ class DeepLinkService {
 
 /// Deep link listener interface
 abstract class DeepLinkListener {
-  void onDeepLinkReceived(String url, String routeName, Map<String, String> parameters);
+  void onDeepLinkReceived(
+      String url, String routeName, Map<String, String> parameters);
 }
 
 /// Predefined deep link patterns
@@ -346,12 +347,15 @@ class DeepLinkUtils {
 
   /// Generate 2FA setup deep link
   static String twoFactorAuthSetup() {
-    return DeepLinkService().generateDeepLink(DeepLinkPatterns.twoFactorAuthSetup);
+    return DeepLinkService()
+        .generateDeepLink(DeepLinkPatterns.twoFactorAuthSetup);
   }
 
   /// Generate 2FA verification deep link
-  static String twoFactorAuthVerify(String method, [List<String>? availableMethods]) {
-    return DeepLinkService().generateDeepLink(DeepLinkPatterns.twoFactorAuthVerify, {
+  static String twoFactorAuthVerify(String method,
+      [List<String>? availableMethods]) {
+    return DeepLinkService()
+        .generateDeepLink(DeepLinkPatterns.twoFactorAuthVerify, {
       'method': method,
       'availableMethods': availableMethods?.join(',') ?? 'sms,backupCode',
     });

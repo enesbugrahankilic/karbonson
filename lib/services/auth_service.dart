@@ -47,7 +47,7 @@ class AuthService {
     try {
       // Set persistence to LOCAL (default) to maintain sessions across app restarts
       await _auth.setPersistence(Persistence.LOCAL);
-      
+
       if (kDebugMode) {
         debugPrint('✅ Firebase Auth persistence initialized to LOCAL');
       }
@@ -78,10 +78,10 @@ class AuthService {
   /// Check if user has email account (not anonymous)
   static bool hasEmailAccount() {
     final user = _auth.currentUser;
-    return user != null && 
-           user.email != null && 
-           user.email!.isNotEmpty && 
-           !user.isAnonymous;
+    return user != null &&
+        user.email != null &&
+        user.email!.isNotEmpty &&
+        !user.isAnonymous;
   }
 
   /// Check network connectivity before making auth requests
@@ -112,11 +112,11 @@ class AuthService {
     }
 
     int attempts = 0;
-    
+
     while (attempts < _maxRetries) {
       try {
         attempts++;
-        
+
         if (kDebugMode) {
           debugPrint('Email/password sign in attempt $attempts/$_maxRetries');
         }
@@ -124,21 +124,22 @@ class AuthService {
         final userCredential = await _auth
             .signInWithEmailAndPassword(email: email, password: password)
             .timeout(_defaultTimeout);
-        
+
         if (kDebugMode) {
-          debugPrint('Email/password sign in successful: ${userCredential.user?.uid}');
+          debugPrint(
+              'Email/password sign in successful: ${userCredential.user?.uid}');
         }
-        
+
         return AuthResult.success(
           userCredential.user!,
           'Giriş başarılı',
         );
-        
       } on FirebaseAuthException catch (e) {
         if (kDebugMode) {
-          debugPrint('Email/password sign in attempt $attempts failed: ${e.code}');
+          debugPrint(
+              'Email/password sign in attempt $attempts failed: ${e.code}');
         }
-        
+
         // If it's the last attempt, throw the error
         if (attempts >= _maxRetries) {
           return AuthResult.failure(
@@ -146,7 +147,7 @@ class AuthService {
             e.code,
           );
         }
-        
+
         // Check if it's a retryable error
         if (_isRetryableError(e.code)) {
           await Future.delayed(_retryDelay);
@@ -160,15 +161,15 @@ class AuthService {
         if (kDebugMode) {
           debugPrint('Email/password sign in attempt $attempts failed: $e');
         }
-        
+
         if (attempts >= _maxRetries) {
           return AuthResult.failure('Beklenmeyen bir hata oluştu: $e');
         }
-        
+
         await Future.delayed(_retryDelay);
       }
     }
-    
+
     return AuthResult.failure('Giriş başarısız');
   }
 
@@ -191,33 +192,35 @@ class AuthService {
     }
 
     int attempts = 0;
-    
+
     while (attempts < _maxRetries) {
       try {
         attempts++;
-        
+
         if (kDebugMode) {
-          debugPrint('Email/password registration attempt $attempts/$_maxRetries');
+          debugPrint(
+              'Email/password registration attempt $attempts/$_maxRetries');
         }
 
         final userCredential = await _auth
             .createUserWithEmailAndPassword(email: email, password: password)
             .timeout(_defaultTimeout);
-        
+
         if (kDebugMode) {
-          debugPrint('Email/password registration successful: ${userCredential.user?.uid}');
+          debugPrint(
+              'Email/password registration successful: ${userCredential.user?.uid}');
         }
-        
+
         return AuthResult.success(
           userCredential.user!,
           'Hesap oluşturuldu',
         );
-        
       } on FirebaseAuthException catch (e) {
         if (kDebugMode) {
-          debugPrint('Email/password registration attempt $attempts failed: ${e.code}');
+          debugPrint(
+              'Email/password registration attempt $attempts failed: ${e.code}');
         }
-        
+
         // If it's the last attempt, throw the error
         if (attempts >= _maxRetries) {
           return AuthResult.failure(
@@ -225,7 +228,7 @@ class AuthService {
             e.code,
           );
         }
-        
+
         // Check if it's a retryable error
         if (_isRetryableError(e.code)) {
           await Future.delayed(_retryDelay);
@@ -237,17 +240,18 @@ class AuthService {
         }
       } catch (e) {
         if (kDebugMode) {
-          debugPrint('Email/password registration attempt $attempts failed: $e');
+          debugPrint(
+              'Email/password registration attempt $attempts failed: $e');
         }
-        
+
         if (attempts >= _maxRetries) {
           return AuthResult.failure('Beklenmeyen bir hata oluştu: $e');
         }
-        
+
         await Future.delayed(_retryDelay);
       }
     }
-    
+
     return AuthResult.failure('Hesap oluşturulamadı');
   }
 
@@ -258,18 +262,19 @@ class AuthService {
     }
 
     int attempts = 0;
-    
+
     while (attempts < _maxRetries) {
       try {
         attempts++;
-        
+
         if (kDebugMode) {
           debugPrint('Anonymous sign in attempt $attempts/$_maxRetries');
         }
 
-        final userCredential = await _auth.signInAnonymously().timeout(_defaultTimeout);
+        final userCredential =
+            await _auth.signInAnonymously().timeout(_defaultTimeout);
         final user = userCredential.user;
-        
+
         if (user != null) {
           if (kDebugMode) {
             debugPrint('Anonymous sign in successful: ${user.uid}');
@@ -283,7 +288,7 @@ class AuthService {
         if (kDebugMode) {
           debugPrint('Anonymous sign in attempt $attempts failed: ${e.code}');
         }
-        
+
         // If it's the last attempt, throw the error
         if (attempts >= _maxRetries) {
           return AuthResult.failure(
@@ -291,7 +296,7 @@ class AuthService {
             e.code,
           );
         }
-        
+
         // Check if it's a retryable error
         if (_isRetryableError(e.code)) {
           await Future.delayed(_retryDelay);
@@ -305,15 +310,15 @@ class AuthService {
         if (kDebugMode) {
           debugPrint('Anonymous sign in attempt $attempts failed: $e');
         }
-        
+
         if (attempts >= _maxRetries) {
           return AuthResult.failure('Beklenmeyen bir hata oluştu: $e');
         }
-        
+
         await Future.delayed(_retryDelay);
       }
     }
-    
+
     return AuthResult.failure('Anonim giriş başarısız');
   }
 
@@ -340,7 +345,7 @@ class AuthService {
       }
 
       await user.delete();
-      
+
       if (kDebugMode) {
         debugPrint('✅ User account deleted: ${user.uid}');
       }
@@ -369,11 +374,11 @@ class AuthService {
       }
 
       await user.sendEmailVerification();
-      
+
       if (kDebugMode) {
         debugPrint('Email verification sent to: ${user.email}');
       }
-      
+
       return AuthResult.success(
         user,
         'Doğrulama e-postası gönderildi',
@@ -399,14 +404,15 @@ class AuthService {
       // Reload user to get latest email verification status
       await user.reload();
       final currentUser = _auth.currentUser!;
-      
-      final hasEmail = currentUser.email != null && currentUser.email!.isNotEmpty;
+
+      final hasEmail =
+          currentUser.email != null && currentUser.email!.isNotEmpty;
       final isVerified = currentUser.emailVerified;
-      
+
       return AuthResult.success(
         currentUser,
-        isVerified 
-            ? 'E-posta adresi doğrulanmış' 
+        isVerified
+            ? 'E-posta adresi doğrulanmış'
             : 'E-posta adresi doğrulanmamış',
       );
     } catch (e) {
@@ -424,7 +430,8 @@ class AuthService {
         'email': user?.email,
         'emailVerified': user?.emailVerified,
         'isAnonymous': user?.isAnonymous,
-        'providerData': user?.providerData.map((data) => data.providerId).toList(),
+        'providerData':
+            user?.providerData.map((data) => data.providerId).toList(),
         'lastSignInTime': user?.metadata.lastSignInTime?.toIso8601String(),
         'creationTime': user?.metadata.creationTime?.toIso8601String(),
       };

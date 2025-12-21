@@ -7,8 +7,9 @@ import 'package:flutter/services.dart';
 /// Enhanced navigation utilities for better user experience
 class NavigationUtils {
   /// Default transition duration for page changes
-  static const Duration _defaultTransitionDuration = Duration(milliseconds: 300);
-  
+  static const Duration _defaultTransitionDuration =
+      Duration(milliseconds: 300);
+
   /// Default curve for animations
   static const Curve _defaultCurve = Curves.easeInOut;
 
@@ -211,8 +212,8 @@ class NavigationUtils {
               child: Text(
                 title,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
             ),
             // Children
@@ -250,7 +251,7 @@ class NavigationUtils {
             ],
           ),
         );
-        
+
         if (shouldBack == true) {
           onBackPressed();
           return true;
@@ -261,13 +262,13 @@ class NavigationUtils {
         return true;
       }
     }
-    
+
     // Default behavior - pop the route
     if (Navigator.canPop(context)) {
       Navigator.of(context).pop();
       return true;
     }
-    
+
     return false;
   }
 
@@ -283,7 +284,7 @@ class NavigationUtils {
       children: items.asMap().entries.map((entry) {
         final index = entry.key;
         final item = entry.value;
-        
+
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -291,15 +292,19 @@ class NavigationUtils {
               Text(
                 separator ?? '›',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                ),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withOpacity(0.6),
+                    ),
               ),
             if (item.onTap != null)
               InkWell(
                 onTap: item.onTap,
                 borderRadius: BorderRadius.circular(4),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   child: Text(
                     item.label,
                     style: item.isActive
@@ -308,7 +313,10 @@ class NavigationUtils {
                               color: Theme.of(context).colorScheme.primary,
                             )
                         : Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withOpacity(0.6),
                             ),
                   ),
                 ),
@@ -322,7 +330,10 @@ class NavigationUtils {
                           color: Theme.of(context).colorScheme.primary,
                         )
                     : Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withOpacity(0.6),
                         ),
               ),
           ],

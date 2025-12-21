@@ -16,7 +16,7 @@ class UIDDebugPage extends StatefulWidget {
 
 class _UIDDebugPageState extends State<UIDDebugPage> {
   final UIDVerificationService _uidService = UIDVerificationService();
-  
+
   bool _isRunningHealthCheck = false;
   bool _isRunningFullCleanup = false;
   UIDHealthReport? _lastHealthReport;
@@ -64,9 +64,9 @@ class _UIDDebugPageState extends State<UIDDebugPage> {
             Text(
               '🔧 UID Verification & Cleanup',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.red.shade700,
-                fontWeight: FontWeight.bold,
-              ),
+                    color: Colors.red.shade700,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -119,7 +119,9 @@ class _UIDDebugPageState extends State<UIDDebugPage> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.search),
-              label: Text(_isRunningHealthCheck ? 'Kontrol ediliyor...' : 'Sağlık Kontrolü Başlat'),
+              label: Text(_isRunningHealthCheck
+                  ? 'Kontrol ediliyor...'
+                  : 'Sağlık Kontrolü Başlat'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
@@ -179,7 +181,9 @@ class _UIDDebugPageState extends State<UIDDebugPage> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.delete_sweep),
-              label: Text(_isRunningFullCleanup ? 'Temizleniyor...' : 'Kapsamlı Temizleme Başlat'),
+              label: Text(_isRunningFullCleanup
+                  ? 'Temizleniyor...'
+                  : 'Kapsamlı Temizleme Başlat'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
@@ -202,7 +206,7 @@ class _UIDDebugPageState extends State<UIDDebugPage> {
 
   Widget _buildHealthReportCard() {
     final report = _lastHealthReport!;
-    
+
     return Card(
       color: report.isHealthy ? Colors.green.shade50 : Colors.orange.shade50,
       child: Padding(
@@ -243,7 +247,7 @@ class _UIDDebugPageState extends State<UIDDebugPage> {
 
   Widget _buildCleanupStatsCard() {
     final stats = _lastCleanupStats!;
-    
+
     return Card(
       color: stats.hasIssues ? Colors.red.shade50 : Colors.green.shade50,
       child: Padding(
@@ -342,7 +346,8 @@ class _UIDDebugPageState extends State<UIDDebugPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Sağlık kontrolü tamamlandı: ${report.isHealthy ? "Sağlıklı" : "İyileştirme gerekli"}'),
+            content: Text(
+                'Sağlık kontrolü tamamlandı: ${report.isHealthy ? "Sağlıklı" : "İyileştirme gerekli"}'),
             backgroundColor: report.isHealthy ? Colors.green : Colors.orange,
           ),
         );
@@ -351,7 +356,7 @@ class _UIDDebugPageState extends State<UIDDebugPage> {
       setState(() {
         _isRunningHealthCheck = false;
       });
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -381,7 +386,8 @@ class _UIDDebugPageState extends State<UIDDebugPage> {
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Evet, Temizle', style: TextStyle(color: Colors.white)),
+            child: const Text('Evet, Temizle',
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -396,15 +402,15 @@ class _UIDDebugPageState extends State<UIDDebugPage> {
     try {
       final stats = await _uidService.performComprehensiveUIDCleanup();
       setState(() {
-        _lastCleanupStats = stats
-          ..completedAt = DateTime.now();
+        _lastCleanupStats = stats..completedAt = DateTime.now();
         _isRunningFullCleanup = false;
       });
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Temizleme tamamlandı. ${stats.hasIssues ? "Düzeltmeler yapıldı." : "Veriler sağlıklı."}'),
+            content: Text(
+                'Temizleme tamamlandı. ${stats.hasIssues ? "Düzeltmeler yapıldı." : "Veriler sağlıklı."}'),
             backgroundColor: Colors.green,
           ),
         );
@@ -413,7 +419,7 @@ class _UIDDebugPageState extends State<UIDDebugPage> {
       setState(() {
         _isRunningFullCleanup = false;
       });
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

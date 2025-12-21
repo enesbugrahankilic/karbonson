@@ -29,7 +29,7 @@ class AccessibilityUtils {
   }) {
     final touchTarget = customTouchTarget ?? minTouchTargetSize;
     final isEnabled = enabled ?? true;
-    
+
     Widget container = Container(
       width: width != null && width < touchTarget ? touchTarget : width,
       height: height != null && height < touchTarget ? touchTarget : height,
@@ -84,14 +84,18 @@ class AccessibilityUtils {
     ButtonStyle? buttonStyle,
   }) {
     final touchTarget = customTouchTarget ?? minTouchTargetSize;
-    
-    final effectiveStyle = (isPrimary 
-        ? Theme.of(context).elevatedButtonTheme.style
-        : Theme.of(context).outlinedButtonTheme.style)?.copyWith(
-              minimumSize: MaterialStateProperty.all(Size(touchTarget, touchTarget)),
-            ) ?? ButtonStyle(
-              minimumSize: MaterialStateProperty.all(Size(touchTarget, touchTarget)),
-            );
+
+    final effectiveStyle = (isPrimary
+                ? Theme.of(context).elevatedButtonTheme.style
+                : Theme.of(context).outlinedButtonTheme.style)
+            ?.copyWith(
+          minimumSize:
+              MaterialStateProperty.all(Size(touchTarget, touchTarget)),
+        ) ??
+        ButtonStyle(
+          minimumSize:
+              MaterialStateProperty.all(Size(touchTarget, touchTarget)),
+        );
 
     return Semantics(
       label: semanticLabel,
@@ -119,8 +123,8 @@ class AccessibilityUtils {
   }) {
     final effectiveStyle = style ?? Theme.of(context).textTheme.bodyMedium;
     final minFontSize = effectiveStyle?.fontSize ?? 14.0;
-    final accessibleFontSize = customFontSize ?? 
-        (minFontSize < 14.0 ? 14.0 : minFontSize);
+    final accessibleFontSize =
+        customFontSize ?? (minFontSize < 14.0 ? 14.0 : minFontSize);
 
     return Semantics(
       label: semanticLabel ?? text,
@@ -182,15 +186,18 @@ class AccessibilityUtils {
       child: Builder(
         builder: (context) {
           final isFocused = Focus.of(context).hasFocus;
-          
+
           return Container(
-            decoration: isFocused ? BoxDecoration(
-              border: Border.all(
-                color: focusColor ?? Theme.of(context).colorScheme.primary,
-                width: focusRingWidth,
-              ),
-              borderRadius: BorderRadius.circular(borderRadius ?? 4),
-            ) : null,
+            decoration: isFocused
+                ? BoxDecoration(
+                    border: Border.all(
+                      color:
+                          focusColor ?? Theme.of(context).colorScheme.primary,
+                      width: focusRingWidth,
+                    ),
+                    borderRadius: BorderRadius.circular(borderRadius ?? 4),
+                  )
+                : null,
             child: child,
           );
         },
@@ -236,8 +243,8 @@ class AccessibilityUtils {
         onChanged: onChanged,
         onEditingComplete: onEditingComplete,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          fontSize: Theme.of(context).textTheme.bodyMedium?.fontSize ?? 16,
-        ),
+              fontSize: Theme.of(context).textTheme.bodyMedium?.fontSize ?? 16,
+            ),
       ),
     );
   }
@@ -287,14 +294,15 @@ class AccessibilityUtils {
     double strokeWidth = 4,
   }) {
     return Semantics(
-      label: semanticLabel ?? (value != null ? 'İlerleme: %${(value * 100).round()}' : 'Yükleniyor'),
+      label: semanticLabel ??
+          (value != null
+              ? 'İlerleme: %${(value * 100).round()}'
+              : 'Yükleniyor'),
       hint: semanticHint,
       child: CircularProgressIndicator(
         value: value,
         strokeWidth: strokeWidth,
-        valueColor: color != null 
-            ? AlwaysStoppedAnimation<Color>(color)
-            : null,
+        valueColor: color != null ? AlwaysStoppedAnimation<Color>(color) : null,
       ),
     );
   }
@@ -387,13 +395,13 @@ class AccessibilityUtils {
   static bool isAccessibilityEnabled(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     return mediaQuery.highContrast ||
-           mediaQuery.textScaleFactor > 1.0 ||
-           mediaQuery.accessibleNavigation;
+        mediaQuery.textScaleFactor > 1.0 ||
+        mediaQuery.accessibleNavigation;
   }
 
   /// Get accessible font size based on user preferences
   static double getAccessibleFontSize(
-    BuildContext context, 
+    BuildContext context,
     double baseSize, {
     double? customMinSize,
     double? customMaxScale,
@@ -402,7 +410,7 @@ class AccessibilityUtils {
     final textScaler = mediaQuery.textScaler.scale(baseSize) / baseSize;
     final minSize = customMinSize ?? 14.0;
     final maxScale = customMaxScale ?? 1.5;
-    
+
     // Ensure minimum readable size for accessibility
     if (textScaler < 1.0) {
       return baseSize * 1.2;

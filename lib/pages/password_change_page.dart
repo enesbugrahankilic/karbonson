@@ -29,7 +29,8 @@ class PasswordChangePage extends StatefulWidget {
 class _PasswordChangePageState extends State<PasswordChangePage>
     with TickerProviderStateMixin {
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final ConnectivityService _connectivityService = ConnectivityService();
   final ProfileService _profileService = ProfileService();
@@ -75,12 +76,14 @@ class _PasswordChangePageState extends State<PasswordChangePage>
     if (_receivedCode == null || _receivedEmail == null) {
       // This would typically be handled by deep linking
       if (kDebugMode) {
-        debugPrint('PasswordChangePage: No reset code or email provided via parameters');
+        debugPrint(
+            'PasswordChangePage: No reset code or email provided via parameters');
         debugPrint('Expected to receive reset code and email from email link');
       }
     } else {
       if (kDebugMode) {
-        debugPrint('PasswordChangePage: Received reset code and email for: ${_receivedEmail!.replaceRange(2, _receivedEmail!.indexOf('@'), '***')}');
+        debugPrint(
+            'PasswordChangePage: Received reset code and email for: ${_receivedEmail!.replaceRange(2, _receivedEmail!.indexOf('@'), '***')}');
       }
     }
   }
@@ -90,7 +93,7 @@ class _PasswordChangePageState extends State<PasswordChangePage>
     setState(() {
       _isConnected = isConnected;
     });
-    
+
     if (kDebugMode) {
       debugPrint('PasswordChangePage: Network connectivity: $_isConnected');
     }
@@ -108,7 +111,8 @@ class _PasswordChangePageState extends State<PasswordChangePage>
       // For now, we'll handle this when the page is pushed with parameters
       // In a full implementation, this would use the deep linking service
       if (kDebugMode) {
-        debugPrint('PasswordChangePage: Deep link handling - parameters will be set via route');
+        debugPrint(
+            'PasswordChangePage: Deep link handling - parameters will be set via route');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -137,7 +141,8 @@ class _PasswordChangePageState extends State<PasswordChangePage>
     }
 
     if (_receivedCode == null) {
-      _showErrorDialog('Geçersiz veya eksik sıfırlama kodu. Lütfen e-postadaki bağlantıyı tekrar kullanın.');
+      _showErrorDialog(
+          'Geçersiz veya eksik sıfırlama kodu. Lütfen e-postadaki bağlantıyı tekrar kullanın.');
       return;
     }
 
@@ -147,9 +152,10 @@ class _PasswordChangePageState extends State<PasswordChangePage>
 
     try {
       final newPassword = _newPasswordController.text;
-      
+
       if (kDebugMode) {
-        debugPrint('PasswordChangePage: Changing password for email: ${_receivedEmail?.replaceRange(2, _receivedEmail!.indexOf('@'), '***')}');
+        debugPrint(
+            'PasswordChangePage: Changing password for email: ${_receivedEmail?.replaceRange(2, _receivedEmail!.indexOf('@'), '***')}');
       }
 
       // Confirm password reset using FirebaseAuthService
@@ -166,7 +172,8 @@ class _PasswordChangePageState extends State<PasswordChangePage>
         }
       } catch (e) {
         if (kDebugMode) {
-          debugPrint('PasswordChangePage: Failed to sync email verification status: $e');
+          debugPrint(
+              'PasswordChangePage: Failed to sync email verification status: $e');
         }
         // Don't fail the entire process for this
       }
@@ -176,19 +183,19 @@ class _PasswordChangePageState extends State<PasswordChangePage>
       });
 
       _showSuccessDialog();
-
     } on FirebaseAuthException catch (e) {
       setState(() {
         _isLoading = false;
       });
 
       if (kDebugMode) {
-        debugPrint('PasswordChangePage: Firebase Auth error: ${e.code} - ${e.message}');
+        debugPrint(
+            'PasswordChangePage: Firebase Auth error: ${e.code} - ${e.message}');
       }
 
-      final errorMessage = FirebaseAuthService.handleAuthError(e, context: 'password_reset');
+      final errorMessage =
+          FirebaseAuthService.handleAuthError(e, context: 'password_reset');
       _showErrorDialog(errorMessage);
-
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -200,14 +207,19 @@ class _PasswordChangePageState extends State<PasswordChangePage>
 
       // Enhanced error handling with specific Turkish messages
       String errorMessage;
-      if (e.toString().contains('invalid-verification-code') || e.toString().contains('expired')) {
-        errorMessage = 'Şifre sıfırlama kodu geçersiz veya süresi dolmuş. Lütfen yeni bir şifre sıfırlama e-postası gönderin.';
+      if (e.toString().contains('invalid-verification-code') ||
+          e.toString().contains('expired')) {
+        errorMessage =
+            'Şifre sıfırlama kodu geçersiz veya süresi dolmuş. Lütfen yeni bir şifre sıfırlama e-postası gönderin.';
       } else if (e.toString().contains('weak-password')) {
-        errorMessage = 'Şifre çok zayıf. En az 6 karakter olmalıdır ve güvenli bir şifre seçmelisiniz.';
+        errorMessage =
+            'Şifre çok zayıf. En az 6 karakter olmalıdır ve güvenli bir şifre seçmelisiniz.';
       } else if (e.toString().contains('too-many-requests')) {
-        errorMessage = 'Çok fazla deneme yaptınız. Lütfen daha sonra tekrar deneyin.';
+        errorMessage =
+            'Çok fazla deneme yaptınız. Lütfen daha sonra tekrar deneyin.';
       } else if (e.toString().contains('network')) {
-        errorMessage = 'İnternet bağlantınızı kontrol edin. Ağ bağlantısı sorunu var.';
+        errorMessage =
+            'İnternet bağlantınızı kontrol edin. Ağ bağlantısı sorunu var.';
       } else {
         errorMessage = 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
       }
@@ -231,7 +243,8 @@ class _PasswordChangePageState extends State<PasswordChangePage>
   void _showConnectivityError() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('İnternet bağlantınızı kontrol edin. Çevrimdışı modda şifre değiştirilemez.'),
+        content: const Text(
+            'İnternet bağlantınızı kontrol edin. Çevrimdışı modda şifre değiştirilemez.'),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -251,7 +264,8 @@ class _PasswordChangePageState extends State<PasswordChangePage>
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           backgroundColor: ThemeColors.getDialogBackground(context),
           title: Row(
             children: [
@@ -302,7 +316,8 @@ class _PasswordChangePageState extends State<PasswordChangePage>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           backgroundColor: ThemeColors.getDialogBackground(context),
           title: Row(
             children: [
@@ -426,7 +441,9 @@ class _PasswordChangePageState extends State<PasswordChangePage>
                               decoration: BoxDecoration(
                                 color: Colors.orange.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                                border: Border.all(
+                                    color:
+                                        Colors.orange.withValues(alpha: 0.3)),
                               ),
                               child: Row(
                                 children: [
@@ -458,7 +475,8 @@ class _PasswordChangePageState extends State<PasswordChangePage>
                               decoration: BoxDecoration(
                                 color: Colors.red.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                                border: Border.all(
+                                    color: Colors.red.withValues(alpha: 0.3)),
                               ),
                               child: Row(
                                 children: [
@@ -495,7 +513,8 @@ class _PasswordChangePageState extends State<PasswordChangePage>
                                   decoration: InputDecoration(
                                     labelText: 'Yeni Şifre',
                                     filled: true,
-                                    fillColor: ThemeColors.getInputBackground(context),
+                                    fillColor:
+                                        ThemeColors.getInputBackground(context),
                                     labelStyle: TextStyle(
                                       color: ThemeColors.getGreen(context),
                                     ),
@@ -514,26 +533,34 @@ class _PasswordChangePageState extends State<PasswordChangePage>
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide(
-                                        color: ThemeColors.getPrimaryButtonColor(context),
+                                        color:
+                                            ThemeColors.getPrimaryButtonColor(
+                                                context),
                                         width: 2,
                                       ),
                                     ),
                                     prefixIcon: Icon(
                                       Icons.lock,
-                                      color: ThemeColors.getSecondaryText(context),
+                                      color:
+                                          ThemeColors.getSecondaryText(context),
                                     ),
                                     suffixIcon: IconButton(
                                       icon: Icon(
-                                        _obscureNewPassword ? Icons.visibility : Icons.visibility_off,
-                                        color: ThemeColors.getSecondaryText(context),
+                                        _obscureNewPassword
+                                            ? Icons.visibility
+                                            : Icons.visibility_off,
+                                        color: ThemeColors.getSecondaryText(
+                                            context),
                                       ),
-                                      onPressed: _isLoading || _receivedCode == null
-                                          ? null
-                                          : () {
-                                              setState(() {
-                                                _obscureNewPassword = !_obscureNewPassword;
-                                              });
-                                            },
+                                      onPressed:
+                                          _isLoading || _receivedCode == null
+                                              ? null
+                                              : () {
+                                                  setState(() {
+                                                    _obscureNewPassword =
+                                                        !_obscureNewPassword;
+                                                  });
+                                                },
                                     ),
                                   ),
                                   style: TextStyle(
@@ -559,7 +586,8 @@ class _PasswordChangePageState extends State<PasswordChangePage>
                                   decoration: InputDecoration(
                                     labelText: 'Şifre Onayı',
                                     filled: true,
-                                    fillColor: ThemeColors.getInputBackground(context),
+                                    fillColor:
+                                        ThemeColors.getInputBackground(context),
                                     labelStyle: TextStyle(
                                       color: ThemeColors.getGreen(context),
                                     ),
@@ -578,26 +606,34 @@ class _PasswordChangePageState extends State<PasswordChangePage>
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide(
-                                        color: ThemeColors.getPrimaryButtonColor(context),
+                                        color:
+                                            ThemeColors.getPrimaryButtonColor(
+                                                context),
                                         width: 2,
                                       ),
                                     ),
                                     prefixIcon: Icon(
                                       Icons.lock_outline,
-                                      color: ThemeColors.getSecondaryText(context),
+                                      color:
+                                          ThemeColors.getSecondaryText(context),
                                     ),
                                     suffixIcon: IconButton(
                                       icon: Icon(
-                                        _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
-                                        color: ThemeColors.getSecondaryText(context),
+                                        _obscureConfirmPassword
+                                            ? Icons.visibility
+                                            : Icons.visibility_off,
+                                        color: ThemeColors.getSecondaryText(
+                                            context),
                                       ),
-                                      onPressed: _isLoading || _receivedCode == null
-                                          ? null
-                                          : () {
-                                              setState(() {
-                                                _obscureConfirmPassword = !_obscureConfirmPassword;
-                                              });
-                                            },
+                                      onPressed:
+                                          _isLoading || _receivedCode == null
+                                              ? null
+                                              : () {
+                                                  setState(() {
+                                                    _obscureConfirmPassword =
+                                                        !_obscureConfirmPassword;
+                                                  });
+                                                },
                                     ),
                                   ),
                                   style: TextStyle(
@@ -620,7 +656,11 @@ class _PasswordChangePageState extends State<PasswordChangePage>
                                   width: double.infinity,
                                   height: 50,
                                   child: ElevatedButton.icon(
-                                    onPressed: (_isLoading || !_isConnected || _receivedCode == null) ? null : _handlePasswordChange,
+                                    onPressed: (_isLoading ||
+                                            !_isConnected ||
+                                            _receivedCode == null)
+                                        ? null
+                                        : _handlePasswordChange,
                                     icon: _isLoading
                                         ? const SizedBox(
                                             width: 20,
@@ -632,17 +672,24 @@ class _PasswordChangePageState extends State<PasswordChangePage>
                                           )
                                         : const Icon(Icons.save),
                                     label: Text(
-                                      _isLoading ? 'Şifre Değiştiriliyor...' : 'Şifreyi Değiştir',
+                                      _isLoading
+                                          ? 'Şifre Değiştiriliyor...'
+                                          : 'Şifreyi Değiştir',
                                     ),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: (_isConnected && _receivedCode != null)
-                                          ? ThemeColors.getPrimaryButtonColor(context)
+                                      backgroundColor: (_isConnected &&
+                                              _receivedCode != null)
+                                          ? ThemeColors.getPrimaryButtonColor(
+                                              context)
                                           : Colors.grey,
                                       foregroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      elevation: (_isConnected && _receivedCode != null) ? 2 : 0,
+                                      elevation: (_isConnected &&
+                                              _receivedCode != null)
+                                          ? 2
+                                          : 0,
                                     ),
                                   ),
                                 ),
@@ -655,7 +702,8 @@ class _PasswordChangePageState extends State<PasswordChangePage>
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: ThemeColors.getDialogContentBackground(context),
+                              color: ThemeColors.getDialogContentBackground(
+                                  context),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: ThemeColors.getBorder(context),

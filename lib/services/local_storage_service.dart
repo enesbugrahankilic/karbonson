@@ -29,27 +29,28 @@ class CacheEntry {
 
 class LocalStorageService {
   static LocalStorageService? _instance;
-  static LocalStorageService get instance => _instance ??= LocalStorageService._();
-  
+  static LocalStorageService get instance =>
+      _instance ??= LocalStorageService._();
+
   LocalStorageService._();
-  
+
   static const String _userDataKey = 'cached_user_data';
   static const String _profileDataKey = 'cached_profile_data';
   static const String _offlineGameStateKey = 'cached_offline_game';
   static const String _cachedQuestionsKey = 'cached_questions';
   static const String _lastSyncTimeKey = 'last_sync_time';
   static const String _offlineModeKey = 'offline_mode_enabled';
-  
+
   // ⚡ PERFORMANCE: Cache expiration settings
   static const Duration _defaultCacheExpiry = Duration(hours: 24);
   static const int _maxCacheSize = 50; // Maximum items in cache
-  
+
   // ⚡ PERFORMANCE: LRU Cache for frequently accessed data
   final LinkedHashMap<String, CacheEntry> _memoryCache = LinkedHashMap();
   final Queue<String> _accessOrder = Queue<String>();
 
   static SharedPreferences? _prefs;
-  
+
   // ⚡ PERFORMANCE: Batch operations support
   static final Map<String, dynamic> _pendingWrites = {};
   static Timer? _batchWriteTimer;
@@ -58,20 +59,20 @@ class LocalStorageService {
     _prefs = await SharedPreferences.getInstance();
     _startBatchWriteTimer();
   }
-  
+
   // ⚡ PERFORMANCE: Batch write operations for better performance
   static void _startBatchWriteTimer() {
     _batchWriteTimer = Timer.periodic(const Duration(seconds: 2), (_) {
       _flushPendingWrites();
     });
   }
-  
+
   static Future<void> _flushPendingWrites() async {
     if (_pendingWrites.isEmpty) return;
-    
+
     final writes = Map.from(_pendingWrites);
     _pendingWrites.clear();
-    
+
     try {
       for (final entry in writes.entries) {
         await _prefs?.setString(entry.key, jsonEncode(entry.value));
@@ -95,39 +96,39 @@ class LocalStorageService {
       createdAt: DateTime.now(),
       expiry: expiry ?? _defaultCacheExpiry,
     );
-    
+
     // Remove from cache if exists to update access order
     _instance?._memoryCache.remove(key);
     _instance?._accessOrder.remove(key);
-    
+
     // Add to cache
     _instance?._memoryCache[key] = entry;
     _instance?._accessOrder.add(key);
-    
+
     // Evict oldest if cache is full
     if (_instance!._memoryCache.length > _maxCacheSize) {
       _evictOldestCache();
     }
   }
-  
+
   static T? getFromMemoryCache<T>(String key) {
     final entry = _instance?._memoryCache[key];
     if (entry == null) return null;
-    
+
     // Check expiry
     if (entry.isExpired) {
       _instance?._memoryCache.remove(key);
       _instance?._accessOrder.remove(key);
       return null;
     }
-    
+
     // Move to end (most recently used)
     _instance?._accessOrder.remove(key);
     _instance?._accessOrder.add(key);
-    
+
     return entry.data as T;
   }
-  
+
   static void _evictOldestCache() {
     if (_instance!._accessOrder.isNotEmpty) {
       final oldestKey = _instance!._accessOrder.removeFirst();
@@ -140,10 +141,9 @@ class LocalStorageService {
     try {
       final data = userData.toMap();
       _pendingWrites[_userDataKey] = data;
-      
+
       // Also cache in memory for fast access
       putInMemoryCache(_userDataKey, userData);
-      
     } catch (e) {
       throw Exception('Failed to cache user data: $e');
     }
@@ -185,11 +185,12 @@ class LocalStorageService {
       final profileDataString = _prefs?.getString(_profileDataKey);
       if (profileDataString != null) {
         final combinedData = jsonDecode(profileDataString);
-        final serverData = combinedData['serverData'] != null 
-          ? ServerProfileData.fromMap(combinedData['serverData'])
-          : null;
-        final localData = LocalStatisticsData.fromMap(combinedData['localData']);
-        
+        final serverData = combinedData['serverData'] != null
+            ? ServerProfileData.fromMap(combinedData['serverData'])
+            : null;
+        final localData =
+            LocalStatisticsData.fromMap(combinedData['localData']);
+
         return ProfileData(
           serverData: serverData,
           localData: localData,
@@ -206,7 +207,8 @@ class LocalStorageService {
   }
 
   // Offline Game State Caching
-  static Future<void> cacheOfflineGameState(Map<String, dynamic> gameState) async {
+  static Future<void> cacheOfflineGameState(
+      Map<String, dynamic> gameState) async {
     try {
       await _prefs?.setString(_offlineGameStateKey, jsonEncode(gameState));
     } catch (e) {
@@ -231,7 +233,8 @@ class LocalStorageService {
   }
 
   // Questions Caching for Offline Use
-  static Future<void> cacheQuestions(List<Map<String, dynamic>> questions) async {
+  static Future<void> cacheQuestions(
+      List<Map<String, dynamic>> questions) async {
     try {
       await _prefs?.setString(_cachedQuestionsKey, jsonEncode(questions));
     } catch (e) {
@@ -282,7 +285,7 @@ class LocalStorageService {
     final hasUserData = _prefs?.getString(_userDataKey) != null;
     final hasProfileData = _prefs?.getString(_profileDataKey) != null;
     final hasQuestions = _prefs?.getString(_cachedQuestionsKey) != null;
-    
+
     return hasUserData || hasProfileData || hasQuestions;
   }
 
@@ -316,7 +319,7 @@ class LocalStorageService {
     if (lastSync != null) {
       final now = DateTime.now();
       final difference = now.difference(lastSync).inDays;
-      
+
       if (difference > 7) {
         await clearAllCache();
       }

@@ -29,7 +29,7 @@ class _CopyToClipboardWidgetState extends State<CopyToClipboardWidget> {
   Future<void> _copyToClipboard() async {
     try {
       await Clipboard.setData(ClipboardData(text: widget.textToCopy));
-      
+
       if (widget.successMessage != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -59,7 +59,7 @@ class _CopyToClipboardWidgetState extends State<CopyToClipboardWidget> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
-          color: _isHovered 
+          color: _isHovered
               ? (widget.iconColor ?? Colors.blue).withValues(alpha: 0.1)
               : Colors.transparent,
         ),
@@ -71,7 +71,7 @@ class _CopyToClipboardWidgetState extends State<CopyToClipboardWidget> {
             Icon(
               widget.icon,
               size: widget.iconSize,
-              color: _isHovered 
+              color: _isHovered
                   ? (widget.iconColor ?? Colors.blue)
                   : Colors.grey[600],
             ),

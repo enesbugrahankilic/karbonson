@@ -7,7 +7,7 @@ import '../widgets/form_field_validator.dart' as form_validator;
 import '../services/connectivity_service.dart';
 
 /// Comprehensive form validation and submission service
-/// 
+///
 /// Features:
 /// - Email validation using FormFieldValidator
 /// - Network connectivity checking before submission
@@ -22,7 +22,7 @@ class FormValidationService {
   }) : _connectivityService = connectivityService;
 
   /// Comprehensive form validation and submission handler
-  /// 
+  ///
   /// Steps:
   /// 1. Check form validation via _formKey.currentState!.validate()
   /// 2. Check network connectivity
@@ -74,7 +74,6 @@ class FormValidationService {
           error: error,
         );
       }
-
     } catch (error) {
       return FormValidationResult.unexpectedError(
         'Beklenmeyen bir hata oluştu.',
@@ -92,13 +91,15 @@ class FormValidationService {
   bool get isConnected => _connectivityService.isConnected;
 
   /// Get connectivity stream for reactive UI
-  Stream<bool> get connectivityStream => _connectivityService.connectivityStateStream;
+  Stream<bool> get connectivityStream =>
+      _connectivityService.connectivityStateStream;
 
   /// Show offline snackbar message
   void showOfflineMessage(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Çevrimdışı durumdasınız. Lütfen internet bağlantınızı kontrol edin.'),
+        content: const Text(
+            'Çevrimdışı durumdasınız. Lütfen internet bağlantınızı kontrol edin.'),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -111,7 +112,8 @@ class FormValidationService {
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Çevrimiçi oldunuz! Akışı yeniden deneyebilirsiniz.'),
+                  content: Text(
+                      'Çevrimiçi oldunuz! Akışı yeniden deneyebilirsiniz.'),
                   backgroundColor: Colors.green,
                 ),
               );
@@ -208,7 +210,8 @@ class FormValidationResult {
     );
   }
 
-  factory FormValidationResult.submissionError(String message, {required dynamic error}) {
+  factory FormValidationResult.submissionError(String message,
+      {required dynamic error}) {
     return FormValidationResult._(
       isSuccess: false,
       message: message,
@@ -217,7 +220,8 @@ class FormValidationResult {
     );
   }
 
-  factory FormValidationResult.unexpectedError(String message, {required dynamic error}) {
+  factory FormValidationResult.unexpectedError(String message,
+      {required dynamic error}) {
     return FormValidationResult._(
       isSuccess: false,
       message: message,

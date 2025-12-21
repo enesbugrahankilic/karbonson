@@ -19,11 +19,12 @@ class PasswordResetInformationPage extends StatefulWidget {
   });
 
   @override
-  State<PasswordResetInformationPage> createState() => _PasswordResetInformationPageState();
+  State<PasswordResetInformationPage> createState() =>
+      _PasswordResetInformationPageState();
 }
 
-class _PasswordResetInformationPageState extends State<PasswordResetInformationPage>
-    with TickerProviderStateMixin {
+class _PasswordResetInformationPageState
+    extends State<PasswordResetInformationPage> with TickerProviderStateMixin {
   final ProfileService _profileService = ProfileService();
   bool _isLoading = false;
   bool _isEmailVerified = false;
@@ -59,14 +60,15 @@ class _PasswordResetInformationPageState extends State<PasswordResetInformationP
       if (currentUser != null) {
         // Check email verification status
         final status = await _profileService.getEmailVerificationStatus();
-        
+
         setState(() {
           _currentEmail = currentUser.email;
           _isEmailVerified = status.isVerified;
         });
 
         if (kDebugMode) {
-          debugPrint('PasswordResetInfoPage: User email verification status: ${status.isVerified}');
+          debugPrint(
+              'PasswordResetInfoPage: User email verification status: ${status.isVerified}');
         }
       } else {
         // No current user, use provided email or none
@@ -88,7 +90,7 @@ class _PasswordResetInformationPageState extends State<PasswordResetInformationP
 
     try {
       final result = await FirebaseAuthService.sendEmailVerification();
-      
+
       if (mounted) {
         if (result.isSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -133,7 +135,7 @@ class _PasswordResetInformationPageState extends State<PasswordResetInformationP
       if (currentUser != null) {
         await currentUser.reload();
         final status = await _profileService.getEmailVerificationStatus();
-        
+
         setState(() {
           _isEmailVerified = status.isVerified;
         });
@@ -141,7 +143,7 @@ class _PasswordResetInformationPageState extends State<PasswordResetInformationP
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(_isEmailVerified 
+              content: Text(_isEmailVerified
                   ? 'E-posta adresiniz başarıyla doğrulanmış!'
                   : 'E-posta adresiniz henüz doğrulanmamış'),
               backgroundColor: _isEmailVerified ? Colors.green : Colors.orange,
@@ -238,7 +240,8 @@ class _PasswordResetInformationPageState extends State<PasswordResetInformationP
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: ThemeColors.getDialogContentBackground(context),
+                                color: ThemeColors.getDialogContentBackground(
+                                    context),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: Colors.orange.withValues(alpha: 0.3),
@@ -280,12 +283,12 @@ class _PasswordResetInformationPageState extends State<PasswordResetInformationP
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: _isEmailVerified 
+                              color: _isEmailVerified
                                   ? Colors.green.withValues(alpha: 0.1)
                                   : Colors.red.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: _isEmailVerified 
+                                color: _isEmailVerified
                                     ? Colors.green.withValues(alpha: 0.3)
                                     : Colors.red.withValues(alpha: 0.3),
                               ),
@@ -293,19 +296,25 @@ class _PasswordResetInformationPageState extends State<PasswordResetInformationP
                             child: Column(
                               children: [
                                 Icon(
-                                  _isEmailVerified ? Icons.verified : Icons.pending,
-                                  color: _isEmailVerified ? Colors.green : Colors.red,
+                                  _isEmailVerified
+                                      ? Icons.verified
+                                      : Icons.pending,
+                                  color: _isEmailVerified
+                                      ? Colors.green
+                                      : Colors.red,
                                   size: 32,
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  _isEmailVerified 
+                                  _isEmailVerified
                                       ? 'E-posta Adresiniz Doğrulanmış'
                                       : 'E-posta Adresiniz Doğrulanmamış',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
-                                    color: _isEmailVerified ? Colors.green : Colors.red,
+                                    color: _isEmailVerified
+                                        ? Colors.green
+                                        : Colors.red,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -316,7 +325,8 @@ class _PasswordResetInformationPageState extends State<PasswordResetInformationP
                                       : 'E-posta adresinizi doğrulamanız gerekiyor. Şifre sıfırlama işlemi için e-posta doğrulama gereklidir.',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: ThemeColors.getSecondaryText(context),
+                                    color:
+                                        ThemeColors.getSecondaryText(context),
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -332,7 +342,8 @@ class _PasswordResetInformationPageState extends State<PasswordResetInformationP
                               width: double.infinity,
                               height: 50,
                               child: ElevatedButton.icon(
-                                onPressed: _isLoading ? null : _sendVerificationEmail,
+                                onPressed:
+                                    _isLoading ? null : _sendVerificationEmail,
                                 icon: _isLoading
                                     ? const SizedBox(
                                         width: 20,
@@ -344,7 +355,9 @@ class _PasswordResetInformationPageState extends State<PasswordResetInformationP
                                       )
                                     : const Icon(Icons.send),
                                 label: Text(
-                                  _isLoading ? 'Gönderiliyor...' : 'E-posta Doğrulama Gönder',
+                                  _isLoading
+                                      ? 'Gönderiliyor...'
+                                      : 'E-posta Doğrulama Gönder',
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.orange,
@@ -362,7 +375,9 @@ class _PasswordResetInformationPageState extends State<PasswordResetInformationP
                               width: double.infinity,
                               height: 50,
                               child: OutlinedButton.icon(
-                                onPressed: _isLoading ? null : _checkVerificationStatus,
+                                onPressed: _isLoading
+                                    ? null
+                                    : _checkVerificationStatus,
                                 icon: _isLoading
                                     ? const SizedBox(
                                         width: 20,
@@ -374,7 +389,9 @@ class _PasswordResetInformationPageState extends State<PasswordResetInformationP
                                       )
                                     : const Icon(Icons.refresh),
                                 label: Text(
-                                  _isLoading ? 'Kontrol Ediliyor...' : 'Doğrulama Durumunu Kontrol Et',
+                                  _isLoading
+                                      ? 'Kontrol Ediliyor...'
+                                      : 'Doğrulama Durumunu Kontrol Et',
                                 ),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.orange,

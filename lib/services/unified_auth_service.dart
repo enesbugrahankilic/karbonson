@@ -11,7 +11,8 @@ class UnifiedAuthService {
   static final fb_auth.FirebaseAuth _auth = fb_auth.FirebaseAuth.instance;
 
   /// Kimlik doğrulama sonucu
-  static AuthResult _createSuccess(String message, {fb_auth.UserCredential? userCredential}) {
+  static AuthResult _createSuccess(String message,
+      {fb_auth.UserCredential? userCredential}) {
     return AuthResult.success(message, userCredential: userCredential);
   }
 
@@ -25,18 +26,21 @@ class UnifiedAuthService {
     required String password,
   }) async {
     try {
-      final userCredential = await FirebaseAuthService.signInWithEmailAndPasswordWithRetry(
+      final userCredential =
+          await FirebaseAuthService.signInWithEmailAndPasswordWithRetry(
         email: email,
         password: password,
       );
 
       if (userCredential != null) {
-        return _createSuccess('Email ve şifre ile giriş başarılı', userCredential: userCredential);
+        return _createSuccess('Email ve şifre ile giriş başarılı',
+            userCredential: userCredential);
       } else {
         return _createFailure('Giriş bilgileri geçersiz');
       }
     } on fb_auth.FirebaseAuthException catch (e) {
-      final errorMessage = FirebaseAuthService.handleAuthError(e, context: 'email_password_login');
+      final errorMessage = FirebaseAuthService.handleAuthError(e,
+          context: 'email_password_login');
       return _createFailure(errorMessage, error: _mapFirebaseError(e));
     } catch (e) {
       return _createFailure('Beklenmeyen hata: $e');
@@ -49,18 +53,21 @@ class UnifiedAuthService {
       // Biyometri kullanılabilir mi kontrol et
       final isAvailable = await BiometricService.isBiometricAvailable();
       if (!isAvailable) {
-        return _createFailure('Bu cihazda biyometrik kimlik doğrulama mevcut değil');
+        return _createFailure(
+            'Bu cihazda biyometrik kimlik doğrulama mevcut değil');
       }
 
       // Kullanıcı biyometriyi etkinleştirmiş mi kontrol et
       final isEnabled = await BiometricUserService.isUserBiometricEnabled();
       if (!isEnabled) {
-        return _createFailure('Biyometrik giriş etkinleştirilmemiş. Lütfen önce biyometri kurulumunu tamamlayın.');
+        return _createFailure(
+            'Biyometrik giriş etkinleştirilmemiş. Lütfen önce biyometri kurulumunu tamamlayın.');
       }
 
       // Biyometrik kimlik doğrulama
       final success = await BiometricService.authenticateWithBiometrics(
-        localizedReason: 'Uygulamaya giriş yapmak için biyometrik kimlik doğrulamanızı sağlayın',
+        localizedReason:
+            'Uygulamaya giriş yapmak için biyometrik kimlik doğrulamanızı sağlayın',
         useErrorDialogs: true,
       );
 
@@ -100,9 +107,11 @@ class UnifiedAuthService {
       if (result.isValid) {
         return _createSuccess('SMS OTP ile giriş başarılı');
       } else if (result.isExpired) {
-        return _createFailure('SMS kodu süresi dolmuş', error: AuthError.codeExpired);
+        return _createFailure('SMS kodu süresi dolmuş',
+            error: AuthError.codeExpired);
       } else {
-        return _createFailure('Geçersiz SMS kodu', error: AuthError.invalidCode);
+        return _createFailure('Geçersiz SMS kodu',
+            error: AuthError.invalidCode);
       }
     } catch (e) {
       return _createFailure('SMS doğrulama sırasında hata oluştu: $e');
@@ -123,9 +132,11 @@ class UnifiedAuthService {
       if (result.isValid) {
         return _createSuccess('Email OTP ile giriş başarılı');
       } else if (result.isExpired) {
-        return _createFailure('Email kodu süresi dolmuş', error: AuthError.codeExpired);
+        return _createFailure('Email kodu süresi dolmuş',
+            error: AuthError.codeExpired);
       } else {
-        return _createFailure('Geçersiz email kodu', error: AuthError.invalidCode);
+        return _createFailure('Geçersiz email kodu',
+            error: AuthError.invalidCode);
       }
     } catch (e) {
       return _createFailure('Email doğrulama sırasında hata oluştu: $e');
@@ -198,7 +209,8 @@ class UnifiedAuthService {
         return _createFailure('Biyometri devre dışı bırakma başarısız');
       }
     } catch (e) {
-      return _createFailure('Biyometri devre dışı bırakma sırasında hata oluştu: $e');
+      return _createFailure(
+          'Biyometri devre dışı bırakma sırasında hata oluştu: $e');
     }
   }
 
@@ -272,7 +284,8 @@ class AuthResult {
     this.error,
   });
 
-  factory AuthResult.success(String message, {fb_auth.UserCredential? userCredential}) {
+  factory AuthResult.success(String message,
+      {fb_auth.UserCredential? userCredential}) {
     return AuthResult._(
       isSuccess: true,
       message: message,

@@ -9,19 +9,19 @@ import '../core/navigation/app_router.dart';
 class HomeButton extends StatelessWidget {
   /// Optional callback when home is pressed (before navigation)
   final VoidCallback? onPressed;
-  
+
   /// Whether to use a house icon (true) or back arrow (false)
   final bool useHouseIcon;
-  
+
   /// Custom icon color (defaults to theme primary color)
   final Color? iconColor;
-  
+
   /// Custom icon size
   final double iconSize;
-  
+
   /// Whether to show a tooltip
   final bool showTooltip;
-  
+
   /// Custom tooltip text
   final String tooltipText;
 
@@ -39,7 +39,7 @@ class HomeButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final effectiveColor = iconColor ?? theme.colorScheme.primary;
-    
+
     Widget button = IconButton(
       icon: Icon(
         useHouseIcon ? Icons.home_rounded : Icons.arrow_back_ios_new_rounded,
@@ -49,7 +49,7 @@ class HomeButton extends StatelessWidget {
       onPressed: () {
         // Execute optional callback first
         onPressed?.call();
-        
+
         // Navigate to login page (main dashboard)
         Navigator.of(context).pushNamedAndRemoveUntil(
           AppRoutes.login,
@@ -59,14 +59,14 @@ class HomeButton extends StatelessWidget {
       splashRadius: 24,
       padding: const EdgeInsets.all(8),
     );
-    
+
     if (showTooltip) {
       button = Tooltip(
         message: tooltipText,
         child: button,
       );
     }
-    
+
     return button;
   }
 }
@@ -91,9 +91,11 @@ class HomeButtonWithBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final effectiveBgColor = backgroundColor ?? theme.colorScheme.primaryContainer;
-    final effectiveIconColor = iconColor ?? theme.colorScheme.onPrimaryContainer;
-    
+    final effectiveBgColor =
+        backgroundColor ?? theme.colorScheme.primaryContainer;
+    final effectiveIconColor =
+        iconColor ?? theme.colorScheme.onPrimaryContainer;
+
     return Tooltip(
       message: tooltipText,
       child: Material(

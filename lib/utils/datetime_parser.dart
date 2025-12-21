@@ -11,7 +11,7 @@ class DateTimeParser {
   /// Returns null if parsing fails or value is null
   static DateTime? parse(dynamic value) {
     if (value == null) return null;
-    
+
     try {
       if (value is Timestamp) {
         return value.toDate();
@@ -23,7 +23,8 @@ class DateTimeParser {
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('⚠️ Error parsing datetime: $e, value: $value, type: ${value.runtimeType}');
+        debugPrint(
+            '⚠️ Error parsing datetime: $e, value: $value, type: ${value.runtimeType}');
       }
     }
     return null;

@@ -31,12 +31,12 @@ class NavigationAnalyticsEvent {
   });
 
   Map<String, dynamic> toJson() => {
-    'type': type.name,
-    'fromRoute': fromRoute,
-    'toRoute': toRoute,
-    'timestamp': timestamp.toIso8601String(),
-    'metadata': metadata,
-  };
+        'type': type.name,
+        'fromRoute': fromRoute,
+        'toRoute': toRoute,
+        'timestamp': timestamp.toIso8601String(),
+        'metadata': metadata,
+      };
 }
 
 /// Navigation service for centralized state management and analytics
@@ -53,7 +53,8 @@ class NavigationService {
   // Current route state
   String? get currentRoute => _routeStack.isEmpty ? null : _routeStack.last;
   List<String> get routeStack => List.unmodifiable(_routeStack);
-  List<NavigationAnalyticsEvent> get navigationHistory => List.unmodifiable(_navigationHistory);
+  List<NavigationAnalyticsEvent> get navigationHistory =>
+      List.unmodifiable(_navigationHistory);
 
   /// Add a route to the stack
   void _addRoute(String route) {
@@ -98,7 +99,8 @@ class NavigationService {
     }
 
     if (kDebugMode) {
-      debugPrint('Navigation: ${type.name} ${fromRoute ?? ''} -> ${toRoute ?? ''}');
+      debugPrint(
+          'Navigation: ${type.name} ${fromRoute ?? ''} -> ${toRoute ?? ''}');
     }
 
     // Notify observers (Flutter handles the actual route notifications)
@@ -140,8 +142,8 @@ class NavigationService {
       'routeStackDepth': _routeStack.length,
       'eventTypeCounts': eventCounts,
       'routeVisitCounts': routeCounts,
-      'mostVisitedRoute': routeCounts.isEmpty 
-          ? null 
+      'mostVisitedRoute': routeCounts.isEmpty
+          ? null
           : routeCounts.entries.reduce((a, b) => a.value > b.value ? a : b).key,
     };
   }
@@ -234,12 +236,14 @@ class NavigationService {
 
   /// Get recent navigation activity
   List<NavigationAnalyticsEvent> getRecentActivity({int limit = 10}) {
-    final startIndex = (_navigationHistory.length - limit).clamp(0, _navigationHistory.length);
+    final startIndex =
+        (_navigationHistory.length - limit).clamp(0, _navigationHistory.length);
     return _navigationHistory.sublist(startIndex);
   }
 
   /// Check if user navigated to a specific route recently
-  bool hasVisitedRouteRecently(String route, {Duration within = const Duration(minutes: 5)}) {
+  bool hasVisitedRouteRecently(String route,
+      {Duration within = const Duration(minutes: 5)}) {
     final cutoff = DateTime.now().subtract(within);
     return _navigationHistory.any(
       (event) => event.toRoute == route && event.timestamp.isAfter(cutoff),
@@ -253,7 +257,9 @@ class NavigationService {
     }
 
     final navigations = _navigationHistory
-        .where((e) => e.type == NavigationEventType.push || e.type == NavigationEventType.pushReplacement)
+        .where((e) =>
+            e.type == NavigationEventType.push ||
+            e.type == NavigationEventType.pushReplacement)
         .toList();
 
     if (navigations.length < 2) {
@@ -262,11 +268,15 @@ class NavigationService {
 
     final intervals = <int>[];
     for (int i = 1; i < navigations.length; i++) {
-      final diff = navigations[i].timestamp.difference(navigations[i - 1].timestamp).inMilliseconds;
+      final diff = navigations[i]
+          .timestamp
+          .difference(navigations[i - 1].timestamp)
+          .inMilliseconds;
       intervals.add(diff);
     }
 
-    final averageInterval = intervals.reduce((a, b) => a + b) / intervals.length;
+    final averageInterval =
+        intervals.reduce((a, b) => a + b) / intervals.length;
     final maxInterval = intervals.reduce((a, b) => a > b ? a : b);
     final minInterval = intervals.reduce((a, b) => a < b ? a : b);
 
@@ -301,7 +311,7 @@ class AppNavigatorObserver extends NavigatorObserver {
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     final routeName = _getRouteName(route);
     final previousRouteName = _getRouteName(previousRoute);
-    
+
     if (routeName != null) {
       _navigationService._addRoute(routeName);
     }
@@ -311,7 +321,7 @@ class AppNavigatorObserver extends NavigatorObserver {
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     final routeName = _getRouteName(route);
     final previousRouteName = _getRouteName(previousRoute);
-    
+
     if (routeName != null) {
       _navigationService._removeRoute();
     }
@@ -321,11 +331,11 @@ class AppNavigatorObserver extends NavigatorObserver {
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
     final newRouteName = _getRouteName(newRoute);
     final oldRouteName = _getRouteName(oldRoute);
-    
+
     if (oldRouteName != null) {
       _navigationService._removeRoute();
     }
-    
+
     if (newRouteName != null) {
       _navigationService._addRoute(newRouteName);
     }
@@ -334,7 +344,7 @@ class AppNavigatorObserver extends NavigatorObserver {
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
     final routeName = _getRouteName(route);
-    
+
     if (routeName != null) {
       _navigationService._removeRoute();
     }

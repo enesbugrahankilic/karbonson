@@ -10,16 +10,17 @@ import '../models/game_board.dart';
 import 'quiz_logic.dart';
 import 'firestore_service.dart';
 import 'notification_service.dart';
+import 'achievement_service.dart';
 
 class DuelGameLogic extends ChangeNotifier {
   final QuizLogic _quizLogic = QuizLogic();
   final FirestoreService _firestoreService = FirestoreService();
-  
+
   DuelRoom? _currentRoom;
   StreamSubscription<DuelRoom?>? _roomSubscription;
   Timer? _questionTimer;
   Timer? _gameTimer;
-  
+
   // Game state
   Question? _currentQuestion;
   int _questionStartTime = 0;
@@ -27,18 +28,18 @@ class DuelGameLogic extends ChangeNotifier {
   int _timeElapsedInSeconds = 0;
   bool _isGameActive = false;
   bool _isDisposed = false;
-  
+
   // Constants
   static const int questionTimeLimit = 15; // 15 seconds per question
   static const int totalQuestions = 5; // Best of 5 questions
-  
+
   // Public getters
   DuelRoom? get currentRoom => _currentRoom;
   Question? get currentQuestion => _currentQuestion;
   int get timeElapsedInSeconds => _timeElapsedInSeconds;
   bool get isGameActive => _isGameActive;
   int get currentQuestionIndex => _currentQuestionIndex;
-  
+
   String get timeElapsedFormatted {
     final minutes = (_timeElapsedInSeconds ~/ 60).toString().padLeft(2, '0');
     final seconds = (_timeElapsedInSeconds % 60).toString().padLeft(2, '0');
@@ -67,22 +68,22 @@ class DuelGameLogic extends ChangeNotifier {
     _timeElapsedInSeconds = 0;
     _currentQuestionIndex = 0;
     _isGameActive = true;
-    
+
     _listenToRoomChanges();
     _startGameTimer();
-    
+
     // Send game started notification
     final playerNames = room.players.map((p) => p.nickname).toList();
     await NotificationService.showGameStartedNotification(
       gameMode: 'Düello Modu',
       playerNames: playerNames,
     );
-    
+
     // Start first question after a short delay
     Timer(const Duration(seconds: 2), () {
       _startNextQuestion();
     });
-    
+
     notifyListeners();
   }
 
@@ -90,7 +91,8 @@ class DuelGameLogic extends ChangeNotifier {
   void _listenToRoomChanges() {
     _roomSubscription?.cancel();
     if (_currentRoom != null) {
-      _roomSubscription = _firestoreService.listenToDuelRoom(_currentRoom!.id).listen((room) {
+      _roomSubscription =
+          _firestoreService.listenToDuelRoom(_currentRoom!.id).listen((room) {
         if (room != null) {
           _currentRoom = room;
           _checkForGameEnd();
@@ -106,12 +108,12 @@ class DuelGameLogic extends ChangeNotifier {
     _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_isGameActive) {
         _timeElapsedInSeconds++;
-        
+
         // Sync time to Firestore every 10 seconds
         if (_timeElapsedInSeconds % 10 == 0) {
           _syncTimeToFirestore();
         }
-        
+
         notifyListeners();
       }
     });
@@ -121,7 +123,7 @@ class DuelGameLogic extends ChangeNotifier {
   void _syncTimeToFirestore() {
     if (_currentRoom != null) {
       _firestoreService.updateDuelGameState(
-        _currentRoom!.id, 
+        _currentRoom!.id,
         timeElapsedInSeconds: _timeElapsedInSeconds,
       );
     }
@@ -141,8 +143,9 @@ class DuelGameLogic extends ChangeNotifier {
         debugPrint('🚨 No questions available');
         return;
       }
-      
-      final randomIndex = DateTime.now().millisecondsSinceEpoch % questions.length;
+
+      final randomIndex =
+          DateTime.now().millisecondsSinceEpoch % questions.length;
       final question = questions[randomIndex];
       _currentQuestion = question;
       _questionStartTime = DateTime.now().millisecondsSinceEpoch;
@@ -151,10 +154,12 @@ class DuelGameLogic extends ChangeNotifier {
       // Convert question to map for Firestore
       final questionMap = {
         'text': question.text,
-        'options': question.options.map((opt) => {
-          'text': opt.text,
-          'score': opt.score,
-        }).toList(),
+        'options': question.options
+            .map((opt) => {
+                  'text': opt.text,
+                  'score': opt.score,
+                })
+            .toList(),
       };
 
       // Update room with new question
@@ -184,7 +189,7 @@ class DuelGameLogic extends ChangeNotifier {
     _questionTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final currentTime = DateTime.now().millisecondsSinceEpoch;
       final elapsedSeconds = (currentTime - _questionStartTime) ~/ 1000;
-      
+
       if (elapsedSeconds >= questionTimeLimit) {
         // Time's up for this question
         _questionTimer?.cancel();
@@ -201,7 +206,7 @@ class DuelGameLogic extends ChangeNotifier {
 
     final currentTime = DateTime.now().millisecondsSinceEpoch;
     final timeTakenSeconds = (currentTime - _questionStartTime) ~/ 1000;
-    
+
     // Check if time is up
     if (timeTakenSeconds > questionTimeLimit) {
       return; // Too late
@@ -209,9 +214,10 @@ class DuelGameLogic extends ChangeNotifier {
 
     // Check if answer is correct
     final isCorrect = _checkAnswer(answer);
-    final playerIndex = _currentRoom!.players.indexWhere((p) => p.id == playerId);
+    final playerIndex =
+        _currentRoom!.players.indexWhere((p) => p.id == playerId);
     final player = _currentRoom!.players[playerIndex];
-    
+
     // Update player score
     final updatedPlayers = [..._currentRoom!.players];
     if (isCorrect) {
@@ -236,13 +242,18 @@ class DuelGameLogic extends ChangeNotifier {
       timestamp: DateTime.now(),
     );
 
-    final updatedAnswers = [...(_currentRoom!.questionAnswers ?? []), newAnswer];
-    
+    final updatedAnswers = [
+      ...(_currentRoom!.questionAnswers ?? []),
+      newAnswer
+    ];
+
     // Update room in Firestore
     await _firestoreService.updateDuelGameState(
       _currentRoom!.id,
-      questionAnswers: updatedAnswers.map((a) => a.toMap() as Map<String, dynamic>).toList(),
-      players: updatedPlayers.map((p) => p.toMap() as Map<String, dynamic>).toList(),
+      questionAnswers:
+          updatedAnswers.map((a) => a.toMap() as Map<String, dynamic>).toList(),
+      players:
+          updatedPlayers.map((p) => p.toMap() as Map<String, dynamic>).toList(),
     );
 
     // End question immediately after answer
@@ -252,33 +263,40 @@ class DuelGameLogic extends ChangeNotifier {
   /// Check if answer is correct
   bool _checkAnswer(String userAnswer) {
     if (_currentQuestion == null) return false;
-    
+
     final userAnswerLower = userAnswer.toLowerCase().trim();
-    
+
     // Find the option with the highest score (correct answer)
-    final correctOption = _currentQuestion!.options.reduce((a, b) => a.score > b.score ? a : b);
+    final correctOption =
+        _currentQuestion!.options.reduce((a, b) => a.score > b.score ? a : b);
     final correctAnswer = correctOption.text.toLowerCase().trim();
-    
+
     // Direct match
     if (correctAnswer == userAnswerLower) {
       return true;
     }
-    
+
     // Check for common variations (remove punctuation, extra spaces)
-    final cleanCorrect = correctAnswer.replaceAll(RegExp(r'[^\w\s]'), '').replaceAll(RegExp(r'\s+'), ' ').trim();
-    final cleanUser = userAnswerLower.replaceAll(RegExp(r'[^\w\s]'), '').replaceAll(RegExp(r'\s+'), ' ').trim();
-    
+    final cleanCorrect = correctAnswer
+        .replaceAll(RegExp(r'[^\w\s]'), '')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    final cleanUser = userAnswerLower
+        .replaceAll(RegExp(r'[^\w\s]'), '')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+
     if (cleanCorrect == cleanUser) {
       return true;
     }
-    
+
     return false;
   }
 
   /// End current question
   void _endQuestion(DuelAnswer? submittedAnswer) {
     _questionTimer?.cancel();
-    
+
     // Wait 3 seconds then start next question or end game
     Timer(const Duration(seconds: 3), () {
       _startNextQuestion();
@@ -288,21 +306,22 @@ class DuelGameLogic extends ChangeNotifier {
   /// Check if game should end
   void _checkForGameEnd() {
     if (_currentRoom == null) return;
-    
+
     final player1 = _currentRoom!.players[0];
-    final player2 = _currentRoom!.players.length > 1 ? _currentRoom!.players[1] : null;
-    
+    final player2 =
+        _currentRoom!.players.length > 1 ? _currentRoom!.players[1] : null;
+
     // Check if someone has won (first to 3 correct answers or most points after 5 questions)
     if (player2 != null) {
       final player1CorrectAnswers = _countCorrectAnswers(player1.id);
       final player2CorrectAnswers = _countCorrectAnswers(player2.id);
-      
+
       // Win by correct answers
       if (player1CorrectAnswers >= 3 || player2CorrectAnswers >= 3) {
         _endGame();
         return;
       }
-      
+
       // Win by points after all questions
       if (_currentQuestionIndex > totalQuestions) {
         _endGame();
@@ -314,7 +333,7 @@ class DuelGameLogic extends ChangeNotifier {
   /// Count correct answers for a player
   int _countCorrectAnswers(String playerId) {
     if (_currentRoom?.questionAnswers == null) return 0;
-    
+
     return _currentRoom!.questionAnswers!
         .where((answer) => answer.playerId == playerId && answer.isCorrect)
         .length;
@@ -323,22 +342,23 @@ class DuelGameLogic extends ChangeNotifier {
   /// End the game
   void _endGame() {
     if (_currentRoom == null) return;
-    
+
     _isGameActive = false;
     _questionTimer?.cancel();
     _gameTimer?.cancel();
-    
+
     // Determine winner
     final player1 = _currentRoom!.players[0];
-    final player2 = _currentRoom!.players.length > 1 ? _currentRoom!.players[1] : null;
-    
+    final player2 =
+        _currentRoom!.players.length > 1 ? _currentRoom!.players[1] : null;
+
     String winnerName = 'Beraberlik!';
     int winnerScore = player1.duelScore;
-    
+
     if (player2 != null) {
       final player1Correct = _countCorrectAnswers(player1.id);
       final player2Correct = _countCorrectAnswers(player2.id);
-      
+
       if (player1Correct > player2Correct) {
         winnerName = player1.nickname;
         winnerScore = player1.duelScore;
@@ -356,21 +376,29 @@ class DuelGameLogic extends ChangeNotifier {
         }
       }
     }
-    
+
     // Update room status
     _firestoreService.endDuelGame(_currentRoom!.id, winnerName, winnerScore);
-    
+
+    // Update achievement for winner
+    if (winnerName.isNotEmpty) {
+      AchievementService().updateProgress(
+        duelWins: 1,
+      );
+    }
+
     // Send game finished notification
     NotificationService.showGameFinishedNotification(
       winnerName: winnerName,
       gameMode: 'Düello Modu',
       score: winnerScore,
     );
-    
+
     if (kDebugMode) {
-      debugPrint('🏆 Duel game ended. Winner: $winnerName (Score: $winnerScore)');
+      debugPrint(
+          '🏆 Duel game ended. Winner: $winnerName (Score: $winnerScore)');
     }
-    
+
     notifyListeners();
   }
 
@@ -379,11 +407,11 @@ class DuelGameLogic extends ChangeNotifier {
     if (_currentRoom != null) {
       await _firestoreService.leaveDuelRoom(_currentRoom!.id);
     }
-    
+
     _roomSubscription?.cancel();
     _questionTimer?.cancel();
     _gameTimer?.cancel();
-    
+
     _currentRoom = null;
     _currentQuestion = null;
     _isGameActive = false;
@@ -459,13 +487,17 @@ class DuelRoom {
       'status': status.toString().split('.').last,
       'currentQuestionIndex': currentQuestionIndex,
       'timeElapsedInSeconds': timeElapsedInSeconds,
-      'currentQuestion': currentQuestion != null ? {
-        'text': currentQuestion!.text,
-        'options': currentQuestion!.options.map((opt) => {
-          'text': opt.text,
-          'score': opt.score,
-        }).toList(),
-      } : null,
+      'currentQuestion': currentQuestion != null
+          ? {
+              'text': currentQuestion!.text,
+              'options': currentQuestion!.options
+                  .map((opt) => {
+                        'text': opt.text,
+                        'score': opt.score,
+                      })
+                  .toList(),
+            }
+          : null,
       'questionStartTime': questionStartTime,
       'questionAnswers': questionAnswers?.map((a) => a.toMap()).toList(),
       'createdAt': Timestamp.fromDate(createdAt),

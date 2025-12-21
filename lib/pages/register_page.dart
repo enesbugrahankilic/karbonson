@@ -9,7 +9,6 @@ import '../services/email_usage_service.dart';
 import '../models/user_data.dart';
 import '../theme/theme_colors.dart';
 import 'tutorial_page.dart';
-import '../widgets/biometric_setup_widget.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -21,7 +20,8 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final TextEditingController _nicknameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
@@ -37,31 +37,40 @@ class _RegisterPageState extends State<RegisterPage> {
   // Rastgele isim öneren metot
   final List<String> _availableNames = [
     // A
-    'AtıkAzaltıcı', 'AğaçDikeni', 'ArıKoruyucu', 'AydınlıkGezegen', 'AtmosferSavunucusu',
+    'AtıkAzaltıcı', 'AğaçDikeni', 'ArıKoruyucu', 'AydınlıkGezegen',
+    'AtmosferSavunucusu',
     // B
     'BiyoDost', 'BilinçliGezgin', 'BarışçıDoğa', 'BitkiSever', 'BiyoEnerji',
     // C
-    'CevreBilinci', 'CevreKoruyucu', 'CevreTeknolojisi', 'CevreciZihin', 'CevreKalkanı',
+    'CevreBilinci', 'CevreKoruyucu', 'CevreTeknolojisi', 'CevreciZihin',
+    'CevreKalkanı',
     // Ç
-    'ÇevreDostu', 'ÇiçekKahramanı', 'ÇamKoruyucu', 'ÇevreGönüllüsü', 'ÇölYeşertici',
+    'ÇevreDostu', 'ÇiçekKahramanı', 'ÇamKoruyucu', 'ÇevreGönüllüsü',
+    'ÇölYeşertici',
     // D
-    'DoğaKoruyucu', 'DönüşümElçisi', 'DoğalDenge', 'DenizTemizliği', 'DamladaHayat',
+    'DoğaKoruyucu', 'DönüşümElçisi', 'DoğalDenge', 'DenizTemizliği',
+    'DamladaHayat',
     // E
     'EkoSavaşçı', 'EkoKartal', 'EkoGönüllü', 'EkoZihin', 'EkoYenilikçi',
     // F
-    'FidanDikici', 'FotosentezGücü', 'FırtınaDostu', 'FosilsizGelecek', 'FilizEnerjisi',
+    'FidanDikici', 'FotosentezGücü', 'FırtınaDostu', 'FosilsizGelecek',
+    'FilizEnerjisi',
     // G
-    'GeriDönüşümcü', 'GezegenSavunucusu', 'GüneşEnerjisi', 'GelecekYeşil', 'GökYeşili',
+    'GeriDönüşümcü', 'GezegenSavunucusu', 'GüneşEnerjisi', 'GelecekYeşil',
+    'GökYeşili',
     // H
-    'HavaKoruyucu', 'HayatKaynağı', 'HidroEnerji', 'HedefSıfırAtık', 'HuzurluGezegen',
+    'HavaKoruyucu', 'HayatKaynağı', 'HidroEnerji', 'HedefSıfırAtık',
+    'HuzurluGezegen',
     // I
     'IsıKoruyucu', 'IşıkElçisi', 'IlımanDoğa', 'IsıDengesi', 'IlıkYaşam',
     // İ
-    'İklimKahramanı', 'İleriGeriDönüşüm', 'İnsancaGelecek', 'İklimBilinci', 'İyileşenDünya',
+    'İklimKahramanı', 'İleriGeriDönüşüm', 'İnsancaGelecek', 'İklimBilinci',
+    'İyileşenDünya',
     // J
     'JeoEnerji', 'JeoIsıKaynağı', 'JeoBilimci', 'JeoDoğa', 'JeoSistem',
     // K
-    'KarbonSıfır', 'KüreselDenge', 'KaynakKoruyucu', 'KarbonsuzGelecek', 'KorunanDoğa',
+    'KarbonSıfır', 'KüreselDenge', 'KaynakKoruyucu', 'KarbonsuzGelecek',
+    'KorunanDoğa',
     // L
     'LikitGüneş', 'LambaEnerji', 'LojistikYeşil', 'LiderEko', 'LimonYeşili',
     // M
@@ -73,29 +82,35 @@ class _RegisterPageState extends State<RegisterPage> {
     // Ö
     'ÖncüDoğa', 'ÖzgürGezegen', 'ÖrtüBitkisi', 'ÖzenliYaşam', 'ÖmrüYeşil',
     // P
-    'PlastikAvcısı', 'PanelEnerji', 'PozitifDoğa', 'PetrolsüzGelecek', 'PlanlıYaşam',
+    'PlastikAvcısı', 'PanelEnerji', 'PozitifDoğa', 'PetrolsüzGelecek',
+    'PlanlıYaşam',
     // R
-    'RüzgarKahramanı', 'RenkliGezegen', 'RefahYeşil', 'RahatDoğa', 'RüzgarDostu',
+    'RüzgarKahramanı', 'RenkliGezegen', 'RefahYeşil', 'RahatDoğa',
+    'RüzgarDostu',
     // S
     'SıfırAtık', 'SuBekçisi', 'SürdürülebilirHayat', 'SuKoruyucu', 'SessizDoğa',
     // Ş
     'ŞeffafEnerji', 'ŞelaleKoruyucu', 'ŞarjlıDoğa', 'ŞifalıBitki', 'ŞekilYeşil',
     // T
-    'ToprakSever', 'TemizEnerji', 'TÜBİTAK_Proje', 'TohumKoruyucu', 'TarımTeknoloji',
+    'ToprakSever', 'TemizEnerji', 'TÜBİTAK_Proje', 'TohumKoruyucu',
+    'TarımTeknoloji',
     // U
-    'UmutYeşili', 'UyumluDoğa', 'UyananGezegen', 'UzayEkosistemi', 'UlaşılabilirEnerji',
+    'UmutYeşili', 'UyumluDoğa', 'UyananGezegen', 'UzayEkosistemi',
+    'UlaşılabilirEnerji',
     // Ü
     'ÜretkenEkosistem', 'ÜstEnerji', 'ÜçüncüYaşam', 'ÜmitDoğa', 'ÜrünDostu',
     // V
-    'VerimliToprak', 'VizyonerDoğa', 'VarlıkGezegeni', 'VakitYeşil', 'VeriEnerjisi',
+    'VerimliToprak', 'VizyonerDoğa', 'VarlıkGezegeni', 'VakitYeşil',
+    'VeriEnerjisi',
     // Y
     'YeşilAyak', 'YeşilIşık', 'YeşilYürek', 'YaşamKaynağı', 'YenilenebilirRuh',
     // Z
     'ZehirsizHayat', 'ZararsızDoğa', 'ZümrütGezegen', 'ZekaYeşili', 'ZenginDoğa'
   ];
-  
+
   void _suggestRandomName() {
-    final random = DateTime.now().millisecondsSinceEpoch % _availableNames.length;
+    final random =
+        DateTime.now().millisecondsSinceEpoch % _availableNames.length;
     final suggestion = _availableNames[random];
     setState(() {
       _nicknameController.text = suggestion;
@@ -114,48 +129,56 @@ class _RegisterPageState extends State<RegisterPage> {
         if (kDebugMode) debugPrint('Starting registration for: $email');
 
         // Check email usage limitation (maximum 2 uses)
-        if (kDebugMode) debugPrint('Checking email usage limitation for: $email');
-        
-        final emailUsageValidation = await _emailUsageService.canEmailBeUsed(email);
+        if (kDebugMode)
+          debugPrint('Checking email usage limitation for: $email');
+
+        final emailUsageValidation =
+            await _emailUsageService.canEmailBeUsed(email);
         if (!emailUsageValidation.isValid) {
           if (!mounted) return;
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(emailUsageValidation.error),
               backgroundColor: Colors.red,
             ),
           );
-          
+
           setState(() => _isLoading = false);
           return;
         }
-        
-        if (kDebugMode) debugPrint('Email usage validation passed: ${emailUsageValidation.emailUsage?.usageCount ?? 0} uses');
+
+        if (kDebugMode)
+          debugPrint(
+              'Email usage validation passed: ${emailUsageValidation.emailUsage?.usageCount ?? 0} uses');
 
         // Check nickname uniqueness before creating user
         if (kDebugMode) debugPrint('Checking nickname uniqueness: $nickname');
-        
+
         NicknameValidationResult nicknameValidation;
         try {
-          nicknameValidation = await NicknameValidator.validateWithUniqueness(nickname)
-              .timeout(const Duration(seconds: 8));
+          nicknameValidation =
+              await NicknameValidator.validateWithUniqueness(nickname)
+                  .timeout(const Duration(seconds: 8));
         } catch (e) {
           if (kDebugMode) debugPrint('Error checking nickname uniqueness: $e');
           if (!mounted) return;
-          
+
           String errorMsg = 'Takma ad kontrolü sırasında hata oluştu. ';
-          
+
           if (e.toString().contains('timeout')) {
-            errorMsg += 'Bağlantı zaman aşımı. İnternet bağlantınızı kontrol edin.';
+            errorMsg +=
+                'Bağlantı zaman aşımı. İnternet bağlantınızı kontrol edin.';
           } else if (e.toString().contains('network')) {
-            errorMsg += 'Ağ bağlantısı sorunu. İnternet bağlantınızı kontrol edin.';
+            errorMsg +=
+                'Ağ bağlantısı sorunu. İnternet bağlantınızı kontrol edin.';
           } else {
-            errorMsg += 'Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.';
+            errorMsg +=
+                'Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.';
           }
-          
+
           if (!mounted) return;
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(errorMsg),
@@ -168,21 +191,21 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
           );
-          
+
           setState(() => _isLoading = false);
           return;
         }
-        
+
         if (!nicknameValidation.isValid) {
           if (!mounted) return;
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(nicknameValidation.error),
               backgroundColor: Colors.red,
             ),
           );
-          
+
           setState(() => _isLoading = false);
           return;
         }
@@ -192,11 +215,12 @@ class _RegisterPageState extends State<RegisterPage> {
         // Firebase Authentication ile kayıt ol (Enhanced with retry mechanism)
         UserCredential? userCredential;
         try {
-          userCredential = await FirebaseAuthService.createUserWithEmailAndPasswordWithRetry(
+          userCredential =
+              await FirebaseAuthService.createUserWithEmailAndPasswordWithRetry(
             email: email,
             password: password,
           );
-          
+
           if (userCredential == null) {
             throw FirebaseAuthException(
               code: 'internal-error',
@@ -228,7 +252,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
           // Record email usage
           await _emailUsageService.recordEmailUsage(email, user.uid);
-          
+
           if (kDebugMode) debugPrint('Email usage recorded successfully');
 
           if (!mounted) return;
@@ -243,7 +267,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
           // Yeni kullanıcıları tutorial sayfasına yönlendir
           if (!mounted) return;
-          
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -258,10 +282,11 @@ class _RegisterPageState extends State<RegisterPage> {
         }
 
         // Use enhanced error handling from FirebaseAuthService
-        final errorMessage = FirebaseAuthService.handleAuthError(e, context: 'email_signup');
+        final errorMessage =
+            FirebaseAuthService.handleAuthError(e, context: 'email_signup');
 
         if (!mounted) return;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
@@ -281,7 +306,7 @@ class _RegisterPageState extends State<RegisterPage> {
         }
 
         if (!mounted) return;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Beklenmeyen bir hata oluştu: $e'),
@@ -313,7 +338,8 @@ class _RegisterPageState extends State<RegisterPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: Text('Kayıt Ol', style: TextStyle(color: ThemeColors.getAppBarText(context))),
+        title: Text('Kayıt Ol',
+            style: TextStyle(color: ThemeColors.getAppBarText(context))),
         iconTheme: IconThemeData(color: ThemeColors.getAppBarIcon(context)),
       ),
       body: Container(
@@ -378,35 +404,47 @@ class _RegisterPageState extends State<RegisterPage> {
                                     decoration: InputDecoration(
                                       labelText: 'E-posta Adresi',
                                       filled: true,
-                                      fillColor: ThemeColors.getInputBackground(context),
+                                      fillColor: ThemeColors.getInputBackground(
+                                          context),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(color: ThemeColors.getBorder(context)),
+                                        borderSide: BorderSide(
+                                            color:
+                                                ThemeColors.getBorder(context)),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(color: ThemeColors.getBorder(context)),
+                                        borderSide: BorderSide(
+                                            color:
+                                                ThemeColors.getBorder(context)),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                                        borderSide: const BorderSide(
+                                            color: Color(0xFF4CAF50), width: 2),
                                       ),
-                                      prefixIcon: Icon(Icons.email, color: ThemeColors.getSecondaryText(context)),
-                                      labelStyle: TextStyle(color: ThemeColors.getSecondaryText(context)),
+                                      prefixIcon: Icon(Icons.email,
+                                          color: ThemeColors.getSecondaryText(
+                                              context)),
+                                      labelStyle: TextStyle(
+                                          color: ThemeColors.getSecondaryText(
+                                              context)),
                                     ),
-                                    style: TextStyle(color: ThemeColors.getText(context)),
+                                    style: TextStyle(
+                                        color: ThemeColors.getText(context)),
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'E-posta adresi gerekli';
                                       }
-                                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                                          .hasMatch(value)) {
                                         return 'Geçerli bir e-posta adresi girin';
                                       }
                                       return null;
                                     },
                                   ),
                                   const SizedBox(height: 16),
-                                  
+
                                   // Şifre alanı
                                   TextFormField(
                                     controller: _passwordController,
@@ -414,23 +452,34 @@ class _RegisterPageState extends State<RegisterPage> {
                                     decoration: InputDecoration(
                                       labelText: 'Şifre',
                                       filled: true,
-                                      fillColor: ThemeColors.getInputBackground(context),
+                                      fillColor: ThemeColors.getInputBackground(
+                                          context),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(color: ThemeColors.getBorder(context)),
+                                        borderSide: BorderSide(
+                                            color:
+                                                ThemeColors.getBorder(context)),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(color: ThemeColors.getBorder(context)),
+                                        borderSide: BorderSide(
+                                            color:
+                                                ThemeColors.getBorder(context)),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                                        borderSide: const BorderSide(
+                                            color: Color(0xFF4CAF50), width: 2),
                                       ),
-                                      prefixIcon: Icon(Icons.lock, color: ThemeColors.getSecondaryText(context)),
-                                      labelStyle: TextStyle(color: ThemeColors.getSecondaryText(context)),
+                                      prefixIcon: Icon(Icons.lock,
+                                          color: ThemeColors.getSecondaryText(
+                                              context)),
+                                      labelStyle: TextStyle(
+                                          color: ThemeColors.getSecondaryText(
+                                              context)),
                                     ),
-                                    style: TextStyle(color: ThemeColors.getText(context)),
+                                    style: TextStyle(
+                                        color: ThemeColors.getText(context)),
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'Şifre gerekli';
@@ -442,7 +491,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                     },
                                   ),
                                   const SizedBox(height: 16),
-                                  
+
                                   // Şifre tekrar alanı
                                   TextFormField(
                                     controller: _confirmPasswordController,
@@ -450,23 +499,34 @@ class _RegisterPageState extends State<RegisterPage> {
                                     decoration: InputDecoration(
                                       labelText: 'Şifre Tekrar',
                                       filled: true,
-                                      fillColor: ThemeColors.getInputBackground(context),
+                                      fillColor: ThemeColors.getInputBackground(
+                                          context),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(color: ThemeColors.getBorder(context)),
+                                        borderSide: BorderSide(
+                                            color:
+                                                ThemeColors.getBorder(context)),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(color: ThemeColors.getBorder(context)),
+                                        borderSide: BorderSide(
+                                            color:
+                                                ThemeColors.getBorder(context)),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                                        borderSide: const BorderSide(
+                                            color: Color(0xFF4CAF50), width: 2),
                                       ),
-                                      prefixIcon: Icon(Icons.lock_outline, color: ThemeColors.getSecondaryText(context)),
-                                      labelStyle: TextStyle(color: ThemeColors.getSecondaryText(context)),
+                                      prefixIcon: Icon(Icons.lock_outline,
+                                          color: ThemeColors.getSecondaryText(
+                                              context)),
+                                      labelStyle: TextStyle(
+                                          color: ThemeColors.getSecondaryText(
+                                              context)),
                                     ),
-                                    style: TextStyle(color: ThemeColors.getText(context)),
+                                    style: TextStyle(
+                                        color: ThemeColors.getText(context)),
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'Şifre tekrarı gerekli';
@@ -478,35 +538,48 @@ class _RegisterPageState extends State<RegisterPage> {
                                     },
                                   ),
                                   const SizedBox(height: 16),
-                                  
+
                                   // Takma ad alanı
                                   TextFormField(
                                     controller: _nicknameController,
                                     decoration: InputDecoration(
                                       labelText: 'Takma Adınız',
                                       filled: true,
-                                      fillColor: ThemeColors.getInputBackground(context),
+                                      fillColor: ThemeColors.getInputBackground(
+                                          context),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(color: ThemeColors.getBorder(context)),
+                                        borderSide: BorderSide(
+                                            color:
+                                                ThemeColors.getBorder(context)),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(color: ThemeColors.getBorder(context)),
+                                        borderSide: BorderSide(
+                                            color:
+                                                ThemeColors.getBorder(context)),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                                        borderSide: const BorderSide(
+                                            color: Color(0xFF4CAF50), width: 2),
                                       ),
-                                      prefixIcon: Icon(Icons.person, color: ThemeColors.getSecondaryText(context)),
+                                      prefixIcon: Icon(Icons.person,
+                                          color: ThemeColors.getSecondaryText(
+                                              context)),
                                       suffixIcon: IconButton(
-                                        icon: Icon(Icons.casino, color: ThemeColors.getGreen(context)),
+                                        icon: Icon(Icons.casino,
+                                            color:
+                                                ThemeColors.getGreen(context)),
                                         onPressed: _suggestRandomName,
                                         tooltip: 'Rastgele isim öner',
                                       ),
-                                      labelStyle: TextStyle(color: ThemeColors.getSecondaryText(context)),
+                                      labelStyle: TextStyle(
+                                          color: ThemeColors.getSecondaryText(
+                                              context)),
                                     ),
-                                    style: TextStyle(color: ThemeColors.getText(context)),
+                                    style: TextStyle(
+                                        color: ThemeColors.getText(context)),
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'Takma ad gerekli';
@@ -521,30 +594,34 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                             ),
                             const SizedBox(height: 24),
-                            
+
                             // Kayıt ol butonu
                             ElevatedButton.icon(
                               onPressed: _isLoading ? null : _registerUser,
-                              icon: _isLoading 
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                  )
-                                : const Icon(Icons.person_add),
-                              label: Text(_isLoading ? 'Kayıt Oluyor...' : 'Kayıt Ol'),
+                              icon: _isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2, color: Colors.white),
+                                    )
+                                  : const Icon(Icons.person_add),
+                              label: Text(
+                                  _isLoading ? 'Kayıt Oluyor...' : 'Kayıt Ol'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF4CAF50),
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                             ),
                             const SizedBox(height: 16),
-                            
-                            // Biyometri kurulum widget'ı (opsiyonel)
+
+                            // Biyometri kurulum widget'ı (opsiyonel) - TODO: Implement
+                            /*
                             BiometricSetupWidget(
                               onSetupCompleted: () {
                                 if (kDebugMode) debugPrint('Biyometri kurulumu tamamlandı');
@@ -553,8 +630,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                 if (kDebugMode) debugPrint('Biyometri kurulumu atlandı');
                               },
                             ),
+                            */
                             const SizedBox(height: 8),
-                            
+
                             // Giriş sayfasına yönlendir
                             TextButton(
                               onPressed: () {

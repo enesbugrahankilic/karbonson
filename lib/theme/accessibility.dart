@@ -7,69 +7,69 @@ import 'theme_colors.dart';
 
 /// Accessibility utilities following WCAG AA standards
 class AccessibilityHelper {
-  
   // Minimum touch target size (WCAG AA)
   static const double minTouchTargetSize = 48.0;
-  
+
   // Minimum font sizes for accessibility
   static const double minBodyFontSize = 16.0;
   static const double minLabelFontSize = 14.0;
   static const double minCaptionFontSize = 12.0;
-  
+
   // Contrast ratio requirements (WCAG AA)
   static const double normalTextContrast = 4.5;
   static const double largeTextContrast = 3.0;
-  
+
   /// Check if color combination meets WCAG AA contrast requirements
   static bool meetsContrastRequirements(Color foreground, Color background) {
     final ratio = calculateContrastRatio(foreground, background);
     return ratio >= normalTextContrast;
   }
-  
+
   /// Check if color combination meets WCAG AA large text contrast requirements
-  static bool meetsLargeTextContrastRequirements(Color foreground, Color background) {
+  static bool meetsLargeTextContrastRequirements(
+      Color foreground, Color background) {
     final ratio = calculateContrastRatio(foreground, background);
     return ratio >= largeTextContrast;
   }
-  
+
   /// Calculate contrast ratio between two colors
   static double calculateContrastRatio(Color foreground, Color background) {
     final fL = getLuminance(foreground);
     final bL = getLuminance(background);
-    
+
     final lighter = math.max(fL, bL);
     final darker = math.min(fL, bL);
-    
+
     return (lighter + 0.05) / (darker + 0.05);
   }
-  
+
   /// Get luminance of a color
   static double getLuminance(Color color) {
     final rgb = [color.red, color.green, color.blue].map((channel) {
       channel = channel ~/ 255;
-      return channel <= 0.03928 
-          ? channel / 12.92 
+      return channel <= 0.03928
+          ? channel / 12.92
           : math.pow((channel + 0.055) / 1.055, 2.4).toDouble();
     }).toList();
     return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
   }
-  
+
   /// Get accessible text color for given background
   static Color getAccessibleTextColor(BuildContext context, Color background) {
     final brightness = Theme.of(context).brightness;
     final black = brightness == Brightness.light ? Colors.black : Colors.white;
     final white = brightness == Brightness.light ? Colors.white : Colors.black;
-    
+
     final blackContrast = calculateContrastRatio(black, background);
     final whiteContrast = calculateContrastRatio(white, background);
-    
+
     return blackContrast > whiteContrast ? black : white;
   }
-  
+
   /// Get accessible button size based on screen size
   static Size getAccessibleButtonSize(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     if (screenWidth > 1024) {
       return const Size(160, 56); // Desktop
     } else if (screenWidth > 600) {
@@ -78,11 +78,11 @@ class AccessibilityHelper {
       return const Size(120, 48); // Mobile
     }
   }
-  
+
   /// Get accessible icon size
   static double getAccessibleIconSize(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     if (screenWidth > 1024) {
       return 24.0; // Desktop
     } else if (screenWidth > 600) {
@@ -91,12 +91,12 @@ class AccessibilityHelper {
       return 20.0; // Mobile
     }
   }
-  
+
   /// Get accessible font size with scaling
   static double getAccessibleFontSize(BuildContext context, double baseSize) {
     final mediaQuery = MediaQuery.of(context);
     final textScaler = mediaQuery.textScaler.scale(baseSize) / baseSize;
-    
+
     // Ensure minimum readable size for accessibility
     if (textScaler < 1.0) {
       return baseSize * 1.2;
@@ -105,7 +105,7 @@ class AccessibilityHelper {
     }
     return baseSize * textScaler;
   }
-  
+
   /// Create accessible semantic label
   static String getSemanticLabel({
     required String action,
@@ -117,7 +117,7 @@ class AccessibilityHelper {
     }
     return '$action $target';
   }
-  
+
   /// Create accessible hint text
   static String getHintText({
     required String action,
@@ -128,7 +128,7 @@ class AccessibilityHelper {
     }
     return 'Use this to $action';
   }
-  
+
   /// Get accessible padding for touch targets
   static EdgeInsets getAccessiblePadding(BuildContext context) {
     final buttonSize = getAccessibleButtonSize(context);
@@ -136,10 +136,10 @@ class AccessibilityHelper {
       horizontal: 16,
       vertical: 12,
     );
-    
+
     final totalHeight = buttonSize.height;
     final contentHeight = defaultPadding.vertical + 24; // Assume 24px content
-    
+
     if (totalHeight > contentHeight + 8) {
       final extraPadding = (totalHeight - contentHeight - 8) / 2;
       return EdgeInsets.symmetric(
@@ -147,16 +147,16 @@ class AccessibilityHelper {
         vertical: extraPadding,
       );
     }
-    
+
     return defaultPadding;
   }
-  
+
   /// Check if screen reader is enabled
   static bool isScreenReaderEnabled(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     return mediaQuery.accessibleNavigation;
   }
-  
+
   /// Create high contrast theme
   static ThemeData getHighContrastTheme(Brightness brightness) {
     if (brightness == Brightness.light) {
@@ -323,7 +323,7 @@ class AccessibilityHelper {
       );
     }
   }
-  
+
   /// Create accessible widget with semantic properties
   static Widget accessibleWidget({
     required Widget child,
@@ -341,22 +341,22 @@ class AccessibilityHelper {
       value: value?.isNotEmpty == true ? value : null,
       child: child,
     );
-    
+
     if (onTap != null) {
       widget = GestureDetector(
         onTap: onTap,
         child: widget,
       );
     }
-    
+
     return widget;
   }
-  
+
   /// Get focus order for accessibility
   static List<FocusNode> getFocusOrder(List<Widget> widgets) {
     return widgets.map((_) => FocusNode()).toList();
   }
-  
+
   /// Create accessible navigation hints
   static List<String> getNavigationHints(BuildContext context) {
     return [
@@ -398,7 +398,7 @@ class AccessibleButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final buttonSize = AccessibilityHelper.getAccessibleButtonSize(context);
     final accessiblePadding = AccessibilityHelper.getAccessiblePadding(context);
-    
+
     return AccessibilityHelper.accessibleWidget(
       semanticLabel: semanticLabel ?? text,
       hint: hint,
@@ -432,7 +432,8 @@ class AccessibleButton extends StatelessWidget {
                 text,
                 style: TextStyle(
                   color: foregroundColor ?? Colors.white,
-                  fontSize: AccessibilityHelper.getAccessibleFontSize(context, 16),
+                  fontSize:
+                      AccessibilityHelper.getAccessibleFontSize(context, 16),
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
@@ -470,16 +471,16 @@ class AccessibleText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accessibleFontSize = AccessibilityHelper.getAccessibleFontSize(
-      context, 
+      context,
       style?.fontSize ?? 16.0,
     );
-    
+
     final accessibleStyle = (style ?? const TextStyle()).copyWith(
       fontSize: accessibleFontSize,
       color: style?.color ?? ThemeColors.getText(context),
       height: style?.height ?? 1.5,
     );
-    
+
     return AccessibilityHelper.accessibleWidget(
       semanticLabel: semanticLabel ?? text,
       hint: hint,

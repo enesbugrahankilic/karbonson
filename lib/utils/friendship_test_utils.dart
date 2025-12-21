@@ -18,13 +18,14 @@ class FriendshipTestUtils {
   }) async {
     try {
       final FirebaseFirestore db = FirebaseFirestore.instance;
-      
+
       await db.collection('users').doc(uid).set({
         'nickname': nickname,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      if (kDebugMode) debugPrint('Test kullanıcısı oluşturuldu: $nickname ($uid)');
+      if (kDebugMode)
+        debugPrint('Test kullanıcısı oluşturuldu: $nickname ($uid)');
       return {'uid': uid, 'nickname': nickname};
     } catch (e) {
       if (kDebugMode) debugPrint('Test kullanıcısı oluşturulurken hata: $e');
@@ -48,14 +49,16 @@ class FriendshipTestUtils {
       );
 
       if (kDebugMode) {
-        debugPrint('Test arkadaşlık isteği oluşturuldu: $fromNickname -> $toNickname');
+        debugPrint(
+            'Test arkadaşlık isteği oluşturuldu: $fromNickname -> $toNickname');
       }
-      
+
       // Request ID'yi alabilmek için Firestore'dan çekmek gerekir
       // Bu basit bir implementation - gerçek testte daha gelişmiş olabilir
       return 'test_request_id_$fromUserId\_$toUserId';
     } catch (e) {
-      if (kDebugMode) debugPrint('Test arkadaşlık isteği oluşturulurken hata: $e');
+      if (kDebugMode)
+        debugPrint('Test arkadaşlık isteği oluşturulurken hata: $e');
       rethrow;
     }
   }
@@ -75,10 +78,11 @@ class FriendshipTestUtils {
         batch.delete(userDoc);
 
         // Kullanıcının friends koleksiyonunu sil
-        final friendsCollection = db.collection('users').doc(userId).collection('friends');
+        final friendsCollection =
+            db.collection('users').doc(userId).collection('friends');
         // Friends subcollection'ı silmek için tüm dokumentları silmek gerekir
         // Bu basit bir implementasyon
-        
+
         // Notifications'ı sil
         final notificationsDoc = db.collection('notifications').doc(userId);
         batch.delete(notificationsDoc);
@@ -93,7 +97,7 @@ class FriendshipTestUtils {
       }
 
       await batch.commit();
-      
+
       if (kDebugMode) debugPrint('Test verileri temizlendi');
     } catch (e) {
       if (kDebugMode) debugPrint('Test verilerini temizlerken hata: $e');
@@ -104,8 +108,10 @@ class FriendshipTestUtils {
   static Future<TestScenarioResult> testNormalAcceptFlow() async {
     try {
       // Test kullanıcıları oluştur
-      final userA = await createTestUser(uid: 'test_user_a', nickname: 'TestUserA');
-      final userB = await createTestUser(uid: 'test_user_b', nickname: 'TestUserB');
+      final userA =
+          await createTestUser(uid: 'test_user_a', nickname: 'TestUserA');
+      final userB =
+          await createTestUser(uid: 'test_user_b', nickname: 'TestUserB');
 
       // Arkadaşlık isteği gönder
       final requestId = await createTestFriendRequest(
@@ -122,8 +128,10 @@ class FriendshipTestUtils {
       );
 
       // Sonuçları kontrol et
-      final friendsA = await _firestoreService.getFriends(userA['uid'] as String);
-      final friendsB = await _firestoreService.getFriends(userB['uid'] as String);
+      final friendsA =
+          await _firestoreService.getFriends(userA['uid'] as String);
+      final friendsB =
+          await _firestoreService.getFriends(userB['uid'] as String);
 
       await cleanupTestData(
         userIds: [userA['uid'] as String, userB['uid'] as String],
@@ -149,8 +157,10 @@ class FriendshipTestUtils {
   /// Test senaryosu: Double-click koruması
   static Future<TestScenarioResult> testDoubleClickProtection() async {
     try {
-      final userA = await createTestUser(uid: 'test_user_a_dc', nickname: 'TestUserA_DC');
-      final userB = await createTestUser(uid: 'test_user_b_dc', nickname: 'TestUserB_DC');
+      final userA =
+          await createTestUser(uid: 'test_user_a_dc', nickname: 'TestUserA_DC');
+      final userB =
+          await createTestUser(uid: 'test_user_b_dc', nickname: 'TestUserB_DC');
 
       final requestId = await createTestFriendRequest(
         fromUserId: userA['uid'] as String,
@@ -160,10 +170,12 @@ class FriendshipTestUtils {
       );
 
       // İlk kabul işlemi
-      final result1 = await _firestoreService.acceptFriendRequest(requestId, userB['uid'] as String);
-      
+      final result1 = await _firestoreService.acceptFriendRequest(
+          requestId, userB['uid'] as String);
+
       // İkinci kabul işlemi (race condition test)
-      final result2 = await _firestoreService.acceptFriendRequest(requestId, userB['uid'] as String);
+      final result2 = await _firestoreService.acceptFriendRequest(
+          requestId, userB['uid'] as String);
 
       await cleanupTestData(
         userIds: [userA['uid'] as String, userB['uid'] as String],
@@ -190,9 +202,12 @@ class FriendshipTestUtils {
   /// Test senaryosu: Geçersiz kullanıcı erişimi
   static Future<TestScenarioResult> testUnauthorizedAccess() async {
     try {
-      final userA = await createTestUser(uid: 'test_user_a_auth', nickname: 'TestUserA_Auth');
-      final userB = await createTestUser(uid: 'test_user_b_auth', nickname: 'TestUserB_Auth');
-      final userC = await createTestUser(uid: 'test_user_c_auth', nickname: 'TestUserC_Auth');
+      final userA = await createTestUser(
+          uid: 'test_user_a_auth', nickname: 'TestUserA_Auth');
+      final userB = await createTestUser(
+          uid: 'test_user_b_auth', nickname: 'TestUserB_Auth');
+      final userC = await createTestUser(
+          uid: 'test_user_c_auth', nickname: 'TestUserC_Auth');
 
       final requestId = await createTestFriendRequest(
         fromUserId: userA['uid'] as String,
@@ -209,8 +224,8 @@ class FriendshipTestUtils {
 
       await cleanupTestData(
         userIds: [
-          userA['uid'] as String, 
-          userB['uid'] as String, 
+          userA['uid'] as String,
+          userB['uid'] as String,
           userC['uid'] as String
         ],
         friendRequestIds: [requestId],

@@ -17,7 +17,8 @@ class BiometricOnlyLoginWidget extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<BiometricOnlyLoginWidget> createState() => _BiometricOnlyLoginWidgetState();
+  State<BiometricOnlyLoginWidget> createState() =>
+      _BiometricOnlyLoginWidgetState();
 }
 
 class _BiometricOnlyLoginWidgetState extends State<BiometricOnlyLoginWidget> {
@@ -42,7 +43,9 @@ class _BiometricOnlyLoginWidgetState extends State<BiometricOnlyLoginWidget> {
       if (mounted) {
         setState(() {
           _isAvailable = available;
-          _statusMessage = available ? '$_biometricType ile hızlı giriş' : 'Biyometrik giriş mevcut değil';
+          _statusMessage = available
+              ? '$_biometricType ile hızlı giriş'
+              : 'Biyometrik giriş mevcut değil';
         });
       }
     } catch (e) {
@@ -71,13 +74,16 @@ class _BiometricOnlyLoginWidgetState extends State<BiometricOnlyLoginWidget> {
 
     try {
       // Biyometrik kimlik doğrulama
-      final biometricSuccess = await BiometricService.authenticateWithBiometrics(
-        localizedReason: '$_biometricType ile hızlı giriş yapmak için kimlik bilgilerinizi doğrulayın',
+      final biometricSuccess =
+          await BiometricService.authenticateWithBiometrics(
+        localizedReason:
+            '$_biometricType ile hızlı giriş yapmak için kimlik bilgilerinizi doğrulayın',
         useErrorDialogs: true,
       );
 
       if (!biometricSuccess) {
-        _showError('Biyometrik kimlik doğrulama başarısız. Lütfen email/şifre ile giriş yapmayı deneyin.');
+        _showError(
+            'Biyometrik kimlik doğrulama başarısız. Lütfen email/şifre ile giriş yapmayı deneyin.');
         widget.onError?.call();
         return;
       }
@@ -85,7 +91,8 @@ class _BiometricOnlyLoginWidgetState extends State<BiometricOnlyLoginWidget> {
       // Biyometrik başarılı, kayıtlı kullanıcı bilgilerini al
       final user = fb_auth.FirebaseAuth.instance.currentUser;
       if (user == null) {
-        _showError('Kullanıcı oturumu bulunamadı. Lütfen email/şifre ile giriş yapın.');
+        _showError(
+            'Kullanıcı oturumu bulunamadı. Lütfen email/şifre ile giriş yapın.');
         widget.onError?.call();
         return;
       }
@@ -99,18 +106,20 @@ class _BiometricOnlyLoginWidgetState extends State<BiometricOnlyLoginWidget> {
 
       _showSuccess('Başarıyla giriş yapıldı! 🎉');
       widget.onLoginSuccess?.call();
-
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Biyometrik giriş hatası: $e');
       }
-      _showError('Kimlik doğrulama sırasında hata oluştu. Lütfen tekrar deneyin.');
+      _showError(
+          'Kimlik doğrulama sırasında hata oluştu. Lütfen tekrar deneyin.');
       widget.onError?.call();
     } finally {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _statusMessage = _isAvailable ? '$_biometricType ile hızlı giriş' : 'Biyometrik giriş mevcut değil';
+          _statusMessage = _isAvailable
+              ? '$_biometricType ile hızlı giriş'
+              : 'Biyometrik giriş mevcut değil';
         });
       }
     }
@@ -153,12 +162,16 @@ class _BiometricOnlyLoginWidgetState extends State<BiometricOnlyLoginWidget> {
   }
 
   Icon _getBiometricIcon() {
-    if (_biometricType.toLowerCase().contains('face') || _biometricType.toLowerCase().contains('yüz')) {
+    if (_biometricType.toLowerCase().contains('face') ||
+        _biometricType.toLowerCase().contains('yüz')) {
       return Icon(Icons.face, color: ThemeColors.getGreen(context), size: 28);
-    } else if (_biometricType.toLowerCase().contains('parmak') || _biometricType.toLowerCase().contains('fingerprint')) {
-      return Icon(Icons.fingerprint, color: ThemeColors.getGreen(context), size: 28);
+    } else if (_biometricType.toLowerCase().contains('parmak') ||
+        _biometricType.toLowerCase().contains('fingerprint')) {
+      return Icon(Icons.fingerprint,
+          color: ThemeColors.getGreen(context), size: 28);
     } else {
-      return Icon(Icons.security, color: ThemeColors.getGreen(context), size: 28);
+      return Icon(Icons.security,
+          color: ThemeColors.getGreen(context), size: 28);
     }
   }
 
@@ -279,7 +292,8 @@ class _BiometricStatusCardState extends State<BiometricStatusCard> {
           widget.onBiometricDisabled?.call();
           _showMessage('Biyometrik giriş devre dışı bırakıldı', Colors.orange);
         } else {
-          _showMessage('Biyometri devre dışı bırakılırken hata oluştu', Colors.red);
+          _showMessage(
+              'Biyometri devre dışı bırakılırken hata oluştu', Colors.red);
         }
       } else {
         // Biyometriyi etkinleştir
@@ -288,7 +302,8 @@ class _BiometricStatusCardState extends State<BiometricStatusCard> {
           setState(() => _isEnabled = true);
           _statusText = '$_biometricType etkin - Hızlı giriş kullanılabilir';
           widget.onBiometricEnabled?.call();
-          _showMessage('Biyometrik giriş başarıyla etkinleştirildi! 🎉', Colors.green);
+          _showMessage(
+              'Biyometrik giriş başarıyla etkinleştirildi! 🎉', Colors.green);
         } else {
           _showMessage('Biyometri kurulurken hata oluştu', Colors.red);
         }
@@ -382,7 +397,8 @@ class _BiometricStatusCardState extends State<BiometricStatusCard> {
                 decoration: BoxDecoration(
                   color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                  border:
+                      Border.all(color: Colors.green.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [

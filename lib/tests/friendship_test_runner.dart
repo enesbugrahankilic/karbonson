@@ -38,11 +38,12 @@ class FriendshipTestRunner {
     if (kDebugMode) {
       debugPrint('📊 TEST SONUÇLARI:');
       debugPrint('Başarılı: $successfulTests/$totalTests');
-      
+
       if (successfulTests == totalTests) {
         debugPrint('🎉 Tüm testler başarılı! Implementation hazır.');
       } else {
-        debugPrint('⚠️ Bazı testler başarısız. Lütfen implementation kontrol edin.');
+        debugPrint(
+            '⚠️ Bazı testler başarısız. Lütfen implementation kontrol edin.');
       }
     }
   }
@@ -53,15 +54,18 @@ class FriendshipTestRunner {
 
     switch (testType) {
       case TestType.normalAcceptFlow:
-        if (kDebugMode) debugPrint('Normal Kabul Akışı Testi çalıştırılıyor...');
+        if (kDebugMode)
+          debugPrint('Normal Kabul Akışı Testi çalıştırılıyor...');
         result = await FriendshipTestUtils.testNormalAcceptFlow();
         break;
       case TestType.doubleClickProtection:
-        if (kDebugMode) debugPrint('Double-click Koruması Testi çalıştırılıyor...');
+        if (kDebugMode)
+          debugPrint('Double-click Koruması Testi çalıştırılıyor...');
         result = await FriendshipTestUtils.testDoubleClickProtection();
         break;
       case TestType.unauthorizedAccess:
-        if (kDebugMode) debugPrint('Yetkisiz Erişim Koruması Testi çalıştırılıyor...');
+        if (kDebugMode)
+          debugPrint('Yetkisiz Erişim Koruması Testi çalıştırılıyor...');
         result = await FriendshipTestUtils.testUnauthorizedAccess();
         break;
     }
@@ -123,10 +127,10 @@ enum TestType {
 }
 
 /// Quick test fonksiyonu - Development sırasında kullanılabilir
-/// 
-/// Bu fonksiyonu main.dart'ta veya herhangi bir yerde çağırarak 
+///
+/// Bu fonksiyonu main.dart'ta veya herhangi bir yerde çağırarak
 /// hızlıca test edebilirsiniz:
-/// 
+///
 /// ```dart
 /// // Development modunda test çalıştır
 /// if (kDebugMode) {

@@ -17,7 +17,7 @@ class DuelInvitationPage extends StatefulWidget {
 class _DuelInvitationPageState extends State<DuelInvitationPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FriendshipService _friendshipService = FriendshipService();
-  
+
   List<Invitation> _invitations = [];
   bool _isLoading = true;
 
@@ -223,7 +223,9 @@ class _DuelInvitationPageState extends State<DuelInvitationPage> {
                       radius: 20,
                       backgroundColor: ThemeColors.getGreen(context),
                       child: Text(
-                        invitation.inviterNickname.substring(0, 1).toUpperCase(),
+                        invitation.inviterNickname
+                            .substring(0, 1)
+                            .toUpperCase(),
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,

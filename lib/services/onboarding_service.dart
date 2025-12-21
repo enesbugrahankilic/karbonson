@@ -8,11 +8,11 @@ import 'package:flutter/material.dart';
 class OnboardingService {
   static OnboardingService? _instance;
   static OnboardingService get instance => _instance ??= OnboardingService._();
-  
+
   OnboardingService._();
 
-  final StreamController<OnboardingStep> _stepController = 
-    StreamController<OnboardingStep>.broadcast();
+  final StreamController<OnboardingStep> _stepController =
+      StreamController<OnboardingStep>.broadcast();
 
   Stream<OnboardingStep> get stepStream => _stepController.stream;
 
@@ -102,10 +102,10 @@ class OnboardingService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hasCompletedOnboarding', true);
     await prefs.setBool('hasSeenTutorial', true);
-    
+
     stopAutoAdvance();
     _currentStep = null;
-    
+
     debugPrint('Onboarding completed');
   }
 
@@ -203,7 +203,8 @@ class OnboardingService {
   }
 
   // User Preferences
-  Future<void> saveOnboardingPreferences(Map<String, dynamic> preferences) async {
+  Future<void> saveOnboardingPreferences(
+      Map<String, dynamic> preferences) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('onboardingPreferences', json.encode(preferences));
   }
@@ -255,7 +256,8 @@ class OnboardingStepData {
       OnboardingStep.welcome: const OnboardingStepData(
         step: OnboardingStep.welcome,
         title: 'Eco Game\'e Hoş Geldiniz!',
-        description: 'Çevre bilincini artıran eğlenceli bir tahta oyununa hazır mısınız? Zar atarak ilerleyin, quiz sorularını yanıtlayın ve en yüksek skoru elde etmeye çalışın!',
+        description:
+            'Çevre bilincini artıran eğlenceli bir tahta oyununa hazır mısınız? Zar atarak ilerleyin, quiz sorularını yanıtlayın ve en yüksek skoru elde etmeye çalışın!',
         icon: '🎉',
         bulletPoints: [
           'Çevre bilincini artıran eğlenceli oyun',
@@ -263,11 +265,11 @@ class OnboardingStepData {
           'Tek ve çok oyuncu modları',
         ],
       ),
-      
       OnboardingStep.gameObjective: const OnboardingStepData(
         step: OnboardingStep.gameObjective,
         title: 'Oyun Amacı',
-        description: 'Hedefiniz tahtadaki "Bitiş" karesine ulaşmak! Zar atarak ilerlerken quiz sorularını yanıtlayın, bonus ve ceza karelerinden puan kazanın veya kaybedin.',
+        description:
+            'Hedefiniz tahtadaki "Bitiş" karesine ulaşmak! Zar atarak ilerlerken quiz sorularını yanıtlayın, bonus ve ceza karelerinden puan kazanın veya kaybedin.',
         icon: '🎯',
         bulletPoints: [
           'Tahtadaki "Bitiş" karesine ulaşın',
@@ -276,11 +278,11 @@ class OnboardingStepData {
           'Ceza karelerinden kaçının',
         ],
       ),
-      
       OnboardingStep.boardTiles: const OnboardingStepData(
         step: OnboardingStep.boardTiles,
         title: 'Tahta Kareleri',
-        description: 'Oyun tahtasında farklı türde kareler bulunur. Her birinin kendine özgü bir etkisi vardır.',
+        description:
+            'Oyun tahtasında farklı türde kareler bulunur. Her birinin kendine özgü bir etkisi vardır.',
         icon: '🎲',
         bulletPoints: [
           '🏠 Başlangıç: Oyunun başladığı yer',
@@ -290,11 +292,11 @@ class OnboardingStepData {
           '🏁 Bitiş: Oyunu tamamlayın',
         ],
       ),
-      
       OnboardingStep.scoring: const OnboardingStepData(
         step: OnboardingStep.scoring,
         title: 'Puanlama Sistemi',
-        description: 'Quiz puanlarınız toplanır, ancak geçen süreye göre ceza uygulanır. Daha hızlı bitirirseniz daha yüksek skor elde edersiniz!',
+        description:
+            'Quiz puanlarınız toplanır, ancak geçen süreye göre ceza uygulanır. Daha hızlı bitirirseniz daha yüksek skor elde edersiniz!',
         icon: '📊',
         bulletPoints: [
           'Quiz doğru cevapları puan kazandırır',
@@ -303,11 +305,11 @@ class OnboardingStepData {
           'Zamanında bitirmek önemlidir',
         ],
       ),
-      
       OnboardingStep.singlePlayer: const OnboardingStepData(
         step: OnboardingStep.singlePlayer,
         title: 'Tek Oyuncu Modu',
-        description: 'Tek başınıza oynayın. Zar atın, ilerleyin ve quiz sorularını yanıtlayın. Skorunuz kaydedilir ve liderlik tablosunda yer alabilirsiniz.',
+        description:
+            'Tek başınıza oynayın. Zar atın, ilerleyin ve quiz sorularını yanıtlayın. Skorunuz kaydedilir ve liderlik tablosunda yer alabilirsiniz.',
         icon: '👤',
         bulletPoints: [
           'Kendi hızınızda oynayın',
@@ -318,11 +320,11 @@ class OnboardingStepData {
         hasInteractiveElement: true,
         interactiveText: 'Tek oyuncu modunu dene',
       ),
-      
       OnboardingStep.multiPlayer: const OnboardingStepData(
         step: OnboardingStep.multiPlayer,
         title: 'Çok Oyuncu Modu',
-        description: 'Arkadaşlarınızla birlikte oynayın! Sırayla zar atın, birbirinizi geçmeye çalışın. Oda oluşturun veya katılın.',
+        description:
+            'Arkadaşlarınızla birlikte oynayın! Sırayla zar atın, birbirinizi geçmeye çalışın. Oda oluşturun veya katılın.',
         icon: '👥',
         bulletPoints: [
           'Arkadaşlarınızla oynayın',
@@ -333,11 +335,11 @@ class OnboardingStepData {
         hasInteractiveElement: true,
         interactiveText: 'Çok oyuncu modunu keşfet',
       ),
-      
       OnboardingStep.howToPlay: const OnboardingStepData(
         step: OnboardingStep.howToPlay,
         title: 'Nasıl Başlanır?',
-        description: 'Giriş yapın, tek oyuncu veya çok oyuncu modunu seçin. Zar at butonuna tıklayarak oyuna başlayın. İyi eğlenceler!',
+        description:
+            'Giriş yapın, tek oyuncu veya çok oyuncu modunu seçin. Zar at butonuna tıklayarak oyuna başlayın. İyi eğlenceler!',
         icon: '🚀',
         bulletPoints: [
           'Giriş yapın veya kayıt olun',

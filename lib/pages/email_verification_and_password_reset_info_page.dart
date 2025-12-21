@@ -19,10 +19,12 @@ class EmailVerificationAndPasswordResetInfoPage extends StatefulWidget {
   });
 
   @override
-  State<EmailVerificationAndPasswordResetInfoPage> createState() => _EmailVerificationAndPasswordResetInfoPageState();
+  State<EmailVerificationAndPasswordResetInfoPage> createState() =>
+      _EmailVerificationAndPasswordResetInfoPageState();
 }
 
-class _EmailVerificationAndPasswordResetInfoPageState extends State<EmailVerificationAndPasswordResetInfoPage>
+class _EmailVerificationAndPasswordResetInfoPageState
+    extends State<EmailVerificationAndPasswordResetInfoPage>
     with TickerProviderStateMixin {
   bool _isLoading = false;
   bool _isEmailVerified = false;
@@ -43,7 +45,7 @@ class _EmailVerificationAndPasswordResetInfoPageState extends State<EmailVerific
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -51,7 +53,7 @@ class _EmailVerificationAndPasswordResetInfoPageState extends State<EmailVerific
       parent: _animationController,
       curve: Curves.easeIn,
     ));
-    
+
     _slideAnimation = Tween<double>(
       begin: 50.0,
       end: 0.0,
@@ -59,7 +61,7 @@ class _EmailVerificationAndPasswordResetInfoPageState extends State<EmailVerific
       parent: _animationController,
       curve: Curves.easeOutBack,
     ));
-    
+
     _animationController.forward();
   }
 
@@ -81,18 +83,21 @@ class _EmailVerificationAndPasswordResetInfoPageState extends State<EmailVerific
       }
 
       if (kDebugMode) {
-        debugPrint('EmailVerificationAndPasswordResetInfoPage: Initialized for email: ${_currentEmail?.replaceRange(2, _currentEmail!.indexOf('@'), '***')}');
+        debugPrint(
+            'EmailVerificationAndPasswordResetInfoPage: Initialized for email: ${_currentEmail?.replaceRange(2, _currentEmail!.indexOf('@'), '***')}');
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('EmailVerificationAndPasswordResetInfoPage: Error initializing data: $e');
+        debugPrint(
+            'EmailVerificationAndPasswordResetInfoPage: Error initializing data: $e');
       }
     }
   }
 
   Future<void> _checkEmailVerificationStatus() async {
     try {
-      final isVerified = await EmailVerificationService.checkEmailVerificationStatus();
+      final isVerified =
+          await EmailVerificationService.checkEmailVerificationStatus();
       setState(() {
         _isEmailVerified = isVerified;
       });
@@ -116,7 +121,8 @@ class _EmailVerificationAndPasswordResetInfoPageState extends State<EmailVerific
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('EmailVerificationAndPasswordResetInfoPage: Error checking verification status: $e');
+        debugPrint(
+            'EmailVerificationAndPasswordResetInfoPage: Error checking verification status: $e');
       }
     }
   }
@@ -128,7 +134,7 @@ class _EmailVerificationAndPasswordResetInfoPageState extends State<EmailVerific
 
     try {
       final result = await EmailVerificationService.sendEmailVerification();
-      
+
       if (mounted) {
         if (result.isSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -245,9 +251,9 @@ class _EmailVerificationAndPasswordResetInfoPageState extends State<EmailVerific
                                 color: Colors.blue,
                               ),
                             ),
-                            
+
                             const SizedBox(height: 24),
-                            
+
                             // Title
                             Text(
                               'Şifre Sıfırlama Başarılı!',
@@ -258,9 +264,9 @@ class _EmailVerificationAndPasswordResetInfoPageState extends State<EmailVerific
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            
+
                             const SizedBox(height: 16),
-                            
+
                             // Password Reset Information
                             Container(
                               padding: const EdgeInsets.all(16),
@@ -293,16 +299,17 @@ class _EmailVerificationAndPasswordResetInfoPageState extends State<EmailVerific
                                     'Şifre sıfırlama bağlantısı e-postanıza gönderildi. Lütfen gelen kutunuzu ve spam klasörünüzü kontrol edin.',
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: ThemeColors.getSecondaryText(context),
+                                      color:
+                                          ThemeColors.getSecondaryText(context),
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
                                 ],
                               ),
                             ),
-                            
+
                             const SizedBox(height: 20),
-                            
+
                             // Email Verification Information
                             Container(
                               padding: const EdgeInsets.all(16),
@@ -335,22 +342,24 @@ class _EmailVerificationAndPasswordResetInfoPageState extends State<EmailVerific
                                     'Hesabınızın güvenliği için e-posta adresinizin doğrulanmamış olduğunu görüyoruz. Lütfen e-posta adresinizi doğrulayın.',
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: ThemeColors.getSecondaryText(context),
+                                      color:
+                                          ThemeColors.getSecondaryText(context),
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
                                 ],
                               ),
                             ),
-                            
+
                             const SizedBox(height: 20),
-                            
+
                             // User Email Display
                             if (_currentEmail != null) ...[
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: ThemeColors.getDialogContentBackground(context),
+                                  color: ThemeColors.getDialogContentBackground(
+                                      context),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: Colors.blue.withValues(alpha: 0.3),
@@ -379,14 +388,15 @@ class _EmailVerificationAndPasswordResetInfoPageState extends State<EmailVerific
                               ),
                               const SizedBox(height: 24),
                             ],
-                            
+
                             // Action Buttons
                             // Send Verification Email Button
                             SizedBox(
                               width: double.infinity,
                               height: 50,
                               child: ElevatedButton.icon(
-                                onPressed: _isLoading ? null : _sendVerificationEmail,
+                                onPressed:
+                                    _isLoading ? null : _sendVerificationEmail,
                                 icon: _isLoading
                                     ? const SizedBox(
                                         width: 20,
@@ -398,7 +408,9 @@ class _EmailVerificationAndPasswordResetInfoPageState extends State<EmailVerific
                                       )
                                     : const Icon(Icons.send),
                                 label: Text(
-                                  _isLoading ? 'Gönderiliyor...' : 'Doğrulama E-postasını Tekrar Gönder',
+                                  _isLoading
+                                      ? 'Gönderiliyor...'
+                                      : 'Doğrulama E-postasını Tekrar Gönder',
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
@@ -410,19 +422,23 @@ class _EmailVerificationAndPasswordResetInfoPageState extends State<EmailVerific
                                 ),
                               ),
                             ),
-                            
+
                             const SizedBox(height: 12),
-                            
+
                             // Check Status Button
                             SizedBox(
                               width: double.infinity,
                               height: 50,
                               child: OutlinedButton.icon(
-                                onPressed: _isLoading ? null : _checkEmailVerificationStatus,
+                                onPressed: _isLoading
+                                    ? null
+                                    : _checkEmailVerificationStatus,
                                 icon: const Icon(Icons.refresh),
-                                label: const Text('Doğrulama Durumunu Kontrol Et'),
+                                label:
+                                    const Text('Doğrulama Durumunu Kontrol Et'),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: ThemeColors.getSecondaryText(context),
+                                  foregroundColor:
+                                      ThemeColors.getSecondaryText(context),
                                   side: BorderSide(
                                     color: ThemeColors.getBorder(context),
                                   ),
@@ -432,19 +448,21 @@ class _EmailVerificationAndPasswordResetInfoPageState extends State<EmailVerific
                                 ),
                               ),
                             ),
-                            
+
                             const SizedBox(height: 12),
-                            
+
                             // Later Button
                             SizedBox(
                               width: double.infinity,
                               height: 50,
                               child: OutlinedButton.icon(
-                                onPressed: _isLoading ? null : _navigateBackToMain,
+                                onPressed:
+                                    _isLoading ? null : _navigateBackToMain,
                                 icon: const Icon(Icons.arrow_forward),
                                 label: const Text('Daha Sonra Yap'),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: ThemeColors.getSecondaryText(context),
+                                  foregroundColor:
+                                      ThemeColors.getSecondaryText(context),
                                   side: BorderSide(
                                     color: ThemeColors.getBorder(context),
                                   ),
@@ -454,9 +472,9 @@ class _EmailVerificationAndPasswordResetInfoPageState extends State<EmailVerific
                                 ),
                               ),
                             ),
-                            
+
                             const SizedBox(height: 20),
-                            
+
                             // Help Information
                             Container(
                               padding: const EdgeInsets.all(16),
@@ -486,14 +504,16 @@ class _EmailVerificationAndPasswordResetInfoPageState extends State<EmailVerific
                                 ],
                               ),
                             ),
-                            
+
                             const SizedBox(height: 16),
-                            
+
                             // Back Navigation
                             TextButton(
-                              onPressed: _isLoading ? null : () {
-                                Navigator.of(context).pop();
-                              },
+                              onPressed: _isLoading
+                                  ? null
+                                  : () {
+                                      Navigator.of(context).pop();
+                                    },
                               child: Text(
                                 'Geri Dön',
                                 style: TextStyle(

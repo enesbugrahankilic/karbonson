@@ -13,23 +13,25 @@ class ComprehensiveFormExample extends StatefulWidget {
   const ComprehensiveFormExample({super.key});
 
   @override
-  State<ComprehensiveFormExample> createState() => _ComprehensiveFormExampleState();
+  State<ComprehensiveFormExample> createState() =>
+      _ComprehensiveFormExampleState();
 }
 
 class _ComprehensiveFormExampleState extends State<ComprehensiveFormExample> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
-  
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
   bool _isLoading = false;
-  
+
   // Enhanced connectivity service with continuous monitoring
   final ConnectivityService _connectivityService = ConnectivityService();
-  
+
   // Form validation service
   late final FormValidationService _validationService;
-  
+
   // Stream subscriptions for continuous monitoring
   StreamSubscription<bool>? _connectivitySubscription;
 
@@ -45,7 +47,7 @@ class _ComprehensiveFormExampleState extends State<ComprehensiveFormExample> {
   void _initializeConnectivityMonitoring() {
     // Initialize continuous connectivity monitoring
     _connectivityService.initialize();
-    
+
     // Listen to connectivity state changes
     _connectivitySubscription = _connectivityService.connectivityStateStream
         .listen(_handleConnectivityChange);
@@ -56,7 +58,7 @@ class _ComprehensiveFormExampleState extends State<ComprehensiveFormExample> {
       setState(() {
         // This will trigger a rebuild to update UI state
       });
-      
+
       // Show appropriate message based on connectivity change
       if (isConnected) {
         // Coming back online
@@ -90,7 +92,8 @@ class _ComprehensiveFormExampleState extends State<ComprehensiveFormExample> {
         }
       },
       onSubmissionSuccess: () {
-        _validationService.showSuccessMessage(context, 'Form başarıyla gönderildi!');
+        _validationService.showSuccessMessage(
+            context, 'Form başarıyla gönderildi!');
         if (kDebugMode) {
           debugPrint('FormExample: Submission successful');
         }
@@ -113,18 +116,17 @@ class _ComprehensiveFormExampleState extends State<ComprehensiveFormExample> {
     try {
       // Simulate API call or Firebase operation
       await Future.delayed(const Duration(seconds: 2));
-      
+
       if (kDebugMode) {
         debugPrint('FormExample: Form data submitted');
         debugPrint('Email: ${_emailController.text.trim()}');
       }
-      
+
       // Clear form on success
       _formKey.currentState?.reset();
       _emailController.clear();
       _passwordController.clear();
       _confirmPasswordController.clear();
-
     } finally {
       if (mounted) {
         setState(() {
@@ -137,17 +139,15 @@ class _ComprehensiveFormExampleState extends State<ComprehensiveFormExample> {
   /// Retry connectivity and form submission
   Future<void> _handleRetry() async {
     final isReconnected = await _connectivityService.retryConnectivity();
-    
+
     if (isReconnected) {
       if (kDebugMode) {
         debugPrint('FormExample: Reconnected - retrying form submission');
       }
       await _handleFormSubmission();
     } else {
-      _validationService.showErrorMessage(
-        context, 
-        'Hala çevrimdışısınız. Lütfen internet bağlantınızı kontrol edin.'
-      );
+      _validationService.showErrorMessage(context,
+          'Hala çevrimdışısınız. Lütfen internet bağlantınızı kontrol edin.');
     }
   }
 
@@ -181,13 +181,14 @@ class _ComprehensiveFormExampleState extends State<ComprehensiveFormExample> {
               onRetry: _handleRetry,
               padding: const EdgeInsets.symmetric(vertical: 8),
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Form Card
             Card(
               elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
@@ -202,17 +203,18 @@ class _ComprehensiveFormExampleState extends State<ComprehensiveFormExample> {
                     const SizedBox(height: 16),
                     Text(
                       'E-posta Form Örneği',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'E-posta validasyonu, ağ kontrolü ve sürekli bağlantı izleme',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                            color: Colors.grey[600],
+                          ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 24),
@@ -234,7 +236,8 @@ class _ComprehensiveFormExampleState extends State<ComprehensiveFormExample> {
                               ),
                               errorMaxLines: 2,
                             ),
-                            validator: form_validator.FormFieldValidator.validateEmail,
+                            validator:
+                                form_validator.FormFieldValidator.validateEmail,
                           ),
                           const SizedBox(height: 16),
 
@@ -289,7 +292,9 @@ class _ComprehensiveFormExampleState extends State<ComprehensiveFormExample> {
 
                     // Submit Button
                     ElevatedButton.icon(
-                      onPressed: (_isLoading || !isConnected) ? null : _handleFormSubmission,
+                      onPressed: (_isLoading || !isConnected)
+                          ? null
+                          : _handleFormSubmission,
                       icon: _isLoading
                           ? const SizedBox(
                               width: 20,
@@ -300,16 +305,17 @@ class _ComprehensiveFormExampleState extends State<ComprehensiveFormExample> {
                       label: Text(_isLoading ? 'Gönderiliyor...' : 'Gönder'),
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size.fromHeight(50),
-                        backgroundColor: isConnected ? Colors.blue : Colors.grey,
+                        backgroundColor:
+                            isConnected ? Colors.blue : Colors.grey,
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Status Information
             Card(
               child: Padding(
@@ -320,8 +326,8 @@ class _ComprehensiveFormExampleState extends State<ComprehensiveFormExample> {
                     Text(
                       'Sistem Durumu:',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     const SizedBox(height: 8),
                     _buildStatusRow(

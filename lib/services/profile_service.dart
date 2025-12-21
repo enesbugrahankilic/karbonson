@@ -14,7 +14,7 @@ import 'firebase_auth_service.dart';
 class ProfileService {
   static const String _localStatsKey = 'user_game_statistics';
   static const String _localUidKey = 'cached_user_uid';
-  
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirestoreService _firestoreService = FirestoreService();
 
@@ -23,7 +23,7 @@ class ProfileService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final statsJson = prefs.getString(_localStatsKey);
-      
+
       if (statsJson != null) {
         final statsMap = json.decode(statsJson);
         return LocalStatisticsData.fromMap(statsMap);
@@ -31,7 +31,7 @@ class ProfileService {
     } catch (e) {
       if (kDebugMode) debugPrint('Error loading local statistics: $e');
     }
-    
+
     return LocalStatisticsData.empty();
   }
 
@@ -72,7 +72,8 @@ class ProfileService {
     try {
       final User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        if (kDebugMode) debugPrint('❌ No user available for profile picture update');
+        if (kDebugMode)
+          debugPrint('❌ No user available for profile picture update');
         return false;
       }
 
@@ -84,7 +85,8 @@ class ProfileService {
       // Get current user profile
       final currentProfile = await _firestoreService.getUserProfile(user.uid);
       if (currentProfile == null) {
-        if (kDebugMode) debugPrint('❌ User profile not found for picture update');
+        if (kDebugMode)
+          debugPrint('❌ User profile not found for picture update');
         return false;
       }
 
@@ -95,7 +97,8 @@ class ProfileService {
       );
 
       if (kDebugMode) {
-        debugPrint('📸 Updated user data prepared: ${updatedUserData.nickname}');
+        debugPrint(
+            '📸 Updated user data prepared: ${updatedUserData.nickname}');
       }
 
       // Save updated profile
@@ -106,7 +109,8 @@ class ProfileService {
       );
 
       if (success != null && kDebugMode) {
-        debugPrint('✅ Profile picture updated successfully: ${updatedUserData.profilePictureUrl}');
+        debugPrint(
+            '✅ Profile picture updated successfully: ${updatedUserData.profilePictureUrl}');
       } else if (kDebugMode) {
         debugPrint('❌ Failed to update profile picture');
       }
@@ -151,7 +155,7 @@ class ProfileService {
   }) async {
     try {
       final currentStats = await loadLocalStatistics();
-      
+
       // Create new game history item
       final newGame = GameHistoryItem(
         gameId: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -162,19 +166,25 @@ class ProfileService {
       );
 
       // Update recent games (keep only last 10 games)
-      final updatedGames = [newGame, ...currentStats.recentGames].take(10).toList();
+      final updatedGames =
+          [newGame, ...currentStats.recentGames].take(10).toList();
 
       // Calculate new statistics
       final totalGames = currentStats.totalGamesPlayed + 1;
-      final totalWins = currentStats.recentGames.where((g) => g.isWin).length + (isWin ? 1 : 0);
+      final totalWins = currentStats.recentGames.where((g) => g.isWin).length +
+          (isWin ? 1 : 0);
       final newWinRate = totalGames > 0 ? (totalWins / totalGames) : 0.0;
-      
+
       // Calculate new average score
-      final totalScore = currentStats.recentGames.fold<int>(0, (total, game) => total + game.score) + score;
-      final newAverageScore = totalGames > 0 ? (totalScore / totalGames).round() : score;
-      
+      final totalScore = currentStats.recentGames
+              .fold<int>(0, (total, game) => total + game.score) +
+          score;
+      final newAverageScore =
+          totalGames > 0 ? (totalScore / totalGames).round() : score;
+
       // Update highest score if needed
-      final newHighestScore = score > currentStats.highestScore ? score : currentStats.highestScore;
+      final newHighestScore =
+          score > currentStats.highestScore ? score : currentStats.highestScore;
 
       final updatedStats = LocalStatisticsData(
         winRate: newWinRate,
@@ -194,7 +204,7 @@ class ProfileService {
   /// Convert UserData to ServerProfileData for backward compatibility
   ServerProfileData? _convertUserDataToServerProfileData(UserData? userData) {
     if (userData == null) return null;
-    
+
     return ServerProfileData(
       uid: userData.uid,
       nickname: userData.nickname,
@@ -208,11 +218,11 @@ class ProfileService {
   Future<ProfileData> getProfileData() async {
     // First priority: Load local data immediately
     final localData = await loadLocalStatistics();
-    
+
     // Second priority: Load server data in background with UID centrality
     final userData = await loadServerProfile();
     final serverData = _convertUserDataToServerProfileData(userData);
-    
+
     return ProfileData(
       serverData: serverData,
       localData: localData,
@@ -241,7 +251,8 @@ class ProfileService {
     try {
       final currentUser = user ?? _auth.currentUser;
       if (currentUser == null) {
-        if (kDebugMode) debugPrint('❌ No user available for profile initialization');
+        if (kDebugMode)
+          debugPrint('❌ No user available for profile initialization');
         return;
       }
 
@@ -254,7 +265,7 @@ class ProfileService {
 
       // Initialize local statistics
       await saveLocalStatistics(LocalStatisticsData.empty());
-      
+
       // Cache UID locally for offline access
       await cacheUid(currentUser.uid);
     } catch (e) {
@@ -283,18 +294,18 @@ class ProfileService {
     // First try to get from local cache
     final prefs = await SharedPreferences.getInstance();
     final cachedNickname = prefs.getString('cached_nickname');
-    
+
     if (cachedNickname != null) {
       return cachedNickname;
     }
-    
+
     // Fallback to server data
     final serverData = await loadServerProfile();
     if (serverData != null) {
       await prefs.setString('cached_nickname', serverData.nickname);
       return serverData.nickname;
     }
-    
+
     return null;
   }
 
@@ -329,11 +340,11 @@ class ProfileService {
     try {
       final user = _auth.currentUser;
       if (user == null) return false;
-      
+
       // Check if user has email (indicates registration) and is not anonymous
       final isEmailUser = user.email != null && user.email!.isNotEmpty;
       final isAnonymous = user.isAnonymous;
-      
+
       return isEmailUser && !isAnonymous;
     } catch (e) {
       if (kDebugMode) debugPrint('Error checking registration status: $e');
@@ -354,13 +365,14 @@ class ProfileService {
     try {
       final user = _auth.currentUser;
       if (user == null) return false;
-      
+
       // Reload user data to get latest verification status
       await user.reload();
-      
+
       return user.emailVerified;
     } catch (e) {
-      if (kDebugMode) debugPrint('Error checking email verification status: $e');
+      if (kDebugMode)
+        debugPrint('Error checking email verification status: $e');
       return false;
     }
   }
@@ -377,20 +389,21 @@ class ProfileService {
           message: 'Kullanıcı oturumu bulunamadı',
         );
       }
-      
+
       // Reload user to get latest email verification status
       await user.reload();
       final currentUser = _auth.currentUser!;
-      
-      final hasEmail = currentUser.email != null && currentUser.email!.isNotEmpty;
+
+      final hasEmail =
+          currentUser.email != null && currentUser.email!.isNotEmpty;
       final isVerified = currentUser.emailVerified;
-      
+
       return EmailVerificationStatus(
         isVerified: isVerified,
         hasEmail: hasEmail,
         email: currentUser.email,
-        message: isVerified 
-            ? 'E-posta adresi doğrulanmış' 
+        message: isVerified
+            ? 'E-posta adresi doğrulanmış'
             : 'E-posta adresi doğrulanmamış',
       );
     } catch (e) {
@@ -409,18 +422,18 @@ class ProfileService {
     try {
       final user = _auth.currentUser;
       if (user == null) return false;
-      
+
       // Get current user profile
       final userData = await _firestoreService.getUserProfile(user.uid);
       if (userData == null) return false;
-      
+
       // Update email verification status
       final updatedUserData = userData.copyWith(
         isEmailVerified: isVerified,
         emailVerifiedAt: isVerified ? DateTime.now() : null,
         updatedAt: DateTime.now(),
       );
-      
+
       // Save updated profile
       final success = await _firestoreService.createOrUpdateUserProfile(
         nickname: updatedUserData.nickname,
@@ -428,10 +441,11 @@ class ProfileService {
         privacySettings: updatedUserData.privacySettings,
         fcmToken: updatedUserData.fcmToken,
       );
-      
+
       return success != null;
     } catch (e) {
-      if (kDebugMode) debugPrint('Error updating email verification status: $e');
+      if (kDebugMode)
+        debugPrint('Error updating email verification status: $e');
       return false;
     }
   }
@@ -441,11 +455,11 @@ class ProfileService {
     try {
       final user = _auth.currentUser;
       if (user == null) return false;
-      
+
       // Get current verification status from Firebase Auth
       await user.reload();
       final isVerified = user.emailVerified;
-      
+
       // Update Firestore profile with verification status
       return await updateEmailVerificationStatus(isVerified);
     } catch (e) {
@@ -463,11 +477,11 @@ class ProfileService {
     try {
       final user = _auth.currentUser;
       if (user == null) return false;
-      
+
       // Get current user profile
       final userData = await _firestoreService.getUserProfile(user.uid);
       if (userData == null) return false;
-      
+
       // Update 2FA status
       final updatedUserData = userData.copyWith(
         is2FAEnabled: is2FAEnabled,
@@ -475,7 +489,7 @@ class ProfileService {
         last2FAVerification: is2FAEnabled ? DateTime.now() : null,
         updatedAt: DateTime.now(),
       );
-      
+
       // Save updated profile
       final success = await _firestoreService.createOrUpdateUserProfile(
         nickname: updatedUserData.nickname,
@@ -483,7 +497,7 @@ class ProfileService {
         privacySettings: updatedUserData.privacySettings,
         fcmToken: updatedUserData.fcmToken,
       );
-      
+
       return success != null;
     } catch (e) {
       if (kDebugMode) debugPrint('Error updating 2FA status: $e');
@@ -502,7 +516,7 @@ class ProfileService {
           'last2FAVerification': null,
         };
       }
-      
+
       // Get current user profile
       final userData = await _firestoreService.getUserProfile(user.uid);
       if (userData == null) {
@@ -512,7 +526,7 @@ class ProfileService {
           'last2FAVerification': null,
         };
       }
-      
+
       return {
         'is2FAEnabled': userData.is2FAEnabled,
         'phoneNumber': userData.phoneNumber,
@@ -533,17 +547,19 @@ class ProfileService {
     try {
       final user = _auth.currentUser;
       if (user == null) return false;
-      
+
       // Check if user has phone provider linked (indicates 2FA is enabled)
-      final hasPhoneProvider = user.providerData.any((provider) => provider.providerId == 'phone');
-      
+      final hasPhoneProvider =
+          user.providerData.any((provider) => provider.providerId == 'phone');
+
       // Get the phone number if available
       String? phoneNumber;
       if (hasPhoneProvider) {
-        final phoneProvider = user.providerData.firstWhere((provider) => provider.providerId == 'phone');
+        final phoneProvider = user.providerData
+            .firstWhere((provider) => provider.providerId == 'phone');
         phoneNumber = phoneProvider.phoneNumber;
       }
-      
+
       // Update Firestore profile with 2FA status
       return await update2FAStatus(hasPhoneProvider, phoneNumber);
     } catch (e) {

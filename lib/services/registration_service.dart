@@ -55,7 +55,8 @@ class RegistrationService {
   }) async {
     try {
       // Validate input parameters
-      final validationError = _validateRegistrationInput(email, password, nickname);
+      final validationError =
+          _validateRegistrationInput(email, password, nickname);
       if (validationError != null) {
         return RegistrationResult.failure(validationError);
       }
@@ -70,11 +71,13 @@ class RegistrationService {
       // Step 1: Validate email usage (maximum 2 uses)
       final emailUsageValidation = await _validateEmailUsage(email);
       if (!emailUsageValidation.isValid) {
-        return RegistrationResult.failure(emailUsageValidation.error ?? 'E-posta adresi kullanılamıyor');
+        return RegistrationResult.failure(
+            emailUsageValidation.error ?? 'E-posta adresi kullanılamıyor');
       }
 
       if (kDebugMode) {
-        debugPrint('Email usage validation passed: ${emailUsageValidation.emailUsage?.usageCount ?? 0} uses');
+        debugPrint(
+            'Email usage validation passed: ${emailUsageValidation.emailUsage?.usageCount ?? 0} uses');
       }
 
       // Notify progress
@@ -83,7 +86,8 @@ class RegistrationService {
       // Step 2: Validate nickname uniqueness
       final nicknameValidation = await _validateNicknameUniqueness(nickname);
       if (!nicknameValidation.isValid) {
-        return RegistrationResult.failure(nicknameValidation.error ?? 'Takma ad kullanılamıyor');
+        return RegistrationResult.failure(
+            nicknameValidation.error ?? 'Takma ad kullanılamıyor');
       }
 
       if (kDebugMode) {
@@ -96,7 +100,8 @@ class RegistrationService {
       // Step 3: Create user account
       final userCredential = await _createUserAccount(email, password);
       if (userCredential == null || userCredential.user == null) {
-        return RegistrationResult.failure('Kullanıcı oluşturulamadı. Lütfen tekrar deneyin.');
+        return RegistrationResult.failure(
+            'Kullanıcı oluşturulamadı. Lütfen tekrar deneyin.');
       }
 
       final User user = userCredential.user!;
@@ -136,54 +141,60 @@ class RegistrationService {
       onSuccess?.call();
 
       return RegistrationResult.success(user);
-
     } on FirebaseAuthException catch (e) {
-      final errorMessage = FirebaseAuthService.handleAuthError(e, context: 'email_signup');
+      final errorMessage =
+          FirebaseAuthService.handleAuthError(e, context: 'email_signup');
       if (kDebugMode) {
-        debugPrint('Firebase Auth error during registration: ${e.code} - ${e.message}');
+        debugPrint(
+            'Firebase Auth error during registration: ${e.code} - ${e.message}');
       }
       onError?.call(errorMessage);
       return RegistrationResult.failure(errorMessage);
-
     } catch (e, stackTrace) {
       final errorMessage = 'Beklenmeyen bir hata oluştu: $e';
-      
+
       if (kDebugMode) {
         debugPrint('Unexpected registration error: $e');
         debugPrint('Stack trace: $stackTrace');
       }
-      
+
       onError?.call(errorMessage);
       return RegistrationResult.failure(errorMessage);
     }
   }
 
   /// Validate registration input parameters
-  String? _validateRegistrationInput(String email, String password, String nickname) {
+  String? _validateRegistrationInput(
+      String email, String password, String nickname) {
     // Validate email
-    final emailValidation = form_validator.FormFieldValidator.validateEmail(email);
+    final emailValidation =
+        form_validator.FormFieldValidator.validateEmail(email);
     if (emailValidation != null) return emailValidation;
 
     // Validate password
-    final passwordValidation = form_validator.FormFieldValidator.validatePassword(password);
+    final passwordValidation =
+        form_validator.FormFieldValidator.validatePassword(password);
     if (passwordValidation != null) return passwordValidation;
 
     // Validate nickname
-    final nicknameValidation = form_validator.FormFieldValidator.validateNickname(nickname);
+    final nicknameValidation =
+        form_validator.FormFieldValidator.validateNickname(nickname);
     if (nicknameValidation != null) return nicknameValidation;
 
     return null;
   }
 
   /// Validate nickname uniqueness with timeout and error handling
-  Future<NicknameValidationResult> _validateNicknameUniqueness(String nickname) async {
+  Future<NicknameValidationResult> _validateNicknameUniqueness(
+      String nickname) async {
     // Check if the nickname is in the suggestion list
     final isSuggestedNickname = NicknameService.isInSuggestionList(nickname);
 
     // If it's a suggested nickname, skip uniqueness validation
     if (isSuggestedNickname) {
       if (kDebugMode) {
-        debugPrint('Nickname "$nickname" is in suggestion list, skipping uniqueness check');
+        debugPrint(
+            'Nickname "$nickname" is in suggestion list, skipping uniqueness check');
       }
       return NicknameValidationResult(
         isValid: true,
@@ -200,7 +211,8 @@ class RegistrationService {
       }
 
       // Handle timeout and network errors gracefully
-      if (e.toString().contains('timeout') || e.toString().contains('network')) {
+      if (e.toString().contains('timeout') ||
+          e.toString().contains('network')) {
         return NicknameValidationResult(
           isValid: true, // Allow registration to proceed
           error: 'Takma ad kontrolü zaman aşımına uğradı, kayıt devam edecek',
@@ -209,7 +221,8 @@ class RegistrationService {
 
       // For other errors, still allow registration but log
       if (kDebugMode) {
-        debugPrint('Nickname validation error, allowing registration to proceed: $e');
+        debugPrint(
+            'Nickname validation error, allowing registration to proceed: $e');
       }
 
       return NicknameValidationResult(
@@ -239,7 +252,8 @@ class RegistrationService {
   }
 
   /// Create user account with retry mechanism
-  Future<UserCredential?> _createUserAccount(String email, String password) async {
+  Future<UserCredential?> _createUserAccount(
+      String email, String password) async {
     try {
       return await FirebaseAuthService.createUserWithEmailAndPasswordWithRetry(
         email: email,
@@ -289,12 +303,11 @@ class RegistrationService {
         email: email,
         password: 'temp_password_123',
       );
-      
+
       // If we get here, the email is available
       // Sign out the temporary user
       await FirebaseAuth.instance.signOut();
       return false;
-      
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
         return true;

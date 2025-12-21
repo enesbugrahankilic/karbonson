@@ -9,37 +9,38 @@ import '../theme/theme_colors.dart';
 
 class EnhancedTwoFactorAuthVerificationPage extends StatefulWidget {
   final TwoFactorAuthResult authResult;
-  
+
   const EnhancedTwoFactorAuthVerificationPage({
     super.key,
     required this.authResult,
   });
 
   @override
-  State<EnhancedTwoFactorAuthVerificationPage> createState() => _EnhancedTwoFactorAuthVerificationPageState();
+  State<EnhancedTwoFactorAuthVerificationPage> createState() =>
+      _EnhancedTwoFactorAuthVerificationPageState();
 }
 
-class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFactorAuthVerificationPage> 
+class _EnhancedTwoFactorAuthVerificationPageState
+    extends State<EnhancedTwoFactorAuthVerificationPage>
     with TickerProviderStateMixin {
-  
   final TextEditingController _smsCodeController = TextEditingController();
   final TextEditingController _backupCodeController = TextEditingController();
   final _smsFormKey = GlobalKey<FormState>();
   final _backupFormKey = GlobalKey<FormState>();
-  
+
   bool _isVerifying = false;
   String? _verificationId;
   bool _codeSent = false;
   bool _useBackupCode = false;
   int _resendCount = 0;
   DateTime? _lastResendTime;
-  
+
   // Animations
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-  
+
   @override
   void initState() {
     super.initState();
@@ -95,12 +96,13 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
       // For enhanced implementation, we would start verification with the multi-factor resolver
       // Since this is a complex flow, we'll simulate the process
       await Future.delayed(const Duration(seconds: 2));
-      
+
       if (mounted) {
         setState(() {
           _isVerifying = false;
           _codeSent = true;
-          _verificationId = 'verification_${DateTime.now().millisecondsSinceEpoch}';
+          _verificationId =
+              'verification_${DateTime.now().millisecondsSinceEpoch}';
         });
 
         _showSuccessSnackBar('Doğrulama kodu gönderildi');
@@ -109,7 +111,7 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
       if (kDebugMode) {
         debugPrint('Error starting 2FA verification: $e');
       }
-      
+
       if (mounted) {
         _showErrorSnackBar('Doğrulama başlatılamadı: $e');
         Navigator.of(context).pop();
@@ -121,7 +123,8 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
   Future<void> _verifySmsCode() async {
     if (!_smsFormKey.currentState!.validate()) return;
     if (_verificationId == null) {
-      _showErrorSnackBar('Doğrulama kimliği bulunamadı. Lütfen tekrar deneyin.');
+      _showErrorSnackBar(
+          'Doğrulama kimliği bulunamadı. Lütfen tekrar deneyin.');
       return;
     }
 
@@ -140,7 +143,7 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
       if (mounted) {
         if (result.isSuccess) {
           _showSuccessSnackBar('Doğrulama başarılı! Yönlendiriliyor...');
-          
+
           // Navigate to profile page
           Navigator.of(context).pushNamedAndRemoveUntil(
             '/profile',
@@ -157,7 +160,7 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
       if (kDebugMode) {
         debugPrint('Error verifying SMS code: $e');
       }
-      
+
       if (mounted) {
         _showErrorSnackBar('Doğrulama kodu doğrulanamadı: $e');
         setState(() {
@@ -183,7 +186,7 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
       if (mounted) {
         if (result.isSuccess) {
           _showSuccessSnackBar('Yedek kod ile doğrulama başarılı!');
-          
+
           // Navigate to profile page
           Navigator.of(context).pushNamedAndRemoveUntil(
             '/profile',
@@ -200,7 +203,7 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
       if (kDebugMode) {
         debugPrint('Error verifying backup code: $e');
       }
-      
+
       if (mounted) {
         _showErrorSnackBar('Yedek kod doğrulanamadı: $e');
         setState(() {
@@ -216,7 +219,8 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
     if (_lastResendTime != null) {
       final timeSinceLastResend = DateTime.now().difference(_lastResendTime!);
       if (timeSinceLastResend < const Duration(minutes: 1)) {
-        _showErrorSnackBar('Lütfen ${60 - timeSinceLastResend.inSeconds} saniye bekleyin');
+        _showErrorSnackBar(
+            'Lütfen ${60 - timeSinceLastResend.inSeconds} saniye bekleyin');
         return;
       }
     }
@@ -260,7 +264,8 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
               Icon(Icons.warning, color: Colors.orange),
@@ -362,33 +367,33 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
                         children: [
                           _buildHeader(),
                           const SizedBox(height: 24),
-                          
+
                           // Method selection
                           if (!_isVerifying) _buildMethodSelector(),
                           const SizedBox(height: 16),
-                          
+
                           // Loading state
                           if (_isVerifying) ...[
                             _buildLoadingState(),
                           ]
-                          
+
                           // SMS verification form
                           else if (_codeSent && !_useBackupCode) ...[
                             _buildSMSForm(),
                           ]
-                          
+
                           // Backup code form
                           else if (_useBackupCode) ...[
                             _buildBackupCodeForm(),
                           ]
-                          
+
                           // Waiting for code
                           else ...[
                             _buildWaitingState(),
                           ],
-                          
+
                           const SizedBox(height: 24),
-                          
+
                           // Cancel button
                           _buildCancelButton(),
                         ],
@@ -416,7 +421,10 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -432,18 +440,18 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
         Text(
           _useBackupCode ? 'Yedek Kod Doğrulaması' : 'SMS Doğrulaması',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
         Text(
-          _useBackupCode 
+          _useBackupCode
               ? 'Daha önce oluşturduğunuz yedek kodlardan birini girin'
               : 'Telefonunuza gelen doğrulama kodunu girin',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Colors.grey[600],
-          ),
+                color: Colors.grey[600],
+              ),
           textAlign: TextAlign.center,
         ),
       ],
@@ -463,8 +471,8 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
           Text(
             'Doğrulama Yöntemi',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: 12),
           Row(
@@ -504,12 +512,11 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         decoration: BoxDecoration(
-          color: isSelected 
-              ? Theme.of(context).colorScheme.primary
-              : Colors.white,
+          color:
+              isSelected ? Theme.of(context).colorScheme.primary : Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected 
+            color: isSelected
                 ? Theme.of(context).colorScheme.primary
                 : Colors.grey[300]!,
           ),
@@ -542,7 +549,9 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
         const CircularProgressIndicator(),
         const SizedBox(height: 16),
         Text(
-          _useBackupCode ? 'Yedek kod doğrulanıyor...' : 'Doğrulama işlemi yapılıyor...',
+          _useBackupCode
+              ? 'Yedek kod doğrulanıyor...'
+              : 'Doğrulama işlemi yapılıyor...',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
       ],
@@ -555,7 +564,7 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
         const CircularProgressIndicator(),
         const SizedBox(height: 16),
         Text(
-          _useBackupCode 
+          _useBackupCode
               ? 'Yedek kod doğrulaması hazırlanıyor...'
               : 'SMS doğrulama kodu gönderiliyor...',
           style: Theme.of(context).textTheme.bodyMedium,
@@ -606,7 +615,7 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
             },
           ),
           const SizedBox(height: 24),
-          
+
           // Verify button
           SizedBox(
             width: double.infinity,
@@ -625,12 +634,14 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
             ),
           ),
           const SizedBox(height: 12),
-          
+
           // Resend button
           TextButton.icon(
             onPressed: _isVerifying ? null : _resendSmsCode,
             icon: const Icon(Icons.refresh),
-            label: Text(_resendCount > 0 ? 'Tekrar Gönder ($_resendCount)' : 'Tekrar Gönder'),
+            label: Text(_resendCount > 0
+                ? 'Tekrar Gönder ($_resendCount)'
+                : 'Tekrar Gönder'),
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.primary,
             ),
@@ -699,7 +710,7 @@ class _EnhancedTwoFactorAuthVerificationPageState extends State<EnhancedTwoFacto
             },
           ),
           const SizedBox(height: 24),
-          
+
           // Verify button
           SizedBox(
             width: double.infinity,

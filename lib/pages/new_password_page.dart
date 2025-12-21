@@ -28,11 +28,12 @@ class NewPasswordPage extends StatefulWidget {
 class _NewPasswordPageState extends State<NewPasswordPage>
     with TickerProviderStateMixin {
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final _formKey = GlobalKey<FormState>();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -75,7 +76,8 @@ class _NewPasswordPageState extends State<NewPasswordPage>
       if (user == null) {
         // Kullanıcı oturumu bulunamadı
         if (mounted) {
-          _showErrorDialog('Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.');
+          _showErrorDialog(
+              'Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.');
         }
         return;
       }
@@ -86,18 +88,18 @@ class _NewPasswordPageState extends State<NewPasswordPage>
       if (mounted) {
         _showSuccessDialog();
       }
-
     } catch (e) {
       if (mounted) {
         String errorMessage;
         if (e.toString().contains('weak-password')) {
           errorMessage = 'Yeni şifre çok zayıf. En az 6 karakter olmalıdır.';
         } else if (e.toString().contains('requires-recent-login')) {
-          errorMessage = 'Şifrenizi değiştirmek için tekrar giriş yapmanız gerekiyor.';
+          errorMessage =
+              'Şifrenizi değiştirmek için tekrar giriş yapmanız gerekiyor.';
         } else {
           errorMessage = 'Şifre değiştirilirken hata oluştu: ${e.toString()}';
         }
-        
+
         _showErrorDialog(errorMessage);
       }
     } finally {
@@ -329,7 +331,8 @@ class _NewPasswordPageState extends State<NewPasswordPage>
                                   decoration: InputDecoration(
                                     labelText: 'Yeni Şifre',
                                     filled: true,
-                                    fillColor: ThemeColors.getInputBackground(context),
+                                    fillColor:
+                                        ThemeColors.getInputBackground(context),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide(
@@ -345,29 +348,38 @@ class _NewPasswordPageState extends State<NewPasswordPage>
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide(
-                                        color: ThemeColors.getPrimaryButtonColor(context),
+                                        color:
+                                            ThemeColors.getPrimaryButtonColor(
+                                                context),
                                         width: 2,
                                       ),
                                     ),
                                     errorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: Colors.red),
+                                      borderSide:
+                                          const BorderSide(color: Colors.red),
                                     ),
                                     focusedErrorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: Colors.red, width: 2),
+                                      borderSide: const BorderSide(
+                                          color: Colors.red, width: 2),
                                     ),
                                     prefixIcon: Icon(
                                       Icons.lock_outline,
-                                      color: ThemeColors.getSecondaryText(context),
+                                      color:
+                                          ThemeColors.getSecondaryText(context),
                                     ),
                                     suffixIcon: IconButton(
                                       icon: Icon(
-                                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                                        color: ThemeColors.getSecondaryText(context),
+                                        _obscurePassword
+                                            ? Icons.visibility
+                                            : Icons.visibility_off,
+                                        color: ThemeColors.getSecondaryText(
+                                            context),
                                       ),
                                       onPressed: () {
-                                        setState(() => _obscurePassword = !_obscurePassword);
+                                        setState(() => _obscurePassword =
+                                            !_obscurePassword);
                                       },
                                     ),
                                   ),
@@ -393,7 +405,8 @@ class _NewPasswordPageState extends State<NewPasswordPage>
                                   decoration: InputDecoration(
                                     labelText: 'Yeni Şifre Tekrar',
                                     filled: true,
-                                    fillColor: ThemeColors.getInputBackground(context),
+                                    fillColor:
+                                        ThemeColors.getInputBackground(context),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide(
@@ -409,29 +422,38 @@ class _NewPasswordPageState extends State<NewPasswordPage>
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide(
-                                        color: ThemeColors.getPrimaryButtonColor(context),
+                                        color:
+                                            ThemeColors.getPrimaryButtonColor(
+                                                context),
                                         width: 2,
                                       ),
                                     ),
                                     errorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: Colors.red),
+                                      borderSide:
+                                          const BorderSide(color: Colors.red),
                                     ),
                                     focusedErrorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: Colors.red, width: 2),
+                                      borderSide: const BorderSide(
+                                          color: Colors.red, width: 2),
                                     ),
                                     prefixIcon: Icon(
                                       Icons.lock_outline,
-                                      color: ThemeColors.getSecondaryText(context),
+                                      color:
+                                          ThemeColors.getSecondaryText(context),
                                     ),
                                     suffixIcon: IconButton(
                                       icon: Icon(
-                                        _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
-                                        color: ThemeColors.getSecondaryText(context),
+                                        _obscureConfirmPassword
+                                            ? Icons.visibility
+                                            : Icons.visibility_off,
+                                        color: ThemeColors.getSecondaryText(
+                                            context),
                                       ),
                                       onPressed: () {
-                                        setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
+                                        setState(() => _obscureConfirmPassword =
+                                            !_obscureConfirmPassword);
                                       },
                                     ),
                                   ),
@@ -455,7 +477,8 @@ class _NewPasswordPageState extends State<NewPasswordPage>
                                   width: double.infinity,
                                   height: 50,
                                   child: ElevatedButton.icon(
-                                    onPressed: _isLoading ? null : _setNewPassword,
+                                    onPressed:
+                                        _isLoading ? null : _setNewPassword,
                                     icon: _isLoading
                                         ? const SizedBox(
                                             width: 20,
@@ -466,9 +489,13 @@ class _NewPasswordPageState extends State<NewPasswordPage>
                                             ),
                                           )
                                         : const Icon(Icons.save),
-                                    label: Text(_isLoading ? 'Kaydediliyor...' : 'Şifre Kaydet'),
+                                    label: Text(_isLoading
+                                        ? 'Kaydediliyor...'
+                                        : 'Şifre Kaydet'),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: ThemeColors.getPrimaryButtonColor(context),
+                                      backgroundColor:
+                                          ThemeColors.getPrimaryButtonColor(
+                                              context),
                                       foregroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
@@ -486,7 +513,8 @@ class _NewPasswordPageState extends State<NewPasswordPage>
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: ThemeColors.getDialogContentBackground(context),
+                              color: ThemeColors.getDialogContentBackground(
+                                  context),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: ThemeColors.getBorder(context),
@@ -507,7 +535,8 @@ class _NewPasswordPageState extends State<NewPasswordPage>
                                 Text(
                                   '• En az 6 karakter kullanın\n• Büyük ve küçük harfleri karıştırın\n• Rakam ve özel karakter ekleyin',
                                   style: TextStyle(
-                                    color: ThemeColors.getSecondaryText(context),
+                                    color:
+                                        ThemeColors.getSecondaryText(context),
                                     fontSize: 10,
                                   ),
                                   textAlign: TextAlign.left,

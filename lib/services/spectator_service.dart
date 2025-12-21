@@ -9,21 +9,22 @@ import '../models/game_board.dart';
 class SpectatorService {
   static SpectatorService? _instance;
   static SpectatorService get instance => _instance ??= SpectatorService._();
-  
+
   SpectatorService._();
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final StreamController<List<Spectator>> _spectatorsController = 
-    StreamController<List<Spectator>>.broadcast();
-  
-  final StreamController<List<GameReplay>> _replaysController = 
-    StreamController<List<GameReplay>>.broadcast();
+  final StreamController<List<Spectator>> _spectatorsController =
+      StreamController<List<Spectator>>.broadcast();
+
+  final StreamController<List<GameReplay>> _replaysController =
+      StreamController<List<GameReplay>>.broadcast();
 
   Stream<List<Spectator>> get spectatorsStream => _spectatorsController.stream;
   Stream<List<GameReplay>> get replaysStream => _replaysController.stream;
 
   // Spectator Management
-  Future<String> joinAsSpectator(String gameId, String spectatorId, String spectatorName) async {
+  Future<String> joinAsSpectator(
+      String gameId, String spectatorId, String spectatorName) async {
     try {
       final spectator = Spectator(
         id: spectatorId,
@@ -33,11 +34,11 @@ class SpectatorService {
       );
 
       await _firestore
-        .collection('game_rooms')
-        .doc(gameId)
-        .collection('spectators')
-        .doc(spectatorId)
-        .set(spectator.toMap());
+          .collection('game_rooms')
+          .doc(gameId)
+          .collection('spectators')
+          .doc(spectatorId)
+          .set(spectator.toMap());
 
       return gameId;
     } catch (e) {
@@ -48,11 +49,11 @@ class SpectatorService {
   Future<void> leaveSpectatorMode(String gameId, String spectatorId) async {
     try {
       await _firestore
-        .collection('game_rooms')
-        .doc(gameId)
-        .collection('spectators')
-        .doc(spectatorId)
-        .delete();
+          .collection('game_rooms')
+          .doc(gameId)
+          .collection('spectators')
+          .doc(spectatorId)
+          .delete();
     } catch (e) {
       throw Exception('İzleyici modundan ayrılma hatası: $e');
     }
@@ -62,21 +63,20 @@ class SpectatorService {
 
   void listenToSpectators(String gameId) {
     _spectatorSubscription?.cancel();
-    
+
     _spectatorSubscription = _firestore
-      .collection('game_rooms')
-      .doc(gameId)
-      .collection('spectators')
-      .snapshots()
-      .map((snapshot) {
-        return snapshot.docs
+        .collection('game_rooms')
+        .doc(gameId)
+        .collection('spectators')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
           .map((doc) => Spectator.fromMap(doc.data(), doc.id))
           .where((spectator) => spectator.isActive)
           .toList();
-      })
-      .listen((spectators) {
-        _spectatorsController.add(spectators);
-      });
+    }).listen((spectators) {
+      _spectatorsController.add(spectators);
+    });
   }
 
   void stopListeningToSpectators() {
@@ -85,7 +85,8 @@ class SpectatorService {
   }
 
   // Game Replay System
-  Future<void> recordGameMove(String gameId, GameMove move, int moveNumber) async {
+  Future<void> recordGameMove(
+      String gameId, GameMove move, int moveNumber) async {
     try {
       final gameMove = GameMoveRecord(
         moveNumber: moveNumber,
@@ -102,17 +103,18 @@ class SpectatorService {
       );
 
       await _firestore
-        .collection('game_replays')
-        .doc(gameId)
-        .collection('moves')
-        .doc('move_$moveNumber')
-        .set(gameMove.toMap());
+          .collection('game_replays')
+          .doc(gameId)
+          .collection('moves')
+          .doc('move_$moveNumber')
+          .set(gameMove.toMap());
     } catch (e) {
       throw Exception('Hamle kaydetme hatası: $e');
     }
   }
 
-  Future<GameReplay?> createReplay(String gameId, List<GameMoveRecord> moves) async {
+  Future<GameReplay?> createReplay(
+      String gameId, List<GameMoveRecord> moves) async {
     try {
       final replay = GameReplay(
         id: gameId,
@@ -123,9 +125,9 @@ class SpectatorService {
       );
 
       await _firestore
-        .collection('game_replays')
-        .doc(gameId)
-        .set(replay.toMap());
+          .collection('game_replays')
+          .doc(gameId)
+          .set(replay.toMap());
 
       return replay;
     } catch (e) {
@@ -135,20 +137,21 @@ class SpectatorService {
 
   Future<GameReplay?> getGameReplay(String replayId) async {
     try {
-      final doc = await _firestore.collection('game_replays').doc(replayId).get();
-      
+      final doc =
+          await _firestore.collection('game_replays').doc(replayId).get();
+
       if (doc.exists) {
         // Get moves
         final movesSnapshot = await _firestore
-          .collection('game_replays')
-          .doc(replayId)
-          .collection('moves')
-          .orderBy('moveNumber')
-          .get();
+            .collection('game_replays')
+            .doc(replayId)
+            .collection('moves')
+            .orderBy('moveNumber')
+            .get();
 
         final moves = movesSnapshot.docs
-          .map((doc) => GameMoveRecord.fromMap(doc.data()))
-          .toList();
+            .map((doc) => GameMoveRecord.fromMap(doc.data()))
+            .toList();
 
         return GameReplay.fromMap(doc.data()!, replayId, moves);
       }
@@ -161,25 +164,25 @@ class SpectatorService {
   Future<List<GameReplay>> getPublicReplays({int limit = 10}) async {
     try {
       final snapshot = await _firestore
-        .collection('game_replays')
-        .where('isPublic', isEqualTo: true)
-        .orderBy('createdAt', descending: true)
-        .limit(limit)
-        .get();
-
-      final List<GameReplay> replays = [];
-      
-      for (final doc in snapshot.docs) {
-        final movesSnapshot = await _firestore
           .collection('game_replays')
-          .doc(doc.id)
-          .collection('moves')
-          .orderBy('moveNumber')
+          .where('isPublic', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
           .get();
 
+      final List<GameReplay> replays = [];
+
+      for (final doc in snapshot.docs) {
+        final movesSnapshot = await _firestore
+            .collection('game_replays')
+            .doc(doc.id)
+            .collection('moves')
+            .orderBy('moveNumber')
+            .get();
+
         final moves = movesSnapshot.docs
-          .map((moveDoc) => GameMoveRecord.fromMap(moveDoc.data()))
-          .toList();
+            .map((moveDoc) => GameMoveRecord.fromMap(moveDoc.data()))
+            .toList();
 
         replays.add(GameReplay.fromMap(doc.data(), doc.id, moves));
       }
@@ -193,16 +196,17 @@ class SpectatorService {
   Future<void> makeReplayPublic(String replayId, bool isPublic) async {
     try {
       await _firestore
-        .collection('game_replays')
-        .doc(replayId)
-        .update({'isPublic': isPublic});
+          .collection('game_replays')
+          .doc(replayId)
+          .update({'isPublic': isPublic});
     } catch (e) {
       throw Exception('Tekrar görünürlük ayarlama hatası: $e');
     }
   }
 
   // Spectator Chat
-  Future<void> sendSpectatorMessage(String gameId, String spectatorId, String message) async {
+  Future<void> sendSpectatorMessage(
+      String gameId, String spectatorId, String message) async {
     try {
       final chatMessage = SpectatorChatMessage(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -213,11 +217,11 @@ class SpectatorService {
       );
 
       await _firestore
-        .collection('game_rooms')
-        .doc(gameId)
-        .collection('spectator_chat')
-        .doc(chatMessage.id)
-        .set(chatMessage.toMap());
+          .collection('game_rooms')
+          .doc(gameId)
+          .collection('spectator_chat')
+          .doc(chatMessage.id)
+          .set(chatMessage.toMap());
     } catch (e) {
       throw Exception('İzleyici mesajı gönderme hatası: $e');
     }
@@ -227,24 +231,23 @@ class SpectatorService {
 
   void listenToSpectatorChat(String gameId) {
     _chatSubscription?.cancel();
-    
+
     _chatSubscription = _firestore
-      .collection('game_rooms')
-      .doc(gameId)
-      .collection('spectator_chat')
-      .orderBy('timestamp', descending: true)
-      .limit(50)
-      .snapshots()
-      .map((snapshot) {
-        return snapshot.docs
+        .collection('game_rooms')
+        .doc(gameId)
+        .collection('spectator_chat')
+        .orderBy('timestamp', descending: true)
+        .limit(50)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
           .map((doc) => SpectatorChatMessage.fromMap(doc.data()))
           .toList();
-      })
-      .listen((messages) {
-        // In a real implementation, you'd have a controller for chat messages
-        // For now, we'll just log them
-        debugPrint('Spectator chat update: ${messages.length} messages');
-      });
+    }).listen((messages) {
+      // In a real implementation, you'd have a controller for chat messages
+      // For now, we'll just log them
+      debugPrint('Spectator chat update: ${messages.length} messages');
+    });
   }
 
   void stopListeningToSpectatorChat() {
@@ -283,8 +286,8 @@ class Spectator {
       name: map['name'] ?? '',
       joinedAt: (map['joinedAt'] as Timestamp).toDate(),
       isActive: map['isActive'] ?? true,
-      lastActivity: map['lastActivity'] != null 
-          ? (map['lastActivity'] as Timestamp).toDate() 
+      lastActivity: map['lastActivity'] != null
+          ? (map['lastActivity'] as Timestamp).toDate()
           : null,
     );
   }
@@ -294,9 +297,8 @@ class Spectator {
       'name': name,
       'joinedAt': Timestamp.fromDate(joinedAt),
       'isActive': isActive,
-      'lastActivity': lastActivity != null 
-          ? Timestamp.fromDate(lastActivity!) 
-          : null,
+      'lastActivity':
+          lastActivity != null ? Timestamp.fromDate(lastActivity!) : null,
     };
   }
 }
@@ -364,7 +366,7 @@ class GameMoveRecord {
       scoreChange: map['scoreChange'],
       questionAnswered: map['questionAnswered'] ?? false,
       questionResult: map['questionResult'],
-      tileType: map['tileType'] != null 
+      tileType: map['tileType'] != null
           ? TileType.values.firstWhere(
               (t) => t.toString().split('.').last == map['tileType'])
           : null,
@@ -409,7 +411,8 @@ class GameReplay {
     this.durationInSeconds,
   });
 
-  factory GameReplay.fromMap(Map<String, dynamic> map, String id, List<GameMoveRecord> moves) {
+  factory GameReplay.fromMap(
+      Map<String, dynamic> map, String id, List<GameMoveRecord> moves) {
     return GameReplay(
       id: id,
       title: map['title'],

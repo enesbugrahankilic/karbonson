@@ -8,24 +8,26 @@ import '../theme/theme_colors.dart';
 
 class TwoFactorAuthVerificationPage extends StatefulWidget {
   final TwoFactorAuthResult authResult;
-  
+
   const TwoFactorAuthVerificationPage({
     super.key,
     required this.authResult,
   });
 
   @override
-  State<TwoFactorAuthVerificationPage> createState() => _TwoFactorAuthVerificationPageState();
+  State<TwoFactorAuthVerificationPage> createState() =>
+      _TwoFactorAuthVerificationPageState();
 }
 
-class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificationPage> {
+class _TwoFactorAuthVerificationPageState
+    extends State<TwoFactorAuthVerificationPage> {
   final TextEditingController _smsCodeController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  
+
   bool _isVerifying = false;
   String? _verificationId;
   bool _codeSent = false;
-  
+
   @override
   void initState() {
     super.initState();
@@ -40,7 +42,7 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
 
   /// Start SMS verification process
   Future<void> _startVerification() async {
-    if (!widget.authResult.requires2FA || 
+    if (!widget.authResult.requires2FA ||
         widget.authResult.phoneProvider == null ||
         widget.authResult.multiFactorResolver == null) {
       if (kDebugMode) {
@@ -49,7 +51,8 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('2FA doğrulama başlatılamadı. Lütfen tekrar giriş yapmayı deneyin.'),
+            content: Text(
+                '2FA doğrulama başlatılamadı. Lütfen tekrar giriş yapmayı deneyin.'),
             backgroundColor: Colors.red,
           ),
         );
@@ -65,14 +68,16 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
     try {
       // Get phone number from multi-factor resolver
       String? phoneNumber;
-      
+
       // First try to get phone number from metadata if available
-      if (widget.authResult.metadata != null && widget.authResult.metadata!['phoneNumber'] != null) {
+      if (widget.authResult.metadata != null &&
+          widget.authResult.metadata!['phoneNumber'] != null) {
         phoneNumber = widget.authResult.metadata!['phoneNumber'] as String;
       }
-      
+
       // If not found in metadata, try to get from resolver hints
-      if (phoneNumber == null && widget.authResult.multiFactorResolver != null) {
+      if (phoneNumber == null &&
+          widget.authResult.multiFactorResolver != null) {
         final hints = widget.authResult.multiFactorResolver!.hints;
         for (final hint in hints) {
           if (hint is MultiFactorInfo && hint.factorId.contains('phone')) {
@@ -84,7 +89,7 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
           }
         }
       }
-      
+
       // If still no phone number, prompt user to enter it
       if (phoneNumber == null) {
         final enteredNumber = await _promptUserForPhoneNumber();
@@ -96,7 +101,8 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
       }
 
       // Start phone verification with the correct phone number
-      final verificationResult = await Firebase2FAService.startPhoneVerification(
+      final verificationResult =
+          await Firebase2FAService.startPhoneVerification(
         phoneNumber: phoneNumber!,
       );
 
@@ -128,19 +134,19 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
       if (kDebugMode) {
         debugPrint('Error starting 2FA verification: $e');
       }
-      
+
       if (mounted) {
         setState(() {
           _isVerifying = false;
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Doğrulama başlatılamadı: $e'),
             backgroundColor: Colors.red,
           ),
         );
-        
+
         Navigator.of(context).pop();
       }
     }
@@ -180,10 +186,11 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
               backgroundColor: Colors.green,
             ),
           );
-          
+
           // Update UserData model with 2FA status
-          await Firebase2FAService.updateUserData2FAStatus(true, 'Phone Number');
-          
+          await Firebase2FAService.updateUserData2FAStatus(
+              true, 'Phone Number');
+
           // Navigate to profile page
           Navigator.of(context).pushNamedAndRemoveUntil(
             '/profile',
@@ -202,7 +209,7 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
       if (kDebugMode) {
         debugPrint('Error verifying SMS code: $e');
       }
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -228,12 +235,13 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
   /// Prompt user for phone number
   Future<String?> _promptUserForPhoneNumber() async {
     final controller = TextEditingController();
-    
+
     return await showDialog<String>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text('Telefon Numarası Girin'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -278,9 +286,11 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text('Doğrulamayı İptal Et'),
-          content: const Text('2FA doğrulamayı iptal etmek istediğinizden emin misiniz? Giriş işlemi tamamlanamaz.'),
+          content: const Text(
+              '2FA doğrulamayı iptal etmek istediğinizden emin misiniz? Giriş işlemi tamamlanamaz.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -352,7 +362,10 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
                           width: 80,
                           height: 80,
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -362,28 +375,34 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
                           ),
                         ),
                         const SizedBox(height: 24),
-                        
+
                         // Title
                         Text(
                           'SMS Doğrulama',
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: ThemeColors.getText(context),
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: ThemeColors.getText(context),
+                              ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
-                        
+
                         // Subtitle
                         Text(
                           'Telefonunuza gelen doğrulama kodunu girin',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: ThemeColors.getSecondaryText(context),
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                color: ThemeColors.getSecondaryText(context),
+                              ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 32),
-                        
+
                         // Loading state
                         if (_isVerifying) ...[
                           const CircularProgressIndicator(),
@@ -391,7 +410,7 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
                           const Text('Doğrulama işlemi yapılıyor...'),
                           const SizedBox(height: 16),
                         ],
-                        
+
                         // SMS Code input form
                         if (!_isVerifying && _codeSent) ...[
                           Form(
@@ -405,7 +424,8 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
                                     hintText: '123456',
                                     prefixIcon: const Icon(Icons.sms),
                                     filled: true,
-                                    fillColor: ThemeColors.getInputBackground(context),
+                                    fillColor:
+                                        ThemeColors.getInputBackground(context),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
@@ -435,18 +455,21 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
                                   },
                                 ),
                                 const SizedBox(height: 24),
-                                
+
                                 // Verify button
                                 SizedBox(
                                   width: double.infinity,
                                   child: ElevatedButton.icon(
-                                    onPressed: _isVerifying ? null : _verifySmsCode,
+                                    onPressed:
+                                        _isVerifying ? null : _verifySmsCode,
                                     icon: const Icon(Icons.check_circle),
                                     label: const Text('Doğrula'),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Theme.of(context).colorScheme.primary,
+                                      backgroundColor:
+                                          Theme.of(context).colorScheme.primary,
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(vertical: 16),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 16),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),
@@ -454,21 +477,23 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
                                   ),
                                 ),
                                 const SizedBox(height: 12),
-                                
+
                                 // Resend button
                                 TextButton.icon(
-                                  onPressed: _isVerifying ? null : _resendSmsCode,
+                                  onPressed:
+                                      _isVerifying ? null : _resendSmsCode,
                                   icon: const Icon(Icons.refresh),
                                   label: const Text('Tekrar Gönder'),
                                   style: TextButton.styleFrom(
-                                    foregroundColor: Theme.of(context).colorScheme.primary,
+                                    foregroundColor:
+                                        Theme.of(context).colorScheme.primary,
                                   ),
                                 ),
                               ],
                             ),
                           ),
                         ],
-                        
+
                         // Verification needed message
                         if (!_isVerifying && !_codeSent) ...[
                           const Text(
@@ -478,9 +503,9 @@ class _TwoFactorAuthVerificationPageState extends State<TwoFactorAuthVerificatio
                           const SizedBox(height: 16),
                           const CircularProgressIndicator(),
                         ],
-                        
+
                         const SizedBox(height: 24),
-                        
+
                         // Cancel button
                         TextButton(
                           onPressed: _isVerifying ? null : _cancelVerification,

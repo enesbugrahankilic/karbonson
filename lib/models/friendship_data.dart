@@ -12,7 +12,7 @@ class Friend {
   final DateTime addedAt;
   final DateTime? lastSeen;
   final bool isOnline; // Will be populated from RTDB presence
-  
+
   Friend({
     required this.id,
     required this.nickname,
@@ -26,8 +26,8 @@ class Friend {
       id: map['uid'] ?? documentId, // Use UID for consistency
       nickname: map['nickname'] ?? '',
       addedAt: (map['addedAt'] as Timestamp).toDate(),
-      lastSeen: map['lastSeen'] != null 
-          ? (map['lastSeen'] as Timestamp).toDate() 
+      lastSeen: map['lastSeen'] != null
+          ? (map['lastSeen'] as Timestamp).toDate()
           : null,
       isOnline: map['isOnline'] ?? false,
     );
@@ -80,7 +80,7 @@ class FriendRequest {
   final String id;
   final String fromUserId; // Sender's UID
   final String fromNickname;
-  final String toUserId; // Recipient's UID  
+  final String toUserId; // Recipient's UID
   final String toNickname;
   final DateTime createdAt;
   final FriendRequestStatus status;
@@ -108,8 +108,8 @@ class FriendRequest {
       toNickname: map['toNickname'] ?? '',
       createdAt: (map['createdAt'] as Timestamp).toDate(),
       status: FriendRequestStatus.fromString(map['status'] ?? 'pending'),
-      respondedAt: map['respondedAt'] != null 
-          ? (map['respondedAt'] as Timestamp).toDate() 
+      respondedAt: map['respondedAt'] != null
+          ? (map['respondedAt'] as Timestamp).toDate()
           : null,
       responseMessage: map['responseMessage'],
     );
@@ -124,7 +124,8 @@ class FriendRequest {
       'toNickname': toNickname,
       'createdAt': Timestamp.fromDate(createdAt),
       'status': status.toString().split('.').last,
-      'respondedAt': respondedAt != null ? Timestamp.fromDate(respondedAt!) : null,
+      'respondedAt':
+          respondedAt != null ? Timestamp.fromDate(respondedAt!) : null,
       'responseMessage': responseMessage,
     };
   }
@@ -155,13 +156,13 @@ class FriendRequest {
 
   /// Check if request is from a specific user
   bool isFromUser(String userId) => fromUserId == userId;
-  
-  /// Check if request is to a specific user  
+
+  /// Check if request is to a specific user
   bool isToUser(String userId) => toUserId == userId;
-  
+
   /// Check if request is still pending
   bool get isPending => status == FriendRequestStatus.pending;
-  
+
   /// Check if request has been responded to
   bool get hasBeenResponded => status != FriendRequestStatus.pending;
 }
@@ -220,11 +221,12 @@ class FriendStatistics {
     required List<FriendRequest> sentRequests,
   }) {
     final onlineCount = friends.where((friend) => friend.isOnline).length;
-    
+
     return FriendStatistics(
       totalFriends: friends.length,
       onlineFriends: onlineCount,
-      pendingRequestsReceived: receivedRequests.where((req) => req.isPending).length,
+      pendingRequestsReceived:
+          receivedRequests.where((req) => req.isPending).length,
       pendingRequestsSent: sentRequests.where((req) => req.isPending).length,
       lastUpdated: DateTime.now(),
     );

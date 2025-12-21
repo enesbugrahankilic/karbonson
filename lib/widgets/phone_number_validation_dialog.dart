@@ -15,10 +15,12 @@ class PhoneNumberValidationDialog extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<PhoneNumberValidationDialog> createState() => _PhoneNumberValidationDialogState();
+  State<PhoneNumberValidationDialog> createState() =>
+      _PhoneNumberValidationDialogState();
 }
 
-class _PhoneNumberValidationDialogState extends State<PhoneNumberValidationDialog> {
+class _PhoneNumberValidationDialogState
+    extends State<PhoneNumberValidationDialog> {
   late TextEditingController _phoneController;
   bool _isValidFormat = false;
   String _formattedNumber = '';
@@ -28,7 +30,8 @@ class _PhoneNumberValidationDialogState extends State<PhoneNumberValidationDialo
   @override
   void initState() {
     super.initState();
-    _phoneController = TextEditingController(text: widget.initialPhoneNumber ?? '');
+    _phoneController =
+        TextEditingController(text: widget.initialPhoneNumber ?? '');
     _validatePhoneNumber(_phoneController.text);
   }
 

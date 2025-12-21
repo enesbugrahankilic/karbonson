@@ -48,9 +48,11 @@ void main() {
 
     test('FirestoreService user profile methods exist', () {
       // Verify that the required methods exist and are callable
-      expect(firestoreService.createOrUpdateUserProfile, isA<Future Function()?>);
+      expect(
+          firestoreService.createOrUpdateUserProfile, isA<Future Function()?>);
       expect(firestoreService.getUserProfile, isA<Future Function(String)>());
-      expect(firestoreService.isNicknameAvailable, isA<Future Function(String)>());
+      expect(
+          firestoreService.isNicknameAvailable, isA<Future Function(String)>());
     });
 
     test('ProfileService initialization method exists', () {
@@ -105,7 +107,8 @@ void main() {
       expect(registrationData['password'], hasLength(greaterThanOrEqualTo(6)));
 
       // Verify that the nickname is valid
-      final nicknameValidation = NicknameValidator.validate(registrationData['nickname'] as String);
+      final nicknameValidation =
+          NicknameValidator.validate(registrationData['nickname'] as String);
       expect(nicknameValidation.isValid, isTrue);
     });
   });

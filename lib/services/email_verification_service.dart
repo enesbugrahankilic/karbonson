@@ -34,7 +34,8 @@ class EmailVerificationResult {
     );
   }
 
-  factory EmailVerificationResult.redirectRequired(String message, String email) {
+  factory EmailVerificationResult.redirectRequired(
+      String message, String email) {
     return EmailVerificationResult(
       isSuccess: true,
       message: message,
@@ -64,12 +65,14 @@ class EmailVerificationService {
 
   /// Enhanced password reset service with email verification checking
   /// Returns EmailVerificationResult with redirection information
-  static Future<EmailVerificationResult> sendPasswordResetWithEmailVerificationCheck({
+  static Future<EmailVerificationResult>
+      sendPasswordResetWithEmailVerificationCheck({
     required String email,
   }) async {
     try {
       if (kDebugMode) {
-        debugPrint('Starting password reset with email verification check for: ${email.replaceRange(2, email.indexOf('@'), '***')}');
+        debugPrint(
+            'Starting password reset with email verification check for: ${email.replaceRange(2, email.indexOf('@'), '***')}');
       }
 
       // Send password reset email
@@ -78,8 +81,10 @@ class EmailVerificationService {
       // Check if current user needs email verification
       bool shouldRedirect = false;
       final currentUser = _auth.currentUser;
-      
-      if (currentUser != null && currentUser.email == email && !currentUser.emailVerified) {
+
+      if (currentUser != null &&
+          currentUser.email == email &&
+          !currentUser.emailVerified) {
         shouldRedirect = true;
         if (kDebugMode) {
           debugPrint('User has unverified email - redirection required');
@@ -97,7 +102,6 @@ class EmailVerificationService {
           email,
         );
       }
-
     } on FirebaseAuthException catch (e) {
       if (kDebugMode) {
         debugPrint('Password reset error: ${e.code} - ${e.message}');
@@ -106,40 +110,48 @@ class EmailVerificationService {
       String errorMessage;
       switch (e.code) {
         case 'user-not-found':
-          errorMessage = 'Bu e-posta adresine kayıtlı bir kullanıcı bulunamadı.';
+          errorMessage =
+              'Bu e-posta adresine kayıtlı bir kullanıcı bulunamadı.';
           break;
         case 'invalid-email':
           errorMessage = 'Lütfen geçerli bir e-posta adresi girin.';
           break;
         case 'too-many-requests':
-          errorMessage = 'Çok fazla deneme yaptınız. Güvenliğiniz için lütfen bir süre sonra tekrar deneyin.';
+          errorMessage =
+              'Çok fazla deneme yaptınız. Güvenliğiniz için lütfen bir süre sonra tekrar deneyin.';
           break;
         case 'network-request-failed':
-          errorMessage = 'İnternet bağlantınızı kontrol edin. Ağ bağlantısı sorunu var.';
+          errorMessage =
+              'İnternet bağlantınızı kontrol edin. Ağ bağlantısı sorunu var.';
           break;
         case 'operation-not-allowed':
-          errorMessage = 'Şifre sıfırlama işlemi şu anda etkinleştirilmemiş. Destek ekibiyle iletişime geçin.';
+          errorMessage =
+              'Şifre sıfırlama işlemi şu anda etkinleştirilmemiş. Destek ekibiyle iletişime geçin.';
           break;
         case 'user-disabled':
-          errorMessage = 'Bu hesap devre dışı bırakılmış. Destek ekibiyle iletişime geçin.';
+          errorMessage =
+              'Bu hesap devre dışı bırakılmış. Destek ekibiyle iletişime geçin.';
           break;
         case 'quota-exceeded':
-          errorMessage = 'Firebase kullanım limiti aşıldı. Lütfen daha sonra tekrar deneyin.';
+          errorMessage =
+              'Firebase kullanım limiti aşıldı. Lütfen daha sonra tekrar deneyin.';
           break;
         case 'internal-error':
-          errorMessage = 'Firebase sunucu hatası. Lütfen birkaç dakika bekleyip tekrar deneyin.';
+          errorMessage =
+              'Firebase sunucu hatası. Lütfen birkaç dakika bekleyip tekrar deneyin.';
           break;
         default:
-          errorMessage = 'Şifre sıfırlama gönderilemedi: ${e.message ?? e.code}';
+          errorMessage =
+              'Şifre sıfırlama gönderilemedi: ${e.message ?? e.code}';
       }
 
       return EmailVerificationResult.failure(errorMessage);
-
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Unexpected password reset error: $e');
       }
-      return EmailVerificationResult.failure('Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.');
+      return EmailVerificationResult.failure(
+          'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.');
     }
   }
 
@@ -154,15 +166,16 @@ class EmailVerificationService {
 
       // Check if email is already verified
       if (currentUser.emailVerified) {
-        return EmailVerificationResult.failure('E-posta adresi zaten doğrulanmış');
+        return EmailVerificationResult.failure(
+            'E-posta adresi zaten doğrulanmış');
       }
 
       await currentUser.sendEmailVerification();
-      
+
       if (kDebugMode) {
         debugPrint('Email verification sent to: ${currentUser.email}');
       }
-      
+
       return EmailVerificationResult.success(
         'Doğrulama e-postası başarıyla gönderildi! Lütfen e-posta adresinizi kontrol edin. 📧',
         currentUser.email!,
@@ -171,7 +184,8 @@ class EmailVerificationService {
       if (kDebugMode) {
         debugPrint('Email verification send error: $e');
       }
-      return EmailVerificationResult.failure('E-posta doğrulama gönderilemedi: $e');
+      return EmailVerificationResult.failure(
+          'E-posta doğrulama gönderilemedi: $e');
     }
   }
 
@@ -186,7 +200,7 @@ class EmailVerificationService {
       // Force reload to get latest status
       await currentUser.reload();
       final updatedUser = _auth.currentUser!;
-      
+
       return updatedUser.emailVerified;
     } catch (e) {
       if (kDebugMode) {
@@ -209,7 +223,8 @@ class EmailVerificationService {
   }
 
   /// Check if user should be redirected to email verification page
-  static bool shouldRedirectToEmailVerificationPage(EmailVerificationResult result) {
+  static bool shouldRedirectToEmailVerificationPage(
+      EmailVerificationResult result) {
     return result.isSuccess && result.requiresRedirection;
   }
 }

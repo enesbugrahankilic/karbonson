@@ -15,19 +15,20 @@ class EnhancedTwoFactorAuthSetupPage extends StatefulWidget {
   const EnhancedTwoFactorAuthSetupPage({super.key});
 
   @override
-  State<EnhancedTwoFactorAuthSetupPage> createState() => _EnhancedTwoFactorAuthSetupPageState();
+  State<EnhancedTwoFactorAuthSetupPage> createState() =>
+      _EnhancedTwoFactorAuthSetupPageState();
 }
 
-class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSetupPage> 
+class _EnhancedTwoFactorAuthSetupPageState
+    extends State<EnhancedTwoFactorAuthSetupPage>
     with TickerProviderStateMixin {
-  
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _smsCodeController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _smsFormKey = GlobalKey<FormState>();
-  
+
   final ProfileService _profileService = ProfileService();
-  
+
   // State management
   bool _is2FAEnabled = false;
   bool _isLoading = true;
@@ -35,23 +36,23 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
   String? _phoneNumber;
   String? _verificationId;
   List<String>? _backupCodes;
-  
+
   // UI State
   bool _waitingForSms = false;
   bool _showBackupCodes = false;
   bool _enableBiometric = false;
   bool _generateBackupCodes = true;
-  
+
   // Security data
   TwoFactorSecurityResult? _securityStatus;
   Map<String, dynamic>? _healthCheck;
-  
+
   // Animations
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-  
+
   @override
   void initState() {
     super.initState();
@@ -106,13 +107,16 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
     try {
       // Load 2FA status
       final isEnabled = await EnhancedFirebase2FAService.is2FAEnabled();
-      final phoneNumbers = await EnhancedFirebase2FAService.getEnrolledPhoneNumbers();
-      
+      final phoneNumbers =
+          await EnhancedFirebase2FAService.getEnrolledPhoneNumbers();
+
       // Load security status
-      final securityStatus = await EnhancedFirebase2FAService.getSecurityStatus();
-      
+      final securityStatus =
+          await EnhancedFirebase2FAService.getSecurityStatus();
+
       // Perform health check
-      final healthCheck = await EnhancedFirebase2FAService.performSecurityHealthCheck();
+      final healthCheck =
+          await EnhancedFirebase2FAService.performSecurityHealthCheck();
 
       if (mounted) {
         setState(() {
@@ -127,12 +131,12 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
       if (kDebugMode) {
         debugPrint('Error loading security data: $e');
       }
-      
+
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
-        
+
         _showErrorSnackBar('Güvenlik verileri yüklenemedi: $e');
       }
     }
@@ -149,7 +153,7 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
 
     try {
       final phoneNumber = _phoneController.text.trim();
-      
+
       final result = await EnhancedFirebase2FAService.setup2FA(
         phoneNumber: phoneNumber,
         enableBiometric: _enableBiometric,
@@ -162,7 +166,7 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
             _verificationId = result.verificationId;
             _backupCodes = result.backupCodes;
           });
-          
+
           _showSuccessSnackBar(result.message);
         } else {
           _showErrorSnackBar(result.message);
@@ -176,7 +180,7 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
       if (kDebugMode) {
         debugPrint('Error starting 2FA setup: $e');
       }
-      
+
       if (mounted) {
         _showErrorSnackBar('2FA kurulumu başlatılamadı: $e');
         setState(() {
@@ -191,7 +195,8 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
   Future<void> _complete2FAEnrollment() async {
     if (!_smsFormKey.currentState!.validate()) return;
     if (_verificationId == null) {
-      _showErrorSnackBar('Doğrulama kimliği bulunamadı. Lütfen tekrar deneyin.');
+      _showErrorSnackBar(
+          'Doğrulama kimliği bulunamadı. Lütfen tekrar deneyin.');
       return;
     }
 
@@ -201,7 +206,7 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
 
     try {
       final phoneNumber = _phoneController.text.trim();
-      
+
       final result = await EnhancedFirebase2FAService.complete2FAEnrollment(
         verificationId: _verificationId!,
         smsCode: _smsCodeController.text.trim(),
@@ -212,7 +217,7 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
       if (mounted) {
         if (result.isSuccess) {
           _showSuccessSnackBar(result.message);
-          
+
           // Reset form and update state
           setState(() {
             _is2FAEnabled = true;
@@ -221,7 +226,7 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
             _isProcessing = false;
             _showBackupCodes = true;
           });
-          
+
           // Reload security data
           await _loadSecurityData();
         } else {
@@ -235,7 +240,7 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
       if (kDebugMode) {
         debugPrint('Error completing 2FA enrollment: $e');
       }
-      
+
       if (mounted) {
         _showErrorSnackBar('2FA kaydı tamamlanamadı: $e');
         setState(() {
@@ -251,7 +256,8 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
               Icon(Icons.warning, color: Colors.orange),
@@ -273,7 +279,8 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
               ),
               Text('• Hesabınızın güvenliğini azaltır'),
               Text('• Yedek kodlarınızı geçersiz kılar'),
-              Text('• Giriş yapmak için sadece e-posta ve şifre kullanmanız gerekir'),
+              Text(
+                  '• Giriş yapmak için sadece e-posta ve şifre kullanmanız gerekir'),
             ],
           ),
           actions: [
@@ -310,7 +317,7 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
       if (mounted) {
         if (result.isSuccess) {
           _showSuccessSnackBar(result.message);
-          
+
           setState(() {
             _is2FAEnabled = false;
             _phoneNumber = null;
@@ -318,7 +325,7 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
             _showBackupCodes = false;
             _isProcessing = false;
           });
-          
+
           // Reload security data
           await _loadSecurityData();
         } else {
@@ -332,7 +339,7 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
       if (kDebugMode) {
         debugPrint('Error disabling 2FA: $e');
       }
-      
+
       if (mounted) {
         _showErrorSnackBar('2FA devre dışı bırakılamadı: $e');
         setState(() {
@@ -347,7 +354,7 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
     if (_backupCodes == null) return;
 
     final codesText = _backupCodes!.join('\n');
-    
+
     try {
       await Clipboard.setData(ClipboardData(text: codesText));
       _showSuccessSnackBar('Yedek kodlar panoya kopyalandı');
@@ -361,7 +368,7 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
     if (_backupCodes == null) return;
 
     final codesText = _backupCodes!.join('\n');
-    
+
     try {
       // In a real app, you would use a file system or share plugin
       // For now, show a dialog with the codes
@@ -382,10 +389,12 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(
-                    children: _backupCodes!.map((code) => Text(
-                      code,
-                      style: const TextStyle(fontFamily: 'monospace'),
-                    )).toList(),
+                    children: _backupCodes!
+                        .map((code) => Text(
+                              code,
+                              style: const TextStyle(fontFamily: 'monospace'),
+                            ))
+                        .toList(),
                   ),
                 ),
               ],
@@ -508,7 +517,9 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
                   child: Icon(
                     _is2FAEnabled ? Icons.security : Icons.security_outlined,
                     size: 48,
-                    color: _is2FAEnabled ? Colors.green : Theme.of(context).colorScheme.primary,
+                    color: _is2FAEnabled
+                        ? Colors.green
+                        : Theme.of(context).colorScheme.primary,
                   ),
                 );
               },
@@ -517,18 +528,18 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
             Text(
               _is2FAEnabled ? 'Güvenli Hesap' : 'Hesabınızı Güvenceye Alın',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              _is2FAEnabled 
+              _is2FAEnabled
                   ? '2FA etkinleştirilmiş durumda'
                   : 'İki faktörlü doğrulama ile hesabınızı koruyun',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[600],
-              ),
+                    color: Colors.grey[600],
+                  ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -562,8 +573,8 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
                 Text(
                   'Güvenlik Durumu',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
@@ -572,42 +583,43 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
               Text(
                 'Tespit Edilen Sorunlar:',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: Colors.red,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 8),
               ...issues.map((issue) => Padding(
-                padding: const EdgeInsets.only(left: 16, bottom: 4),
-                child: Row(
-                  children: [
-                    const Icon(Icons.error, size: 16, color: Colors.red),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(issue)),
-                  ],
-                ),
-              )),
+                    padding: const EdgeInsets.only(left: 16, bottom: 4),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error, size: 16, color: Colors.red),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(issue)),
+                      ],
+                    ),
+                  )),
               const SizedBox(height: 12),
             ],
             if (recommendations.isNotEmpty) ...[
               Text(
                 'Öneriler:',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 8),
               ...recommendations.map((rec) => Padding(
-                padding: const EdgeInsets.only(left: 16, bottom: 4),
-                child: Row(
-                  children: [
-                    const Icon(Icons.lightbulb, size: 16, color: Colors.blue),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(rec)),
-                  ],
-                ),
-              )),
+                    padding: const EdgeInsets.only(left: 16, bottom: 4),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.lightbulb,
+                            size: 16, color: Colors.blue),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(rec)),
+                      ],
+                    ),
+                  )),
             ],
           ],
         ),
@@ -629,8 +641,8 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
               Text(
                 'SMS Doğrulama',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 16),
               Text(
@@ -674,7 +686,9 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
                 child: ElevatedButton.icon(
                   onPressed: _isProcessing ? null : _complete2FAEnrollment,
                   icon: const Icon(Icons.check_circle),
-                  label: Text(_isProcessing ? 'Doğrulanıyor...' : '2FA\'yi Etkinleştir'),
+                  label: Text(_isProcessing
+                      ? 'Doğrulanıyor...'
+                      : '2FA\'yi Etkinleştir'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
@@ -688,11 +702,13 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
               const SizedBox(height: 16),
               Center(
                 child: TextButton(
-                  onPressed: _isProcessing ? null : () {
-                    setState(() {
-                      _waitingForSms = false;
-                    });
-                  },
+                  onPressed: _isProcessing
+                      ? null
+                      : () {
+                          setState(() {
+                            _waitingForSms = false;
+                          });
+                        },
                   child: const Text('Geri Dön'),
                 ),
               ),
@@ -708,7 +724,8 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
       children: [
         Card(
           elevation: 8,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -721,9 +738,9 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
                     Text(
                       '2FA Etkin',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
                     ),
                   ],
                 ),
@@ -748,7 +765,8 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
           Card(
             elevation: 4,
             color: Colors.amber[50],
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -760,10 +778,11 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
                       const SizedBox(width: 8),
                       Text(
                         'Yedek Kodlar',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.amber[700],
-                        ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.amber[700],
+                                ),
                       ),
                     ],
                   ),
@@ -776,18 +795,23 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
                   Wrap(
                     spacing: 8,
                     runSpacing: 4,
-                    children: _backupCodes!.take(5).map((code) => Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: Colors.amber[300]!),
-                      ),
-                      child: Text(
-                        code,
-                        style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
-                      ),
-                    )).toList(),
+                    children: _backupCodes!
+                        .take(5)
+                        .map((code) => Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: Colors.amber[300]!),
+                              ),
+                              child: Text(
+                                code,
+                                style: const TextStyle(
+                                    fontFamily: 'monospace', fontSize: 12),
+                              ),
+                            ))
+                        .toList(),
                   ),
                   if (_backupCodes!.length > 5)
                     Text(
@@ -830,7 +854,8 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
         ],
         Card(
           elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -880,8 +905,8 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
               Text(
                 '2FA Kurulumu',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -915,14 +940,15 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
                     Text(
                       'Güvenlik Seçenekleri',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue[700],
-                      ),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue[700],
+                          ),
                     ),
                     const SizedBox(height: 12),
                     SwitchListTile(
                       title: const Text('Yedek Kodlar Oluştur'),
-                      subtitle: const Text('Acil durumlar için yedek kodlar oluştur'),
+                      subtitle:
+                          const Text('Acil durumlar için yedek kodlar oluştur'),
                       value: _generateBackupCodes,
                       onChanged: (value) {
                         setState(() {
@@ -933,7 +959,8 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
                     ),
                     SwitchListTile(
                       title: const Text('Biyometrik Doğrulama (Gelecek)'),
-                      subtitle: const Text('Parmak izi/yüz tanıma ile hızlı giriş'),
+                      subtitle:
+                          const Text('Parmak izi/yüz tanıma ile hızlı giriş'),
                       value: _enableBiometric,
                       onChanged: null, // Disabled for now
                       contentPadding: EdgeInsets.zero,
@@ -947,7 +974,8 @@ class _EnhancedTwoFactorAuthSetupPageState extends State<EnhancedTwoFactorAuthSe
                 child: ElevatedButton.icon(
                   onPressed: _isProcessing ? null : _start2FASetup,
                   icon: const Icon(Icons.send),
-                  label: Text(_isProcessing ? 'Gönderiliyor...' : 'SMS Kodu Gönder'),
+                  label: Text(
+                      _isProcessing ? 'Gönderiliyor...' : 'SMS Kodu Gönder'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,

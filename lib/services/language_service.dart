@@ -27,13 +27,14 @@ class LanguageService extends ChangeNotifier {
   Future<void> _loadLanguage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final languageCode = prefs.getString(_languageKey) ?? AppLanguage.turkish.code;
-      
+      final languageCode =
+          prefs.getString(_languageKey) ?? AppLanguage.turkish.code;
+
       _currentLanguage = AppLanguage.values.firstWhere(
         (lang) => lang.code == languageCode,
         orElse: () => AppLanguage.turkish,
       );
-      
+
       _isInitialized = true;
       notifyListeners();
     } catch (e) {
@@ -44,7 +45,7 @@ class LanguageService extends ChangeNotifier {
 
   Future<void> setLanguage(AppLanguage language) async {
     if (_currentLanguage == language) return;
-    
+
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_languageKey, language.code);
@@ -56,7 +57,7 @@ class LanguageService extends ChangeNotifier {
   }
 
   Locale get locale => Locale(_currentLanguage.code);
-  
+
   String get currentLanguageName => _currentLanguage.displayName;
   String get currentLanguageFlag => _currentLanguage.flag;
 }

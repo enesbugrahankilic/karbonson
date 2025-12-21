@@ -122,7 +122,8 @@ class ErrorFeedbackService {
   }) {
     showRegistrationError(
       context: context,
-      error: 'Bu e-posta adresi zaten kullanılıyor. Farklı bir e-posta deneyin.',
+      error:
+          'Bu e-posta adresi zaten kullanılıyor. Farklı bir e-posta deneyin.',
     );
   }
 
@@ -132,7 +133,8 @@ class ErrorFeedbackService {
   }) {
     showRegistrationError(
       context: context,
-      error: 'Şifre çok zayıf. En az 6 karakter kullanın ve güçlü bir şifre seçin.',
+      error:
+          'Şifre çok zayıf. En az 6 karakter kullanın ve güçlü bir şifre seçin.',
     );
   }
 
@@ -143,7 +145,8 @@ class ErrorFeedbackService {
   }) {
     showRegistrationError(
       context: context,
-      error: 'Sunucu hatası oluştu. Lütfen birkaç dakika bekleyip tekrar deneyin.',
+      error:
+          'Sunucu hatası oluştu. Lütfen birkaç dakika bekleyip tekrar deneyin.',
       onRetry: onRetry,
     );
   }
@@ -196,7 +199,7 @@ class ErrorFeedbackService {
     if (!context.mounted) return;
 
     final errorMessages = errors.values.join('\n');
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Column(
@@ -224,10 +227,10 @@ class ErrorFeedbackService {
   }) {
     if (!context.mounted) return;
 
-    final message = isConnected 
+    final message = isConnected
         ? 'İnternet bağlantısı yeniden kuruldu'
         : 'İnternet bağlantısı kesildi';
-    
+
     final backgroundColor = isConnected ? Colors.green : Colors.red;
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -242,7 +245,7 @@ class ErrorFeedbackService {
   /// Clear all current SnackBars
   static void clearFeedback(BuildContext context) {
     if (!context.mounted) return;
-    
+
     ScaffoldMessenger.of(context).clearSnackBars();
   }
 

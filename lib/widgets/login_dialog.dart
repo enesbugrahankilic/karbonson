@@ -55,9 +55,10 @@ class _LoginDialogState extends State<LoginDialog> {
       // Use proper email and password authentication with 2FA support
       final email = _emailController.text.trim();
       final password = _passwordController.text;
-      
+
       // Use enhanced 2FA Service with proper email and password authentication
-      final authResult = await Firebase2FAService.signInWithEmailAndPasswordWith2FA(
+      final authResult =
+          await Firebase2FAService.signInWithEmailAndPasswordWith2FA(
         email: email,
         password: password,
       );
@@ -67,12 +68,12 @@ class _LoginDialogState extends State<LoginDialog> {
         if (kDebugMode) {
           debugPrint('Login successful for user: ${authResult.userId}');
         }
-        
+
         // Update nickname in profile if provided
         if (_nicknameController.text.isNotEmpty) {
           await _profileService.updateNickname(_nicknameController.text.trim());
         }
-        
+
         if (mounted) {
           Navigator.of(context).pop(true); // Return true for successful login
         }
@@ -81,11 +82,11 @@ class _LoginDialogState extends State<LoginDialog> {
         if (kDebugMode) {
           debugPrint('2FA required - navigating to verification page');
         }
-        
+
         if (mounted) {
           // Close login dialog first
           Navigator.of(context).pop(false);
-          
+
           // Navigate to 2FA verification page
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -124,7 +125,7 @@ class _LoginDialogState extends State<LoginDialog> {
       if (kDebugMode) {
         debugPrint('Unexpected login error: $e');
       }
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -182,17 +183,22 @@ class _LoginDialogState extends State<LoginDialog> {
                   labelStyle: TextStyle(color: ThemeColors.getGreen(context)),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getBorder(context)),
+                    borderSide:
+                        BorderSide(color: ThemeColors.getBorder(context)),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getBorder(context)),
+                    borderSide:
+                        BorderSide(color: ThemeColors.getBorder(context)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getPrimaryButtonColor(context), width: 2),
+                    borderSide: BorderSide(
+                        color: ThemeColors.getPrimaryButtonColor(context),
+                        width: 2),
                   ),
-                  prefixIcon: Icon(Icons.email, color: ThemeColors.getSecondaryText(context)),
+                  prefixIcon: Icon(Icons.email,
+                      color: ThemeColors.getSecondaryText(context)),
                 ),
                 style: TextStyle(
                   color: ThemeColors.getText(context),
@@ -208,7 +214,7 @@ class _LoginDialogState extends State<LoginDialog> {
                 },
               ),
               const SizedBox(height: 16),
-              
+
               // Password Field
               TextFormField(
                 controller: _passwordController,
@@ -220,20 +226,27 @@ class _LoginDialogState extends State<LoginDialog> {
                   labelStyle: TextStyle(color: ThemeColors.getGreen(context)),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getBorder(context)),
+                    borderSide:
+                        BorderSide(color: ThemeColors.getBorder(context)),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getBorder(context)),
+                    borderSide:
+                        BorderSide(color: ThemeColors.getBorder(context)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ThemeColors.getPrimaryButtonColor(context), width: 2),
+                    borderSide: BorderSide(
+                        color: ThemeColors.getPrimaryButtonColor(context),
+                        width: 2),
                   ),
-                  prefixIcon: Icon(Icons.lock, color: ThemeColors.getSecondaryText(context)),
+                  prefixIcon: Icon(Icons.lock,
+                      color: ThemeColors.getSecondaryText(context)),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                      _obscurePassword
+                          ? Icons.visibility
+                          : Icons.visibility_off,
                       color: ThemeColors.getSecondaryText(context),
                     ),
                     onPressed: () {
@@ -255,22 +268,22 @@ class _LoginDialogState extends State<LoginDialog> {
                 },
               ),
               const SizedBox(height: 16),
-              
+
               // Forgot Password Button
               SizedBox(
                 width: double.infinity,
                 child: TextButton.icon(
-                  onPressed: _isLoading 
-                    ? null 
-                    : () {
-                        Navigator.of(context).pop(); // Close login dialog
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ForgotPasswordPage(),
-                          ),
-                        );
-                      },
+                  onPressed: _isLoading
+                      ? null
+                      : () {
+                          Navigator.of(context).pop(); // Close login dialog
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ForgotPasswordPage(),
+                            ),
+                          );
+                        },
                   icon: Icon(
                     Icons.help_outline,
                     size: 18,
@@ -292,19 +305,19 @@ class _LoginDialogState extends State<LoginDialog> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Biyometrik giriş seçeneği
               FutureBuilder<bool>(
                 future: BiometricUserService.isUserBiometricEnabled(),
                 builder: (context, snapshot) {
                   final isBiometricEnabled = snapshot.data ?? false;
-                  
+
                   if (!isBiometricEnabled) {
                     return const SizedBox.shrink();
                   }
-                  
+
                   return Column(
                     children: [
                       const Divider(),
@@ -324,7 +337,8 @@ class _LoginDialogState extends State<LoginDialog> {
                         onError: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Biyometrik giriş başarısız. Lütfen email/şifre ile giriş yapmayı deneyin.'),
+                              content: Text(
+                                  'Biyometrik giriş başarısız. Lütfen email/şifre ile giriş yapmayı deneyin.'),
                               backgroundColor: Colors.orange,
                             ),
                           );
@@ -335,9 +349,9 @@ class _LoginDialogState extends State<LoginDialog> {
                   );
                 },
               ),
-              
+
               const SizedBox(height: 8),
-              
+
               // Help Text
               Container(
                 padding: const EdgeInsets.all(12),
@@ -378,7 +392,8 @@ class _LoginDialogState extends State<LoginDialog> {
               ? const SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white),
                 )
               : const Text('Giriş Yap'),
         ),

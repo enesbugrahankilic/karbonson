@@ -25,7 +25,7 @@ class MultiplayerGameLogic with ChangeNotifier {
   Timer? _timer;
   int _timeElapsedInSeconds = 0;
   bool _isQuizActive = false;
-  
+
   // Error handling
   String? _lastError;
   bool _hasError = false;
@@ -39,14 +39,17 @@ class MultiplayerGameLogic with ChangeNotifier {
   bool get isDiceRolling => _isDiceRolling;
   bool get isGameFinished => _currentRoom?.status == GameStatus.finished;
   bool get isMyTurn {
-    if (_currentRoom == null || _currentPlayer == null || 
-        _currentRoom!.players.isEmpty || _currentRoom!.currentPlayerIndex < 0 ||
+    if (_currentRoom == null ||
+        _currentPlayer == null ||
+        _currentRoom!.players.isEmpty ||
+        _currentRoom!.currentPlayerIndex < 0 ||
         _currentRoom!.currentPlayerIndex >= _currentRoom!.players.length) {
       return false;
     }
-    return _currentRoom!.players[_currentRoom!.currentPlayerIndex].id == _currentPlayer!.id;
+    return _currentRoom!.players[_currentRoom!.currentPlayerIndex].id ==
+        _currentPlayer!.id;
   }
-  
+
   // Error getters
   String? get lastError => _lastError;
   bool get hasError => _hasError;
@@ -82,18 +85,18 @@ class MultiplayerGameLogic with ChangeNotifier {
     try {
       // Clear any previous errors
       _clearError();
-      
+
       // Validate inputs
       if (room.id.isEmpty) {
         _setError('Room ID cannot be empty');
         return false;
       }
-      
+
       if (playerId.isEmpty) {
         _setError('Player ID cannot be empty');
         return false;
       }
-      
+
       if (!room.players.any((p) => p.id == playerId)) {
         _setError('Player not found in room');
         return false;
@@ -102,7 +105,7 @@ class MultiplayerGameLogic with ChangeNotifier {
       _currentRoom = room;
       _currentPlayer = room.players.firstWhere((p) => p.id == playerId);
       _timeElapsedInSeconds = room.timeElapsedInSeconds;
-      
+
       _startTimer();
       _listenToRoomChanges();
       notifyListeners();
@@ -121,7 +124,8 @@ class MultiplayerGameLogic with ChangeNotifier {
     }
 
     try {
-      _roomSubscription = _firestoreService.listenToRoom(_currentRoom!.id).listen(
+      _roomSubscription =
+          _firestoreService.listenToRoom(_currentRoom!.id).listen(
         (room) {
           if (room != null) {
             _currentRoom = room;
@@ -157,7 +161,7 @@ class MultiplayerGameLogic with ChangeNotifier {
   /// Start timer with enhanced error handling
   void _startTimer() {
     _timer?.cancel();
-    
+
     try {
       _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
         try {
@@ -186,7 +190,8 @@ class MultiplayerGameLogic with ChangeNotifier {
     }
 
     try {
-      _firestoreService.updateGameState(_currentRoom!.id, timeElapsedInSeconds: _timeElapsedInSeconds);
+      _firestoreService.updateGameState(_currentRoom!.id,
+          timeElapsedInSeconds: _timeElapsedInSeconds);
     } catch (e) {
       _setError('Failed to sync time: $e');
     }
@@ -210,19 +215,20 @@ class MultiplayerGameLogic with ChangeNotifier {
       }
 
       final currentPlayerIndex = _currentRoom!.currentPlayerIndex;
-      if (currentPlayerIndex < 0 || currentPlayerIndex >= _currentRoom!.players.length) {
+      if (currentPlayerIndex < 0 ||
+          currentPlayerIndex >= _currentRoom!.players.length) {
         _setError('Invalid player index');
         return 0;
       }
 
       final currentPlayer = _currentRoom!.players[currentPlayerIndex];
-      
+
       // Check if player needs to skip turn
       if (currentPlayer.turnsToSkip > 0) {
         _lastDiceRoll = 0;
         currentPlayer.turnsToSkip--;
         _isDiceRolling = false;
-        
+
         // Update player in Firestore
         final success = await _updatePlayerInFirestore(currentPlayer);
         if (success) {
@@ -246,7 +252,7 @@ class MultiplayerGameLogic with ChangeNotifier {
 
       // Move player
       _movePlayer(currentPlayer, roll);
-      
+
       // Update in Firestore
       final success = await _updatePlayerInFirestore(currentPlayer);
       if (success) {
@@ -299,7 +305,8 @@ class MultiplayerGameLogic with ChangeNotifier {
       }
 
       int nextIndex = (_currentRoom!.currentPlayerIndex + 1) % playerCount;
-      await _firestoreService.updateGameState(_currentRoom!.id, currentPlayerIndex: nextIndex);
+      await _firestoreService.updateGameState(_currentRoom!.id,
+          currentPlayerIndex: nextIndex);
       return true;
     } catch (e) {
       _setError('Next turn error: $e');
@@ -323,7 +330,8 @@ class MultiplayerGameLogic with ChangeNotifier {
         return p.id == player.id ? player : p;
       }).toList();
 
-      await _firestoreService.updateGameState(_currentRoom!.id, players: updatedPlayers);
+      await _firestoreService.updateGameState(_currentRoom!.id,
+          players: updatedPlayers);
       return true;
     } catch (e) {
       _setError('Update player error: $e');
@@ -352,7 +360,8 @@ class MultiplayerGameLogic with ChangeNotifier {
             message = "Güvenli Bölge! İlk 2 tur koruması devrede. 🎉";
           } else {
             _timeElapsedInSeconds += 5;
-            message = "5 Saniye Ceza! 🛑 (5 Puan kaybı Quiz bitince uygulanacak)";
+            message =
+                "5 Saniye Ceza! 🛑 (5 Puan kaybı Quiz bitince uygulanacak)";
           }
           break;
 
@@ -367,7 +376,7 @@ class MultiplayerGameLogic with ChangeNotifier {
         default:
           message = "Bilinmeyen kare türü";
       }
-      
+
       notifyListeners();
       return message;
     } catch (e) {
@@ -387,8 +396,8 @@ class MultiplayerGameLogic with ChangeNotifier {
       player.quizScore += score;
       setIsQuizActive(false);
 
-      if (board.tiles.isNotEmpty && 
-          player.position >= 0 && 
+      if (board.tiles.isNotEmpty &&
+          player.position >= 0 &&
           player.position < board.tiles.length &&
           board.tiles[player.position].type == TileType.penalty) {
         if (_diceRollCount > 2) {
@@ -423,23 +432,26 @@ class MultiplayerGameLogic with ChangeNotifier {
   Future<bool> leaveRoom() async {
     try {
       bool success = true;
-      
-      if (_currentRoom != null && _currentRoom!.id.isNotEmpty && _currentPlayer != null) {
+
+      if (_currentRoom != null &&
+          _currentRoom!.id.isNotEmpty &&
+          _currentPlayer != null) {
         try {
-          await _firestoreService.leaveRoom(_currentRoom!.id, _currentPlayer!.id);
+          await _firestoreService.leaveRoom(
+              _currentRoom!.id, _currentPlayer!.id);
         } catch (e) {
           _setError('Leave room error: $e');
           success = false;
         }
       }
-      
+
       _roomSubscription?.cancel();
       _timer?.cancel();
       _currentRoom = null;
       _currentPlayer = null;
       _clearError();
       notifyListeners();
-      
+
       return success;
     } catch (e) {
       _setError('Leave room fatal error: $e');

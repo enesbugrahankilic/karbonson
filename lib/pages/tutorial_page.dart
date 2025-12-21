@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'login_page.dart';
 import '../theme/theme_colors.dart';
 
 class TutorialPage extends StatefulWidget {
@@ -17,37 +16,44 @@ class _TutorialPageState extends State<TutorialPage> {
   final List<Map<String, String>> _tutorialPages = [
     {
       'title': 'Eco Game\'e Hoş Geldiniz!',
-      'content': 'Çevre bilincini artıran eğlenceli bir tahta oyununa hazır mısınız? Zar atarak ilerleyin, quiz sorularını yanıtlayın ve en yüksek skoru elde etmeye çalışın!',
+      'content':
+          'Çevre bilincini artıran eğlenceli bir tahta oyununa hazır mısınız? Zar atarak ilerleyin, quiz sorularını yanıtlayın ve en yüksek skoru elde etmeye çalışın!',
       'icon': '🎉',
     },
     {
       'title': 'Oyun Amacı',
-      'content': 'Hedefiniz tahtadaki "Bitiş" karesine ulaşmak! Zar atarak ilerlerken quiz sorularını yanıtlayın, bonus ve ceza karelerinden puan kazanın veya kaybedin.',
+      'content':
+          'Hedefiniz tahtadaki "Bitiş" karesine ulaşmak! Zar atarak ilerlerken quiz sorularını yanıtlayın, bonus ve ceza karelerinden puan kazanın veya kaybedin.',
       'icon': '🎯',
     },
     {
       'title': 'Tahta Kareleri',
-      'content': '• Başlangıç: Oyunun başladığı yer\n• Quiz: Soru yanıtlayın, doğru cevap puan kazandırır\n• Bonus: Ekstra puan kazanın\n• Ceza: Puan kaybı\n• Bitiş: Oyunu tamamlayın',
+      'content':
+          '• Başlangıç: Oyunun başladığı yer\n• Quiz: Soru yanıtlayın, doğru cevap puan kazandırır\n• Bonus: Ekstra puan kazanın\n• Ceza: Puan kaybı\n• Bitiş: Oyunu tamamlayın',
       'icon': '🎲',
     },
     {
       'title': 'Puanlama Sistemi',
-      'content': 'Quiz puanlarınız toplanır, ancak geçen süreye göre ceza uygulanır. Daha hızlı bitirirseniz daha yüksek skor elde edersiniz!',
+      'content':
+          'Quiz puanlarınız toplanır, ancak geçen süreye göre ceza uygulanır. Daha hızlı bitirirseniz daha yüksek skor elde edersiniz!',
       'icon': '📊',
     },
     {
       'title': 'Tek Oyuncu Modu',
-      'content': 'Tek başınıza oynayın. Zar atın, ilerleyin ve quiz sorularını yanıtlayın. Skorunuz kaydedilir ve liderlik tablosunda yer alabilirsiniz.',
+      'content':
+          'Tek başınıza oynayın. Zar atın, ilerleyin ve quiz sorularını yanıtlayın. Skorunuz kaydedilir ve liderlik tablosunda yer alabilirsiniz.',
       'icon': '👤',
     },
     {
       'title': 'Çok Oyuncu Modu',
-      'content': 'Arkadaşlarınızla birlikte oynayın! Sırayla zar atın, birbirinizi geçmeye çalışın. Oda oluşturun veya katılın.',
+      'content':
+          'Arkadaşlarınızla birlikte oynayın! Sırayla zar atın, birbirinizi geçmeye çalışın. Oda oluşturun veya katılın.',
       'icon': '👥',
     },
     {
       'title': 'Nasıl Başlanır?',
-      'content': 'Giriş yapın, tek oyuncu veya çok oyuncu modunu seçin. Zar at butonuna tıklayarak oyuna başlayın. İyi eğlenceler!',
+      'content':
+          'Giriş yapın, tek oyuncu veya çok oyuncu modunu seçin. Zar at butonuna tıklayarak oyuna başlayın. İyi eğlenceler!',
       'icon': '🚀',
     },
   ];
@@ -78,9 +84,7 @@ class _TutorialPageState extends State<TutorialPage> {
 
     if (!mounted) return;
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const LoginPage()),
-    );
+    Navigator.of(context).pushReplacementNamed('/home');
   }
 
   @override
@@ -123,8 +127,9 @@ class _TutorialPageState extends State<TutorialPage> {
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
-                              color: Theme.of(context).brightness == Brightness.dark 
-                                  ? Colors.white 
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
                                   : Colors.white,
                             ),
                             textAlign: TextAlign.center,
@@ -135,9 +140,10 @@ class _TutorialPageState extends State<TutorialPage> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            color: Theme.of(context).brightness == Brightness.dark 
-                                ? Colors.grey[800]!.withValues(alpha: 0.95)
-                                : Colors.white.withValues(alpha: 0.95),
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.grey[800]!.withValues(alpha: 0.95)
+                                    : Colors.white.withValues(alpha: 0.95),
                             child: Padding(
                               padding: const EdgeInsets.all(24.0),
                               child: Text(
@@ -145,8 +151,9 @@ class _TutorialPageState extends State<TutorialPage> {
                                 style: TextStyle(
                                   fontSize: 18,
                                   height: 1.5,
-                                  color: Theme.of(context).brightness == Brightness.dark 
-                                      ? Colors.white 
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
                                       : Colors.black87,
                                 ),
                                 textAlign: TextAlign.center,
@@ -174,10 +181,12 @@ class _TutorialPageState extends State<TutorialPage> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: _currentPage == index
-                                ? (Theme.of(context).brightness == Brightness.dark 
-                                    ? Colors.white 
+                                ? (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
                                     : Colors.white)
-                                : (Theme.of(context).brightness == Brightness.dark 
+                                : (Theme.of(context).brightness ==
+                                        Brightness.dark
                                     ? Colors.white.withValues(alpha: 0.5)
                                     : Colors.white.withValues(alpha: 0.5)),
                           ),
@@ -192,11 +201,13 @@ class _TutorialPageState extends State<TutorialPage> {
                           ElevatedButton(
                             onPressed: _previousPage,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).brightness == Brightness.dark 
+                              backgroundColor: Theme.of(context).brightness ==
+                                      Brightness.dark
                                   ? Colors.grey[700]!.withValues(alpha: 0.8)
                                   : Colors.white.withValues(alpha: 0.8),
-                              foregroundColor: Theme.of(context).brightness == Brightness.dark 
-                                  ? Colors.white 
+                              foregroundColor: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
                                   : Colors.black87,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 24,

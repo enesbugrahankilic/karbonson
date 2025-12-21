@@ -29,16 +29,17 @@ class Comprehensive2FAVerificationPage extends StatefulWidget {
   });
 
   @override
-  State<Comprehensive2FAVerificationPage> createState() => _Comprehensive2FAVerificationPageState();
+  State<Comprehensive2FAVerificationPage> createState() =>
+      _Comprehensive2FAVerificationPageState();
 }
 
-class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerificationPage>
+class _Comprehensive2FAVerificationPageState
+    extends State<Comprehensive2FAVerificationPage>
     with TickerProviderStateMixin {
-  
   // Form controllers and keys
   final Map<VerificationMethod, TextEditingController> _controllers = {};
   final Map<VerificationMethod, GlobalKey<FormState>> _formKeys = {};
-  
+
   // State management
   VerificationMethod _currentMethod;
   VerificationResult? _verificationResult;
@@ -48,13 +49,13 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
   int _timeLeft = 0;
   Timer? _countdownTimer;
   Timer? _autoSubmitTimer;
-  
+
   // UI state
   bool _showAdvancedOptions = false;
   String? _lastErrorMessage;
   bool _showPassword = false;
   FocusNode? _currentFocusNode;
-  
+
   // Animation controllers
   late AnimationController _fadeController;
   late AnimationController _pulseController;
@@ -70,7 +71,7 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
     _initializeControllers();
     _initializeAnimations();
     _startVerification();
-    
+
     // Initialize service
     Comprehensive2FAService.initialize();
   }
@@ -87,12 +88,12 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-    
+
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -109,16 +110,16 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
     for (final controller in _controllers.values) {
       controller.dispose();
     }
-    
+
     // Cleanup timers
     _countdownTimer?.cancel();
     _autoSubmitTimer?.cancel();
-    
+
     // Cleanup animations
     _fadeController.dispose();
     _pulseController.dispose();
     _slideController.dispose();
-    
+
     super.dispose();
   }
 
@@ -142,7 +143,8 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
     });
 
     try {
-      _announceForAccessibility('${_currentMethod.displayName} doğrulaması başlatılıyor');
+      _announceForAccessibility(
+          '${_currentMethod.displayName} doğrulaması başlatılıyor');
 
       final result = await Comprehensive2FAService.startVerification(
         method: _currentMethod,
@@ -200,7 +202,7 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
 
     try {
       final code = _controllers[_currentMethod]!.text.trim();
-      
+
       final result = await Comprehensive2FAService.verifyCode(
         sessionId: _currentSessionId!,
         code: code,
@@ -221,7 +223,7 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
         } else {
           _announceForAccessibility('Hata: ${result.TurkishMessage}');
           _showError(result.TurkishMessage);
-          
+
           // Clear input on error
           _controllers[_currentMethod]!.clear();
           _currentFocusNode?.requestFocus();
@@ -253,8 +255,9 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
     _announceForAccessibility('Kod yeniden gönderiliyor');
 
     try {
-      final result = await Comprehensive2FAService.resendCode(_currentSessionId!);
-      
+      final result =
+          await Comprehensive2FAService.resendCode(_currentSessionId!);
+
       if (mounted) {
         setState(() {
           _isVerifying = false;
@@ -289,7 +292,7 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
 
     // Clear current inputs
     _controllers[_currentMethod]?.clear();
-    
+
     setState(() {
       _currentMethod = method;
       _codeSent = false;
@@ -309,14 +312,17 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
   /// Start countdown timer for code expiration
   void _startCountdown() {
     _countdownTimer?.cancel();
-    
+
     if (_verificationResult?.expiresAt == null) {
       // For methods without expiration (like hardware token)
       return;
     }
 
-    _timeLeft = ((_verificationResult!.expiresAt! - DateTime.now().millisecondsSinceEpoch) / 1000).ceil();
-    
+    _timeLeft = ((_verificationResult!.expiresAt! -
+                DateTime.now().millisecondsSinceEpoch) /
+            1000)
+        .ceil();
+
     if (_timeLeft <= 0) {
       _showError('Kod süresi doldu');
       return;
@@ -335,7 +341,8 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
           _codeSent = false;
         } else if (_timeLeft <= 30) {
           // Announce when less than 30 seconds remain
-          _announceForAccessibility('Kod ${_timeLeft} saniye sonra süresi dolacak');
+          _announceForAccessibility(
+              'Kod ${_timeLeft} saniye sonra süresi dolacak');
         }
       }
     });
@@ -344,10 +351,11 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
   /// Setup auto-submit for SMS codes
   void _setupAutoSubmit() {
     _autoSubmitTimer?.cancel();
-    
+
     if (_currentMethod != VerificationMethod.sms) return;
 
-    _autoSubmitTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
+    _autoSubmitTimer =
+        Timer.periodic(const Duration(milliseconds: 500), (timer) {
       if (mounted && _codeSent) {
         final controller = _controllers[_currentMethod]!;
         if (controller.text.length == 6) {
@@ -504,16 +512,16 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
             Text(
               '${_currentMethod.displayName} Doğrulama',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               _getMethodDescription(_currentMethod),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[600],
-              ),
+                    color: Colors.grey[600],
+                  ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -534,22 +542,24 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
             Text(
               'Doğrulama Yöntemi',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 12),
-            ...widget.availableMethods.map((method) => 
-              RadioListTile<VerificationMethod>(
-                value: method,
-                groupValue: _currentMethod,
-                onChanged: method != _currentMethod ? (value) => _switchMethod(value!) : null,
-                title: Text(method.displayName),
-                subtitle: Text(_getMethodDescription(method)),
-                secondary: Icon(_getMethodIcon(method)),
-                dense: true,
-                controlAffinity: ListTileControlAffinity.trailing,
-              )
-            ).toList(),
+            ...widget.availableMethods
+                .map((method) => RadioListTile<VerificationMethod>(
+                      value: method,
+                      groupValue: _currentMethod,
+                      onChanged: method != _currentMethod
+                          ? (value) => _switchMethod(value!)
+                          : null,
+                      title: Text(method.displayName),
+                      subtitle: Text(_getMethodDescription(method)),
+                      secondary: Icon(_getMethodIcon(method)),
+                      dense: true,
+                      controlAffinity: ListTileControlAffinity.trailing,
+                    ))
+                .toList(),
           ],
         ),
       ),
@@ -573,7 +583,9 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
-              children: widget.availableMethods.where((method) => method != _currentMethod).map((method) {
+              children: widget.availableMethods
+                  .where((method) => method != _currentMethod)
+                  .map((method) {
                 return ListTile(
                   leading: Icon(_getMethodIcon(method)),
                   title: Text(method.displayName),
@@ -618,7 +630,7 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
                 ),
               ),
             ]
-            
+
             // Code input form
             else if (_codeSent) ...[
               _buildCodeInput(),
@@ -627,7 +639,7 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
               const SizedBox(height: 16),
               _buildResendOptions(),
             ]
-            
+
             // Verification needed message
             else ...[
               const Center(
@@ -698,7 +710,9 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
                 children: [
                   if (_currentMethod == VerificationMethod.backupCode) ...[
                     IconButton(
-                      icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility),
+                      icon: Icon(_showPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility),
                       onPressed: () {
                         setState(() {
                           _showPassword = !_showPassword;
@@ -728,14 +742,15 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
               fontWeight: FontWeight.bold,
             ),
             maxLength: _getMaxLength(method),
-            obscureText: method == VerificationMethod.backupCode && !_showPassword,
+            obscureText:
+                method == VerificationMethod.backupCode && !_showPassword,
             inputFormatters: _getInputFormatters(method),
             validator: (value) => _validateInput(method, value),
             onChanged: (value) {
               setState(() {
                 // Trigger UI updates for real-time validation
               });
-              
+
               // Auto-submit for SMS after 6 digits
               if (method == VerificationMethod.sms && value.length == 6) {
                 _verifyCode();
@@ -759,7 +774,8 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
                   style: TextStyle(
                     fontSize: 12,
                     color: _timeLeft <= 30 ? Colors.orange : Colors.grey,
-                    fontWeight: _timeLeft <= 30 ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        _timeLeft <= 30 ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
                 if (controller.text.length == 6)
@@ -778,8 +794,11 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
         Expanded(
           child: ElevatedButton.icon(
             onPressed: _isVerifying ? null : _verifyCode,
-            icon: _isVerifying 
-                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+            icon: _isVerifying
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Icon(Icons.check_circle),
             label: Text(_isVerifying ? 'Doğrulanıyor...' : 'Doğrula'),
             style: ElevatedButton.styleFrom(
@@ -798,7 +817,7 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
 
   Widget _buildResendOptions() {
     final canResend = _currentMethod == VerificationMethod.sms && _timeLeft > 0;
-    
+
     return Column(
       children: [
         if (_currentMethod == VerificationMethod.totp) ...[
@@ -840,8 +859,13 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
       return const SizedBox.shrink();
     }
 
-    final progress = (_timeLeft / ((_verificationResult!.expiresAt! - (DateTime.now().millisecondsSinceEpoch - (_timeLeft * 1000))) / 1000)).clamp(0.0, 1.0);
-    
+    final progress = (_timeLeft /
+            ((_verificationResult!.expiresAt! -
+                    (DateTime.now().millisecondsSinceEpoch -
+                        (_timeLeft * 1000))) /
+                1000))
+        .clamp(0.0, 1.0);
+
     return Card(
       elevation: 2,
       child: Padding(
@@ -861,7 +885,8 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
               style: TextStyle(
                 fontSize: 12,
                 color: _timeLeft <= 30 ? Colors.orange : Colors.grey[700],
-                fontWeight: _timeLeft <= 30 ? FontWeight.bold : FontWeight.normal,
+                fontWeight:
+                    _timeLeft <= 30 ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ],
@@ -887,9 +912,9 @@ class _Comprehensive2FAVerificationPageState extends State<Comprehensive2FAVerif
                 Text(
                   'Güvenlik Bilgisi',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue[700],
-                  ),
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue[700],
+                      ),
                 ),
               ],
             ),

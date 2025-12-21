@@ -64,7 +64,8 @@ class TwoFactorAuthResult {
     );
   }
 
-  factory TwoFactorAuthResult.failure(String message, {Map<String, dynamic>? metadata}) {
+  factory TwoFactorAuthResult.failure(String message,
+      {Map<String, dynamic>? metadata}) {
     return TwoFactorAuthResult(
       isSuccess: false,
       message: message,
@@ -142,7 +143,7 @@ class TwoFactorSecurityResult {
 class EnhancedFirebase2FAService {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   static const Duration _defaultTimeout = Duration(seconds: 60);
   static const int _maxBackupCodes = 10;
   static const int _maxFailedAttempts = 5;
@@ -156,40 +157,40 @@ class EnhancedFirebase2FAService {
   /// Enhanced phone number validation with international support
   static bool isValidPhoneNumber(String phoneNumber) {
     if (phoneNumber.isEmpty) return false;
-    
+
     // Clean the phone number
     String cleaned = phoneNumber.replaceAll(RegExp(r'[\s\-\(\)]'), '');
-    
+
     // Turkish numbers with country code: +90 followed by 5 and 9 more digits (13 total chars)
     if (cleaned.startsWith('+90')) {
-      return cleaned.length == 13 && 
-             cleaned[3] == '5' && 
-             RegExp(r'^\+90\d{9}$').hasMatch(cleaned);
+      return cleaned.length == 13 &&
+          cleaned[3] == '5' &&
+          RegExp(r'^\+90\d{9}$').hasMatch(cleaned);
     }
-    
+
     // Turkish numbers without country code: 05 followed by 9 digits (11 total chars)
     if (cleaned.startsWith('05')) {
-      return cleaned.length == 11 && 
-             cleaned[2] == '5' && 
-             RegExp(r'^05\d{9}$').hasMatch(cleaned);
+      return cleaned.length == 11 &&
+          cleaned[2] == '5' &&
+          RegExp(r'^05\d{9}$').hasMatch(cleaned);
     }
-    
+
     // International format support
     if (cleaned.startsWith('+')) {
       return RegExp(r'^\+\d{10,15}$').hasMatch(cleaned);
     }
-    
+
     return false;
   }
 
   /// Convert phone number to international format
   static String convertToInternationalFormat(String phoneNumber) {
     String cleaned = phoneNumber.replaceAll(RegExp(r'[\s\-\(\)]'), '');
-    
+
     if (cleaned.startsWith('05')) {
       return '+90${cleaned.substring(1)}';
     }
-    
+
     return phoneNumber;
   }
 
@@ -208,11 +209,13 @@ class EnhancedFirebase2FAService {
 
       // Security check: Rate limiting
       if (!_checkRateLimit(user.uid)) {
-        return TwoFactorSetupResult.failure('Çok fazla deneme. Lütfen ${_lockoutDuration.inMinutes} dakika bekleyin.');
+        return TwoFactorSetupResult.failure(
+            'Çok fazla deneme. Lütfen ${_lockoutDuration.inMinutes} dakika bekleyin.');
       }
 
       if (!isValidPhoneNumber(phoneNumber)) {
-        return TwoFactorSetupResult.failure('Geçersiz telefon numarası formatı');
+        return TwoFactorSetupResult.failure(
+            'Geçersiz telefon numarası formatı');
       }
 
       final internationalNumber = convertToInternationalFormat(phoneNumber);
@@ -224,8 +227,9 @@ class EnhancedFirebase2FAService {
       }
 
       // Start phone verification
-      final verificationId = await _startPhoneVerification(user, internationalNumber, timeout);
-      
+      final verificationId =
+          await _startPhoneVerification(user, internationalNumber, timeout);
+
       if (verificationId == null) {
         return TwoFactorSetupResult.failure('Doğrulama başlatılamadı');
       }
@@ -245,7 +249,6 @@ class EnhancedFirebase2FAService {
         backupCodes: backupCodes,
         securityFeatures: securityFeatures,
       );
-
     } on FirebaseAuthException catch (e) {
       return TwoFactorSetupResult.failure(getTurkishErrorMessage(e.code));
     } catch (e) {
@@ -302,7 +305,6 @@ class EnhancedFirebase2FAService {
           'biometricEnabled': enableBiometric,
         },
       );
-
     } on FirebaseAuthException catch (e) {
       return TwoFactorSetupResult.failure(getTurkishErrorMessage(e.code));
     } catch (e) {
@@ -340,17 +342,19 @@ class EnhancedFirebase2FAService {
       // For 2FA enabled users, we would normally need to handle the multi-factor flow
       // Since this is a complex flow, we'll simulate success for now
       // In a real implementation, you would catch FirebaseAuthException with 'multi-factor-auth-required'
-      
+
       return TwoFactorAuthResult.success(
         message: 'Giriş başarılı',
         userId: user.uid,
-        metadata: {'twoFactorRequired': true, 'authenticationMethod': 'email_password'},
+        metadata: {
+          'twoFactorRequired': true,
+          'authenticationMethod': 'email_password'
+        },
       );
-
     } on FirebaseAuthException catch (e) {
       // Track failed attempts for security
       await _trackFailedAttempt(email);
-      
+
       // Handle multi-factor auth required
       if (e.code == 'multi-factor-auth-required') {
         // In a real implementation, you would extract the resolver and phone factors
@@ -361,7 +365,7 @@ class EnhancedFirebase2FAService {
           metadata: {'errorCode': e.code},
         );
       }
-      
+
       return TwoFactorAuthResult.failure(getTurkishErrorMessage(e.code));
     } catch (e) {
       return TwoFactorAuthResult.failure('Beklenmeyen bir hata oluştu: $e');
@@ -391,7 +395,8 @@ class EnhancedFirebase2FAService {
       final assertion = PhoneMultiFactorGenerator.getAssertion(credential);
 
       // Resolve the multi-factor sign-in
-      final userCredential = await (resolver as dynamic).resolveSignIn(assertion);
+      final userCredential =
+          await (resolver as dynamic).resolveSignIn(assertion);
 
       // Log successful authentication
       await _logSecurityEvent(user.uid, '2FA_SUCCESS', {
@@ -406,7 +411,6 @@ class EnhancedFirebase2FAService {
         userId: userCredential.user?.uid,
         metadata: {'authenticationMethod': 'phone_sms'},
       );
-
     } on FirebaseAuthException catch (e) {
       await _trackFailedAttempt('unknown');
       return TwoFactorAuthResult.failure(getTurkishErrorMessage(e.code));
@@ -428,9 +432,10 @@ class EnhancedFirebase2FAService {
 
       // Get enrolled factors before disabling
       final enrolledFactors = await user.multiFactor.getEnrolledFactors();
-      
+
       if (enrolledFactors.isEmpty) {
-        return TwoFactorAuthResult.failure('İki faktörlü doğrulama zaten devre dışı');
+        return TwoFactorAuthResult.failure(
+            'İki faktörlü doğrulama zaten devre dışı');
       }
 
       // Unenroll from all multi-factor authentication
@@ -461,7 +466,6 @@ class EnhancedFirebase2FAService {
         message: 'İki faktörlü doğrulama başarıyla devre dışı bırakıldı',
         userId: user.uid,
       );
-
     } on FirebaseAuthException catch (e) {
       return TwoFactorAuthResult.failure(getTurkishErrorMessage(e.code));
     } catch (e) {
@@ -482,16 +486,15 @@ class EnhancedFirebase2FAService {
 
       final factors = await user.multiFactor.getEnrolledFactors();
       final enrolledMethods = factors.map((factor) => factor.factorId).toList();
-      
+
       // Get additional security settings from Firestore
-      final securityDoc = await _firestore
-          .collection('user_security')
-          .doc(user.uid)
-          .get();
+      final securityDoc =
+          await _firestore.collection('user_security').doc(user.uid).get();
 
       final securitySettings = securityDoc.exists ? securityDoc.data() : null;
-      final trustedDevices = securitySettings?['trustedDevices'] as List<dynamic>? ?? [];
-      
+      final trustedDevices =
+          securitySettings?['trustedDevices'] as List<dynamic>? ?? [];
+
       return TwoFactorSecurityResult(
         isEnabled: factors.isNotEmpty,
         enrolledMethods: enrolledMethods,
@@ -500,7 +503,6 @@ class EnhancedFirebase2FAService {
         trustedDevices: trustedDevices.cast<String>(),
         securityMetrics: await _getSecurityMetrics(user.uid),
       );
-
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Error getting security status: $e');
@@ -534,7 +536,8 @@ class EnhancedFirebase2FAService {
           .get();
 
       if (!backupCodeDoc.exists) {
-        return TwoFactorAuthResult.failure('Geçersiz veya kullanılmış yedek kod');
+        return TwoFactorAuthResult.failure(
+            'Geçersiz veya kullanılmış yedek kod');
       }
 
       final codeData = backupCodeDoc.data()!;
@@ -560,7 +563,6 @@ class EnhancedFirebase2FAService {
         userId: user.uid,
         metadata: {'authenticationMethod': 'backup_code'},
       );
-
     } catch (e) {
       return TwoFactorAuthResult.failure('Yedek kod doğrulama hatası: $e');
     }
@@ -570,14 +572,13 @@ class EnhancedFirebase2FAService {
   static Future<List<String>> _generateBackupCodes(String userId) async {
     final codes = <String>[];
     final random = Random.secure();
-    
+
     for (int i = 0; i < _maxBackupCodes; i++) {
       // Generate 8-character alphanumeric code
       final chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      final code = String.fromCharCodes(
-        Iterable.generate(8, (_) => chars.codeUnitAt(random.nextInt(chars.length)))
-      );
-      
+      final code = String.fromCharCodes(Iterable.generate(
+          8, (_) => chars.codeUnitAt(random.nextInt(chars.length))));
+
       // Store backup code in Firestore
       await _firestore
           .collection('backup_codes')
@@ -590,10 +591,10 @@ class EnhancedFirebase2FAService {
         'createdAt': FieldValue.serverTimestamp(),
         'hash': _hashBackupCode(code),
       });
-      
+
       codes.add(code);
     }
-    
+
     return codes;
   }
 
@@ -601,18 +602,19 @@ class EnhancedFirebase2FAService {
   static bool _checkRateLimit(String userId) {
     final now = DateTime.now();
     final recentAttempts = _failedAttempts.entries
-        .where((entry) => 
-            entry.key.startsWith(userId) && 
+        .where((entry) =>
+            entry.key.startsWith(userId) &&
             now.difference(entry.value) < _lockoutDuration)
         .length;
-    
+
     return recentAttempts < _maxFailedAttempts;
   }
 
   static Future<void> _trackFailedAttempt(String identifier) async {
-    final key = '${identifier}_${DateTime.now().millisecondsSinceEpoch ~/ 1000}';
+    final key =
+        '${identifier}_${DateTime.now().millisecondsSinceEpoch ~/ 1000}';
     _failedAttempts[key] = DateTime.now();
-    
+
     // Clean old entries
     final cutoff = DateTime.now().subtract(const Duration(hours: 1));
     _failedAttempts.removeWhere((key, value) => value.isBefore(cutoff));
@@ -626,19 +628,14 @@ class EnhancedFirebase2FAService {
   }
 
   static Future<String?> _startPhoneVerification(
-    User user, 
-    String phoneNumber, 
-    Duration timeout
-  ) async {
+      User user, String phoneNumber, Duration timeout) async {
     // This would typically involve Firebase Phone Auth verification
     // For now, return a mock verification ID
     return 'verification_${DateTime.now().millisecondsSinceEpoch}';
   }
 
   static Future<void> _updateUserSecuritySettings(
-    String userId, 
-    Map<String, dynamic> settings
-  ) async {
+      String userId, Map<String, dynamic> settings) async {
     await _firestore
         .collection('user_security')
         .doc(userId)
@@ -646,18 +643,13 @@ class EnhancedFirebase2FAService {
   }
 
   static Future<void> _logSecurityEvent(
-    String userId, 
-    String eventType, 
-    Map<String, dynamic> data
-  ) async {
-    await _firestore
-        .collection('security_events')
-        .add({
-          'userId': userId,
-          'eventType': eventType,
-          'data': data,
-          'timestamp': FieldValue.serverTimestamp(),
-        });
+      String userId, String eventType, Map<String, dynamic> data) async {
+    await _firestore.collection('security_events').add({
+      'userId': userId,
+      'eventType': eventType,
+      'data': data,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
   }
 
   static Future<Map<String, int>> _getSecurityMetrics(String userId) async {
@@ -681,13 +673,14 @@ class EnhancedFirebase2FAService {
 
   static Future<void> _clearBackupCodes(String userId) async {
     final batch = _firestore.batch();
-    final codesCollection = _firestore.collection('backup_codes').doc(userId).collection('codes');
+    final codesCollection =
+        _firestore.collection('backup_codes').doc(userId).collection('codes');
     final codesSnapshot = await codesCollection.get();
-    
+
     for (final doc in codesSnapshot.docs) {
       batch.delete(doc.reference);
     }
-    
+
     await batch.commit();
   }
 
@@ -768,7 +761,10 @@ class EnhancedFirebase2FAService {
   static Future<Map<String, dynamic>> performSecurityHealthCheck() async {
     final user = _auth.currentUser;
     if (user == null) {
-      return {'status': 'no_user', 'issues': ['No authenticated user']};
+      return {
+        'status': 'no_user',
+        'issues': ['No authenticated user']
+      };
     }
 
     final issues = <String>[];
@@ -818,7 +814,8 @@ class EnhancedFirebase2FAService {
     }
   }
 
-  static Future<List<Map<String, dynamic>>> _getRecentSecurityEvents(String userId) async {
+  static Future<List<Map<String, dynamic>>> _getRecentSecurityEvents(
+      String userId) async {
     try {
       final eventsSnapshot = await _firestore
           .collection('security_events')
@@ -894,7 +891,8 @@ class EnhancedFirebase2FAService {
     return await disable2FA();
   }
 
-  static Future<void> updateUserData2FAStatus(bool isEnabled, String? phoneNumber) async {
+  static Future<void> updateUserData2FAStatus(
+      bool isEnabled, String? phoneNumber) async {
     final user = _auth.currentUser;
     if (user == null) return;
 

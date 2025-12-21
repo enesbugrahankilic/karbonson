@@ -3,6 +3,7 @@ import '../models/ai_recommendation.dart';
 import '../services/ai_service.dart';
 
 abstract class AIEvent {}
+
 abstract class AIState {}
 
 class LoadRecommendations extends AIEvent {
@@ -36,7 +37,8 @@ class AIBloc extends Bloc<AIEvent, AIState> {
   ) async {
     try {
       emit(AILoading());
-      final data = await aiService.getPersonalizedQuizRecommendations(event.userId);
+      final data =
+          await aiService.getPersonalizedQuizRecommendations(event.userId);
 
       final recommendations = (data['recommendations'] as List)
           .map((item) => AIRecommendation.fromJson(item))
@@ -50,4 +52,5 @@ class AIBloc extends Bloc<AIEvent, AIState> {
 }
 
 class AIInitial extends AIState {}
+
 class AILoading extends AIState {}

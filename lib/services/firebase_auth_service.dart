@@ -213,13 +213,13 @@ class TwoFactorManagementResult {
 
 class FirebaseAuthService {
   static final fb_auth.FirebaseAuth _auth = fb_auth.FirebaseAuth.instance;
-  
+
   // ⚡ TIMEOUT SÜRESİ 15 SANİYEDEN 5 SANİYEYE DÜŞÜRÜLDÜ
   static const Duration _defaultTimeout = Duration(seconds: 5);
-  
+
   // ⚡ RETRY DELAY 2 SANİYEDEN 0.5 SANİYEYE DÜŞÜRÜLDÜ
   static const Duration _retryDelay = Duration(milliseconds: 500);
-  
+
   // ⚡ MAX RETRY 3'TEN 2'YE DÜŞÜRÜLDÜ
   static const int _maxRetries = 2;
 
@@ -229,7 +229,7 @@ class FirebaseAuthService {
     try {
       // Set persistence to LOCAL (default) to maintain sessions across app restarts
       await _auth.setPersistence(fb_auth.Persistence.LOCAL);
-      
+
       if (kDebugMode) {
         debugPrint('Firebase Auth persistence initialized to LOCAL');
       }
@@ -257,9 +257,11 @@ class FirebaseAuthService {
   /// ============================================
 
   /// Enhanced authentication error handler with Turkish localization and context awareness
-  static String handleAuthError(fb_auth.FirebaseAuthException e, {String? context}) {
+  static String handleAuthError(fb_auth.FirebaseAuthException e,
+      {String? context}) {
     if (kDebugMode) {
-      debugPrint('Auth Error [${context ?? 'Unknown'}]: ${e.code} - ${e.message}');
+      debugPrint(
+          'Auth Error [${context ?? 'Unknown'}]: ${e.code} - ${e.message}');
       debugPrint('Full error details: ${e.toString()}');
     }
 
@@ -346,7 +348,8 @@ class FirebaseAuthService {
   }
 
   /// Handle password reset specific errors
-  static String _handlePasswordResetSpecificError(fb_auth.FirebaseAuthException e) {
+  static String _handlePasswordResetSpecificError(
+      fb_auth.FirebaseAuthException e) {
     switch (e.code) {
       case 'user-not-found':
         return 'Bu e-posta adresi ile kayıtlı bir hesap bulunamadı. E-posta adresinizi kontrol edin veya yeni hesap oluşturun.';
@@ -370,13 +373,15 @@ class FirebaseAuthService {
   }
 
   /// Handle too many requests error with context
-  static String _handleTooManyRequestsError(fb_auth.FirebaseAuthException e, String? context) {
+  static String _handleTooManyRequestsError(
+      fb_auth.FirebaseAuthException e, String? context) {
     final waitTime = context == 'login' ? '15 dakika' : '5 dakika';
     return 'Çok fazla deneme yapıldı. Lütfen $waitTime bekleyin ve tekrar deneyin.';
   }
 
   /// Handle user not found error with context
-  static String _handleUserNotFoundError(fb_auth.FirebaseAuthException e, String? context) {
+  static String _handleUserNotFoundError(
+      fb_auth.FirebaseAuthException e, String? context) {
     if (context == 'password_reset') {
       return 'Bu e-posta adresi ile kayıtlı bir hesap bulunamadı. E-posta adresinizi kontrol edin veya yeni hesap oluşturun.';
     }
@@ -384,7 +389,8 @@ class FirebaseAuthService {
   }
 
   /// Handle invalid email error with context
-  static String _handleInvalidEmailError(fb_auth.FirebaseAuthException e, String? context) {
+  static String _handleInvalidEmailError(
+      fb_auth.FirebaseAuthException e, String? context) {
     if (context == 'password_reset') {
       return 'E-posta adresi geçersiz. Lütfen doğru bir e-posta adresi girin.';
     }
@@ -392,7 +398,8 @@ class FirebaseAuthService {
   }
 
   /// Handle internal error with context
-  static String _handleInternalError(fb_auth.FirebaseAuthException e, String? context) {
+  static String _handleInternalError(
+      fb_auth.FirebaseAuthException e, String? context) {
     return 'Firebase sunucu hatası. Lütfen birkaç dakika bekleyip tekrar deneyin.';
   }
 
@@ -413,11 +420,13 @@ class FirebaseAuthService {
 
       // Check network connectivity
       if (!(await _isNetworkAvailable())) {
-        return PasswordResetResult.failure('İnternet bağlantınızı kontrol edin. Çevrimdışı modda şifre sıfırlama işlemi yapılamaz.');
+        return PasswordResetResult.failure(
+            'İnternet bağlantınızı kontrol edin. Çevrimdışı modda şifre sıfırlama işlemi yapılamaz.');
       }
 
       if (kDebugMode) {
-        debugPrint('Starting password reset for email: ${email.replaceRange(2, email.indexOf('@'), '***')}');
+        debugPrint(
+            'Starting password reset for email: ${email.replaceRange(2, email.indexOf('@'), '***')}');
       }
 
       // Enhanced Firebase password reset with retry logic
@@ -428,15 +437,15 @@ class FirebaseAuthService {
         message: 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.',
         email: email,
       );
-
     } on fb_auth.FirebaseAuthException catch (e) {
       // Convert Firebase error to localized message
-      final localizedError = handleAuthError(e, context: 'password_reset_email');
-      
+      final localizedError =
+          handleAuthError(e, context: 'password_reset_email');
+
       return PasswordResetResult.failure(localizedError);
-      
     } catch (e) {
-      return PasswordResetResult.failure("Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.");
+      return PasswordResetResult.failure(
+          "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.");
     }
   }
 
@@ -465,20 +474,21 @@ class FirebaseAuthService {
   /// ============================================
 
   /// Enhanced anonymous sign in with retry logic
-  static Future<fb_auth.User?> signInAnonymouslyWithRetry({int maxRetries = _maxRetries}) async {
+  static Future<fb_auth.User?> signInAnonymouslyWithRetry(
+      {int maxRetries = _maxRetries}) async {
     int attempts = 0;
-    
+
     while (attempts < maxRetries) {
       try {
         attempts++;
-        
+
         if (kDebugMode) {
           debugPrint('Anonymous sign in attempt $attempts/$maxRetries');
         }
 
         final userCredential = await _auth.signInAnonymously();
         final user = userCredential.user;
-        
+
         if (user != null) {
           if (kDebugMode) {
             debugPrint('Anonymous sign in successful for user: ${user.uid}');
@@ -489,67 +499,71 @@ class FirebaseAuthService {
         if (kDebugMode) {
           debugPrint('Anonymous sign in attempt $attempts failed: ${e.code}');
         }
-        
+
         // If it's the last attempt, throw the error
         if (attempts >= maxRetries) {
           throw e;
         }
-        
+
         // Wait before retrying
         await Future.delayed(_retryDelay);
       } catch (e) {
         if (kDebugMode) {
-          debugPrint('Anonymous sign in attempt $attempts failed with unexpected error: $e');
+          debugPrint(
+              'Anonymous sign in attempt $attempts failed with unexpected error: $e');
         }
-        
+
         if (attempts >= maxRetries) {
           rethrow;
         }
-        
+
         await Future.delayed(_retryDelay);
       }
     }
-    
+
     return null;
   }
 
   /// Enhanced email/password registration with retry logic
-  static Future<fb_auth.UserCredential?> createUserWithEmailAndPasswordWithRetry({
+  static Future<fb_auth.UserCredential?>
+      createUserWithEmailAndPasswordWithRetry({
     required String email,
     required String password,
     int maxRetries = _maxRetries,
   }) async {
     int attempts = 0;
-    
+
     while (attempts < maxRetries) {
       try {
         attempts++;
-        
+
         if (kDebugMode) {
-          debugPrint('Email/password registration attempt $attempts/$maxRetries for email: ${email.replaceRange(2, email.indexOf('@'), '***')}');
+          debugPrint(
+              'Email/password registration attempt $attempts/$maxRetries for email: ${email.replaceRange(2, email.indexOf('@'), '***')}');
         }
 
         final userCredential = await _auth.createUserWithEmailAndPassword(
           email: email,
           password: password,
         );
-        
+
         if (kDebugMode) {
-          debugPrint('Email/password registration successful for user: ${userCredential.user?.uid}');
+          debugPrint(
+              'Email/password registration successful for user: ${userCredential.user?.uid}');
         }
-        
+
         return userCredential;
-        
       } on fb_auth.FirebaseAuthException catch (e) {
         if (kDebugMode) {
-          debugPrint('Email/password registration attempt $attempts failed: ${e.code}');
+          debugPrint(
+              'Email/password registration attempt $attempts failed: ${e.code}');
         }
-        
+
         // If it's the last attempt, throw the error
         if (attempts >= maxRetries) {
           rethrow;
         }
-        
+
         // Check if it's a retryable error
         if (_isRetryableError(e.code)) {
           await Future.delayed(_retryDelay);
@@ -558,17 +572,18 @@ class FirebaseAuthService {
         }
       } catch (e) {
         if (kDebugMode) {
-          debugPrint('Email/password registration attempt $attempts failed with unexpected error: $e');
+          debugPrint(
+              'Email/password registration attempt $attempts failed with unexpected error: $e');
         }
-        
+
         if (attempts >= maxRetries) {
           rethrow;
         }
-        
+
         await Future.delayed(_retryDelay);
       }
     }
-    
+
     return null;
   }
 
@@ -579,36 +594,38 @@ class FirebaseAuthService {
     int maxRetries = _maxRetries,
   }) async {
     int attempts = 0;
-    
+
     while (attempts < maxRetries) {
       try {
         attempts++;
-        
+
         if (kDebugMode) {
-          debugPrint('Email/password sign in attempt $attempts/$maxRetries for email: ${email.replaceRange(2, email.indexOf('@'), '***')}');
+          debugPrint(
+              'Email/password sign in attempt $attempts/$maxRetries for email: ${email.replaceRange(2, email.indexOf('@'), '***')}');
         }
 
         final userCredential = await _auth.signInWithEmailAndPassword(
           email: email,
           password: password,
         );
-        
+
         if (kDebugMode) {
-          debugPrint('Email/password sign in successful for user: ${userCredential.user?.uid}');
+          debugPrint(
+              'Email/password sign in successful for user: ${userCredential.user?.uid}');
         }
-        
+
         return userCredential;
-        
       } on fb_auth.FirebaseAuthException catch (e) {
         if (kDebugMode) {
-          debugPrint('Email/password sign in attempt $attempts failed: ${e.code}');
+          debugPrint(
+              'Email/password sign in attempt $attempts failed: ${e.code}');
         }
-        
+
         // If it's the last attempt, throw the error
         if (attempts >= maxRetries) {
           rethrow;
         }
-        
+
         // Check if it's a retryable error
         if (_isRetryableError(e.code)) {
           await Future.delayed(_retryDelay);
@@ -617,17 +634,18 @@ class FirebaseAuthService {
         }
       } catch (e) {
         if (kDebugMode) {
-          debugPrint('Email/password sign in attempt $attempts failed with unexpected error: $e');
+          debugPrint(
+              'Email/password sign in attempt $attempts failed with unexpected error: $e');
         }
-        
+
         if (attempts >= maxRetries) {
           rethrow;
         }
-        
+
         await Future.delayed(_retryDelay);
       }
     }
-    
+
     return null;
   }
 
@@ -654,9 +672,10 @@ class FirebaseAuthService {
   }) async {
     try {
       final user = _auth.currentUser;
-      
+
       if (user == null) {
-        return EmailVerificationResult.failure('Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.');
+        return EmailVerificationResult.failure(
+            'Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.');
       }
 
       if (user.emailVerified) {
@@ -673,12 +692,12 @@ class FirebaseAuthService {
         'Doğrulama e-postası e-posta adresinize gönderildi. Lütfen gelen kutunuzu kontrol edin.',
         user.email!,
       );
-
     } on fb_auth.FirebaseAuthException catch (e) {
       final errorMessage = handleAuthError(e, context: 'email_verification');
       return EmailVerificationResult.failure(errorMessage);
     } catch (e) {
-      return EmailVerificationResult.failure('Beklenmeyen bir hata oluştu: ${e.toString()}');
+      return EmailVerificationResult.failure(
+          'Beklenmeyen bir hata oluştu: ${e.toString()}');
     }
   }
 
@@ -686,7 +705,7 @@ class FirebaseAuthService {
   static Future<EmailVerificationStatus> checkEmailVerificationStatus() async {
     try {
       final user = _auth.currentUser;
-      
+
       if (user == null) {
         return const EmailVerificationStatus(
           isVerified: false,
@@ -699,8 +718,9 @@ class FirebaseAuthService {
       // Force refresh user data to get latest verification status
       await user.reload();
       final refreshedUser = _auth.currentUser!;
-      
-      final hasEmail = refreshedUser.email != null && refreshedUser.email!.isNotEmpty;
+
+      final hasEmail =
+          refreshedUser.email != null && refreshedUser.email!.isNotEmpty;
       final isVerified = refreshedUser.emailVerified;
 
       return EmailVerificationStatus(
@@ -711,7 +731,6 @@ class FirebaseAuthService {
             ? 'E-posta adresi doğrulanmış'
             : 'E-posta adresinizi doğrulamanız gerekiyor',
       );
-
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Failed to check email verification status: $e');
@@ -776,7 +795,8 @@ class FirebaseAuthService {
         'email': user?.email,
         'emailVerified': user?.emailVerified,
         'isAnonymous': user?.isAnonymous,
-        'providerData': user?.providerData.map((data) => data.providerId).toList(),
+        'providerData':
+            user?.providerData.map((data) => data.providerId).toList(),
       };
     } catch (e) {
       if (kDebugMode) {

@@ -22,14 +22,15 @@ class ProfileImageService {
   // Firebase Storage instance
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  
+
   // Asset optimization service for CDN integration
-  final AssetOptimizationService _assetOptimization = AssetOptimizationService();
+  final AssetOptimizationService _assetOptimization =
+      AssetOptimizationService();
 
   // Upload streams for real-time progress tracking
-  final StreamController<UploadProgress> _progressController = 
+  final StreamController<UploadProgress> _progressController =
       StreamController<UploadProgress>.broadcast();
-  final StreamController<ProfileImageData> _imageDataController = 
+  final StreamController<ProfileImageData> _imageDataController =
       StreamController<ProfileImageData>.broadcast();
 
   // Performance metrics
@@ -38,7 +39,7 @@ class ProfileImageService {
 
   /// Stream for upload progress updates
   Stream<UploadProgress> get uploadProgressStream => _progressController.stream;
-  
+
   /// Stream for image data updates
   Stream<ProfileImageData> get imageDataStream => _imageDataController.stream;
 
@@ -59,7 +60,7 @@ class ProfileImageService {
 
       final imageId = _generateImageId();
       final startTime = DateTime.now();
-      
+
       // Create upload progress tracker
       final uploadProgress = UploadProgress(
         bytesUploaded: 0,
@@ -70,7 +71,8 @@ class ProfileImageService {
         estimatedTimeRemaining: _calculateUploadTime(imageData.length),
       );
 
-      _updateProgress(uploadProgress.copyWith(status: ImageUploadStatus.uploading));
+      _updateProgress(
+          uploadProgress.copyWith(status: ImageUploadStatus.uploading));
 
       // Validate image data
       final validationResult = _validateImageData(imageData, format);
@@ -84,13 +86,13 @@ class ProfileImageService {
 
       // Convert format-specific optimization params
       final params = optimizationParams ?? const ImageOptimizationParams();
-      
+
       // Step 1: Optimize image
       _updateProgress(uploadProgress.copyWith(
         status: ImageUploadStatus.optimizing,
         progress: 0.1,
       ));
-      
+
       final optimizedData = await _optimizeImageData(
         imageData,
         params.copyWith(watermarkText: watermarkText),
@@ -169,7 +171,8 @@ class ProfileImageService {
         processedAt: DateTime.now(),
         metadata: {
           'compressionRatio': imageData.length / optimizedData.length,
-          'optimizationTime': DateTime.now().difference(startTime).inMilliseconds,
+          'optimizationTime':
+              DateTime.now().difference(startTime).inMilliseconds,
           'uploadTime': DateTime.now().difference(startTime).inMilliseconds,
         },
         isActive: true,
@@ -184,11 +187,11 @@ class ProfileImageService {
 
       if (kDebugMode) {
         debugPrint('✅ Profile image uploaded successfully: $imageId');
-        debugPrint('📊 Original: ${imageData.length} bytes -> Optimized: ${optimizedData.length} bytes');
+        debugPrint(
+            '📊 Original: ${imageData.length} bytes -> Optimized: ${optimizedData.length} bytes');
       }
 
       return profileImageData;
-
     } catch (e, stackTrace) {
       _logError('Upload failed: $e', stackTrace);
       return null;
@@ -230,13 +233,12 @@ class ProfileImageService {
       final allDeleted = results.every((result) => result);
 
       if (kDebugMode) {
-        debugPrint(allDeleted 
-          ? '✅ Profile image deleted successfully: $imageId'
-          : '⚠️ Partial deletion completed for: $imageId');
+        debugPrint(allDeleted
+            ? '✅ Profile image deleted successfully: $imageId'
+            : '⚠️ Partial deletion completed for: $imageId');
       }
 
       return allDeleted;
-
     } catch (e, stackTrace) {
       _logError('Deletion failed: $e', stackTrace);
       return false;
@@ -262,29 +264,31 @@ class ProfileImageService {
       width: size,
       height: size,
       fit: BoxFit.cover,
-      placeholder: showProgressIndicator 
-        ? (context, url) => Container(
+      placeholder: showProgressIndicator
+          ? (context, url) => Container(
+                color: Colors.grey.shade200,
+                child: Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ),
+              )
+          : null,
+      errorWidget: (context, url, error) =>
+          errorWidget ??
+          Container(
             color: Colors.grey.shade200,
             child: Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Theme.of(context).primaryColor,
-                ),
+              child: Icon(
+                Icons.person,
+                size: size != null ? size * 0.6 : 24,
+                color: Colors.grey,
               ),
             ),
-          )
-        : null,
-      errorWidget: (context, url, error) => errorWidget ?? Container(
-        color: Colors.grey.shade200,
-        child: Center(
-          child: Icon(
-            Icons.person,
-            size: size != null ? size * 0.6 : 24,
-            color: Colors.grey,
           ),
-        ),
-      ),
       memCacheWidth: size?.round(),
       memCacheHeight: size?.round(),
       cacheKey: 'profile_${optimizedUrl}_${size?.round()}',
@@ -293,12 +297,12 @@ class ProfileImageService {
       useOldImageOnUrlChange: true,
     );
 
-    return isCircular 
-      ? ClipOval(child: imageWidget)
-      : ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: imageWidget,
-        );
+    return isCircular
+        ? ClipOval(child: imageWidget)
+        : ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: imageWidget,
+          );
   }
 
   /// Validate image file
@@ -316,7 +320,8 @@ class ProfileImageService {
       if (data.length > format.maxSize) {
         return ImageValidationResult(
           isValid: false,
-          errorMessage: 'Dosya boyutu çok büyük (${format.maxSize ~/ (1024 * 1024)}MB limit)',
+          errorMessage:
+              'Dosya boyutu çok büyük (${format.maxSize ~/ (1024 * 1024)}MB limit)',
           suggestions: [
             'Daha küçük bir görüntü seçin',
             'Görüntüyü yeniden boyutlandırın',
@@ -365,7 +370,6 @@ class ProfileImageService {
         errorMessage: null,
         suggestions: [],
       );
-
     } catch (e) {
       return ImageValidationResult(
         isValid: false,
@@ -382,7 +386,8 @@ class ProfileImageService {
       'successfulUploads': _performanceMetrics['successfulUploads'] ?? 0,
       'failedUploads': _performanceMetrics['failedUploads'] ?? 0,
       'averageUploadTime': _performanceMetrics['averageUploadTime'] ?? 0,
-      'averageOptimizationTime': _performanceMetrics['averageOptimizationTime'] ?? 0,
+      'averageOptimizationTime':
+          _performanceMetrics['averageOptimizationTime'] ?? 0,
       'totalDataProcessed': _performanceMetrics['totalDataProcessed'] ?? 0,
       'compressionSavings': _performanceMetrics['compressionSavings'] ?? 0,
       'uptimePercentage': _calculateUptimePercentage(),
@@ -413,8 +418,8 @@ class ProfileImageService {
   }
 
   String _generateImageId() {
-    return DateTime.now().millisecondsSinceEpoch.toString() + 
-           '_${FirebaseAuth.instance.currentUser?.uid ?? 'anonymous'}';
+    return DateTime.now().millisecondsSinceEpoch.toString() +
+        '_${FirebaseAuth.instance.currentUser?.uid ?? 'anonymous'}';
   }
 
   int _calculateUploadTime(int bytes) {
@@ -429,12 +434,12 @@ class ProfileImageService {
 
   void _logError(String message, [StackTrace? stackTrace]) {
     _errorLog.add('${DateTime.now().toIso8601String()}: $message');
-    
+
     // Keep only last 100 errors
     if (_errorLog.length > 100) {
       _errorLog.removeAt(0);
     }
-    
+
     if (kDebugMode) {
       debugPrint('🚨 Error: $message');
       if (stackTrace != null) {
@@ -444,34 +449,39 @@ class ProfileImageService {
   }
 
   void _updatePerformanceMetrics(ProfileImageData imageData) {
-    _performanceMetrics['totalUploads'] = 
+    _performanceMetrics['totalUploads'] =
         (_performanceMetrics['totalUploads'] ?? 0) + 1;
-    _performanceMetrics['successfulUploads'] = 
+    _performanceMetrics['successfulUploads'] =
         (_performanceMetrics['successfulUploads'] ?? 0) + 1;
-    _performanceMetrics['totalDataProcessed'] = 
-        (_performanceMetrics['totalDataProcessed'] ?? 0) + imageData.originalSize;
-    
+    _performanceMetrics['totalDataProcessed'] =
+        (_performanceMetrics['totalDataProcessed'] ?? 0) +
+            imageData.originalSize;
+
     final metadata = imageData.metadata;
     if (metadata != null) {
       final uploadTime = metadata['uploadTime'] as int? ?? 0;
       final optimizationTime = metadata['optimizationTime'] as int? ?? 0;
-      
-      _performanceMetrics['averageUploadTime'] = 
-          ((_performanceMetrics['averageUploadTime'] as int? ?? 0) + uploadTime) ~/ 2;
-      _performanceMetrics['averageOptimizationTime'] = 
-          ((_performanceMetrics['averageOptimizationTime'] as int? ?? 0) + optimizationTime) ~/ 2;
-      
+
+      _performanceMetrics['averageUploadTime'] =
+          ((_performanceMetrics['averageUploadTime'] as int? ?? 0) +
+                  uploadTime) ~/
+              2;
+      _performanceMetrics['averageOptimizationTime'] =
+          ((_performanceMetrics['averageOptimizationTime'] as int? ?? 0) +
+                  optimizationTime) ~/
+              2;
+
       final compressionRatio = metadata['compressionRatio'] as double? ?? 1.0;
-      _performanceMetrics['compressionSavings'] = 
-          (_performanceMetrics['compressionSavings'] ?? 0) + 
-          ((compressionRatio - 1.0) * 100).round();
+      _performanceMetrics['compressionSavings'] =
+          (_performanceMetrics['compressionSavings'] ?? 0) +
+              ((compressionRatio - 1.0) * 100).round();
     }
   }
 
   double _calculateUptimePercentage() {
     final total = _performanceMetrics['totalUploads'] ?? 0;
     final successful = _performanceMetrics['successfulUploads'] ?? 0;
-    
+
     if (total == 0) return 100.0;
     return (successful / total) * 100;
   }
@@ -489,7 +499,8 @@ class ProfileImageService {
       if (data.length > format.maxSize) {
         return ImageValidationResult(
           isValid: false,
-          errorMessage: 'File size exceeds ${format.maxSize ~/ (1024 * 1024)}MB limit',
+          errorMessage:
+              'File size exceeds ${format.maxSize ~/ (1024 * 1024)}MB limit',
           suggestions: ['Choose a smaller image', 'Use a different format'],
         );
       }
@@ -518,7 +529,7 @@ class ProfileImageService {
   }
 
   Future<Uint8List> _optimizeImageData(
-    Uint8List data, 
+    Uint8List data,
     ImageOptimizationParams params,
   ) async {
     return await _assetOptimization.optimizeImageForNetwork(
@@ -551,7 +562,7 @@ class ProfileImageService {
         final bytesUploaded = snapshot.bytesTransferred;
         final totalBytes = snapshot.totalBytes;
         final progressValue = totalBytes > 0 ? bytesUploaded / totalBytes : 0.0;
-        
+
         _updateProgress(progress.copyWith(
           bytesUploaded: bytesUploaded,
           totalBytes: totalBytes,
@@ -561,7 +572,7 @@ class ProfileImageService {
 
       final snapshot = await uploadTask;
       subscription.cancel();
-      
+
       return await snapshot.ref.getDownloadURL();
     } catch (e) {
       _logError('Upload failed: $e');
@@ -578,7 +589,7 @@ class ProfileImageService {
     try {
       final optimizedData = await _optimizeImageData(data, params);
       final path = 'optimized/${userId}_${imageId}.webp';
-      
+
       return await _uploadImageData(
         optimizedData,
         path,
@@ -622,9 +633,9 @@ class ProfileImageService {
           enableWebP: true,
         ),
       );
-      
+
       final path = 'thumbnails/${userId}_${imageId}_${size}.webp';
-      
+
       return await _uploadImageData(
         thumbnailData,
         path,

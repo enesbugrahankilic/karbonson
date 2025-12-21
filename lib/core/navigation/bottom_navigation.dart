@@ -74,76 +74,31 @@ class AppBottomNavigationBar extends StatefulWidget {
   State<AppBottomNavigationBar> createState() => _AppBottomNavigationBarState();
 }
 
-class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
-    with TickerProviderStateMixin {
-  late List<AnimationController> _animationControllers;
-  late List<Animation<double>> _scaleAnimations;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeAnimations();
-  }
-
-  @override
-  void didUpdateWidget(AppBottomNavigationBar oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.items.length != oldWidget.items.length) {
-      _initializeAnimations();
-    }
-  }
-
-  void _initializeAnimations() {
-    _animationControllers = List.generate(
-      widget.items.length,
-      (index) => AnimationController(
-        duration: const Duration(milliseconds: 200),
-        vsync: this,
-      ),
-    );
-
-    _scaleAnimations = _animationControllers
-        .map((controller) => Tween<double>(begin: 1.0, end: 1.1).animate(
-              CurvedAnimation(parent: controller, curve: Curves.elasticOut),
-            ))
-        .toList();
-
-    // Animate current item
-    if (widget.currentIndex < _animationControllers.length) {
-      _animationControllers[widget.currentIndex].forward();
-    }
-  }
-
-  @override
-  void dispose() {
-    for (final controller in _animationControllers) {
-      controller.dispose();
-    }
-    super.dispose();
-  }
-
+class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final backgroundColor = widget.backgroundColor ?? theme.colorScheme.surface;
+    final backgroundColor = widget.backgroundColor ??
+        theme.colorScheme.surface.withValues(alpha: 0.8);
     final selectedColor = widget.selectedItemColor ?? theme.colorScheme.primary;
-    final unselectedColor = widget.unselectedItemColor ?? theme.colorScheme.onSurfaceVariant;
+    final unselectedColor =
+        widget.unselectedItemColor ?? theme.colorScheme.onSurfaceVariant;
 
     return Container(
       decoration: BoxDecoration(
         color: backgroundColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
+        border: Border(
+          top: BorderSide(
+            color: theme.colorScheme.outline.withValues(alpha: 0.1),
+            width: 0.5,
           ),
-        ],
+        ),
       ),
       child: SafeArea(
         child: Container(
           height: 60 + MediaQuery.of(context).padding.bottom,
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
           child: Row(
             children: widget.items.asMap().entries.map((entry) {
               final index = entry.key;
@@ -177,80 +132,75 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
       onTap: () {
         _handleItemTap(index);
       },
-      child: AnimatedBuilder(
-        animation: _scaleAnimations[index],
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimations[index].value,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Icon(
-                        isSelected ? item.activeIcon : item.icon,
-                        size: 24,
-                        color: isSelected ? selectedColor : unselectedColor,
-                      ),
-                      if (item.badgeCount != null && item.badgeCount! > 0)
-                        Positioned(
-                          right: -8,
-                          top: -8,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: widget.backgroundColor ?? Theme.of(context).colorScheme.surface,
-                                width: 2,
-                              ),
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 16,
-                              minHeight: 16,
-                            ),
-                            child: Text(
-                              item.badgeCount! > 99 ? '99+' : item.badgeCount.toString(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(
+                  isSelected ? item.activeIcon : item.icon,
+                  size: 24,
+                  color: isSelected ? selectedColor : unselectedColor,
+                ),
+                if (item.badgeCount != null && item.badgeCount! > 0)
+                  Positioned(
+                    right: -6,
+                    top: -6,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: widget.backgroundColor ??
+                              Theme.of(context).colorScheme.surface,
+                          width: 1.5,
                         ),
-                    ],
-                  ),
-                  if (widget.showLabels) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      item.label,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                        color: isSelected ? selectedColor : unselectedColor,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      constraints: const BoxConstraints(
+                        minWidth: 14,
+                        minHeight: 14,
+                      ),
+                      child: Text(
+                        item.badgeCount! > 99
+                            ? '99+'
+                            : item.badgeCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                  ],
-                ],
-              ),
+                  ),
+              ],
             ),
-          );
-        },
+            if (widget.showLabels) ...[
+              const SizedBox(height: 4),
+              Text(
+                item.label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  color: isSelected ? selectedColor : unselectedColor,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
 
   void _handleItemTap(int index) {
     final item = widget.items[index];
-    
+
     // Log navigation event
     final navService = NavigationService();
     navService.logNavigationEvent(
@@ -271,11 +221,6 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
 
     // Call onTap callback if provided
     widget.onTap?.call(index);
-
-    // Animate tapped item
-    _animationControllers[index].forward().then((_) {
-      _animationControllers[index].reverse();
-    });
   }
 }
 
@@ -283,7 +228,6 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
 class BottomNavigationController extends ChangeNotifier {
   int _currentIndex = 0;
   final List<BottomNavItem> _items;
-  final NavigationService _navigationService = NavigationService();
 
   BottomNavigationController(this._items);
 
@@ -293,7 +237,7 @@ class BottomNavigationController extends ChangeNotifier {
   /// Set current index and navigate to route
   void setCurrentIndex(int index, {bool navigate = true}) {
     if (index < 0 || index >= _items.length) return;
-    
+
     final previousIndex = _currentIndex;
     _currentIndex = index;
     notifyListeners();
@@ -315,16 +259,18 @@ class BottomNavigationController extends ChangeNotifier {
   /// Update badge count for specific item
   void updateBadgeCount(int index, int? count) {
     if (index < 0 || index >= _items.length) return;
-    
+
     // Note: In a real implementation, you'd want to make BottomNavItem mutable
     // or use a state management solution
     if (kDebugMode) {
-      debugPrint('BottomNav: Badge count updated for ${_items[index].label}: $count');
+      debugPrint(
+          'BottomNav: Badge count updated for ${_items[index].label}: $count');
     }
   }
 
   /// Get current route name
-  String? get currentRoute => _items.isNotEmpty ? _items[_currentIndex].route : null;
+  String? get currentRoute =>
+      _items.isNotEmpty ? _items[_currentIndex].route : null;
 
   /// Check if route is in bottom nav items
   bool isBottomNavRoute(String route) {
@@ -343,36 +289,36 @@ class BottomNavConfigs {
   static List<BottomNavItem> mainNavigation() {
     return [
       const BottomNavItem(
+        route: AppRoutes.home,
+        icon: Icons.home,
+        activeIcon: Icons.home,
+        label: 'Ana Sayfa',
+        requiresAuth: true,
+        tooltip: 'Ana Sayfa',
+      ),
+      const BottomNavItem(
         route: AppRoutes.quiz,
         icon: Icons.quiz,
         activeIcon: Icons.quiz,
         label: 'Quiz',
         requiresAuth: false,
-        tooltip: 'Play Quiz Games',
+        tooltip: 'Quiz Oyunları',
       ),
       const BottomNavItem(
         route: AppRoutes.leaderboard,
         icon: Icons.leaderboard,
         activeIcon: Icons.leaderboard,
-        label: 'Leaderboard',
+        label: 'Liderlik',
         requiresAuth: false,
-        tooltip: 'View Rankings',
-      ),
-      const BottomNavItem(
-        route: AppRoutes.friends,
-        icon: Icons.people,
-        activeIcon: Icons.people,
-        label: 'Friends',
-        requiresAuth: true,
-        tooltip: 'Manage Friends',
+        tooltip: 'Sıralamalar',
       ),
       const BottomNavItem(
         route: AppRoutes.profile,
         icon: Icons.person,
         activeIcon: Icons.person,
-        label: 'Profile',
+        label: 'Profil',
         requiresAuth: true,
-        tooltip: 'Your Profile',
+        tooltip: 'Profiliniz',
       ),
     ];
   }
@@ -452,14 +398,16 @@ class BottomNavConfigs {
 /// Bottom navigation provider for easy state management
 class BottomNavigationProvider extends ChangeNotifier {
   static BottomNavigationProvider? _instance;
-  static BottomNavigationProvider get instance => _instance ??= BottomNavigationProvider._internal();
+  static BottomNavigationProvider get instance =>
+      _instance ??= BottomNavigationProvider._internal();
 
   BottomNavigationProvider._internal();
 
   BottomNavigationController? _controller;
 
   BottomNavigationController get controller {
-    _controller ??= BottomNavigationController(BottomNavConfigs.mainNavigation());
+    _controller ??=
+        BottomNavigationController(BottomNavConfigs.mainNavigation());
     return _controller!;
   }
 

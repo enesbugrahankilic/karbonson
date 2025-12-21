@@ -26,7 +26,7 @@ class PhoneInputWidget extends StatefulWidget {
 
 class _PhoneInputWidgetState extends State<PhoneInputWidget> {
   bool _isUpdating = false;
-  
+
   @override
   void initState() {
     super.initState();
@@ -43,15 +43,15 @@ class _PhoneInputWidgetState extends State<PhoneInputWidget> {
   void _onTextChanged() {
     // Eğer zaten güncelleniyorsak, recursive call'u önle
     if (_isUpdating) return;
-    
+
     _isUpdating = true;
-    
+
     try {
       String text = widget.controller.text;
-      
+
       // Sadece rakamları al
       String digitsOnly = text.replaceAll(RegExp(r'[^\d]'), '');
-      
+
       // Türk telefon numarası formatı: 05555555555 (11 rakam)
       if (digitsOnly.startsWith('0')) {
         digitsOnly = digitsOnly.substring(0, math.min(digitsOnly.length, 11));
@@ -65,19 +65,16 @@ class _PhoneInputWidgetState extends State<PhoneInputWidget> {
 
       // Formatla
       String formatted = _formatPhoneNumber(digitsOnly);
-      
+
       // Eğer değişiklik varsa controller'ı güncelle
       if (formatted != widget.controller.text) {
         final cursorPosition = widget.controller.selection;
         widget.controller.text = formatted;
-        
+
         // Cursor pozisyonunu akıllıca ayarla
         if (cursorPosition.isValid) {
           final newPosition = _getNewCursorPosition(
-            widget.controller.text, 
-            cursorPosition,
-            text
-          );
+              widget.controller.text, cursorPosition, text);
           widget.controller.selection = TextSelection.collapsed(
             offset: newPosition,
           );
@@ -93,34 +90,37 @@ class _PhoneInputWidgetState extends State<PhoneInputWidget> {
 
   String _formatPhoneNumber(String digits) {
     if (digits.isEmpty) return '';
-    
+
     // Türk telefon formatı: 0555 555 55 55
     if (digits.startsWith('0') && digits.length >= 4) {
       if (digits.length <= 4) return digits;
-      if (digits.length <= 7) return '${digits.substring(0, 4)} ${digits.substring(4)}';
-      if (digits.length <= 9) return '${digits.substring(0, 4)} ${digits.substring(4, 7)} ${digits.substring(7)}';
+      if (digits.length <= 7)
+        return '${digits.substring(0, 4)} ${digits.substring(4)}';
+      if (digits.length <= 9)
+        return '${digits.substring(0, 4)} ${digits.substring(4, 7)} ${digits.substring(7)}';
       return '${digits.substring(0, 4)} ${digits.substring(4, 7)} ${digits.substring(7, 9)} ${digits.substring(9, 11)}';
     }
-    
+
     return digits;
   }
 
-  int _getNewCursorPosition(String newText, TextSelection oldSelection, String oldText) {
+  int _getNewCursorPosition(
+      String newText, TextSelection oldSelection, String oldText) {
     int newPosition = oldSelection.extentOffset;
     int oldLength = oldText.length;
     int newLength = newText.length;
-    
+
     // Eğer text kısaldıysa (silme işlemi)
     if (newLength < oldLength) {
       // Cursor'u yeni text uzunluğu ile sınırla
       newPosition = math.min(newPosition, newLength);
       return newPosition;
     }
-    
+
     // Eğer text uzadıysa (ekleme işlemi)
     // Kaç karakter eklendiğini hesapla
     int charactersAdded = newLength - oldLength;
-    
+
     if (charactersAdded > 0) {
       // Yeni text'te kaç boşluk olduğunu say
       int spacesInNewText = 0;
@@ -129,19 +129,22 @@ class _PhoneInputWidgetState extends State<PhoneInputWidget> {
           spacesInNewText++;
         }
       }
-      
+
       // Eski text'te kaç boşluk olduğunu say
       int spacesInOldText = 0;
-      for (int i = 0; i < math.min(oldLength, newPosition - spacesInNewText) && i < oldText.length; i++) {
+      for (int i = 0;
+          i < math.min(oldLength, newPosition - spacesInNewText) &&
+              i < oldText.length;
+          i++) {
         if (oldText[i] == ' ') {
           spacesInOldText++;
         }
       }
-      
+
       // Farkı pozisyona ekle
       newPosition += (spacesInNewText - spacesInOldText);
     }
-    
+
     // Cursor pozisyonunu text uzunluğu ile sınırla
     return math.min(newPosition, newLength);
   }
@@ -156,8 +159,8 @@ class _PhoneInputWidgetState extends State<PhoneInputWidget> {
         hintText: widget.hintText ?? '0555 555 55 55',
         prefixIcon: const Icon(Icons.phone),
         filled: true,
-        fillColor: widget.enabled 
-            ? Theme.of(context).inputDecorationTheme.fillColor 
+        fillColor: widget.enabled
+            ? Theme.of(context).inputDecorationTheme.fillColor
             : Colors.grey[100],
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -166,7 +169,8 @@ class _PhoneInputWidgetState extends State<PhoneInputWidget> {
       ),
       keyboardType: TextInputType.phone,
       inputFormatters: [
-        LengthLimitingTextInputFormatter(19), // "+90 555 555 55 55" = 19 karakter
+        LengthLimitingTextInputFormatter(
+            19), // "+90 555 555 55 55" = 19 karakter
       ],
       validator: (value) {
         // Önce custom validator'ı çağır
@@ -174,14 +178,14 @@ class _PhoneInputWidgetState extends State<PhoneInputWidget> {
           final result = widget.validator!(value);
           if (result != null) return result;
         }
-        
+
         // Varsayılan validasyon
         if (value == null || value.trim().isEmpty) {
           return 'Telefon numarası girin';
         }
-        
+
         String digits = value.replaceAll(RegExp(r'[^\d]'), '');
-        
+
         // Türk telefon numarası kontrolü
         if (digits.startsWith('0') && digits.length == 11) {
           // 05 ile başlayıp 11 haneli olmalı

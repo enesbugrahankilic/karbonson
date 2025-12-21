@@ -35,12 +35,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   final TextEditingController _nicknameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final ProfileService _profileService = ProfileService();
-  
+
   // Animation controllers
   late AnimationController _fadeController;
   late AnimationController _slideController;
   late AnimationController _buttonController;
-  
+
   // Registration status
   bool _isRegistered = false;
   bool _isCheckingRegistration = true;
@@ -49,33 +49,43 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   // Kapsamlı isim önerisi listesi
   final List<String> _availableNames = [
     // A
-    'AtıkAzaltıcı', 'AğaçDikeni', 'ArıKoruyucu', 'AydınlıkGezegen', 'AtmosferSavunucusu',
+    'AtıkAzaltıcı', 'AğaçDikeni', 'ArıKoruyucu', 'AydınlıkGezegen',
+    'AtmosferSavunucusu',
     // B
     'BiyoDost', 'BilinçliGezgin', 'BarışçıDoğa', 'BitkiSever', 'BiyoEnerji',
     // C
-    'CevreBilinci', 'CevreKoruyucu', 'CevreTeknolojisi', 'CevreciZihin', 'CevreKalkanı',
+    'CevreBilinci', 'CevreKoruyucu', 'CevreTeknolojisi', 'CevreciZihin',
+    'CevreKalkanı',
     // Ç
-    'ÇevreDostu', 'ÇiçekKahramanı', 'ÇamKoruyucu', 'ÇevreGönüllüsü', 'ÇölYeşertici',
+    'ÇevreDostu', 'ÇiçekKahramanı', 'ÇamKoruyucu', 'ÇevreGönüllüsü',
+    'ÇölYeşertici',
     // D
-    'DoğaKoruyucu', 'DönüşümElçisi', 'DoğalDenge', 'DenizTemizliği', 'DamladaHayat',
+    'DoğaKoruyucu', 'DönüşümElçisi', 'DoğalDenge', 'DenizTemizliği',
+    'DamladaHayat',
     // E
     'EkoSavaşçı', 'EkoKartal', 'EkoGönüllü', 'EkoZihin', 'EkoYenilikçi',
     // F
-    'FidanDikici', 'FotosentezGücü', 'FırtınaDostu', 'FosilsizGelecek', 'FilizEnerjisi',
+    'FidanDikici', 'FotosentezGücü', 'FırtınaDostu', 'FosilsizGelecek',
+    'FilizEnerjisi',
     // G
-    'GeriDönüşümcü', 'GezegenSavunucusu', 'GüneşEnerjisi', 'GelecekYeşil', 'GökYeşili',
+    'GeriDönüşümcü', 'GezegenSavunucusu', 'GüneşEnerjisi', 'GelecekYeşil',
+    'GökYeşili',
     // Ğ
-    'GüneşRüzgarı', 'GıdaZinciri', 'GökkuşağıProjesi', 'GüçlüDoğa', 'GelişimYeşili',
+    'GüneşRüzgarı', 'GıdaZinciri', 'GökkuşağıProjesi', 'GüçlüDoğa',
+    'GelişimYeşili',
     // H
-    'HavaKoruyucu', 'HayatKaynağı', 'HidroEnerji', 'HedefSıfırAtık', 'HuzurluGezegen',
+    'HavaKoruyucu', 'HayatKaynağı', 'HidroEnerji', 'HedefSıfırAtık',
+    'HuzurluGezegen',
     // I
     'IsıKoruyucu', 'IşıkElçisi', 'IlımanDoğa', 'IsıDengesi', 'IlıkYaşam',
     // İ
-    'İklimKahramanı', 'İleriGeriDönüşüm', 'İnsancaGelecek', 'İklimBilinci', 'İyileşenDünya',
+    'İklimKahramanı', 'İleriGeriDönüşüm', 'İnsancaGelecek', 'İklimBilinci',
+    'İyileşenDünya',
     // J
     'JeoEnerji', 'JeoIsıKaynağı', 'JeoBilimci', 'JeoDoğa', 'JeoSistem',
     // K
-    'KarbonSıfır', 'KüreselDenge', 'KaynakKoruyucu', 'KarbonsuzGelecek', 'KorunanDoğa',
+    'KarbonSıfır', 'KüreselDenge', 'KaynakKoruyucu', 'KarbonsuzGelecek',
+    'KorunanDoğa',
     // L
     'LikitGüneş', 'LambaEnerji', 'LojistikYeşil', 'LiderEko', 'LimonYeşili',
     // M
@@ -87,67 +97,72 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     // Ö
     'ÖncüDoğa', 'ÖzgürGezegen', 'ÖrtüBitkisi', 'ÖzenliYaşam', 'ÖmrüYeşil',
     // P
-    'PlastikAvcısı', 'PanelEnerji', 'PozitifDoğa', 'PetrolsüzGelecek', 'PlanlıYaşam',
+    'PlastikAvcısı', 'PanelEnerji', 'PozitifDoğa', 'PetrolsüzGelecek',
+    'PlanlıYaşam',
     // R
-    'RüzgarKahramanı', 'RenkliGezegen', 'RefahYeşil', 'RahatDoğa', 'RüzgarDostu',
+    'RüzgarKahramanı', 'RenkliGezegen', 'RefahYeşil', 'RahatDoğa',
+    'RüzgarDostu',
     // S
     'SıfırAtık', 'SuBekçisi', 'SürdürülebilirHayat', 'SuKoruyucu', 'SessizDoğa',
     // Ş
     'ŞeffafEnerji', 'ŞelaleKoruyucu', 'ŞarjlıDoğa', 'ŞifalıBitki', 'ŞekilYeşil',
     // T
-    'ToprakSever', 'TemizEnerji', 'TÜBİTAK_Proje', 'TohumKoruyucu', 'TarımTeknoloji',
+    'ToprakSever', 'TemizEnerji', 'TÜBİTAK_Proje', 'TohumKoruyucu',
+    'TarımTeknoloji',
     // U
-    'UmutYeşili', 'UyumluDoğa', 'UyananGezegen', 'UzayEkosistemi', 'UlaşılabilirEnerji',
+    'UmutYeşili', 'UyumluDoğa', 'UyananGezegen', 'UzayEkosistemi',
+    'UlaşılabilirEnerji',
     // Ü
     'ÜretkenEkosistem', 'ÜstEnerji', 'ÜçüncüYaşam', 'ÜmitDoğa', 'ÜrünDostu',
     // V
-    'VerimliToprak', 'VizyonerDoğa', 'VarlıkGezegeni', 'VakitYeşil', 'VeriEnerjisi',
+    'VerimliToprak', 'VizyonerDoğa', 'VarlıkGezegeni', 'VakitYeşil',
+    'VeriEnerjisi',
     // Y
     'YeşilAyak', 'YeşilIşık', 'YeşilYürek', 'YaşamKaynağı', 'YenilenebilirRuh',
     // Z
     'ZehirsizHayat', 'ZararsızDoğa', 'ZümrütGezegen', 'ZekaYeşili', 'ZenginDoğa'
   ];
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize animation controllers
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    
+
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _buttonController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     // Start animations
     _fadeController.forward();
     _slideController.forward();
     _buttonController.forward();
-    
+
     // Listen for language changes and rebuild
     context.read<LanguageProvider>().addListener(() {
       if (mounted) setState(() {});
     });
-    
+
     // Check for persistent authentication state first
     _checkPersistentAuth();
-    
+
     // Check for cached username first, then suggest random if none found
     _loadCachedUsername();
-    
+
     // Check registration status to conditionally show profile button
     _checkRegistrationStatus();
   }
-  
+
   // Rastgele isim öneren metot
   void _suggestRandomName() {
     final random = Random();
@@ -162,19 +177,20 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   Future<void> _checkPersistentAuth() async {
     // Only check once during page initialization
     if (_hasCheckedPersistentAuth) return;
-    
+
     try {
       final authStateService = AuthenticationStateService();
       final isAuth = await authStateService.isCurrentUserAuthenticated();
-      
+
       if (kDebugMode) {
-        debugPrint('LoginPage: Persistent auth check - is authenticated: $isAuth');
+        debugPrint(
+            'LoginPage: Persistent auth check - is authenticated: $isAuth');
         debugPrint('Auth state: ${authStateService.getDebugInfo()}');
       }
-      
+
       // Mark as checked to prevent re-execution
       _hasCheckedPersistentAuth = true;
-      
+
       if (isAuth && mounted) {
         // User is already authenticated, navigate to profile page
         if (!mounted) return;
@@ -235,9 +251,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         return DesignSystem.semantic(
           context,
           label: '$modeName giriş gereksinimi dialog',
-          hint: '$modeName moduna erişim için giriş yapılması gerektiğini belirten dialog',
+          hint:
+              '$modeName moduna erişim için giriş yapılması gerektiğini belirten dialog',
           child: AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignSystem.radiusL)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(DesignSystem.radiusL)),
             title: DesignSystem.semantic(
               context,
               label: '$modeName için Giriş Gerekli başlığı',
@@ -269,7 +287,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   Navigator.of(context).pop();
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const RegisterPage()),
+                    MaterialPageRoute(
+                        builder: (context) => const RegisterPage()),
                   );
                 },
                 child: const Text('Kayıt Ol'),
@@ -305,10 +324,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   Future<void> _startGame() async {
     if (_formKey.currentState!.validate()) {
       final nickname = _nicknameController.text;
-      
+
       // Cache the username for future use
       await _profileService.cacheNickname(nickname);
-      
+
       // Show loading state using design system
       if (!mounted) return;
       showDialog(
@@ -319,11 +338,13 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           label: 'Yükleniyor dialog',
           hint: 'Oyun başlatılıyor, lütfen bekleyin',
           child: AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignSystem.radiusL)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(DesignSystem.radiusL)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                DesignSystem.loadingIndicator(context, message: 'Oyun başlatılıyor...'),
+                DesignSystem.loadingIndicator(context,
+                    message: 'Oyun başlatılıyor...'),
               ],
             ),
           ),
@@ -341,29 +362,31 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
           // Initialize user profile with UID centrality
           final profileService = ProfileService();
-          
+
           try {
             // Create or update user profile with UID as document ID
             await profileService.initializeProfile(
               nickname: nickname,
               user: user, // Pass user to avoid race condition
             );
-            
+
             if (kDebugMode) {
-              debugPrint('User profile initialized successfully for: $nickname');
+              debugPrint(
+                  'User profile initialized successfully for: $nickname');
             }
           } catch (profileError) {
             if (kDebugMode) {
               debugPrint('Profile initialization failed: $profileError');
               debugPrint('Error type: ${profileError.runtimeType}');
             }
-            
+
             // Show user-friendly error message but still allow game to continue
             if (!mounted) return;
-            
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: const Text('Profil oluşturulurken bir sorun oluştu, ancak oyuna devam edebilirsiniz.'),
+                content: const Text(
+                    'Profil oluşturulurken bir sorun oluştu, ancak oyuna devam edebilirsiniz.'),
                 backgroundColor: ThemeColors.getWarningColor(context),
                 duration: const Duration(seconds: 3),
               ),
@@ -378,7 +401,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           // Get authenticated nickname from global state service
           final authStateService = AuthenticationStateService();
           final gameNickname = await authStateService.getGameNickname();
-          
+
           // Navigate - pages will use global authentication state
           if (!mounted) return;
           Navigator.pushReplacement(
@@ -400,14 +423,16 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         }
 
         if (kDebugMode) {
-          debugPrint('Firebase Auth error in _startGame: ${e.code} - ${e.message}');
+          debugPrint(
+              'Firebase Auth error in _startGame: ${e.code} - ${e.message}');
         }
 
         // Show user-friendly error message
-        final errorMessage = FirebaseAuthService.handleAuthError(e, context: 'anonymous_signin');
-        
+        final errorMessage =
+            FirebaseAuthService.handleAuthError(e, context: 'anonymous_signin');
+
         if (!mounted) return;
-        
+
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -416,7 +441,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               label: 'Giriş hatası dialog',
               hint: 'Giriş yapılırken hata oluştuğunu belirten hata dialog',
               child: AlertDialog(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignSystem.radiusL)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusL)),
                 title: DesignSystem.semantic(
                   context,
                   label: 'Giriş Hatası başlığı',
@@ -444,7 +470,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             );
           },
         );
-
       } catch (e, stackTrace) {
         // Close loading dialog
         if (mounted) {
@@ -468,7 +493,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               label: 'Beklenmeyen hata dialog',
               hint: 'Beklenmeyen bir hata oluştuğunu belirten dialog',
               child: AlertDialog(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignSystem.radiusL)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusL)),
                 title: DesignSystem.semantic(
                   context,
                   label: 'Beklenmeyen Hata başlığı',
@@ -477,7 +503,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 content: DesignSystem.semantic(
                   context,
                   label: 'Hata açıklaması',
-                  child: const Text('Giriş yapılırken beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.'),
+                  child: const Text(
+                      'Giriş yapılırken beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.'),
                 ),
                 actions: [
                   TextButton(
@@ -517,14 +544,17 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           label: 'Oyun yardım dialog',
           hint: 'Oyun hakkında yardım bilgilerini içeren yardım dialog',
           child: AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignSystem.radiusXl)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(DesignSystem.radiusXl)),
             backgroundColor: ThemeColors.getDialogBackground(context),
             title: DesignSystem.semantic(
               context,
               label: 'Oyun Yardım başlığı',
               child: Row(
                 children: [
-                  Icon(Icons.help_outline, color: ThemeColors.getPrimaryButtonColor(context), size: 28),
+                  Icon(Icons.help_outline,
+                      color: ThemeColors.getPrimaryButtonColor(context),
+                      size: 28),
                   const SizedBox(width: DesignSystem.spacingS),
                   Text(
                     'Oyun Yardım',
@@ -616,11 +646,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       if (user != null) {
         // Check email verification status
         final profileService = ProfileService();
-        final verificationStatus = await profileService.getEmailVerificationStatus();
-        
+        final verificationStatus =
+            await profileService.getEmailVerificationStatus();
+
         // Get user nickname
-        final nickname = await profileService.getCurrentNickname() ?? user.email?.split('@')[0] ?? 'Kullanıcı';
-        
+        final nickname = await profileService.getCurrentNickname() ??
+            user.email?.split('@')[0] ??
+            'Kullanıcı';
+
         // Set authentication state
         final authStateService = AuthenticationStateService();
         await authStateService.setAuthenticatedUser(
@@ -638,9 +671,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               label: 'E-posta doğrulama dialog',
               hint: 'E-posta doğrulaması gerektiğini belirten dialog',
               child: AlertDialog(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignSystem.radiusL)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusL)),
                 title: const Text('E-posta Doğrulama Gerekli'),
-                content: const Text('Hesabınızın tüm özelliklerinden yararlanabilmek için e-posta adresinizi doğrulamanız gerekiyor.'),
+                content: const Text(
+                    'Hesabınızın tüm özelliklerinden yararlanabilmek için e-posta adresinizi doğrulamanız gerekiyor.'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(false),
@@ -655,14 +690,16 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               ),
             ),
           );
-          
+
           if (shouldVerify == true && mounted) {
             // Navigate to email verification page
-            Navigator.of(context).push(
+            Navigator.of(context)
+                .push(
               MaterialPageRoute(
                 builder: (context) => const EmailVerificationPage(),
               ),
-            ).then((isVerified) {
+            )
+                .then((isVerified) {
               if (isVerified == true && mounted) {
                 // Email verified, navigate to profile
                 Navigator.pushReplacement(
@@ -698,9 +735,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         return DesignSystem.semantic(
           context,
           label: 'Çıkış onay dialog',
-          hint: 'Çıkış yapmak istediğinizi onaylamanız gerektiğini belirten dialog',
+          hint:
+              'Çıkış yapmak istediğinizi onaylamanız gerektiğini belirten dialog',
           child: AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignSystem.radiusL)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(DesignSystem.radiusL)),
             title: DesignSystem.semantic(
               context,
               label: 'Çıkış Yap başlığı',
@@ -709,7 +748,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             content: DesignSystem.semantic(
               context,
               label: 'Dialog içeriği',
-              child: const Text('Hesabınızdan çıkış yapmak istediğinizden emin misiniz?'),
+              child: const Text(
+                  'Hesabınızdan çıkış yapmak istediğinizden emin misiniz?'),
             ),
             actions: [
               TextButton(
@@ -739,17 +779,17 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     try {
       // Sign out from Firebase
       await FirebaseAuth.instance.signOut();
-      
+
       // Clear authentication state
       final authStateService = AuthenticationStateService();
       authStateService.clearAuthenticationState();
-      
+
       // Authentication state and Firebase signout is sufficient for logout
-      
+
       if (kDebugMode) {
         debugPrint('User logged out successfully');
       }
-      
+
       // Show confirmation message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -760,7 +800,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           ),
         );
       }
-      
+
       // Refresh the page to update UI
       if (mounted) {
         setState(() {
@@ -772,7 +812,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       if (kDebugMode) {
         debugPrint('Logout error: $e');
       }
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -809,7 +849,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.all(DesignSystem.spacingM),
             decoration: BoxDecoration(
-              color: ThemeColors.getCardBackgroundLight(context).withValues(alpha: 0.8),
+              color: ThemeColors.getCardBackgroundLight(context)
+                  .withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(DesignSystem.radiusS),
               border: Border.all(
                 color: ThemeColors.getBorder(context),
@@ -828,7 +869,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       ),
     );
   }
-  
+
   @override
   void dispose() {
     _nicknameController.dispose();
@@ -852,7 +893,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             label: 'Yardım butonu',
             hint: 'Oyun yardımını gösterir',
             child: IconButton(
-              icon: Icon(Icons.help_outline, color: ThemeColors.getAppBarIcon(context)),
+              icon: Icon(Icons.help_outline,
+                  color: ThemeColors.getAppBarIcon(context)),
               onPressed: _showHelpDialog,
               tooltip: 'Oyun Yardımı',
             ),
@@ -885,10 +927,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               children: [
                                 // App Icon with modern styling
                                 Container(
-                                  padding: const EdgeInsets.all(DesignSystem.spacingM),
+                                  padding: const EdgeInsets.all(
+                                      DesignSystem.spacingM),
                                   decoration: BoxDecoration(
-                                    color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+                                    color: ThemeColors.getPrimaryButtonColor(
+                                            context)
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(
+                                        DesignSystem.radiusL),
                                   ),
                                   child: Icon(
                                     Icons.eco,
@@ -897,7 +943,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   ),
                                 ),
                                 const SizedBox(height: DesignSystem.spacingL),
-                                
+
                                 // Title with modern typography
                                 Text(
                                   'Oyuna Başla',
@@ -905,7 +951,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   style: AppTheme.getGameTitleStyle(context),
                                 ),
                                 const SizedBox(height: DesignSystem.spacingL),
-                                
+
                                 // Form using design system
                                 Form(
                                   key: _formKey,
@@ -913,18 +959,26 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                     children: [
                                       TextFormField(
                                         controller: _nicknameController,
-                                        decoration: DesignSystem.getInputDecoration(
+                                        decoration:
+                                            DesignSystem.getInputDecoration(
                                           context,
                                           labelText: 'Adınız',
                                           hintText: 'Takma adınızı girin',
-                                          prefixIcon: Icon(Icons.person, color: ThemeColors.getSecondaryText(context)),
+                                          prefixIcon: Icon(Icons.person,
+                                              color:
+                                                  ThemeColors.getSecondaryText(
+                                                      context)),
                                           suffixIcon: IconButton(
-                                            icon: Icon(Icons.casino, color: ThemeColors.getPrimaryButtonColor(context)),
+                                            icon: Icon(Icons.casino,
+                                                color: ThemeColors
+                                                    .getPrimaryButtonColor(
+                                                        context)),
                                             onPressed: _suggestRandomName,
                                             tooltip: 'Rastgele isim öner',
                                           ),
                                         ),
-                                        style: DesignSystem.getBodyLarge(context),
+                                        style:
+                                            DesignSystem.getBodyLarge(context),
                                         validator: (value) {
                                           if (value == null || value.isEmpty) {
                                             return 'Lütfen bir takma ad girin';
@@ -939,37 +993,53 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   ),
                                 ),
                                 const SizedBox(height: DesignSystem.spacingM),
-                                
-                                // Game mode buttons with enhanced styling
+
+                                // Ana Sayfa Butonları - UI Odaklı ve Kolay Erişim
+                                _buildMainActionButtons(context),
+                                const SizedBox(height: DesignSystem.spacingM),
+
+                                // Oyun Modları
                                 _buildGameModeButton(
                                   icon: Icons.play_arrow,
                                   label: 'Tek Oyun',
-                                  color: ThemeColors.getPrimaryButtonColor(context),
+                                  color: ThemeColors.getPrimaryButtonColor(
+                                      context),
                                   onPressed: _startGame,
                                   animationDelay: 0,
                                 ),
                                 const SizedBox(height: DesignSystem.spacingS),
-                                
+
                                 _buildGameModeButton(
                                   icon: Icons.group,
                                   label: 'Çok Oyunculu',
-                                  color: ThemeColors.getSecondaryButtonColor(context),
+                                  color: ThemeColors.getSecondaryButtonColor(
+                                      context),
                                   onPressed: () {
                                     if (_formKey.currentState!.validate()) {
-                                      _shouldRequireLogin().then((requiresLogin) async {
+                                      _shouldRequireLogin()
+                                          .then((requiresLogin) async {
                                         if (requiresLogin && !_isRegistered) {
-                                          await _showLoginRequirementDialog('Çok Oyunculu');
+                                          await _showLoginRequirementDialog(
+                                              'Çok Oyunculu');
                                           return;
                                         }
-                                        
-                                        final authStateService = AuthenticationStateService();
-                                        authStateService.getGameNickname().then((gameNickname) {
-                                          WidgetsBinding.instance.addPostFrameCallback((_) {
+
+                                        final authStateService =
+                                            AuthenticationStateService();
+                                        authStateService
+                                            .getGameNickname()
+                                            .then((gameNickname) {
+                                          WidgetsBinding.instance
+                                              .addPostFrameCallback((_) {
                                             if (mounted) {
                                               Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                  builder: (BuildContext context) => MultiplayerLobbyPage(userNickname: gameNickname),
+                                                  builder:
+                                                      (BuildContext context) =>
+                                                          MultiplayerLobbyPage(
+                                                              userNickname:
+                                                                  gameNickname),
                                                 ),
                                               );
                                             }
@@ -981,22 +1051,25 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   animationDelay: 100,
                                 ),
                                 const SizedBox(height: DesignSystem.spacingS),
-                                
+
                                 _buildGameModeButton(
                                   icon: Icons.security,
                                   label: 'Gelişmiş Giriş',
-                                  color: ThemeColors.getAccentButtonColor(context),
+                                  color:
+                                      ThemeColors.getAccentButtonColor(context),
                                   onPressed: () {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => AuthenticationOptionsWidget(
+                                        builder: (context) =>
+                                            AuthenticationOptionsWidget(
                                           onLoginSuccess: () {
                                             // Giriş başarılı olduğunda profile sayfasına yönlendir
                                             Navigator.pushReplacement(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (context) => const ProfilePage(),
+                                                builder: (context) =>
+                                                    const ProfilePage(),
                                               ),
                                             );
                                           },
@@ -1007,37 +1080,46 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   animationDelay: 200,
                                 ),
                                 const SizedBox(height: DesignSystem.spacingM),
-                                
-                                // Biyometrik durum kartı
-                                BiometricStatusCard(
-                                  onBiometricEnabled: () {
-                                    if (mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: const Text('Biyometrik giriş başarıyla etkinleştirildi!'),
-                                          backgroundColor: ThemeColors.getSuccessColor(context),
-                                          duration: const Duration(seconds: 3),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  onBiometricDisabled: () {
-                                    if (mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: const Text('Biyometrik giriş devre dışı bırakıldı.'),
-                                          backgroundColor: ThemeColors.getInfoColor(context),
-                                          duration: const Duration(seconds: 3),
-                                        ),
-                                      );
-                                    }
-                                  },
+
+                                // Biyometrik durum kartı (daha kompakt)
+                                Container(
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  child: BiometricStatusCard(
+                                    onBiometricEnabled: () {
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: const Text(
+                                                'Biyometrik giriş başarıyla etkinleştirildi!'),
+                                            backgroundColor:
+                                                ThemeColors.getSuccessColor(
+                                                    context),
+                                            duration:
+                                                const Duration(seconds: 3),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    onBiometricDisabled: () {
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: const Text(
+                                                'Biyometrik giriş devre dışı bırakıldı.'),
+                                            backgroundColor:
+                                                ThemeColors.getInfoColor(
+                                                    context),
+                                            duration:
+                                                const Duration(seconds: 3),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
                                 ),
-                                
-                                const SizedBox(height: DesignSystem.spacingM),
-                                
-                                // Action buttons section
-                                _buildActionButtons(context),
                               ],
                             ),
                           ),
@@ -1051,6 +1133,137 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           ),
         ),
       ),
+    );
+  }
+
+  /// Ana sayfa için UI odaklı butonlar
+  Widget _buildMainActionButtons(BuildContext context) {
+    return Column(
+      children: [
+        // Ana işlev butonları - UI Odaklı
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  // Giriş Yap dialog'ını aç
+                  _showLoginDialog();
+                },
+                icon: Icon(Icons.login, size: 20),
+                label: Text('Giriş Yap',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ThemeColors.getPrimaryButtonColor(context),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                  ),
+                  elevation: 2,
+                ),
+              ),
+            ),
+            SizedBox(width: DesignSystem.spacingS),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  // Kayıt ol sayfasına git
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const RegisterPage()),
+                  );
+                },
+                icon: Icon(Icons.person_add, size: 20),
+                label: Text('Kayıt Ol',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ThemeColors.getSecondaryButtonColor(context),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                  ),
+                  elevation: 2,
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: DesignSystem.spacingS),
+
+        // İkinci sıra butonları
+        Row(
+          children: [
+            Expanded(
+              child: _buildSecondaryButton(
+                icon: Icons.settings,
+                label: 'Ayarlar',
+                color: ThemeColors.getAccentButtonColor(context),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const SettingsPage()),
+                  );
+                },
+              ),
+            ),
+            SizedBox(width: DesignSystem.spacingS),
+            if (_isRegistered && !_isCheckingRegistration)
+              Expanded(
+                child: _buildSecondaryButton(
+                  icon: Icons.person,
+                  label: 'Profil',
+                  color: Colors.purple,
+                  onPressed: () {
+                    if (!mounted) return;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ProfilePage()),
+                    );
+                  },
+                ),
+              ),
+            if (!_isRegistered || _isCheckingRegistration)
+              Expanded(
+                child: _buildSecondaryButton(
+                  icon: Icons.people,
+                  label: 'Arkadaşlar',
+                  color: ThemeColors.getInfoColor(context),
+                  onPressed: () {
+                    final authStateService = AuthenticationStateService();
+                    authStateService.getGameNickname().then((gameNickname) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (BuildContext context) =>
+                                  FriendsPage(userNickname: gameNickname),
+                            ),
+                          );
+                        }
+                      });
+                    });
+                  },
+                ),
+              ),
+            SizedBox(width: DesignSystem.spacingS),
+            Expanded(
+              child: _buildSecondaryButton(
+                icon: Icons.leaderboard,
+                label: 'Liderlik',
+                color: ThemeColors.getWarningColor(context),
+                onPressed: _viewLeaderboard,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -1075,17 +1288,20 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             curve: Curves.easeOutBack,
           ),
         ));
-        
+
         return Transform.scale(
           scale: animation.value,
           child: ElevatedButton.icon(
             onPressed: onPressed,
             icon: Icon(icon, size: 20),
-            label: Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            label: Text(label,
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             style: ElevatedButton.styleFrom(
               backgroundColor: color,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: DesignSystem.spacingM),
+              padding:
+                  const EdgeInsets.symmetric(vertical: DesignSystem.spacingM),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(DesignSystem.radiusM),
               ),
@@ -1099,133 +1315,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth < 400) {
-          // Small screens: use vertical layout
-          return Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildSecondaryButton(
-                      icon: Icons.people,
-                      label: 'Arkadaşlar',
-                      color: ThemeColors.getInfoColor(context),
-                      onPressed: () {
-                        final authStateService = AuthenticationStateService();
-                        authStateService.getGameNickname().then((gameNickname) {
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (mounted) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (BuildContext context) => FriendsPage(userNickname: gameNickname),
-                                ),
-                              );
-                            }
-                          });
-                        });
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: DesignSystem.spacingS),
-                  if (_isRegistered && !_isCheckingRegistration)
-                    Expanded(
-                      child: _buildSecondaryButton(
-                        icon: Icons.person,
-                        label: 'Profil',
-                        color: Colors.purple,
-                        onPressed: () {
-                          if (!mounted) return;
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const ProfilePage(),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  if (!_isRegistered || _isCheckingRegistration)
-                    const Expanded(child: SizedBox.shrink()),
-                ],
-              ),
-              const SizedBox(height: DesignSystem.spacingS),
-              SizedBox(
-                width: double.infinity,
-                child: _buildSecondaryButton(
-                  icon: Icons.leaderboard,
-                  label: 'Liderlik Tablosu',
-                  color: ThemeColors.getWarningColor(context),
-                  onPressed: _viewLeaderboard,
-                ),
-              ),
-            ],
-          );
-        } else {
-          // Medium and large screens: use horizontal layout
-          return Row(
-            children: [
-              Expanded(
-                child: _buildSecondaryButton(
-                  icon: Icons.people,
-                  label: 'Arkadaşlar',
-                  color: ThemeColors.getInfoColor(context),
-                  onPressed: () {
-                    final authStateService = AuthenticationStateService();
-                    authStateService.getGameNickname().then((gameNickname) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (BuildContext context) => FriendsPage(userNickname: gameNickname),
-                            ),
-                          );
-                        }
-                      });
-                    });
-                  },
-                ),
-              ),
-              const SizedBox(width: DesignSystem.spacingS),
-              if (_isRegistered && !_isCheckingRegistration)
-                Expanded(
-                  child: _buildSecondaryButton(
-                    icon: Icons.person,
-                    label: 'Profil',
-                    color: Colors.purple,
-                    onPressed: () {
-                      if (!mounted) return;
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ProfilePage(),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              if (!_isRegistered || _isCheckingRegistration)
-                const Expanded(child: SizedBox.shrink()),
-              const SizedBox(width: DesignSystem.spacingS),
-              Expanded(
-                child: _buildSecondaryButton(
-                  icon: Icons.leaderboard,
-                  label: 'Liderlik',
-                  color: ThemeColors.getWarningColor(context),
-                  onPressed: _viewLeaderboard,
-                ),
-              ),
-            ],
-          );
-        }
-      },
-    );
-  }
-
   Widget _buildSecondaryButton({
     required IconData icon,
     required String label,
@@ -1235,10 +1324,13 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     return TextButton.icon(
       onPressed: onPressed,
       icon: Icon(icon, size: 18, color: color),
-      label: Text(label, style: TextStyle(fontSize: 14, color: color, fontWeight: FontWeight.w500)),
+      label: Text(label,
+          style: TextStyle(
+              fontSize: 14, color: color, fontWeight: FontWeight.w500)),
       style: TextButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: DesignSystem.spacingM),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignSystem.radiusM)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(DesignSystem.radiusM)),
         backgroundColor: ThemeColors.getCardBackgroundLight(context),
       ),
     );

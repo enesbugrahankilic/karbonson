@@ -15,17 +15,17 @@ class UserData {
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final bool isAnonymous;
-  
+
   // Privacy Settings (Specification II.3)
   final PrivacySettings privacySettings;
-  
+
   // FCM Token Management (Specification V.2)
   final String? fcmToken;
-  
+
   // Email Verification
   final bool isEmailVerified;
   final DateTime? emailVerifiedAt;
-  
+
   // 2FA (Multi-Factor Authentication) Fields
   final bool is2FAEnabled;
   final String? phoneNumber;
@@ -63,8 +63,9 @@ class UserData {
       createdAt: DateTimeParser.parse(map['createdAt']),
       updatedAt: DateTimeParser.parse(map['updatedAt']),
       isAnonymous: map['isAnonymous'] ?? false,
-      privacySettings: map['privacySettings'] != null 
-          ? PrivacySettings.fromMap(map['privacySettings'] as Map<String, dynamic>)
+      privacySettings: map['privacySettings'] != null
+          ? PrivacySettings.fromMap(
+              map['privacySettings'] as Map<String, dynamic>)
           : const PrivacySettings.defaults(),
       fcmToken: map['fcmToken'],
       isEmailVerified: map['isEmailVerified'] ?? false,
@@ -180,7 +181,8 @@ class PrivacySettings {
   }) {
     return PrivacySettings(
       allowFriendRequests: allowFriendRequests ?? this.allowFriendRequests,
-      allowSearchByNickname: allowSearchByNickname ?? this.allowSearchByNickname,
+      allowSearchByNickname:
+          allowSearchByNickname ?? this.allowSearchByNickname,
       allowDiscovery: allowDiscovery ?? this.allowDiscovery,
     );
   }
@@ -258,7 +260,8 @@ class NicknameValidator {
 
   /// Validates nickname including uniqueness check
   /// This is the comprehensive validation method for registration
-  static Future<NicknameValidationResult> validateWithUniqueness(String nickname) async {
+  static Future<NicknameValidationResult> validateWithUniqueness(
+      String nickname) async {
     // First validate format and content
     final formatValidation = validate(nickname);
     if (!formatValidation.isValid) {
@@ -268,13 +271,15 @@ class NicknameValidator {
     try {
       // Then check uniqueness with timeout - FAIL OPEN approach
       final firestoreService = FirestoreService();
-      final isAvailable = await firestoreService.isNicknameAvailable(nickname)
+      final isAvailable = await firestoreService
+          .isNicknameAvailable(nickname)
           .timeout(const Duration(seconds: 8));
-      
+
       if (!isAvailable) {
         return NicknameValidationResult(
           isValid: false,
-          error: 'Bu takma ad zaten kullanılıyor. Lütfen farklı bir takma ad seçin.',
+          error:
+              'Bu takma ad zaten kullanılıyor. Lütfen farklı bir takma ad seçin.',
         );
       }
 
@@ -282,13 +287,14 @@ class NicknameValidator {
     } catch (e) {
       // If nickname check fails (network/timeout), allow registration to proceed
       // The uniqueness will be checked again during profile creation
-      if (e.toString().contains('timeout') || e.toString().contains('network')) {
+      if (e.toString().contains('timeout') ||
+          e.toString().contains('network')) {
         return NicknameValidationResult(
           isValid: true,
           error: '',
         );
       }
-      
+
       // For other errors, still allow but log
       return NicknameValidationResult(isValid: true);
     }

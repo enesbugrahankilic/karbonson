@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:animations/animations.dart' show PageTransitionSwitcher, SharedAxisTransition, SharedAxisTransitionType;
+import 'package:animations/animations.dart'
+    show PageTransitionSwitcher, SharedAxisTransition, SharedAxisTransitionType;
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../theme/app_theme.dart';
@@ -32,7 +33,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
   late AnimationController _animationController;
   late Animation<double> _slideAnimation;
   late Animation<double> _fadeAnimation;
-  
+
   @override
   void initState() {
     super.initState();
@@ -40,7 +41,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     _slideAnimation = Tween<double>(
       begin: 50.0,
       end: 0.0,
@@ -48,7 +49,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
       parent: _animationController,
       curve: Curves.easeOutCubic,
     ));
-    
+
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -56,7 +57,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
       parent: _animationController,
       curve: Curves.easeIn,
     ));
-    
+
     _animationController.forward();
   }
 
@@ -97,7 +98,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
                     // Enhanced Question section with gradient background
                     _buildQuestionSection(context),
                     const SizedBox(height: DesignSystem.spacingXl),
-                    
+
                     // Modern Answer options with staggered animation
                     _buildOptionsSection(context),
                   ],
@@ -165,7 +166,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         final index = entry.key;
         final option = entry.value;
         final delay = Duration(milliseconds: 100 * index);
-        
+
         return TweenAnimationBuilder<double>(
           tween: Tween(begin: 0.0, end: 1.0),
           duration: const Duration(milliseconds: 400),
@@ -175,7 +176,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
               scale: value,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  vertical: DesignSystem.spacingS / 2,
+                  vertical: DesignSystem.spacingM, // Increased vertical spacing between options
                 ),
                 child: _buildOptionButton(option, context, index),
               ),
@@ -193,10 +194,11 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: widget.isAnswered ? null : () => widget.onOptionSelected(option),
+          onTap:
+              widget.isAnswered ? null : () => widget.onOptionSelected(option),
           borderRadius: BorderRadius.circular(DesignSystem.radiusM),
           child: Container(
-            padding: const EdgeInsets.all(DesignSystem.spacingM),
+              padding: const EdgeInsets.all(DesignSystem.spacingL), // Increased padding for better text display
             decoration: _getOptionDecoration(option, context),
             child: Row(
               children: [
@@ -215,18 +217,18 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
                   child: _buildOptionIndicator(option, context),
                 ),
                 const SizedBox(width: DesignSystem.spacingM),
-                
+
                 // Option text with enhanced styling
                 Expanded(
                   child: Text(
                     option,
                     style: _getOptionTextStyle(option, context),
                     textAlign: TextAlign.left,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    maxLines: null, // Allow unlimited lines for full text display
+                    overflow: TextOverflow.visible, // Show all text instead of ellipsis
                   ),
                 ),
-                
+
                 // Modern selection indicator
                 if (widget.isAnswered && option == widget.correctAnswer)
                   Icon(
@@ -234,7 +236,9 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
                     color: Colors.white,
                     size: 20,
                   )
-                else if (widget.isAnswered && option == widget.selectedAnswer && widget.selectedAnswer != widget.correctAnswer)
+                else if (widget.isAnswered &&
+                    option == widget.selectedAnswer &&
+                    widget.selectedAnswer != widget.correctAnswer)
                   Icon(
                     Icons.cancel,
                     color: Colors.white,
@@ -292,7 +296,8 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
       );
     }
 
-    if (option == widget.selectedAnswer && widget.selectedAnswer != widget.correctAnswer) {
+    if (option == widget.selectedAnswer &&
+        widget.selectedAnswer != widget.correctAnswer) {
       return BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -337,7 +342,8 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
       return Colors.white;
     }
 
-    if (option == widget.selectedAnswer && widget.selectedAnswer != widget.correctAnswer) {
+    if (option == widget.selectedAnswer &&
+        widget.selectedAnswer != widget.correctAnswer) {
       return Colors.white;
     }
 
@@ -349,8 +355,9 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
       return ThemeColors.getBorder(context);
     }
 
-    if (option == widget.correctAnswer || 
-        (option == widget.selectedAnswer && widget.selectedAnswer != widget.correctAnswer)) {
+    if (option == widget.correctAnswer ||
+        (option == widget.selectedAnswer &&
+            widget.selectedAnswer != widget.correctAnswer)) {
       return Colors.transparent;
     }
 
@@ -379,7 +386,8 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
       );
     }
 
-    if (option == widget.selectedAnswer && widget.selectedAnswer != widget.correctAnswer) {
+    if (option == widget.selectedAnswer &&
+        widget.selectedAnswer != widget.correctAnswer) {
       return const Icon(
         Icons.close,
         color: Colors.white,
@@ -409,8 +417,9 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
       return baseStyle;
     }
 
-    if (option == widget.correctAnswer || 
-        (option == widget.selectedAnswer && widget.selectedAnswer != widget.correctAnswer)) {
+    if (option == widget.correctAnswer ||
+        (option == widget.selectedAnswer &&
+            widget.selectedAnswer != widget.correctAnswer)) {
       return baseStyle.copyWith(
         color: Colors.white,
         fontWeight: FontWeight.w600,

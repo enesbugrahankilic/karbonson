@@ -87,7 +87,7 @@ class GameRoom {
   int timeElapsedInSeconds;
   List<Map<String, dynamic>> boardTiles; // Serialized board
   DateTime createdAt;
-  
+
   // Room access control
   final String roomCode; // 4-digit unique code
   final bool isActive; // Active/Passive status
@@ -131,8 +131,9 @@ class GameRoom {
       hostId: map['hostId'],
       hostNickname: map['hostNickname'],
       players: (map['players'] as List<dynamic>?)
-          ?.map((p) => MultiplayerPlayer.fromMap(p as Map<String, dynamic>))
-          .toList() ?? [],
+              ?.map((p) => MultiplayerPlayer.fromMap(p as Map<String, dynamic>))
+              .toList() ??
+          [],
       status: GameStatus.values.firstWhere(
         (e) => e.toString().split('.').last == map['status'],
         orElse: () => GameStatus.waiting,
@@ -140,8 +141,9 @@ class GameRoom {
       currentPlayerIndex: map['currentPlayerIndex'] ?? 0,
       timeElapsedInSeconds: map['timeElapsedInSeconds'] ?? 0,
       boardTiles: (map['boardTiles'] as List<dynamic>?)
-          ?.map((t) => t as Map<String, dynamic>)
-          .toList() ?? [],
+              ?.map((t) => t as Map<String, dynamic>)
+              .toList() ??
+          [],
       createdAt: DateTime.parse(map['createdAt']),
       roomCode: map['roomCode'] ?? '',
       isActive: map['isActive'] ?? true,
@@ -232,8 +234,8 @@ class FriendRequest {
 }
 
 class GameBoard {
-  static const int totalTiles = 25; 
-  
+  static const int totalTiles = 25;
+
   final List<BoardTile> tiles = [];
 
   GameBoard() {
@@ -242,7 +244,7 @@ class GameBoard {
 
   void _initializeBoard() {
     final random = Random();
-    
+
     for (int i = 0; i < totalTiles; i++) {
       TileType type;
       String label;
@@ -254,28 +256,28 @@ class GameBoard {
         type = TileType.finish;
         label = "Bitiş";
       } else {
-        int rand = random.nextInt(10); 
-        
-        if (rand < 4) { 
+        int rand = random.nextInt(10);
+
+        if (rand < 4) {
           type = TileType.quiz;
           label = "Quiz 💡";
-        } else if (rand < 7) { 
+        } else if (rand < 7) {
           type = TileType.bonus;
           label = "+Bonus 💰";
-        } else if (rand < 9) { 
-          if (random.nextBool()) { 
-             type = TileType.penalty;
-             label = "-Ceza 🛑";
+        } else if (rand < 9) {
+          if (random.nextBool()) {
+            type = TileType.penalty;
+            label = "-Ceza 🛑";
           } else {
-             type = TileType.bonus; 
-             label = "+Bonus 💰";
+            type = TileType.bonus;
+            label = "+Bonus 💰";
           }
-        } else { 
+        } else {
           type = TileType.quiz;
           label = "Quiz 💡";
         }
       }
-      
+
       tiles.add(BoardTile(index: i, type: type, label: label));
     }
   }

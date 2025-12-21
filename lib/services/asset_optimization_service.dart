@@ -27,19 +27,19 @@ class AssetMetrics {
     required this.slowLoads,
   });
 
-  double get cacheHitRate => totalAssetsLoaded > 0 ? 
-    (cacheHits / totalAssetsLoaded) * 100 : 0.0;
+  double get cacheHitRate =>
+      totalAssetsLoaded > 0 ? (cacheHits / totalAssetsLoaded) * 100 : 0.0;
 
   Map<String, dynamic> toJson() => {
-    'total_assets_loaded': totalAssetsLoaded,
-    'cache_hits': cacheHits,
-    'cache_misses': cacheMisses,
-    'cache_hit_rate_percent': cacheHitRate,
-    'average_load_time_ms': averageLoadTimeMs,
-    'total_bytes_cached': totalBytesCached,
-    'slow_loads_count': slowLoads.length,
-    'slow_loads': slowLoads,
-  };
+        'total_assets_loaded': totalAssetsLoaded,
+        'cache_hits': cacheHits,
+        'cache_misses': cacheMisses,
+        'cache_hit_rate_percent': cacheHitRate,
+        'average_load_time_ms': averageLoadTimeMs,
+        'total_bytes_cached': totalBytesCached,
+        'slow_loads_count': slowLoads.length,
+        'slow_loads': slowLoads,
+      };
 }
 
 /// CDN configuration for optimal delivery
@@ -63,7 +63,8 @@ class CDNConfig {
 
 /// Asset optimization service with CDN support
 class AssetOptimizationService {
-  static final AssetOptimizationService _instance = AssetOptimizationService._internal();
+  static final AssetOptimizationService _instance =
+      AssetOptimizationService._internal();
   factory AssetOptimizationService() => _instance;
   AssetOptimizationService._internal();
 
@@ -108,19 +109,19 @@ class AssetOptimizationService {
     try {
       final uri = Uri.parse(_cdnConfig.baseUrl);
       final pathSegments = <String>['assets', 'images', imagePath];
-      
+
       final queryParameters = <String, String>{};
-      
+
       // Add size parameter if specified
       if (size != null) {
         queryParameters['size'] = size;
       }
-      
+
       // Add quality parameter if specified
       if (quality != null) {
         queryParameters['q'] = quality;
       }
-      
+
       // Add WebP support if enabled
       if (enableWebP && _cdnConfig.enableWebP) {
         final hasWebPSupport = kIsWeb ? _detectWebPSupport() : true;
@@ -128,7 +129,7 @@ class AssetOptimizationService {
           queryParameters['format'] = 'webp';
         }
       }
-      
+
       final optimizedPath = pathSegments.join('/');
       final optimizedUrl = Uri(
         scheme: uri.scheme,
@@ -136,11 +137,11 @@ class AssetOptimizationService {
         path: optimizedPath,
         queryParameters: queryParameters.isEmpty ? null : queryParameters,
       ).toString();
-      
+
       if (kDebugMode) {
         debugPrint('🖼️ Optimized URL: $optimizedUrl');
       }
-      
+
       return optimizedUrl;
     } catch (e) {
       if (kDebugMode) {
@@ -159,10 +160,10 @@ class AssetOptimizationService {
     String? cacheKey,
   }) async {
     final stopwatch = Stopwatch()..start();
-    
+
     try {
       _totalAssetsLoaded++;
-      
+
       // Check cache first
       final key = cacheKey ?? imagePath;
       final cached = _assetCache[key];
@@ -170,35 +171,35 @@ class AssetOptimizationService {
         _cacheHits++;
         return cached.data as Image;
       }
-      
+
       _cacheMisses++;
-      
+
       // Get optimized URL
       final optimizedUrl = getOptimizedImageUrl(
         imagePath: imagePath,
         size: width != null && height != null ? '${width}x$height' : null,
       );
-      
+
       // Load image with timeout
       final image = await _loadImageWithTimeout(optimizedUrl).timeout(
         const Duration(seconds: 10),
       );
-      
+
       // Cache the result
       _cacheAsset(key, image);
-      
+
       stopwatch.stop();
       _updateMetrics(stopwatch.elapsed);
-      
+
       return image;
     } catch (e) {
       stopwatch.stop();
       _updateMetrics(stopwatch.elapsed);
-      
+
       if (kDebugMode) {
         debugPrint('❌ Failed to load optimized image: $e');
       }
-      
+
       // Return fallback image for SVG and regular images
       // Check if it's an SVG file and handle accordingly
       if (imagePath.toLowerCase().endsWith('.svg')) {
@@ -217,7 +218,8 @@ class AssetOptimizationService {
                 fit: fit,
                 errorBuilder: (context, error, stackTrace) {
                   return const Image(
-                    image: NetworkImage('https://via.placeholder.com/200x200?text=Avatar'),
+                    image: NetworkImage(
+                        'https://via.placeholder.com/200x200?text=Avatar'),
                     fit: BoxFit.cover,
                   );
                 },
@@ -227,7 +229,8 @@ class AssetOptimizationService {
         } catch (e) {
           // Final fallback
           return const Image(
-            image: NetworkImage('https://via.placeholder.com/200x200?text=Avatar'),
+            image:
+                NetworkImage('https://via.placeholder.com/200x200?text=Avatar'),
             fit: BoxFit.cover,
           );
         }
@@ -247,7 +250,8 @@ class AssetOptimizationService {
                 fit: fit,
                 errorBuilder: (context, error, stackTrace) {
                   return const Image(
-                    image: NetworkImage('https://via.placeholder.com/200x200?text=Avatar'),
+                    image: NetworkImage(
+                        'https://via.placeholder.com/200x200?text=Avatar'),
                     fit: BoxFit.cover,
                   );
                 },
@@ -257,7 +261,8 @@ class AssetOptimizationService {
         } catch (e) {
           // Final fallback
           return const Image(
-            image: NetworkImage('https://via.placeholder.com/200x200?text=Avatar'),
+            image:
+                NetworkImage('https://via.placeholder.com/200x200?text=Avatar'),
             fit: BoxFit.cover,
           );
         }
@@ -278,7 +283,7 @@ class AssetOptimizationService {
       imagePath: imageUrl,
       size: width != null && height != null ? '${width}x$height' : null,
     );
-    
+
     return CachedNetworkImage(
       imageUrl: optimizedUrl,
       width: width?.toDouble(),
@@ -303,7 +308,7 @@ class AssetOptimizationService {
       if (kDebugMode) {
         debugPrint('⏳ Preloading ${imagePaths.length} images...');
       }
-      
+
       final futures = imagePaths.map((path) async {
         try {
           await loadOptimizedImage(imagePath: path);
@@ -316,9 +321,9 @@ class AssetOptimizationService {
           }
         }
       }).toList();
-      
+
       await Future.wait(futures);
-      
+
       if (kDebugMode) {
         debugPrint('🚀 Image preloading completed');
       }
@@ -342,21 +347,21 @@ class AssetOptimizationService {
       if (imageData.isEmpty) return imageData;
       if (maxWidth <= 0 || maxHeight <= 0) return imageData;
       if (quality < 0 || quality > 100) quality = 85;
-      
+
       // Decode image
       final image = img.decodeImage(imageData);
       if (image == null) return imageData;
-      
+
       // Ensure valid dimensions
       if (image.width <= 0 || image.height <= 0) return imageData;
-      
+
       // Calculate new dimensions
       int newWidth = image.width;
       int newHeight = image.height;
-      
+
       if (image.width > maxWidth || image.height > maxHeight) {
         final aspectRatio = image.width / image.height;
-        
+
         if (aspectRatio > 0) {
           if (image.width > image.height) {
             newWidth = maxWidth;
@@ -370,11 +375,11 @@ class AssetOptimizationService {
           newHeight = maxHeight;
         }
       }
-      
+
       // Ensure positive dimensions
       newWidth = newWidth.clamp(1, maxWidth);
       newHeight = newHeight.clamp(1, maxHeight);
-      
+
       // Resize image
       final resized = img.copyResize(
         image,
@@ -382,23 +387,26 @@ class AssetOptimizationService {
         height: newHeight,
         interpolation: img.Interpolation.linear,
       );
-      
+
       // Encode with optimal format
       Uint8List optimizedData;
       if (enableWebP && _cdnConfig.enableWebP) {
         optimizedData = Uint8List.fromList(img.encodePng(resized));
       } else {
-        optimizedData = Uint8List.fromList(img.encodeJpg(resized, quality: quality));
+        optimizedData =
+            Uint8List.fromList(img.encodeJpg(resized, quality: quality));
       }
-      
+
       if (kDebugMode) {
         final originalSize = imageData.length;
         final newSize = optimizedData.length;
-        final compressionRatio = originalSize > 0 ? 
-          ((originalSize - newSize) / originalSize * 100).toStringAsFixed(1) : '0.0';
-        debugPrint('🗜️ Image optimized: ${originalSize} -> ${newSize} bytes ($compressionRatio% smaller)');
+        final compressionRatio = originalSize > 0
+            ? ((originalSize - newSize) / originalSize * 100).toStringAsFixed(1)
+            : '0.0';
+        debugPrint(
+            '🗜️ Image optimized: ${originalSize} -> ${newSize} bytes ($compressionRatio% smaller)');
       }
-      
+
       return optimizedData;
     } catch (e) {
       if (kDebugMode) {
@@ -426,10 +434,11 @@ class AssetOptimizationService {
         quality: quality,
         enableWebP: enableWebP,
       );
-      
+
       // Determine content type based on optimization
-      final contentType = enableWebP && _cdnConfig.enableWebP ? 'image/webp' : 'image/jpeg';
-      
+      final contentType =
+          enableWebP && _cdnConfig.enableWebP ? 'image/webp' : 'image/jpeg';
+
       // Upload to Firebase Storage
       final ref = _storage.ref().child(path);
       final uploadTask = ref.putData(
@@ -439,14 +448,14 @@ class AssetOptimizationService {
           cacheControl: 'public, max-age=${_cdnConfig.maxCacheAge}',
         ),
       );
-      
+
       final snapshot = await uploadTask;
       final downloadUrl = await snapshot.ref.getDownloadURL();
-      
+
       if (kDebugMode) {
         debugPrint('📤 Uploaded optimized image to: $downloadUrl');
       }
-      
+
       return downloadUrl;
     } catch (e) {
       if (kDebugMode) {
@@ -486,16 +495,18 @@ class AssetOptimizationService {
                 fit: BoxFit.cover,
                 placeholder: (context, url) => _defaultAvatarPlaceholder,
                 errorWidget: (context, url, error) {
-                  return fallback2 != null ? 
-                    CachedNetworkImage(
-                      imageUrl: getOptimizedImageUrl(imagePath: fallback2),
-                      width: size,
-                      height: size,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => _defaultAvatarPlaceholder,
-                      errorWidget: (context, url, error) => _defaultAvatarWidget,
-                    ) : 
-                    _defaultAvatarWidget;
+                  return fallback2 != null
+                      ? CachedNetworkImage(
+                          imageUrl: getOptimizedImageUrl(imagePath: fallback2),
+                          width: size,
+                          height: size,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              _defaultAvatarPlaceholder,
+                          errorWidget: (context, url, error) =>
+                              _defaultAvatarWidget,
+                        )
+                      : _defaultAvatarWidget;
                 },
               );
             }
@@ -516,8 +527,9 @@ class AssetOptimizationService {
         return Center(
           child: CircularProgressIndicator(
             value: loadingProgress.expectedTotalBytes != null
-              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-              : null,
+                ? loadingProgress.cumulativeBytesLoaded /
+                    loadingProgress.expectedTotalBytes!
+                : null,
           ),
         );
       },
@@ -566,11 +578,11 @@ class AssetOptimizationService {
       // This is a rough estimate based on image dimensions
       // In a real implementation, you might want to calculate actual memory usage
       final imageInfo = image.toString();
-      
+
       // Try to extract dimensions from the image string representation
       // This is a heuristic approach
       int estimatedSize = 100 * 1024; // Base 100KB estimate
-      
+
       // If we can parse image info, adjust the estimate
       // This is a simplified approach - in production you might want
       // to use more sophisticated memory tracking
@@ -595,12 +607,14 @@ class AssetOptimizationService {
     }
 
     // If still over size limit, remove oldest entries
-    if (_currentCacheSize > _maxCacheSizeBytes || _assetCache.length > _maxCacheEntries) {
+    if (_currentCacheSize > _maxCacheSizeBytes ||
+        _assetCache.length > _maxCacheEntries) {
       final sortedEntries = _assetCache.entries.toList()
         ..sort((a, b) => a.value.expiresAt.compareTo(b.value.expiresAt));
 
-      while ((_currentCacheSize > _maxCacheSizeBytes || _assetCache.length > _maxCacheEntries) 
-             && sortedEntries.isNotEmpty) {
+      while ((_currentCacheSize > _maxCacheSizeBytes ||
+              _assetCache.length > _maxCacheEntries) &&
+          sortedEntries.isNotEmpty) {
         final entry = sortedEntries.removeAt(0);
         _currentCacheSize -= entry.value.size;
         _assetCache.remove(entry.key);
@@ -612,17 +626,17 @@ class AssetOptimizationService {
   void _updateMetrics(Duration loadTime) {
     final loadTimeMs = loadTime.inMilliseconds;
     _totalLoadTimeMs += loadTimeMs;
-    
+
     // Track slow loads
     if (loadTimeMs > 1000) {
       final slowLoadInfo = 'Load took ${loadTimeMs}ms';
       _slowLoads.add(slowLoadInfo);
-      
+
       // Keep only the latest slow loads
       if (_slowLoads.length > _maxSlowLoads) {
         _slowLoads.removeAt(0);
       }
-      
+
       if (kDebugMode) {
         debugPrint('🐌 Slow asset load detected: ${loadTimeMs}ms');
       }
@@ -649,13 +663,14 @@ class AssetOptimizationService {
   /// Get performance metrics
   AssetMetrics? get metrics {
     if (_totalAssetsLoaded == 0) return null;
-    
+
     return AssetMetrics(
       totalAssetsLoaded: _totalAssetsLoaded,
       cacheHits: _cacheHits,
       cacheMisses: _cacheMisses,
-      averageLoadTimeMs: _totalAssetsLoaded > 0 ? 
-        (_totalLoadTimeMs / _totalAssetsLoaded).round() : 0,
+      averageLoadTimeMs: _totalAssetsLoaded > 0
+          ? (_totalLoadTimeMs / _totalAssetsLoaded).round()
+          : 0,
       totalBytesCached: _totalBytesCached,
       slowLoads: List.from(_slowLoads),
     );
@@ -664,28 +679,35 @@ class AssetOptimizationService {
   /// Get performance recommendations
   List<String> getPerformanceRecommendations() {
     final recommendations = <String>[];
-    
+
     if (metrics == null) return recommendations;
-    
+
     final assetMetrics = metrics!;
-    
+
     if (assetMetrics.cacheHitRate < 70) {
-      recommendations.add('🧠 Low cache hit rate - consider increasing cache TTL or preloading');
-      recommendations.add('📈 Implement better caching strategies for frequently accessed assets');
+      recommendations.add(
+          '🧠 Low cache hit rate - consider increasing cache TTL or preloading');
+      recommendations.add(
+          '📈 Implement better caching strategies for frequently accessed assets');
     }
-    
+
     if (assetMetrics.slowLoads.isNotEmpty) {
-      recommendations.add('🐌 Slow asset loads detected - check network conditions or CDN configuration');
-      recommendations.add('🌐 Consider using a closer CDN region or optimizing image compression');
+      recommendations.add(
+          '🐌 Slow asset loads detected - check network conditions or CDN configuration');
+      recommendations.add(
+          '🌐 Consider using a closer CDN region or optimizing image compression');
     }
-    
+
     if (_currentCacheSize > _maxCacheSizeBytes * 0.8) {
-      recommendations.add('💾 Cache approaching size limit - consider reducing cache size or TTL');
+      recommendations.add(
+          '💾 Cache approaching size limit - consider reducing cache size or TTL');
     }
-    
-    recommendations.add('🖼️ Consider using WebP format for better compression');
-    recommendations.add('📱 Implement responsive images for different screen densities');
-    
+
+    recommendations
+        .add('🖼️ Consider using WebP format for better compression');
+    recommendations
+        .add('📱 Implement responsive images for different screen densities');
+
     return recommendations;
   }
 
@@ -704,32 +726,32 @@ class AssetOptimizationService {
 
   // Default widgets
   Widget get _defaultPlaceholder => Container(
-    color: Colors.grey.shade200,
-    child: const Center(
-      child: CircularProgressIndicator(),
-    ),
-  );
+        color: Colors.grey.shade200,
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
 
   Widget get _defaultErrorWidget => Container(
-    color: Colors.grey.shade200,
-    child: const Center(
-      child: Icon(Icons.error, color: Colors.grey),
-    ),
-  );
+        color: Colors.grey.shade200,
+        child: const Center(
+          child: Icon(Icons.error, color: Colors.grey),
+        ),
+      );
 
   Widget get _defaultAvatarPlaceholder => Container(
-    color: Colors.grey.shade200,
-    child: const Center(
-      child: Icon(Icons.person, color: Colors.grey),
-    ),
-  );
+        color: Colors.grey.shade200,
+        child: const Center(
+          child: Icon(Icons.person, color: Colors.grey),
+        ),
+      );
 
   Widget get _defaultAvatarWidget => Container(
-    color: Colors.grey.shade200,
-    child: const Center(
-      child: Icon(Icons.person, color: Colors.grey),
-    ),
-  );
+        color: Colors.grey.shade200,
+        child: const Center(
+          child: Icon(Icons.person, color: Colors.grey),
+        ),
+      );
 }
 
 /// Cache entry for assets

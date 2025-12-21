@@ -14,10 +14,13 @@ class QuizLogic {
   int _currentScore = 0;
   int _highScore = 0;
   final List<String> _answeredQuestions = [];
-  final Set<String> _usedQuestionIds = {}; // Track questions used across sessions
+  final Set<String> _usedQuestionIds =
+      {}; // Track questions used across sessions
   DateTime? _lastPlayTime;
   final List<Question> _allQuestions = []; // Will be populated from database
   AppLanguage _currentLanguage = AppLanguage.turkish;
+  final Map<String, int> _wrongAnswerCategories =
+      {}; // Track wrong answers by category
 
   List<Question> questions = [];
   final Random _random = Random();
@@ -34,6 +37,19 @@ class QuizLogic {
       if (lastPlayTimeMillis != null) {
         _lastPlayTime = DateTime.fromMillisecondsSinceEpoch(lastPlayTimeMillis);
       }
+
+      // Load wrong answer categories
+      final wrongCategoriesJson = prefs.getString('wrongAnswerCategories');
+      if (wrongCategoriesJson != null) {
+        final Map<String, dynamic> wrongCategoriesMap = {};
+        // Parse JSON string back to map
+        wrongCategoriesJson.split(',').forEach((entry) {
+          final parts = entry.split(':');
+          if (parts.length == 2) {
+            _wrongAnswerCategories[parts[0]] = int.parse(parts[1]);
+          }
+        });
+      }
     } catch (e) {
       if (kDebugMode) debugPrint('Error loading high score: $e');
     }
@@ -44,8 +60,15 @@ class QuizLogic {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('highScore', _highScore);
       if (_lastPlayTime != null) {
-        await prefs.setInt('lastPlayTime', _lastPlayTime!.millisecondsSinceEpoch);
+        await prefs.setInt(
+            'lastPlayTime', _lastPlayTime!.millisecondsSinceEpoch);
       }
+
+      // Save wrong answer categories
+      final wrongCategoriesString = _wrongAnswerCategories.entries
+          .map((e) => '${e.key}:${e.value}')
+          .join(',');
+      await prefs.setString('wrongAnswerCategories', wrongCategoriesString);
 
       final userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
@@ -59,22 +82,38 @@ class QuizLogic {
     }
   }
 
-  void _selectRandomQuestions(int count, {AppLanguage? language}) {
+  void _selectRandomQuestions(int count,
+      {AppLanguage? language, String? category}) {
     // Use provided language or default to current language
     final selectedLanguage = language ?? _currentLanguage;
-    
+
     // Get questions from database in selected language
-    final allAvailableQuestions = QuestionsDatabase.getQuestions(selectedLanguage);
-    
+    var allAvailableQuestions =
+        QuestionsDatabase.getQuestions(selectedLanguage);
+
+    // Filter by category if specified
+    if (category != null && category != 'Tümü') {
+      allAvailableQuestions =
+          allAvailableQuestions.where((q) => q.category == category).toList();
+    }
+
     // Clear answered questions for new session to ensure variety
     _answeredQuestions.clear();
-    
-    var regularQuestions = allAvailableQuestions.where((q) => q.options.length == 4).toList();
-    var bonusQuestions = allAvailableQuestions.where((q) => q.options.length == 5).toList();
+
+    var regularQuestions =
+        allAvailableQuestions.where((q) => q.options.length == 4).toList();
+    var bonusQuestions =
+        allAvailableQuestions.where((q) => q.options.length == 5).toList();
 
     // Filter out already used questions to prevent duplicates
-    var availableRegular = regularQuestions.where((q) => !_usedQuestionIds.contains(_getQuestionId(q, selectedLanguage))).toList();
-    var availableBonus = bonusQuestions.where((q) => !_usedQuestionIds.contains(_getQuestionId(q, selectedLanguage))).toList();
+    var availableRegular = regularQuestions
+        .where((q) =>
+            !_usedQuestionIds.contains(_getQuestionId(q, selectedLanguage)))
+        .toList();
+    var availableBonus = bonusQuestions
+        .where((q) =>
+            !_usedQuestionIds.contains(_getQuestionId(q, selectedLanguage)))
+        .toList();
 
     // If we've used too many questions, reset the used set for this language
     if (availableRegular.length + availableBonus.length < count) {
@@ -83,41 +122,72 @@ class QuizLogic {
       availableBonus = bonusQuestions;
     }
 
-    availableRegular.shuffle(_random);
-    availableBonus.shuffle(_random);
+    // Separate questions by wrong answer categories for weighted selection
+    final wrongCategoryQuestions = <Question>[];
+    final otherCategoryQuestions = <Question>[];
+
+    for (var q in availableRegular) {
+      if (_wrongAnswerCategories.containsKey(q.category) &&
+          _wrongAnswerCategories[q.category]! > 0) {
+        wrongCategoryQuestions.add(q);
+      } else {
+        otherCategoryQuestions.add(q);
+      }
+    }
+
+    // Calculate how many questions to select from each group
+    final wrongCategoryCount =
+        (count * 0.6).round(); // 60% from wrong categories
+    final otherCategoryCount =
+        count - wrongCategoryCount; // 40% from other categories
 
     questions = [];
     int selected = 0;
 
-    // Select regular questions first
-    for (var q in availableRegular) {
-      if (selected >= count) break;
+    // First, select from wrong answer categories (if available)
+    if (wrongCategoryQuestions.isNotEmpty) {
+      wrongCategoryQuestions.shuffle(_random);
+      for (var q in wrongCategoryQuestions) {
+        if (selected >= wrongCategoryCount) break;
+        questions.add(q);
+        _answeredQuestions.add(q.text);
+        _usedQuestionIds.add(_getQuestionId(q, selectedLanguage));
+        selected++;
+      }
+    }
+
+    // Then fill remaining slots with other categories
+    selected = 0; // Reset counter for other categories
+    otherCategoryQuestions.shuffle(_random);
+    for (var q in otherCategoryQuestions) {
+      if (questions.length >= count) break;
       questions.add(q);
       _answeredQuestions.add(q.text);
       _usedQuestionIds.add(_getQuestionId(q, selectedLanguage));
       selected++;
     }
 
-    // If still need more questions, select from bonus questions
-    for (var q in availableBonus) {
-      if (selected >= count) break;
-      questions.add(q);
-      _answeredQuestions.add(q.text);
-      _usedQuestionIds.add(_getQuestionId(q, selectedLanguage));
-      selected++;
+    // If still need more questions, add bonus questions
+    if (questions.length < count) {
+      availableBonus.shuffle(_random);
+      for (var q in availableBonus) {
+        if (questions.length >= count) break;
+        questions.add(q);
+        _answeredQuestions.add(q.text);
+        _usedQuestionIds.add(_getQuestionId(q, selectedLanguage));
+      }
     }
 
     // If still need more questions (edge case), allow duplicates
-    if (selected < count) {
+    if (questions.length < count) {
       var allQuestions = List<Question>.from(allAvailableQuestions);
       allQuestions.shuffle(_random);
-      
+
       for (var q in allQuestions) {
-        if (selected >= count) break;
+        if (questions.length >= count) break;
         if (!questions.contains(q)) {
           questions.add(q);
           _answeredQuestions.add(q.text);
-          selected++;
         }
       }
     }
@@ -165,19 +235,32 @@ class QuizLogic {
   }
 
   int getCurrentScore() => _currentScore;
-  
+
   int getHighScore() => _highScore;
 
   void resetScore() {
     _currentScore = 0;
   }
 
-  Future<void> startNewQuiz() async {
+  Future<void> startNewQuiz({String? category}) async {
     resetScore();
-    _selectRandomQuestions(15); // 15 questions per quiz
+    _selectRandomQuestions(15, category: category); // 15 questions per quiz
     await _loadHighScore();
     _lastPlayTime = DateTime.now();
     await _saveHighScore(); // Save last play time
+  }
+
+  void recordWrongAnswer(String category) {
+    _wrongAnswerCategories[category] =
+        (_wrongAnswerCategories[category] ?? 0) + 1;
+  }
+
+  Map<String, int> getWrongAnswerCategories() {
+    return Map.from(_wrongAnswerCategories);
+  }
+
+  void resetWrongAnswerCategories() {
+    _wrongAnswerCategories.clear();
   }
 
   // Preload questions for immediate access
@@ -224,7 +307,8 @@ class QuizLogic {
     }
   }
 
-  Future<void> saveGameResults(int score, List<String> answeredQuestions) async {
+  Future<void> saveGameResults(
+      int score, List<String> answeredQuestions) async {
     try {
       final userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
@@ -251,7 +335,9 @@ class QuizLogic {
     if (difference.inHours >= 12) {
       try {
         await NotificationService.scheduleReminderNotification();
-        if (kDebugMode) debugPrint('Reminder notification sent after ${difference.inHours} hours');
+        if (kDebugMode)
+          debugPrint(
+              'Reminder notification sent after ${difference.inHours} hours');
       } catch (e) {
         if (kDebugMode) debugPrint('Error sending reminder notification: $e');
       }
@@ -260,7 +346,7 @@ class QuizLogic {
 
   // Get current language
   AppLanguage get currentLanguage => _currentLanguage;
-  
+
   // Clear used questions (for testing or reset purposes)
   void clearUsedQuestions() {
     _usedQuestionIds.clear();

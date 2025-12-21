@@ -28,7 +28,8 @@ class VerificationResult {
   final String? code; // Generated verification code for TOTP
   final int? expiresAt; // Unix timestamp when code expires
   final String? sessionId; // Session identifier for tracking
-  final List<VerificationMethod>? availableMethods; // Available verification methods
+  final List<VerificationMethod>?
+      availableMethods; // Available verification methods
 
   const VerificationResult({
     required this.isSuccess,
@@ -39,7 +40,8 @@ class VerificationResult {
     this.availableMethods,
   });
 
-  factory VerificationResult.success(String message, {String? sessionId, List<VerificationMethod>? availableMethods}) {
+  factory VerificationResult.success(String message,
+      {String? sessionId, List<VerificationMethod>? availableMethods}) {
     return VerificationResult(
       isSuccess: true,
       message: message,
@@ -55,7 +57,8 @@ class VerificationResult {
     );
   }
 
-  factory VerificationResult.totpCode(String code, int expiresAt, String message) {
+  factory VerificationResult.totpCode(
+      String code, int expiresAt, String message) {
     return VerificationResult(
       isSuccess: true,
       message: message,
@@ -145,19 +148,23 @@ class Comprehensive2FAService {
   }) async {
     // Check network connectivity
     if (!await _isNetworkAvailable()) {
-      return VerificationResult.failure('İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin.');
+      return VerificationResult.failure(
+          'İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin.');
     }
 
     // Generate session ID
     final sessionId = _generateSecureId();
-    final expiresAt = DateTime.now().add(_codeExpirationTime).millisecondsSinceEpoch;
+    final expiresAt =
+        DateTime.now().add(_codeExpirationTime).millisecondsSinceEpoch;
 
     try {
       switch (method) {
         case VerificationMethod.sms:
-          return await _startSMSVerification(phoneNumber!, sessionId, expiresAt);
+          return await _startSMSVerification(
+              phoneNumber!, sessionId, expiresAt);
         case VerificationMethod.totp:
-          return await _startTOTPVerification(totpSecret!, sessionId, expiresAt);
+          return await _startTOTPVerification(
+              totpSecret!, sessionId, expiresAt);
         case VerificationMethod.hardwareToken:
           return await _startHardwareTokenVerification(sessionId, expiresAt);
         case VerificationMethod.backupCode:
@@ -167,7 +174,8 @@ class Comprehensive2FAService {
       if (kDebugMode) {
         debugPrint('Error starting ${method.displayName} verification: $e');
       }
-      return VerificationResult.failure('${method.displayName} doğrulaması başlatılamadı');
+      return VerificationResult.failure(
+          '${method.displayName} doğrulaması başlatılamadı');
     }
   }
 
@@ -185,7 +193,7 @@ class Comprehensive2FAService {
 
       // In a real implementation, this would call Firebase phone verification
       // For demonstration, we'll simulate the process
-      
+
       // Create verification session
       final session = _VerificationSession(
         sessionId: sessionId,
@@ -222,7 +230,9 @@ class Comprehensive2FAService {
     try {
       // Generate current TOTP code
       final code = generateTOTP(secret);
-      final actualExpiresAt = DateTime.now().add(const Duration(seconds: 30)).millisecondsSinceEpoch;
+      final actualExpiresAt = DateTime.now()
+          .add(const Duration(seconds: 30))
+          .millisecondsSinceEpoch;
 
       // Create verification session
       final session = _VerificationSession(
@@ -270,7 +280,8 @@ class Comprehensive2FAService {
         ],
       );
     } catch (e) {
-      return VerificationResult.failure('Hardware token doğrulaması başlatılamadı: $e');
+      return VerificationResult.failure(
+          'Hardware token doğrulaması başlatılamadı: $e');
     }
   }
 
@@ -299,7 +310,8 @@ class Comprehensive2FAService {
         ],
       );
     } catch (e) {
-      return VerificationResult.failure('Yedek kod doğrulaması başlatılamadı: $e');
+      return VerificationResult.failure(
+          'Yedek kod doğrulaması başlatılamadı: $e');
     }
   }
 
@@ -311,7 +323,8 @@ class Comprehensive2FAService {
   }) async {
     // Check network connectivity
     if (!await _isNetworkAvailable()) {
-      return VerificationResult.failure('İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin.');
+      return VerificationResult.failure(
+          'İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin.');
     }
 
     // Get session
@@ -353,7 +366,8 @@ class Comprehensive2FAService {
   }
 
   /// Verify SMS code
-  static Future<VerificationResult> _verifySMSCode(_VerificationSession session, String code) async {
+  static Future<VerificationResult> _verifySMSCode(
+      _VerificationSession session, String code) async {
     // In a real implementation, this would verify against Firebase
     // For demonstration, we'll simulate validation
     if (code.length != 6 || !RegExp(r'^\d{6}$').hasMatch(code)) {
@@ -371,7 +385,8 @@ class Comprehensive2FAService {
   }
 
   /// Verify TOTP code
-  static Future<VerificationResult> _verifyTOTPCode(_VerificationSession session, String code) async {
+  static Future<VerificationResult> _verifyTOTPCode(
+      _VerificationSession session, String code) async {
     if (session.totpSecret == null) {
       return VerificationResult.failure('TOTP secret not found');
     }
@@ -387,7 +402,8 @@ class Comprehensive2FAService {
   }
 
   /// Verify hardware token (simulated biometric)
-  static Future<VerificationResult> _verifyHardwareToken(_VerificationSession session) async {
+  static Future<VerificationResult> _verifyHardwareToken(
+      _VerificationSession session) async {
     try {
       // Simulate biometric authentication
       // In a real implementation, this would use local_auth package
@@ -396,7 +412,8 @@ class Comprehensive2FAService {
       if (didAuthenticate) {
         await _logSecurityEvent(session, 'HARDWARE_TOKEN_VERIFICATION_SUCCESS');
         _sessions.remove(session.sessionId);
-        return VerificationResult.success('Hardware token verified successfully');
+        return VerificationResult.success(
+            'Hardware token verified successfully');
       }
 
       return VerificationResult.failure('Biometric authentication cancelled');
@@ -414,7 +431,8 @@ class Comprehensive2FAService {
   }
 
   /// Verify backup code
-  static Future<VerificationResult> _verifyBackupCode(_VerificationSession session, String code) async {
+  static Future<VerificationResult> _verifyBackupCode(
+      _VerificationSession session, String code) async {
     // In a real implementation, this would validate against stored backup codes
     // For demonstration, we'll simulate validation
     if (code.length != 8 || !RegExp(r'^[A-Z0-9]{8}$').hasMatch(code)) {
@@ -461,19 +479,19 @@ class Comprehensive2FAService {
     final key = Base32Decoder.decode(secret.toUpperCase());
     final time = (DateTime.now().millisecondsSinceEpoch / 1000) ~/ period;
     final timeBytes = _int64ToBytes(time);
-    
+
     final hmac = Hmac(sha1, key);
     final hash = hmac.convert(timeBytes).bytes;
-    
+
     final offset = hash[hash.length - 1] & 0xf;
     final code = ((hash[offset] & 0x7f) << 24) |
-                 ((hash[offset + 1] & 0xff) << 16) |
-                 ((hash[offset + 2] & 0xff) << 8) |
-                 (hash[offset + 3] & 0xff);
-    
+        ((hash[offset + 1] & 0xff) << 16) |
+        ((hash[offset + 2] & 0xff) << 8) |
+        (hash[offset + 3] & 0xff);
+
     final mod = pow(10, digits);
     final otp = (code % mod).toString().padLeft(digits, '0');
-    
+
     return otp;
   }
 
@@ -501,11 +519,13 @@ class Comprehensive2FAService {
   static bool _isValidPhoneNumber(String phoneNumber) {
     // Basic international phone number validation
     final phoneRegex = RegExp(r'^\+?[1-9]\d{1,14}$');
-    return phoneRegex.hasMatch(phoneNumber.replaceAll(RegExp(r'[\s\-\(\)]'), ''));
+    return phoneRegex
+        .hasMatch(phoneNumber.replaceAll(RegExp(r'[\s\-\(\)]'), ''));
   }
 
   /// Log security event
-  static Future<void> _logSecurityEvent(_VerificationSession session, String eventType) async {
+  static Future<void> _logSecurityEvent(
+      _VerificationSession session, String eventType) async {
     try {
       final user = _auth.currentUser;
       if (user == null) return;
@@ -528,7 +548,8 @@ class Comprehensive2FAService {
   }
 
   /// Get user's enrolled verification methods
-  static Future<List<VerificationMethod>> getEnrolledMethods(String userId) async {
+  static Future<List<VerificationMethod>> getEnrolledMethods(
+      String userId) async {
     try {
       final userDoc = await _firestore.collection('users').doc(userId).get();
       final data = userDoc.data() as Map<String, dynamic>?;
@@ -538,8 +559,10 @@ class Comprehensive2FAService {
       final methods = <VerificationMethod>[];
       if (data['smsEnabled'] == true) methods.add(VerificationMethod.sms);
       if (data['totpEnabled'] == true) methods.add(VerificationMethod.totp);
-      if (data['hardwareTokenEnabled'] == true) methods.add(VerificationMethod.hardwareToken);
-      if (data['backupCodesEnabled'] == true) methods.add(VerificationMethod.backupCode);
+      if (data['hardwareTokenEnabled'] == true)
+        methods.add(VerificationMethod.hardwareToken);
+      if (data['backupCodesEnabled'] == true)
+        methods.add(VerificationMethod.backupCode);
 
       return methods;
     } catch (e) {

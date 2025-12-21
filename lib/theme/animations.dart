@@ -7,13 +7,12 @@ import 'theme_colors.dart';
 
 /// Advanced animation system with pre-built animations and micro-interactions
 class AppAnimations {
-  
   // Standard animation durations
   static const Duration fast = Duration(milliseconds: 150);
   static const Duration normal = Duration(milliseconds: 300);
   static const Duration slow = Duration(milliseconds: 500);
   static const Duration verySlow = Duration(milliseconds: 800);
-  
+
   // Standard animation curves
   static const Curve easeIn = Curves.easeIn;
   static const Curve easeOut = Curves.easeOut;
@@ -21,7 +20,7 @@ class AppAnimations {
   static const Curve bounceOut = Curves.bounceOut;
   static const Curve elasticOut = Curves.elasticOut;
   static const Curve linear = Curves.linear;
-  
+
   /// Create a fade-in animation
   static Widget fadeIn({
     required Widget child,
@@ -43,7 +42,7 @@ class AppAnimations {
       child: child,
     );
   }
-  
+
   /// Create a slide-up animation
   static Widget slideUp({
     required Widget child,
@@ -65,7 +64,7 @@ class AppAnimations {
       child: child,
     );
   }
-  
+
   /// Create a scale animation
   static Widget scale({
     required Widget child,
@@ -88,7 +87,7 @@ class AppAnimations {
       child: child,
     );
   }
-  
+
   /// Create a combined fade and slide animation
   static Widget fadeSlideUp({
     required Widget child,
@@ -114,7 +113,7 @@ class AppAnimations {
       child: child,
     );
   }
-  
+
   /// Create a staggered animation for lists
   static Widget staggered({
     required List<Widget> children,
@@ -128,8 +127,9 @@ class AppAnimations {
         final index = entry.key;
         final child = entry.value;
         final startDelay = delay ?? Duration.zero;
-        final childDelay = Duration(milliseconds: (index * staggerOffset * 1000).round());
-        
+        final childDelay =
+            Duration(milliseconds: (index * staggerOffset * 1000).round());
+
         return fadeSlideUp(
           child: child,
           duration: duration,
@@ -139,7 +139,7 @@ class AppAnimations {
       }).toList(),
     );
   }
-  
+
   /// Create a bounce animation
   static Widget bounce({
     required Widget child,
@@ -154,7 +154,7 @@ class AppAnimations {
       builder: (context, value, child) {
         final bounceValue = (1 - (value - 0.5).abs() * 2) * bounceHeight;
         final scale = 1 + bounceValue;
-        
+
         return Transform.scale(
           scale: scale,
           child: child,
@@ -163,7 +163,7 @@ class AppAnimations {
       child: child,
     );
   }
-  
+
   /// Create a ripple effect
   static Widget ripple({
     required Widget child,
@@ -175,13 +175,15 @@ class AppAnimations {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        splashColor: rippleColor ?? ThemeColors.getPrimaryButtonColor(Colors.black as BuildContext).withOpacity(0.1),
+        splashColor: rippleColor ??
+            ThemeColors.getPrimaryButtonColor(Colors.black as BuildContext)
+                .withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
         child: child,
       ),
     );
   }
-  
+
   /// Create a hover effect
   static Widget hover({
     required Widget child,
@@ -200,15 +202,16 @@ class AppAnimations {
       ),
     );
   }
-  
+
   /// Create a loading spinner
   static Widget loadingSpinner({
     Color? color,
     double size = 40.0,
     double strokeWidth = 4.0,
   }) {
-    final spinnerColor = color ?? ThemeColors.getPrimaryButtonColor(Colors.black as BuildContext);
-    
+    final spinnerColor = color ??
+        ThemeColors.getPrimaryButtonColor(Colors.black as BuildContext);
+
     return SizedBox(
       width: size,
       height: size,
@@ -219,14 +222,15 @@ class AppAnimations {
       ),
     );
   }
-  
+
   /// Create a pulsing loading indicator
   static Widget pulsingIndicator({
     Color? color,
     double size = 40.0,
   }) {
-    final indicatorColor = color ?? ThemeColors.getPrimaryButtonColor(Colors.black as BuildContext);
-    
+    final indicatorColor = color ??
+        ThemeColors.getPrimaryButtonColor(Colors.black as BuildContext);
+
     return AnimatedBuilder(
       animation: _pulseController,
       builder: (context, child) {
@@ -244,15 +248,16 @@ class AppAnimations {
       },
     );
   }
-  
+
   /// Create a typing indicator
   static Widget typingIndicator({
     Color? color,
     double size = 8.0,
     Duration duration = normal,
   }) {
-    final dotColor = color ?? ThemeColors.getSecondaryText(Colors.black as BuildContext);
-    
+    final dotColor =
+        color ?? ThemeColors.getSecondaryText(Colors.black as BuildContext);
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(3, (index) {
@@ -275,7 +280,7 @@ class AppAnimations {
       }),
     );
   }
-  
+
   /// Create a progress bar animation
   static Widget animatedProgressBar({
     required double progress,
@@ -285,9 +290,11 @@ class AppAnimations {
     Duration duration = normal,
     Duration? delay,
   }) {
-    final bgColor = backgroundColor ?? ThemeColors.getNeumorphismLight(Colors.black as BuildContext);
-    final progColor = progressColor ?? ThemeColors.getPrimaryButtonColor(Colors.black as BuildContext);
-    
+    final bgColor = backgroundColor ??
+        ThemeColors.getNeumorphismLight(Colors.black as BuildContext);
+    final progColor = progressColor ??
+        ThemeColors.getPrimaryButtonColor(Colors.black as BuildContext);
+
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: progress),
       duration: duration,
@@ -312,7 +319,7 @@ class AppAnimations {
       },
     );
   }
-  
+
   /// Create a slide transition between widgets
   static Widget slideTransition({
     required Widget child,
@@ -320,7 +327,7 @@ class AppAnimations {
     SlideDirection direction = SlideDirection.left,
   }) {
     final offset = _getSlideOffset(direction, animation.value);
-    
+
     return Transform.translate(
       offset: offset,
       child: Opacity(
@@ -329,7 +336,7 @@ class AppAnimations {
       ),
     );
   }
-  
+
   /// Create a scale transition with spring effect
   static Widget scaleTransition({
     required Widget child,
@@ -340,7 +347,7 @@ class AppAnimations {
       child: child,
     );
   }
-  
+
   /// Create a rotation animation
   static Widget rotation({
     required Widget child,
@@ -362,24 +369,25 @@ class AppAnimations {
       child: child,
     );
   }
-  
+
   // Private animation controllers
   static final AnimationController _pulseController = AnimationController(
     duration: const Duration(milliseconds: 1500),
     vsync: _pulseTickerProvider,
   )..repeat();
-  
+
   static final AnimationController _typingController = AnimationController(
     duration: const Duration(milliseconds: 1200),
     vsync: _typingTickerProvider,
   )..repeat();
-  
+
   // Private ticker providers
   static final TickerProvider _pulseTickerProvider = _PulseTickerProvider();
   static final TickerProvider _typingTickerProvider = _TypingTickerProvider();
-  
+
   // Private helper methods
-  static Offset _getSlideOffset(SlideDirection direction, double animationValue) {
+  static Offset _getSlideOffset(
+      SlideDirection direction, double animationValue) {
     switch (direction) {
       case SlideDirection.left:
         return Offset(-(1 - animationValue), 0);
@@ -391,7 +399,7 @@ class AppAnimations {
         return Offset(0, (1 - animationValue));
     }
   }
-  
+
   /// Dispose all animation controllers
   static void dispose() {
     _pulseController.dispose();
@@ -401,7 +409,6 @@ class AppAnimations {
 
 /// Micro-interaction patterns
 class MicroInteractions {
-  
   /// Create a button press effect
   static Widget buttonPress({
     required Widget child,
@@ -413,7 +420,7 @@ class MicroInteractions {
       duration: duration,
       vsync: _buttonTickerProvider,
     );
-    
+
     return GestureDetector(
       onTap: onPressed,
       onTapDown: (_) => controller.forward(),
@@ -432,7 +439,7 @@ class MicroInteractions {
       ),
     );
   }
-  
+
   /// Create a like button with heart animation
   static Widget likeButton({
     required bool isLiked,
@@ -441,10 +448,9 @@ class MicroInteractions {
     Color? inactiveColor,
     double size = 24.0,
   }) {
-    final color = isLiked 
-        ? (activeColor ?? Colors.red)
-        : (inactiveColor ?? Colors.grey);
-    
+    final color =
+        isLiked ? (activeColor ?? Colors.red) : (inactiveColor ?? Colors.grey);
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -458,7 +464,7 @@ class MicroInteractions {
       ),
     );
   }
-  
+
   /// Create a checkbox with smooth animation
   static Widget animatedCheckbox({
     required bool value,
@@ -474,18 +480,20 @@ class MicroInteractions {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: value 
-              ? (activeColor ?? ThemeColors.getSuccessColor(Colors.black as BuildContext))
+          color: value
+              ? (activeColor ??
+                  ThemeColors.getSuccessColor(Colors.black as BuildContext))
               : Colors.transparent,
           border: Border.all(
-            color: value 
-                ? (activeColor ?? ThemeColors.getSuccessColor(Colors.black as BuildContext))
+            color: value
+                ? (activeColor ??
+                    ThemeColors.getSuccessColor(Colors.black as BuildContext))
                 : (inactiveColor ?? Colors.grey),
             width: 2,
           ),
           borderRadius: BorderRadius.circular(4),
         ),
-        child: value 
+        child: value
             ? const Icon(
                 Icons.check,
                 color: Colors.white,
@@ -495,7 +503,7 @@ class MicroInteractions {
       ),
     );
   }
-  
+
   /// Create a toggle switch
   static Widget toggleSwitch({
     required bool value,
@@ -505,9 +513,10 @@ class MicroInteractions {
     double width = 50.0,
     double height = 30.0,
   }) {
-    final active = activeColor ?? ThemeColors.getPrimaryButtonColor(Colors.black as BuildContext);
+    final active = activeColor ??
+        ThemeColors.getPrimaryButtonColor(Colors.black as BuildContext);
     final inactive = inactiveColor ?? Colors.grey.shade300;
-    
+
     return GestureDetector(
       onTap: () => onChanged(!value),
       child: AnimatedContainer(
@@ -546,7 +555,7 @@ class MicroInteractions {
       ),
     );
   }
-  
+
   static final TickerProvider _buttonTickerProvider = _ButtonTickerProvider();
 }
 

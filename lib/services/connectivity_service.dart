@@ -7,21 +7,22 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 class ConnectivityService {
   final Connectivity _connectivity = Connectivity();
   StreamSubscription<ConnectivityResult>? _connectivitySubscription;
-  
+
   // State tracking
   bool _isConnected = true;
   DateTime? _lastOnlineTime;
-  
+
   /// Stream controller for connectivity state changes
-  final StreamController<bool> _connectivityStateController = 
+  final StreamController<bool> _connectivityStateController =
       StreamController<bool>.broadcast();
-      
+
   /// Get connectivity state stream
-  Stream<bool> get connectivityStateStream => _connectivityStateController.stream;
-  
+  Stream<bool> get connectivityStateStream =>
+      _connectivityStateController.stream;
+
   /// Get current connectivity state
   bool get isConnected => _isConnected;
-  
+
   /// Get last online time
   DateTime? get lastOnlineTime => _lastOnlineTime;
 
@@ -30,14 +31,15 @@ class ConnectivityService {
   /// attempting to normalize non-standard payload shapes.
   Stream<ConnectivityResult> get connectivityStream =>
       _connectivity.onConnectivityChanged.asyncExpand((dynamic event) {
-    try {
-      if (event is ConnectivityResult) return Stream.value(event);
-      if (event is Iterable) return Stream.fromIterable(event.whereType<ConnectivityResult>());
-    } catch (_) {
-      // fall through to empty
-    }
-    return const Stream.empty();
-  });
+        try {
+          if (event is ConnectivityResult) return Stream.value(event);
+          if (event is Iterable)
+            return Stream.fromIterable(event.whereType<ConnectivityResult>());
+        } catch (_) {
+          // fall through to empty
+        }
+        return const Stream.empty();
+      });
 
   /// Initialize continuous connectivity monitoring
   void initialize() {
@@ -46,7 +48,8 @@ class ConnectivityService {
 
   /// Start monitoring connectivity changes
   void _startMonitoring() {
-    _connectivitySubscription = connectivityStream.listen(_handleConnectivityChange);
+    _connectivitySubscription =
+        connectivityStream.listen(_handleConnectivityChange);
     // Initial check
     _checkConnectivity();
   }
@@ -55,7 +58,7 @@ class ConnectivityService {
   void _handleConnectivityChange(ConnectivityResult result) {
     final wasConnected = _isConnected;
     _isConnected = result != ConnectivityResult.none;
-    
+
     if (wasConnected != _isConnected) {
       if (_isConnected) {
         _lastOnlineTime = DateTime.now();
@@ -112,7 +115,7 @@ class ConnectivityService {
       // Test actual internet reachability
       final result = await InternetAddress.lookup('google.com')
           .timeout(const Duration(seconds: 3));
-      
+
       return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
     } catch (e) {
       return false;
@@ -130,10 +133,10 @@ class ConnectivityService {
     if (_lastOnlineTime == null) {
       return 'Hiçbir zaman';
     }
-    
+
     final now = DateTime.now();
     final difference = now.difference(_lastOnlineTime!);
-    
+
     if (difference.inMinutes < 1) {
       return 'Az önce';
     } else if (difference.inHours < 1) {

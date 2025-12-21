@@ -22,7 +22,8 @@ class EmailOtpVerificationPage extends StatefulWidget {
   });
 
   @override
-  State<EmailOtpVerificationPage> createState() => _EmailOtpVerificationPageState();
+  State<EmailOtpVerificationPage> createState() =>
+      _EmailOtpVerificationPageState();
 }
 
 class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage>
@@ -31,12 +32,12 @@ class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage>
   final _formKey = GlobalKey<FormState>();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
+
   bool _isLoading = false;
   bool _isVerifying = false;
   String? _countdownText;
   late DateTime _codeSentTime;
-  
+
   @override
   void initState() {
     super.initState();
@@ -52,10 +53,10 @@ class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage>
       curve: Curves.easeIn,
     ));
     _animationController.forward();
-    
+
     _codeSentTime = DateTime.now();
     _startCountdown();
-    
+
     // Auto-focus on code field
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_codeFocusNode);
@@ -67,13 +68,13 @@ class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage>
   void _startCountdown() {
     const duration = Duration(minutes: 5);
     final endTime = _codeSentTime.add(duration);
-    
+
     Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
       }
-      
+
       final remaining = endTime.difference(DateTime.now());
       if (remaining.isNegative) {
         timer.cancel();
@@ -84,7 +85,8 @@ class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage>
         final minutes = remaining.inMinutes;
         final seconds = remaining.inSeconds % 60;
         setState(() {
-          _countdownText = '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+          _countdownText =
+              '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
         });
       }
     });
@@ -136,7 +138,7 @@ class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage>
       setState(() {
         _isVerifying = false;
       });
-      
+
       if (mounted) {
         _showErrorMessage('Doğrulama sırasında hata oluştu: ${e.toString()}');
       }
@@ -174,7 +176,7 @@ class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage>
       setState(() {
         _isLoading = false;
       });
-      
+
       if (mounted) {
         _showErrorMessage('Kod gönderilemedi: ${e.toString()}');
       }
@@ -292,7 +294,8 @@ class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage>
                                 vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: ThemeColors.getDialogContentBackground(context),
+                                color: ThemeColors.getDialogContentBackground(
+                                    context),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: ThemeColors.getBorder(context),
@@ -329,7 +332,8 @@ class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage>
                                   decoration: InputDecoration(
                                     hintText: '000000',
                                     filled: true,
-                                    fillColor: ThemeColors.getInputBackground(context),
+                                    fillColor:
+                                        ThemeColors.getInputBackground(context),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide(
@@ -345,21 +349,26 @@ class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage>
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide(
-                                        color: ThemeColors.getPrimaryButtonColor(context),
+                                        color:
+                                            ThemeColors.getPrimaryButtonColor(
+                                                context),
                                         width: 2,
                                       ),
                                     ),
                                     errorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: Colors.red),
+                                      borderSide:
+                                          const BorderSide(color: Colors.red),
                                     ),
                                     focusedErrorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: Colors.red, width: 2),
+                                      borderSide: const BorderSide(
+                                          color: Colors.red, width: 2),
                                     ),
                                     prefixIcon: Icon(
                                       Icons.lock_outline,
-                                      color: ThemeColors.getSecondaryText(context),
+                                      color:
+                                          ThemeColors.getSecondaryText(context),
                                     ),
                                     counterText: '',
                                   ),
@@ -383,7 +392,9 @@ class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage>
                                   width: double.infinity,
                                   height: 50,
                                   child: ElevatedButton.icon(
-                                    onPressed: (_isLoading || _isVerifying) ? null : _verifyCode,
+                                    onPressed: (_isLoading || _isVerifying)
+                                        ? null
+                                        : _verifyCode,
                                     icon: _isVerifying
                                         ? const SizedBox(
                                             width: 20,
@@ -394,9 +405,13 @@ class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage>
                                             ),
                                           )
                                         : const Icon(Icons.verified),
-                                    label: Text(_isVerifying ? 'Doğrulanıyor...' : 'Doğrula'),
+                                    label: Text(_isVerifying
+                                        ? 'Doğrulanıyor...'
+                                        : 'Doğrula'),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: ThemeColors.getPrimaryButtonColor(context),
+                                      backgroundColor:
+                                          ThemeColors.getPrimaryButtonColor(
+                                              context),
                                       foregroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
@@ -412,8 +427,10 @@ class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage>
                                   width: double.infinity,
                                   height: 48,
                                   child: TextButton.icon(
-                                    onPressed: (_isLoading || _isVerifying || _countdownText == 'Süre doldu') 
-                                        ? null 
+                                    onPressed: (_isLoading ||
+                                            _isVerifying ||
+                                            _countdownText == 'Süre doldu')
+                                        ? null
                                         : _resendCode,
                                     icon: _isLoading
                                         ? const SizedBox(
@@ -424,9 +441,13 @@ class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage>
                                             ),
                                           )
                                         : const Icon(Icons.refresh),
-                                    label: Text(_isLoading ? 'Gönderiliyor...' : 'Yeni Kod Gönder'),
+                                    label: Text(_isLoading
+                                        ? 'Gönderiliyor...'
+                                        : 'Yeni Kod Gönder'),
                                     style: TextButton.styleFrom(
-                                      foregroundColor: ThemeColors.getPrimaryButtonColor(context),
+                                      foregroundColor:
+                                          ThemeColors.getPrimaryButtonColor(
+                                              context),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),
@@ -442,7 +463,8 @@ class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage>
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: ThemeColors.getDialogContentBackground(context),
+                              color: ThemeColors.getDialogContentBackground(
+                                  context),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: ThemeColors.getBorder(context),

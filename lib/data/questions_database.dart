@@ -14,6 +14,7 @@ class QuestionsDatabase {
           Option(text: 'Çok sıcak su ile duş almak', score: 0),
           Option(text: 'Eski gazeteleri atmak', score: 0),
         ],
+        category: 'Enerji',
       ),
       // Question 2
       Question(
@@ -24,6 +25,7 @@ class QuestionsDatabase {
           Option(text: 'Doğal gaz', score: 0),
           Option(text: 'Petrol', score: 0),
         ],
+        category: 'Enerji',
       ),
       // Question 3
       Question(
@@ -34,6 +36,7 @@ class QuestionsDatabase {
           Option(text: 'Bisiklet kullanmak veya yürümek', score: 10),
           Option(text: 'Taksi kullanmak', score: 5),
         ],
+        category: 'Ulaşım',
       ),
       // Question 4
       Question(
@@ -44,6 +47,7 @@ class QuestionsDatabase {
           Option(text: 'Yağmur suyu toplamak', score: 10),
           Option(text: 'Çamaşır makinesini tam dolmadan çalıştırmak', score: 0),
         ],
+        category: 'Su',
       ),
       // Question 5
       Question(
@@ -54,6 +58,7 @@ class QuestionsDatabase {
           Option(text: 'Çöpleri gizlemek', score: 0),
           Option(text: 'Enerji tüketimini artırmak', score: 0),
         ],
+        category: 'Geri Dönüşüm',
       ),
       // Question 6
       Question(
@@ -64,6 +69,7 @@ class QuestionsDatabase {
           Option(text: 'Camları sürekli açık tutmak', score: 0),
           Option(text: 'Elektronik cihazları fişten çekmek', score: 5),
         ],
+        category: 'Enerji',
       ),
       // Question 7
       Question(
@@ -74,6 +80,7 @@ class QuestionsDatabase {
           Option(text: 'Karbondioksit miktarını artırır', score: 0),
           Option(text: 'Gürültü kirliliğini artırır', score: 0),
         ],
+        category: 'Orman',
       ),
       // Question 8
       Question(
@@ -84,6 +91,7 @@ class QuestionsDatabase {
           Option(text: 'Plastik poşetleri tek kullanmak', score: 0),
           Option(text: 'Kullanmadığı eşyaları çöpe atmak', score: 0),
         ],
+        category: 'Tüketim',
       ),
       // Question 9
       Question(
@@ -94,6 +102,7 @@ class QuestionsDatabase {
           Option(text: 'Lavaboya', score: 0),
           Option(text: 'Bahçeye gömülmeli', score: 0),
         ],
+        category: 'Geri Dönüşüm',
       ),
       // Question 10
       Question(
@@ -182,7 +191,8 @@ class QuestionsDatabase {
           Option(text: 'Klima sistemini sürekli açık tutmak', score: 0),
           Option(text: 'Gereksiz cihazları kapatmak', score: 10),
           Option(text: 'Tüm ışıkları gün boyu açık bırakmak', score: 0),
-          Option(text: 'Elektronik cihazları bekleme modunda bırakmak', score: 0),
+          Option(
+              text: 'Elektronik cihazları bekleme modunda bırakmak', score: 0),
         ],
       ),
       // Question 19
@@ -210,7 +220,8 @@ class QuestionsDatabase {
         text: 'Sürdürülebilir tarım nedir?',
         options: [
           Option(text: 'Kimyasal gübrelerle besin üretimi', score: 0),
-          Option(text: 'Çevreyi koruyarak uzun vadeli besin üretimi', score: 10),
+          Option(
+              text: 'Çevreyi koruyarak uzun vadeli besin üretimi', score: 10),
           Option(text: 'Organik ürünleri dışlayan tarım', score: 0),
           Option(text: 'Hızlı büyüme odaklı tarım', score: 0),
         ],
@@ -256,7 +267,6 @@ class QuestionsDatabase {
         ],
       ),
     ],
-    
     AppLanguage.english: [
       // Question 1
       Question(
@@ -292,7 +302,8 @@ class QuestionsDatabase {
       Question(
         text: 'Which of the following does NOT save water?',
         options: [
-          Option(text: 'Leaving the tap running while brushing teeth', score: 0),
+          Option(
+              text: 'Leaving the tap running while brushing teeth', score: 0),
           Option(text: 'Taking shorter showers', score: 10),
           Option(text: 'Collecting rainwater', score: 10),
           Option(text: 'Running washing machine when not full', score: 0),
@@ -373,14 +384,17 @@ class QuestionsDatabase {
         text: 'What is the benefit of composting?',
         options: [
           Option(text: 'Increases waste volume', score: 0),
-          Option(text: 'Converts organic waste into natural fertilizer', score: 10),
+          Option(
+              text: 'Converts organic waste into natural fertilizer',
+              score: 10),
           Option(text: 'Creates bad odors', score: 0),
           Option(text: 'Pollutes the soil', score: 0),
         ],
       ),
       // Question 13
       Question(
-        text: 'Which transportation vehicle produces the least carbon emissions?',
+        text:
+            'Which transportation vehicle produces the least carbon emissions?',
         options: [
           Option(text: 'Car', score: 0),
           Option(text: 'Airplane', score: 0),
@@ -463,7 +477,10 @@ class QuestionsDatabase {
         text: 'What is sustainable agriculture?',
         options: [
           Option(text: 'Food production with chemical fertilizers', score: 0),
-          Option(text: 'Long-term food production while protecting the environment', score: 10),
+          Option(
+              text:
+                  'Long-term food production while protecting the environment',
+              score: 10),
           Option(text: 'Agriculture that excludes organic products', score: 0),
           Option(text: 'Agriculture focused on rapid growth', score: 0),
         ],
@@ -480,10 +497,12 @@ class QuestionsDatabase {
       ),
       // Question 23
       Question(
-        text: 'What does individual responsibility in environmental protection mean?',
+        text:
+            'What does individual responsibility in environmental protection mean?',
         options: [
           Option(text: 'Only the government\'s responsibility', score: 0),
-          Option(text: 'Everyone behaving environmentally conscious', score: 10),
+          Option(
+              text: 'Everyone behaving environmentally conscious', score: 10),
           Option(text: 'Harming the environment', score: 0),
           Option(text: 'Only large companies\' responsibility', score: 0),
         ],
@@ -493,7 +512,8 @@ class QuestionsDatabase {
         text: 'What is ecological footprint?',
         options: [
           Option(text: 'Shoe size', score: 0),
-          Option(text: 'Measure of human natural resource consumption', score: 10),
+          Option(
+              text: 'Measure of human natural resource consumption', score: 10),
           Option(text: 'Geographic boundaries', score: 0),
           Option(text: 'Size of urban areas', score: 0),
         ],
@@ -512,11 +532,13 @@ class QuestionsDatabase {
   };
 
   static List<Question> getQuestions(AppLanguage language) {
-    return List.from(_questionsByLanguage[language] ?? _questionsByLanguage[AppLanguage.turkish]!);
+    return List.from(_questionsByLanguage[language] ??
+        _questionsByLanguage[AppLanguage.turkish]!);
   }
 
   static List<Question> getAllQuestions() {
-    return List.from(_questionsByLanguage[AppLanguage.turkish]!); // Return Turkish as default
+    return List.from(_questionsByLanguage[
+        AppLanguage.turkish]!); // Return Turkish as default
   }
 
   static int getTotalQuestions(AppLanguage language) {

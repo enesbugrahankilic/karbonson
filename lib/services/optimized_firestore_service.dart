@@ -25,13 +25,13 @@ class DatabaseMetrics {
   });
 
   Map<String, dynamic> toJson() => {
-    'total_duration_ms': totalDuration.inMilliseconds,
-    'query_count': queryCount,
-    'bytes_read': bytesRead,
-    'bytes_written': bytesWritten,
-    'slow_queries_count': slowQueries.length,
-    'slow_queries': slowQueries,
-  };
+        'total_duration_ms': totalDuration.inMilliseconds,
+        'query_count': queryCount,
+        'bytes_read': bytesRead,
+        'bytes_written': bytesWritten,
+        'slow_queries_count': slowQueries.length,
+        'slow_queries': slowQueries,
+      };
 }
 
 /// Cache entry with TTL
@@ -70,7 +70,8 @@ class QueryOptions {
 
 /// Performance-optimized Firestore service
 class OptimizedFirestoreService {
-  static final OptimizedFirestoreService _instance = OptimizedFirestoreService._internal();
+  static final OptimizedFirestoreService _instance =
+      OptimizedFirestoreService._internal();
   factory OptimizedFirestoreService() => _instance;
   OptimizedFirestoreService._internal();
 
@@ -116,7 +117,7 @@ class OptimizedFirestoreService {
       }).toList();
 
       final results = await Future.wait(futures);
-      
+
       stopwatch.stop();
       _updateMetrics(stopwatch.elapsed, results.length);
 
@@ -132,7 +133,7 @@ class OptimizedFirestoreService {
   /// Get cached user profile with automatic refresh
   Future<UserData?> getCachedUserProfile(String uid) async {
     final cacheKey = 'user_profile_$uid';
-    
+
     // Check cache first
     final cached = _cache[cacheKey];
     if (cached != null && !cached.isExpired) {
@@ -146,26 +147,27 @@ class OptimizedFirestoreService {
 
       if (doc.exists) {
         final userData = UserData.fromMap(doc.data()!, doc.id);
-        
+
         // Cache the result
         _cacheResult(cacheKey, userData, _defaultCacheTTL);
-        
+
         return userData;
       }
-      
+
       return null;
     } catch (e) {
       if (kDebugMode) {
         debugPrint('❌ Failed to fetch user profile: $e');
       }
-      
+
       // Return expired cache if available as fallback
       return cached?.data as UserData?;
     }
   }
 
   /// Optimized friend requests query with batching
-  Future<Map<String, List<FriendRequest>>> getFriendRequestsOptimized(String uid) async {
+  Future<Map<String, List<FriendRequest>>> getFriendRequestsOptimized(
+      String uid) async {
     try {
       final futures = await executeBatchQueries(
         queries: [
@@ -189,8 +191,14 @@ class OptimizedFirestoreService {
       );
 
       return {
-        'received': futures[0].docs.map((doc) => FriendRequest.fromMap(doc.data())).toList(),
-        'sent': futures[1].docs.map((doc) => FriendRequest.fromMap(doc.data())).toList(),
+        'received': futures[0]
+            .docs
+            .map((doc) => FriendRequest.fromMap(doc.data()))
+            .toList(),
+        'sent': futures[1]
+            .docs
+            .map((doc) => FriendRequest.fromMap(doc.data()))
+            .toList(),
       };
     } catch (e) {
       if (kDebugMode) {
@@ -203,7 +211,7 @@ class OptimizedFirestoreService {
   /// Optimized friends list query
   Future<List<Friend>> getCachedFriendsList(String uid) async {
     final cacheKey = 'friends_list_$uid';
-    
+
     // Check cache first
     final cached = _cache[cacheKey];
     if (cached != null && !cached.isExpired) {
@@ -230,13 +238,13 @@ class OptimizedFirestoreService {
 
       // Cache the result
       _cacheResult(cacheKey, friends, _defaultCacheTTL);
-      
+
       return friends;
     } catch (e) {
       if (kDebugMode) {
         debugPrint('❌ Failed to fetch friends list: $e');
       }
-      
+
       // Return expired cache if available as fallback
       return cached?.data as List<Friend> ?? [];
     }
@@ -263,7 +271,7 @@ class OptimizedFirestoreService {
           .doc(toUid)
           .collection('notifications')
           .doc();
-      
+
       batch.set(notificationRef, {
         'id': notificationRef.id,
         'type': 'friend_request',
@@ -294,7 +302,7 @@ class OptimizedFirestoreService {
   Future<void> cleanupCache() async {
     try {
       final expiredKeys = <String>[];
-      
+
       for (final entry in _cache.entries) {
         if (entry.value.isExpired) {
           expiredKeys.add(entry.key);
@@ -311,7 +319,8 @@ class OptimizedFirestoreService {
         final sortedEntries = _cache.entries.toList()
           ..sort((a, b) => a.value.expiresAt.compareTo(b.value.expiresAt));
 
-        while (_currentCacheSize > _maxCacheSizeBytes && sortedEntries.isNotEmpty) {
+        while (_currentCacheSize > _maxCacheSizeBytes &&
+            sortedEntries.isNotEmpty) {
           final entry = sortedEntries.removeAt(0);
           _currentCacheSize -= entry.value.size;
           _cache.remove(entry.key);
@@ -319,7 +328,8 @@ class OptimizedFirestoreService {
       }
 
       if (kDebugMode) {
-        debugPrint('🧹 Cache cleanup completed: removed ${expiredKeys.length} expired entries');
+        debugPrint(
+            '🧹 Cache cleanup completed: removed ${expiredKeys.length} expired entries');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -336,7 +346,7 @@ class OptimizedFirestoreService {
   }) {
     try {
       Query<T> streamQuery = query;
-      
+
       if (limit != null) {
         streamQuery = streamQuery.limit(limit);
       }
@@ -388,7 +398,7 @@ class OptimizedFirestoreService {
     try {
       // Add selective field retrieval if specified
       Query<T> optimizedQuery = query;
-      
+
       if (options.selectFields != null) {
         // Note: Firestore doesn't support select() on client side
         // This is a placeholder for potential server-side optimization
@@ -400,8 +410,8 @@ class OptimizedFirestoreService {
 
       // Execute query with timeout
       final result = await optimizedQuery.get().timeout(
-        options.timeout ?? const Duration(seconds: 10),
-      );
+            options.timeout ?? const Duration(seconds: 10),
+          );
 
       stopwatch.stop();
       _updateMetrics(stopwatch.elapsed, 1);
@@ -410,7 +420,8 @@ class OptimizedFirestoreService {
       if (stopwatch.elapsed.inMilliseconds > 1000) {
         _slowQueries.add('Query took ${stopwatch.elapsed.inMilliseconds}ms');
         if (kDebugMode) {
-          debugPrint('🐌 Slow query detected: ${stopwatch.elapsed.inMilliseconds}ms');
+          debugPrint(
+              '🐌 Slow query detected: ${stopwatch.elapsed.inMilliseconds}ms');
         }
       }
 
@@ -478,12 +489,14 @@ class OptimizedFirestoreService {
     }
 
     // If still over size limit, remove oldest entries
-    if (_currentCacheSize > _maxCacheSizeBytes || _cache.length > _maxCacheEntries) {
+    if (_currentCacheSize > _maxCacheSizeBytes ||
+        _cache.length > _maxCacheEntries) {
       final sortedEntries = _cache.entries.toList()
         ..sort((a, b) => a.value.expiresAt.compareTo(b.value.expiresAt));
 
-      while ((_currentCacheSize > _maxCacheSizeBytes || _cache.length > _maxCacheEntries) 
-             && sortedEntries.isNotEmpty) {
+      while ((_currentCacheSize > _maxCacheSizeBytes ||
+              _cache.length > _maxCacheEntries) &&
+          sortedEntries.isNotEmpty) {
         final entry = sortedEntries.removeAt(0);
         _currentCacheSize -= entry.value.size;
         _cache.remove(entry.key);
@@ -493,7 +506,8 @@ class OptimizedFirestoreService {
 
   /// Invalidate cache entries matching pattern
   void _invalidateCachePattern(String pattern) {
-    final keysToRemove = _cache.keys.where((key) => key.contains(pattern)).toList();
+    final keysToRemove =
+        _cache.keys.where((key) => key.contains(pattern)).toList();
     for (final key in keysToRemove) {
       final entry = _cache[key];
       if (entry != null) {
@@ -515,8 +529,9 @@ class OptimizedFirestoreService {
   void _updateMetrics(Duration duration, int queryCount) {
     _queryCount += queryCount;
     _lastMetrics = DatabaseMetrics(
-      totalDuration: Duration(milliseconds: 
-        (_lastMetrics?.totalDuration.inMilliseconds ?? 0) + duration.inMilliseconds),
+      totalDuration: Duration(
+          milliseconds: (_lastMetrics?.totalDuration.inMilliseconds ?? 0) +
+              duration.inMilliseconds),
       queryCount: _queryCount,
       bytesRead: _bytesRead,
       bytesWritten: _bytesWritten,
@@ -530,22 +545,25 @@ class OptimizedFirestoreService {
   /// Get performance recommendations
   List<String> getPerformanceRecommendations() {
     final recommendations = <String>[];
-    
+
     if (_lastMetrics == null) return recommendations;
 
     final metrics = _lastMetrics!;
-    
+
     if (metrics.queryCount > 100) {
-      recommendations.add('📊 High query count detected - consider implementing pagination');
+      recommendations.add(
+          '📊 High query count detected - consider implementing pagination');
     }
-    
+
     if (metrics.slowQueries.isNotEmpty) {
       recommendations.add('🐌 Slow queries detected - check database indexes');
-      recommendations.add('📈 Consider query optimization or caching frequently accessed data');
+      recommendations.add(
+          '📈 Consider query optimization or caching frequently accessed data');
     }
 
     if (_cache.length > 500) {
-      recommendations.add('🧠 Large cache detected - consider reducing TTL or cache size');
+      recommendations
+          .add('🧠 Large cache detected - consider reducing TTL or cache size');
     }
 
     return recommendations;

@@ -57,9 +57,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
     // Auto-populate email if available from FirebaseAuth.currentUser?.email
     final userEmail = FirebaseAuth.instance.currentUser?.email;
     if (userEmail != null) {
-      _emailController.text = userEmail; 
+      _emailController.text = userEmail;
       if (kDebugMode) {
-        debugPrint('ForgotPasswordPage: Auto-populated email: ${userEmail.replaceRange(2, userEmail.indexOf('@'), '***')}');
+        debugPrint(
+            'ForgotPasswordPage: Auto-populated email: ${userEmail.replaceRange(2, userEmail.indexOf('@'), '***')}');
       }
     }
   }
@@ -69,7 +70,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
     setState(() {
       _isConnected = isConnected;
     });
-    
+
     if (kDebugMode) {
       debugPrint('ForgotPasswordPage: Network connectivity: $_isConnected');
     }
@@ -102,9 +103,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
 
     try {
       final email = _emailController.text.trim();
-      
+
       if (kDebugMode) {
-        debugPrint('ForgotPasswordPage: Sending OTP code to: ${email.replaceRange(2, email.indexOf('@'), '***')}');
+        debugPrint(
+            'ForgotPasswordPage: Sending OTP code to: ${email.replaceRange(2, email.indexOf('@'), '***')}');
       }
 
       // Send OTP code using email OTP service
@@ -115,7 +117,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
 
       // Hide loading overlay
       _hideLoadingOverlay();
-      
+
       setState(() {
         _isLoading = false;
       });
@@ -135,11 +137,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
         // Show error message
         _showErrorSnackbar(otpResult.message);
       }
-
     } catch (e) {
       // Hide loading overlay
       _hideLoadingOverlay();
-      
+
       setState(() {
         _isLoading = false;
       });
@@ -150,9 +151,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
 
       // Enhanced error handling
       String errorMessage;
-      if (e.toString().contains('network') || e.toString().contains('Network')) {
-        errorMessage = 'İnternet bağlantınızı kontrol edin. Ağ bağlantısı sorunu var.';
-      } else if (e.toString().contains('Timeout') || e.toString().contains('timeout')) {
+      if (e.toString().contains('network') ||
+          e.toString().contains('Network')) {
+        errorMessage =
+            'İnternet bağlantınızı kontrol edin. Ağ bağlantısı sorunu var.';
+      } else if (e.toString().contains('Timeout') ||
+          e.toString().contains('timeout')) {
         errorMessage = 'İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.';
       } else {
         errorMessage = 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
@@ -215,7 +219,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
   void _showConnectivityError() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('İnternet bağlantınızı kontrol edin. Çevrimdışı modda şifre sıfırlama işlemi yapılamaz.'),
+        content: const Text(
+            'İnternet bağlantınızı kontrol edin. Çevrimdışı modda şifre sıfırlama işlemi yapılamaz.'),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -235,7 +240,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           backgroundColor: ThemeColors.getDialogBackground(context),
           title: Row(
             children: [
@@ -286,7 +292,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           backgroundColor: ThemeColors.getDialogBackground(context),
           title: Row(
             children: [
@@ -367,7 +374,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           backgroundColor: ThemeColors.getDialogBackground(context),
           title: Row(
             children: [
@@ -522,7 +530,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
                               decoration: BoxDecoration(
                                 color: Colors.red.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                                border: Border.all(
+                                    color: Colors.red.withValues(alpha: 0.3)),
                               ),
                               child: Row(
                                 children: [
@@ -572,7 +581,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
                                   decoration: InputDecoration(
                                     labelText: 'E-posta Adresi',
                                     filled: true,
-                                    fillColor: ThemeColors.getInputBackground(context),
+                                    fillColor:
+                                        ThemeColors.getInputBackground(context),
                                     labelStyle: TextStyle(
                                       color: ThemeColors.getGreen(context),
                                     ),
@@ -591,27 +601,34 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide(
-                                        color: ThemeColors.getPrimaryButtonColor(context),
+                                        color:
+                                            ThemeColors.getPrimaryButtonColor(
+                                                context),
                                         width: 2,
                                       ),
                                     ),
                                     errorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: Colors.red),
+                                      borderSide:
+                                          const BorderSide(color: Colors.red),
                                     ),
                                     focusedErrorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: Colors.red, width: 2),
+                                      borderSide: const BorderSide(
+                                          color: Colors.red, width: 2),
                                     ),
                                     prefixIcon: Icon(
                                       Icons.email,
-                                      color: ThemeColors.getSecondaryText(context),
+                                      color:
+                                          ThemeColors.getSecondaryText(context),
                                     ),
                                     suffixIcon: _emailController.text.isNotEmpty
                                         ? IconButton(
                                             icon: Icon(
                                               Icons.clear,
-                                              color: ThemeColors.getSecondaryText(context),
+                                              color:
+                                                  ThemeColors.getSecondaryText(
+                                                      context),
                                             ),
                                             onPressed: _isLoading
                                                 ? null
@@ -632,13 +649,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
                                     if (value.trim().isEmpty) {
                                       return 'E-posta adresi boş olamaz';
                                     }
-                                    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(value.trim())) {
+                                    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+                                        .hasMatch(value.trim())) {
                                       return 'Geçerli bir e-posta adresi girin';
                                     }
                                     return null;
                                   },
                                   onChanged: (value) {
-                                    setState(() {}); // Rebuild to update clear button
+                                    setState(
+                                        () {}); // Rebuild to update clear button
                                   },
                                 ),
                                 const SizedBox(height: 24),
@@ -648,12 +667,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
                                   width: double.infinity,
                                   height: 50,
                                   child: ElevatedButton.icon(
-                                    onPressed: (_isLoading || !_isConnected) ? null : _handleSendPasswordReset,
+                                    onPressed: (_isLoading || !_isConnected)
+                                        ? null
+                                        : _handleSendPasswordReset,
                                     icon: const Icon(Icons.send),
                                     label: const Text('Doğrulama Kodu Gönder'),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: _isConnected
-                                          ? ThemeColors.getPrimaryButtonColor(context)
+                                          ? ThemeColors.getPrimaryButtonColor(
+                                              context)
                                           : Colors.grey,
                                       foregroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(
@@ -672,7 +694,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: ThemeColors.getDialogContentBackground(context),
+                              color: ThemeColors.getDialogContentBackground(
+                                  context),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: ThemeColors.getBorder(context),

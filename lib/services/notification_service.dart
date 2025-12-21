@@ -1,24 +1,26 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
+import 'package:flutter/material.dart';
 // Eğer arka plan işleyicisinde (handler) başka Firebase servisi kullanıyorsanız
-// buraya 'package:firebase_core/firebase_core.dart' eklemeniz ve 
+// buraya 'package:firebase_core/firebase_core.dart' eklemeniz ve
 // handler içinde Firebase.initializeApp() yapmanız gerekebilir.
 
-// 🔥 1. KRİTİK: Arka plan mesaj işleyicisi (handler) bir 
+// 🔥 1. KRİTİK: Arka plan mesaj işleyicisi (handler) bir
 // TOP-LEVEL fonksiyon olmalıdır (yani bir sınıfın içinde olmamalıdır).
-// @pragma('vm:entry-point') etiketi, Flutter'ın bu fonksiyonu 
+// @pragma('vm:entry-point') etiketi, Flutter'ın bu fonksiyonu
 // izole bir ortamda bile bulabilmesini sağlar.
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Sadece Firestore, Realtime DB vb. kullanıyorsanız ve main.dart'ta başlatma yoksa ekleyin.
   // Bu projede main.dart'ta başlatma var, burada tekrar başlatmaya gerek yok!
-  if (kDebugMode) debugPrint('Handling a background message: ${message.messageId}');
+  if (kDebugMode)
+    debugPrint('Handling a background message: ${message.messageId}');
 }
 
-
 class NotificationService {
-  static final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  static final FlutterLocalNotificationsPlugin _notifications =
+      FlutterLocalNotificationsPlugin();
 
   static Future<void> initialize() async {
     if (kDebugMode) debugPrint('NotificationService: initialize() start');
@@ -27,7 +29,9 @@ class NotificationService {
       messaging = FirebaseMessaging.instance;
     } catch (e, st) {
       // If Firebase isn't initialized yet, accessing instance may fail; log and continue.
-      if (kDebugMode) debugPrint('NotificationService: FirebaseMessaging.instance not available yet: $e');
+      if (kDebugMode)
+        debugPrint(
+            'NotificationService: FirebaseMessaging.instance not available yet: $e');
       if (kDebugMode) debugPrint('$st');
     }
 
@@ -40,24 +44,28 @@ class NotificationService {
           sound: true,
         );
       } else {
-        if (kDebugMode) debugPrint('NotificationService: skipping requestPermission (no messaging instance)');
+        if (kDebugMode)
+          debugPrint(
+              'NotificationService: skipping requestPermission (no messaging instance)');
       }
     } catch (e, st) {
-      if (kDebugMode) debugPrint('NotificationService: requestPermission failed: $e');
+      if (kDebugMode)
+        debugPrint('NotificationService: requestPermission failed: $e');
       if (kDebugMode) debugPrint('$st');
     }
 
     // 2. Yerel bildirim ayarlarını başlat
-    const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-    
-    // 🔥 2. KRİTİK DÜZELTME: Yerel bildirim başlatma ayarlarında 
+    const initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    // 🔥 2. KRİTİK DÜZELTME: Yerel bildirim başlatma ayarlarında
     // iOS izin isteklerini TRUE yapıyoruz.
     const initializationSettingsIOS = DarwinInitializationSettings(
       requestSoundPermission: true,
       requestBadgePermission: true,
       requestAlertPermission: true,
     );
-    
+
     const initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsIOS,
@@ -66,24 +74,36 @@ class NotificationService {
     try {
       await _notifications.initialize(
         initializationSettings,
-        onDidReceiveNotificationResponse: (NotificationResponse response) {
-          if (kDebugMode) debugPrint('Notification tapped: ${response.payload}');
+        onDidReceiveNotificationResponse: (NotificationResponse response) async {
+          if (kDebugMode)
+            debugPrint('Notification tapped: ${response.payload}');
+          
+          // Handle navigation based on payload
+          if (response.payload != null) {
+            await _handleNotificationNavigation(response.payload!);
+          }
         },
       );
     } catch (e, st) {
-      if (kDebugMode) debugPrint('NotificationService: _notifications.initialize failed: $e');
+      if (kDebugMode)
+        debugPrint('NotificationService: _notifications.initialize failed: $e');
       if (kDebugMode) debugPrint('$st');
     }
 
     // 3. Arka plan mesajlarını top-level handler'a yönlendir
     try {
       if (messaging != null) {
-        FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+        FirebaseMessaging.onBackgroundMessage(
+            _firebaseMessagingBackgroundHandler);
       } else {
-        if (kDebugMode) debugPrint('NotificationService: skipping onBackgroundMessage registration');
+        if (kDebugMode)
+          debugPrint(
+              'NotificationService: skipping onBackgroundMessage registration');
       }
     } catch (e, st) {
-      if (kDebugMode) debugPrint('NotificationService: onBackgroundMessage registration failed: $e');
+      if (kDebugMode)
+        debugPrint(
+            'NotificationService: onBackgroundMessage registration failed: $e');
       if (kDebugMode) debugPrint('$st');
     }
 
@@ -99,15 +119,17 @@ class NotificationService {
           );
         });
       } else {
-        if (kDebugMode) debugPrint('NotificationService: skipping onMessage listener (no messaging instance)');
+        if (kDebugMode)
+          debugPrint(
+              'NotificationService: skipping onMessage listener (no messaging instance)');
       }
     } catch (e, st) {
-      if (kDebugMode) debugPrint('NotificationService: onMessage listener failed: $e');
+      if (kDebugMode)
+        debugPrint('NotificationService: onMessage listener failed: $e');
       if (kDebugMode) debugPrint('$st');
     }
     if (kDebugMode) debugPrint('NotificationService: initialize() finished');
   }
-
 
   static Future<void> _showNotification({
     required String title,
@@ -117,7 +139,8 @@ class NotificationService {
     const androidDetails = AndroidNotificationDetails(
       'default_channel', // Kanal ID'si
       'Genel Bildirimler', // Kanal Adı
-      channelDescription: 'Bu kanal genel uygulama bildirimleri için kullanılır.',
+      channelDescription:
+          'Bu kanal genel uygulama bildirimleri için kullanılır.',
       importance: Importance.max,
       priority: Priority.high,
       showWhen: true,
@@ -162,7 +185,8 @@ class NotificationService {
       final messaging = FirebaseMessaging.instance;
       await messaging.subscribeToTopic(topic);
     } catch (e, st) {
-      if (kDebugMode) debugPrint('NotificationService: subscribeToTopic failed: $e');
+      if (kDebugMode)
+        debugPrint('NotificationService: subscribeToTopic failed: $e');
       if (kDebugMode) debugPrint('$st');
     }
   }
@@ -172,7 +196,8 @@ class NotificationService {
       final messaging = FirebaseMessaging.instance;
       await messaging.unsubscribeFromTopic(topic);
     } catch (e, st) {
-      if (kDebugMode) debugPrint('NotificationService: unsubscribeFromTopic failed: $e');
+      if (kDebugMode)
+        debugPrint('NotificationService: unsubscribeFromTopic failed: $e');
       if (kDebugMode) debugPrint('$st');
     }
   }
@@ -233,6 +258,66 @@ class NotificationService {
       DateTime.now().millisecond + 2,
       '🏃‍♂️ Oyun Zamanı!',
       '12 saattir oynamadınız. Biraz vakit ayırıp quiz oynamaya ne dersiniz?',
+      details,
+    );
+  }
+
+  /// Quiz hatırlatma bildirimi
+  static Future<void> scheduleQuizReminderNotification() async {
+    const androidDetails = AndroidNotificationDetails(
+      'quiz_reminder_channel',
+      'Quiz Hatırlatmaları',
+      channelDescription: 'Düzenli quiz oynama hatırlatmaları.',
+      importance: Importance.high,
+      priority: Priority.high,
+      showWhen: true,
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications.show(
+      DateTime.now().millisecond + 3,
+      '🧠 Quiz Zamanı!',
+      'Çevre bilginizi tazelemek için bir quiz çözmeye ne dersiniz?',
+      details,
+    );
+  }
+
+  /// Günlük görev hatırlatma bildirimi
+  static Future<void> scheduleDailyChallengeReminderNotification() async {
+    const androidDetails = AndroidNotificationDetails(
+      'daily_challenge_reminder_channel',
+      'Günlük Görev Hatırlatmaları',
+      channelDescription: 'Günlük görevleri tamamlama hatırlatmaları.',
+      importance: Importance.high,
+      priority: Priority.high,
+      showWhen: true,
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications.show(
+      DateTime.now().millisecond + 4,
+      '🎯 Günlük Görevler!',
+      'Bugünkü görevlerinizi tamamlayarak puan kazanın!',
       details,
     );
   }
@@ -484,5 +569,47 @@ class NotificationService {
       details,
       payload: 'friend_request_rejected:$rejectedByUserId',
     );
+  }
+
+  static Future<void> _handleNotificationNavigation(String payload) async {
+    try {
+      // Get the current navigator context
+      final navigatorKey = GlobalKey<NavigatorState>();
+      // We need to access the navigator through a global key or service
+      // For now, we'll use a simple approach - this might need adjustment based on app structure
+      
+      if (kDebugMode) debugPrint('Handling notification navigation: $payload');
+      
+      // Parse payload to determine destination
+      if (payload.startsWith('friend_request:')) {
+        // Navigate to friends page
+        // This would typically use a navigation service or global navigator key
+        if (kDebugMode) debugPrint('Navigate to friends page for friend request');
+      } else if (payload.startsWith('friend_request_accepted:')) {
+        // Navigate to friends page
+        if (kDebugMode) debugPrint('Navigate to friends page for accepted request');
+      } else if (payload.startsWith('friend_request_rejected:')) {
+        // Navigate to friends page
+        if (kDebugMode) debugPrint('Navigate to friends page for rejected request');
+      } else if (payload.startsWith('duel_invitation:')) {
+        // Navigate to duel invitation page
+        if (kDebugMode) debugPrint('Navigate to duel invitation page');
+      } else if (payload.startsWith('achievement:')) {
+        // Navigate to achievement page
+        if (kDebugMode) debugPrint('Navigate to achievement page');
+      } else if (payload.startsWith('leaderboard:')) {
+        // Navigate to leaderboard page
+        if (kDebugMode) debugPrint('Navigate to leaderboard page');
+      }
+      
+      // Note: Actual navigation implementation would require access to navigator context
+      // This is a placeholder - in a real app, you'd use a navigation service or global key
+      
+    } catch (e, st) {
+      if (kDebugMode) {
+        debugPrint('Error handling notification navigation: $e');
+        debugPrint('$st');
+      }
+    }
   }
 }

@@ -162,7 +162,9 @@ class PasswordConfirmationFormField extends StatelessWidget {
       readOnly: readOnly,
       maxLines: 1,
       onSaved: onSaved,
-      validator: (value) => custom_validator.FormFieldValidator.validatePasswordConfirmation(value, passwordToMatch),
+      validator: (value) =>
+          custom_validator.FormFieldValidator.validatePasswordConfirmation(
+              value, passwordToMatch),
       style: DesignSystem.getBodyMedium(context),
       decoration: DesignSystem.getInputDecoration(
         context,

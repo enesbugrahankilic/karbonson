@@ -22,7 +22,7 @@ class FriendshipService {
 
   /// Get current user ID with validation (Specification I.1)
   String? get currentUserId => _auth.currentUser?.uid;
-  
+
   /// Check if user is authenticated
   bool get isAuthenticated => _auth.currentUser != null;
 
@@ -45,7 +45,8 @@ class FriendshipService {
       }
 
       // Check if request can be sent (Specification II.3)
-      final canSendRequest = await _firestoreService.canSendFriendRequest(targetUserId);
+      final canSendRequest =
+          await _firestoreService.canSendFriendRequest(targetUserId);
       if (!canSendRequest) {
         return FriendRequestResult(
           success: false,
@@ -54,7 +55,8 @@ class FriendshipService {
       }
 
       // Get current user's profile for nickname
-      final currentUserProfile = await _firestoreService.getUserProfile(currentUser.uid);
+      final currentUserProfile =
+          await _firestoreService.getUserProfile(currentUser.uid);
       if (currentUserProfile == null) {
         return FriendRequestResult(
           success: false,
@@ -63,7 +65,8 @@ class FriendshipService {
       }
 
       // Get target user's profile for validation and nickname
-      final targetUserProfile = await _firestoreService.getUserProfile(targetUserId);
+      final targetUserProfile =
+          await _firestoreService.getUserProfile(targetUserId);
       if (targetUserProfile == null) {
         return FriendRequestResult(
           success: false,
@@ -80,7 +83,8 @@ class FriendshipService {
       }
 
       // Check if already friends
-      final isAlreadyFriend = await _areUsersFriends(currentUser.uid, targetUserId);
+      final isAlreadyFriend =
+          await _areUsersFriends(currentUser.uid, targetUserId);
       if (isAlreadyFriend) {
         return FriendRequestResult(
           success: false,
@@ -89,7 +93,8 @@ class FriendshipService {
       }
 
       // Check for existing request (prevent spam)
-      final existingRequest = await _getExistingFriendRequest(currentUser.uid, targetUserId);
+      final existingRequest =
+          await _getExistingFriendRequest(currentUser.uid, targetUserId);
       if (existingRequest != null) {
         return FriendRequestResult(
           success: false,
@@ -105,10 +110,11 @@ class FriendshipService {
         targetUserId,
         targetUserProfile.nickname,
       );
-      
+
       if (success) {
         if (kDebugMode) {
-          debugPrint('✅ Friend request sent: ${currentUserProfile.nickname} -> ${targetUserProfile.nickname}');
+          debugPrint(
+              '✅ Friend request sent: ${currentUserProfile.nickname} -> ${targetUserProfile.nickname}');
         }
 
         return FriendRequestResult(
@@ -121,7 +127,6 @@ class FriendshipService {
           error: 'Failed to send friend request',
         );
       }
-
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 Error sending friend request: $e');
       return FriendRequestResult(
@@ -132,7 +137,8 @@ class FriendshipService {
   }
 
   /// Accept a friend request with atomic batch operation (Specification II.1-II.2)
-  Future<FriendRequestActionResult> acceptFriendRequest(String requestId) async {
+  Future<FriendRequestActionResult> acceptFriendRequest(
+      String requestId) async {
     try {
       final currentUser = _auth.currentUser;
       if (currentUser == null) {
@@ -143,7 +149,8 @@ class FriendshipService {
       }
 
       // Validate request belongs to current user
-      final isValidRequest = await _firestoreService.isFriendRequestValid(requestId, currentUser.uid);
+      final isValidRequest = await _firestoreService.isFriendRequestValid(
+          requestId, currentUser.uid);
       if (!isValidRequest) {
         return FriendRequestActionResult(
           success: false,
@@ -152,8 +159,9 @@ class FriendshipService {
       }
 
       // Use the existing FirestoreService method for atomic operation
-      final success = await _firestoreService.acceptFriendRequest(requestId, currentUser.uid);
-      
+      final success = await _firestoreService.acceptFriendRequest(
+          requestId, currentUser.uid);
+
       if (success) {
         if (kDebugMode) {
           debugPrint('✅ Friend request accepted: $requestId');
@@ -169,7 +177,6 @@ class FriendshipService {
           error: 'Failed to process friend request',
         );
       }
-
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 Error accepting friend request: $e');
       return FriendRequestActionResult(
@@ -180,7 +187,8 @@ class FriendshipService {
   }
 
   /// Reject a friend request with atomic batch operation (Specification II.1-II.2)
-  Future<FriendRequestActionResult> rejectFriendRequest(String requestId, {String? reason}) async {
+  Future<FriendRequestActionResult> rejectFriendRequest(String requestId,
+      {String? reason}) async {
     try {
       final currentUser = _auth.currentUser;
       if (currentUser == null) {
@@ -191,7 +199,8 @@ class FriendshipService {
       }
 
       // Validate request belongs to current user
-      final isValidRequest = await _firestoreService.isFriendRequestValid(requestId, currentUser.uid);
+      final isValidRequest = await _firestoreService.isFriendRequestValid(
+          requestId, currentUser.uid);
       if (!isValidRequest) {
         return FriendRequestActionResult(
           success: false,
@@ -201,11 +210,11 @@ class FriendshipService {
 
       // Use the existing FirestoreService method for atomic operation
       final success = await _firestoreService.rejectFriendRequest(
-        requestId, 
+        requestId,
         currentUser.uid,
         sendNotification: true,
       );
-      
+
       if (success) {
         if (kDebugMode) {
           debugPrint('✅ Friend request rejected: $requestId');
@@ -221,7 +230,6 @@ class FriendshipService {
           error: 'Failed to process friend request',
         );
       }
-
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 Error rejecting friend request: $e');
       return FriendRequestActionResult(
@@ -239,10 +247,9 @@ class FriendshipService {
 
       // Get friends from FirestoreService
       final friends = await _firestoreService.getFriends(currentUser.uid);
-      
+
       // Return friends as-is (online status will be added later with RTDB)
       return friends;
-
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 Error getting friends: $e');
       return [];
@@ -279,11 +286,12 @@ class FriendshipService {
   Future<Map<String, int>> getFriendStatistics() async {
     try {
       final currentUser = _auth.currentUser;
-      if (currentUser == null) return {
-        'totalFriends': 0,
-        'pendingReceived': 0,
-        'pendingSent': 0,
-      };
+      if (currentUser == null)
+        return {
+          'totalFriends': 0,
+          'pendingReceived': 0,
+          'pendingSent': 0,
+        };
 
       // Get all data in parallel for efficiency
       final futures = await Future.wait([
@@ -298,10 +306,13 @@ class FriendshipService {
 
       return {
         'totalFriends': friends.length,
-        'pendingReceived': receivedRequests.where((req) => req.status == FriendRequestStatus.pending).length,
-        'pendingSent': sentRequests.where((req) => req.status == FriendRequestStatus.pending).length,
+        'pendingReceived': receivedRequests
+            .where((req) => req.status == FriendRequestStatus.pending)
+            .length,
+        'pendingSent': sentRequests
+            .where((req) => req.status == FriendRequestStatus.pending)
+            .length,
       };
-
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 Error getting friend statistics: $e');
       return {
@@ -318,14 +329,14 @@ class FriendshipService {
       final currentUser = _auth.currentUser;
       if (currentUser == null) return false;
 
-      final success = await _firestoreService.removeFriend(currentUser.uid, friendId);
-      
+      final success =
+          await _firestoreService.removeFriend(currentUser.uid, friendId);
+
       if (success && kDebugMode) {
         debugPrint('✅ Friend removed: $friendId');
       }
 
       return success;
-
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 Error removing friend: $e');
       return false;
@@ -344,7 +355,8 @@ class FriendshipService {
   }
 
   /// Get existing friend request between two users
-  Future<FriendRequest?> _getExistingFriendRequest(String fromUserId, String toUserId) async {
+  Future<FriendRequest?> _getExistingFriendRequest(
+      String fromUserId, String toUserId) async {
     try {
       // Check if there's a pending request from fromUserId to toUserId
       final querySnapshot = await FirebaseFirestore.instance
@@ -356,7 +368,7 @@ class FriendshipService {
           .get();
 
       if (querySnapshot.docs.isEmpty) return null;
-      
+
       return FriendRequest.fromMap(querySnapshot.docs.first.data());
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 Error checking existing request: $e');
@@ -367,8 +379,9 @@ class FriendshipService {
   /// Clean up expired friend requests (should be called periodically)
   Future<int> cleanupExpiredRequests() async {
     try {
-      final expiredTime = DateTime.now().subtract(const Duration(days: 7)); // 7 days expiry
-      
+      final expiredTime =
+          DateTime.now().subtract(const Duration(days: 7)); // 7 days expiry
+
       final querySnapshot = await FirebaseFirestore.instance
           .collection(_friendRequestsCollection)
           .where('status', isEqualTo: 'pending')

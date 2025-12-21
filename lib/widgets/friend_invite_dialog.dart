@@ -25,7 +25,7 @@ class FriendInviteDialog extends StatefulWidget {
 class _FriendInviteDialogState extends State<FriendInviteDialog> {
   final GameInvitationService _invitationService = GameInvitationService();
   final TextEditingController _searchController = TextEditingController();
-  
+
   List<UserSearchResult> _searchResults = [];
   bool _isSearching = false;
   bool _isInviting = false;
@@ -172,7 +172,7 @@ class _FriendInviteDialogState extends State<FriendInviteDialog> {
                 ],
               ),
             ),
-            
+
             // Search Section
             Padding(
               padding: const EdgeInsets.all(20),
@@ -242,8 +242,8 @@ class _FriendInviteDialogState extends State<FriendInviteDialog> {
                                   leading: CircleAvatar(
                                     backgroundColor: Colors.green.shade100,
                                     child: Text(
-                                      user.nickname.isNotEmpty 
-                                          ? user.nickname[0].toUpperCase() 
+                                      user.nickname.isNotEmpty
+                                          ? user.nickname[0].toUpperCase()
                                           : '?',
                                       style: TextStyle(
                                         color: Colors.green.shade700,
@@ -258,18 +258,23 @@ class _FriendInviteDialogState extends State<FriendInviteDialog> {
                                     ),
                                   ),
                                   subtitle: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
-                                          Text('ID: ', style: const TextStyle(fontWeight: FontWeight.w500)),
+                                          Text('ID: ',
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.w500)),
                                           Expanded(
                                             child: CopyToClipboardWidget(
                                               textToCopy: user.userId,
-                                              successMessage: 'Kullanıcı ID\'si kopyalandı!',
+                                              successMessage:
+                                                  'Kullanıcı ID\'si kopyalandı!',
                                               child: Text(
                                                 '${user.userId.substring(0, 8)}...',
-                                                style: const TextStyle(fontFamily: 'monospace'),
+                                                style: const TextStyle(
+                                                    fontFamily: 'monospace'),
                                               ),
                                               iconSize: 14,
                                             ),
@@ -277,8 +282,8 @@ class _FriendInviteDialogState extends State<FriendInviteDialog> {
                                         ],
                                       ),
                                       Text(
-                                        user.foundBy == 'userId' 
-                                            ? 'ID ile bulundu' 
+                                        user.foundBy == 'userId'
+                                            ? 'ID ile bulundu'
                                             : 'Takma ad ile bulundu',
                                         style: TextStyle(
                                           color: Colors.grey[600],
@@ -291,7 +296,8 @@ class _FriendInviteDialogState extends State<FriendInviteDialog> {
                                       ? const SizedBox(
                                           width: 20,
                                           height: 20,
-                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2),
                                         )
                                       : ElevatedButton(
                                           onPressed: () => _inviteUser(user),
@@ -303,7 +309,8 @@ class _FriendInviteDialogState extends State<FriendInviteDialog> {
                                               vertical: 8,
                                             ),
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(8),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
                                             ),
                                           ),
                                           child: const Text('Davet Et'),

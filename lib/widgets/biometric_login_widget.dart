@@ -17,7 +17,8 @@ class BiometricAuthResult {
     this.userCredential,
   });
 
-  factory BiometricAuthResult.success(String message, fb_auth.UserCredential? userCredential) {
+  factory BiometricAuthResult.success(
+      String message, fb_auth.UserCredential? userCredential) {
     return BiometricAuthResult(
       isSuccess: true,
       message: message,
@@ -70,7 +71,7 @@ class _BiometricLoginButtonState extends State<BiometricLoginButton> {
       if (available) {
         _biometricType = await BiometricService.getBiometricTypeName();
       }
-      
+
       if (mounted) {
         setState(() {
           _isAvailable = available;
@@ -85,7 +86,8 @@ class _BiometricLoginButtonState extends State<BiometricLoginButton> {
 
   Future<void> _authenticateWithBiometrics() async {
     if (!_isAvailable) {
-      _showErrorSnackBar('Biyometrik kimlik doğrulama bu cihazda mevcut değil.');
+      _showErrorSnackBar(
+          'Biyometrik kimlik doğrulama bu cihazda mevcut değil.');
       return;
     }
 
@@ -95,19 +97,22 @@ class _BiometricLoginButtonState extends State<BiometricLoginButton> {
 
     try {
       // First try biometric authentication
-      final biometricSuccess = await BiometricService.authenticateWithBiometrics(
-        localizedReason: '$_biometricType ile hızlı giriş yapmak için kimlik bilgilerinizi doğrulayın',
+      final biometricSuccess =
+          await BiometricService.authenticateWithBiometrics(
+        localizedReason:
+            '$_biometricType ile hızlı giriş yapmak için kimlik bilgilerinizi doğrulayın',
         useErrorDialogs: true,
       );
 
       if (!biometricSuccess) {
-        _showErrorSnackBar('Biyometrik kimlik doğrulama başarısız. Şifre ile giriş yapmayı deneyin.');
+        _showErrorSnackBar(
+            'Biyometrik kimlik doğrulama başarısız. Şifre ile giriş yapmayı deneyin.');
         return;
       }
 
       // If biometric success, try to sign in with stored credentials
       final result = await _signInWithCredentials();
-      
+
       if (result.isSuccess) {
         widget.onSuccess?.call();
         _showSuccessSnackBar('Başarıyla giriş yapıldı! 🎉');
@@ -115,7 +120,6 @@ class _BiometricLoginButtonState extends State<BiometricLoginButton> {
         _showErrorSnackBar(result.message);
         widget.onError?.call();
       }
-
     } catch (e) {
       _showErrorSnackBar('Kimlik doğrulama hatası: ${e.toString()}');
       widget.onError?.call();
@@ -130,7 +134,8 @@ class _BiometricLoginButtonState extends State<BiometricLoginButton> {
 
   Future<BiometricAuthResult> _signInWithCredentials() async {
     try {
-      final userCredential = await FirebaseAuthService.signInWithEmailAndPasswordWithRetry(
+      final userCredential =
+          await FirebaseAuthService.signInWithEmailAndPasswordWithRetry(
         email: widget.email,
         password: widget.password,
       );
@@ -141,13 +146,16 @@ class _BiometricLoginButtonState extends State<BiometricLoginButton> {
           userCredential,
         );
       } else {
-        return BiometricAuthResult.failure('Giriş bilgileri geçersiz veya süresi dolmuş.');
+        return BiometricAuthResult.failure(
+            'Giriş bilgileri geçersiz veya süresi dolmuş.');
       }
     } on fb_auth.FirebaseAuthException catch (e) {
-      final errorMessage = FirebaseAuthService.handleAuthError(e, context: 'login');
+      final errorMessage =
+          FirebaseAuthService.handleAuthError(e, context: 'login');
       return BiometricAuthResult.failure(errorMessage);
     } catch (e) {
-      return BiometricAuthResult.failure('Beklenmeyen bir hata oluştu: ${e.toString()}');
+      return BiometricAuthResult.failure(
+          'Beklenmeyen bir hata oluştu: ${e.toString()}');
     }
   }
 
@@ -186,7 +194,8 @@ class _BiometricLoginButtonState extends State<BiometricLoginButton> {
   @override
   Widget build(BuildContext context) {
     if (!_isAvailable) {
-      return const SizedBox.shrink(); // Don't show button if biometric is not available
+      return const SizedBox
+          .shrink(); // Don't show button if biometric is not available
     }
 
     return Container(
@@ -326,7 +335,9 @@ class _BiometricStatusWidgetState extends State<BiometricStatusWidget> {
                 _status,
                 style: TextStyle(
                   fontSize: 14,
-                  color: _isAvailable ? Colors.green.shade700 : Colors.orange.shade700,
+                  color: _isAvailable
+                      ? Colors.green.shade700
+                      : Colors.orange.shade700,
                   fontWeight: FontWeight.w500,
                 ),
               ),

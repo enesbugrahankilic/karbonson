@@ -8,7 +8,6 @@ import '../widgets/game_invitation_list.dart';
 
 void main() {
   group('Friend Invitation by User ID Tests', () {
-    
     group('UserSearchResult Tests', () {
       test('should create UserSearchResult correctly', () {
         // Act
@@ -76,7 +75,7 @@ void main() {
     group('Integration Flow Tests', () {
       test('complete invitation flow should work', () {
         // This test validates the complete flow without network calls
-        
+
         // 1. User search result creation
         final searchResult = UserSearchResult(
           userId: 'targetUser123',
@@ -154,20 +153,24 @@ void main() {
   group('Data Model Validation', () {
     test('UserSearchResult should validate required fields', () {
       // Act & Assert
-      expect(() => UserSearchResult(
-        userId: 'user123',
-        nickname: 'TestUser',
-        foundBy: 'userId',
-      ), returnsNormally);
+      expect(
+          () => UserSearchResult(
+                userId: 'user123',
+                nickname: 'TestUser',
+                foundBy: 'userId',
+              ),
+          returnsNormally);
     });
 
     test('UserSearchResult should handle null values gracefully', () {
       // Act & Assert - This tests the data class structure
-      expect(() => UserSearchResult(
-        userId: 'user123',
-        nickname: 'TestUser',
-        foundBy: 'userId',
-      ), returnsNormally);
+      expect(
+          () => UserSearchResult(
+                userId: 'user123',
+                nickname: 'TestUser',
+                foundBy: 'userId',
+              ),
+          returnsNormally);
     });
   });
 }

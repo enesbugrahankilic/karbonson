@@ -26,7 +26,8 @@ void main() {
       presenceService = PresenceService();
     });
 
-    testWidgets('Friend invitation dialog displays correctly', (WidgetTester tester) async {
+    testWidgets('Friend invitation dialog displays correctly',
+        (WidgetTester tester) async {
       // Create a mock game invitation
       final invitation = GameInvitation(
         id: 'test_invitation_123',
@@ -85,7 +86,7 @@ void main() {
     test('Presence service initialization works', () async {
       // Test presence service can be initialized
       expect(presenceService, isNotNull);
-      
+
       // Note: We can't actually test Firebase initialization in unit tests
       // but we can verify the service object is properly created
       expect(presenceService, isA<PresenceService>());
@@ -101,9 +102,10 @@ void main() {
     test('Firestore service multiplayer methods exist', () {
       // Verify that the firestore service has multiplayer methods
       expect(firestoreService, isNotNull);
-      
+
       // These are async methods but we can verify they exist
-      expect(firestoreService.createRoom, isA<Future Function(Object, Object, Object)>());
+      expect(firestoreService.createRoom,
+          isA<Future Function(Object, Object, Object)>());
       expect(firestoreService.joinRoom, isA<Future Function(Object, Object)>());
       expect(firestoreService.getActiveRooms, isA<Future Function()>());
       expect(firestoreService.listenToRoom, isA<Stream Function(Object)>());
@@ -132,7 +134,8 @@ void main() {
 
 // Helper extension for easier testing
 extension WidgetTesterExtensions on WidgetTester {
-  Future<void> pumpAndSettleWithTimeout([Duration timeout = const Duration(seconds: 3)]) {
+  Future<void> pumpAndSettleWithTimeout(
+      [Duration timeout = const Duration(seconds: 3)]) {
     return pumpAndSettle(timeout);
   }
 }

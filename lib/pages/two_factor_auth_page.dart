@@ -142,7 +142,8 @@ class _TwoFactorAuthPageState extends State<TwoFactorAuthPage> {
         final minutes = remaining.inMinutes;
         final seconds = remaining.inSeconds % 60;
         setState(() {
-          _countdownText = '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+          _countdownText =
+              '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
         });
       }
     });
@@ -220,7 +221,8 @@ class _TwoFactorAuthPageState extends State<TwoFactorAuthPage> {
     if (_resendAttempts >= _maxResendAttempts) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Çok fazla yeniden gönderme denemesi. Lütfen daha sonra deneyin.'),
+          content: Text(
+              'Çok fazla yeniden gönderme denemesi. Lütfen daha sonra deneyin.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -304,12 +306,14 @@ class _TwoFactorAuthPageState extends State<TwoFactorAuthPage> {
                               width: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
                           : const Text(
                               'Telefon Numarası Seç ve Kod Gönder',
-                              style: TextStyle(fontSize: 16, color: Colors.white),
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.white),
                             ),
                     ),
                   ),
@@ -379,7 +383,9 @@ class _TwoFactorAuthPageState extends State<TwoFactorAuthPage> {
                     Text(
                       'Kalan süre: $_countdownText',
                       style: TextStyle(
-                        color: _countdownText == 'Süre doldu' ? Colors.red : Colors.orange,
+                        color: _countdownText == 'Süre doldu'
+                            ? Colors.red
+                            : Colors.orange,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -389,7 +395,9 @@ class _TwoFactorAuthPageState extends State<TwoFactorAuthPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _isVerifying || _codeController.text.isEmpty ? null : _verifyCode,
+                      onPressed: _isVerifying || _codeController.text.isEmpty
+                          ? null
+                          : _verifyCode,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4CAF50),
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -400,12 +408,14 @@ class _TwoFactorAuthPageState extends State<TwoFactorAuthPage> {
                               width: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
                           : const Text(
                               'Doğrula',
-                              style: TextStyle(fontSize: 16, color: Colors.white),
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.white),
                             ),
                     ),
                   ),
@@ -417,7 +427,8 @@ class _TwoFactorAuthPageState extends State<TwoFactorAuthPage> {
                     children: [
                       const Text('Kod almadınız mı? '),
                       TextButton(
-                        onPressed: (_resendAttempts >= _maxResendAttempts || _isLoadingSms)
+                        onPressed: (_resendAttempts >= _maxResendAttempts ||
+                                _isLoadingSms)
                             ? null
                             : _resendCode,
                         child: Text(

@@ -42,9 +42,10 @@ class _RegisterPageRefactoredState extends State<RegisterPageRefactored> {
 
   /// Suggest a new random nickname
   void _suggestRandomNickname() {
-    final suggestions = _registrationService.getMultipleNicknameSuggestions(count: 3);
+    final suggestions =
+        _registrationService.getMultipleNicknameSuggestions(count: 3);
     final newSuggestion = suggestions.first;
-    
+
     setState(() {
       _nicknameController.text = newSuggestion;
     });
@@ -89,9 +90,9 @@ class _RegisterPageRefactoredState extends State<RegisterPageRefactored> {
       } else if (result.error != null) {
         _onRegistrationError(result.error!);
       }
-
     } catch (e, stackTrace) {
-      final errorMessage = ErrorFeedbackService.getDevelopmentErrorInfo(e, stackTrace);
+      final errorMessage =
+          ErrorFeedbackService.getDevelopmentErrorInfo(e, stackTrace);
       _onRegistrationError(errorMessage);
     } finally {
       if (mounted) {
@@ -120,7 +121,7 @@ class _RegisterPageRefactoredState extends State<RegisterPageRefactored> {
 
     // Navigate to tutorial page after a short delay
     await Future.delayed(const Duration(seconds: 2));
-    
+
     if (!mounted) return;
 
     Navigator.pushReplacement(
@@ -155,7 +156,8 @@ class _RegisterPageRefactoredState extends State<RegisterPageRefactored> {
       _confirmPasswordController.text,
       _passwordController.text,
     );
-    if (confirmPasswordError != null) errors['Şifre Tekrarı'] = confirmPasswordError;
+    if (confirmPasswordError != null)
+      errors['Şifre Tekrarı'] = confirmPasswordError;
 
     final nicknameError = _validateNicknameField(_nicknameController.text);
     if (nicknameError != null) errors['Takma Ad'] = nicknameError;
@@ -193,7 +195,7 @@ class _RegisterPageRefactoredState extends State<RegisterPageRefactored> {
     if (value.isEmpty) return 'Takma ad gerekli';
     if (value.length < 3) return 'Takma ad en az 3 karakter olmalı';
     if (value.length > 20) return 'Takma ad en fazla 20 karakter olmalı';
-    
+
     final validChars = RegExp(r'^[a-zA-Z0-9_ğüşöçıĞÜŞÖÇİ]+$');
     if (!validChars.hasMatch(value)) {
       return 'Takma ad sadece harf, rakam ve alt çizgi içerebilir';

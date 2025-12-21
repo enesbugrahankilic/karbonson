@@ -20,10 +20,12 @@ class EnhancedEmailVerificationRedirectPage extends StatefulWidget {
   });
 
   @override
-  State<EnhancedEmailVerificationRedirectPage> createState() => _EnhancedEmailVerificationRedirectPageState();
+  State<EnhancedEmailVerificationRedirectPage> createState() =>
+      _EnhancedEmailVerificationRedirectPageState();
 }
 
-class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVerificationRedirectPage>
+class _EnhancedEmailVerificationRedirectPageState
+    extends State<EnhancedEmailVerificationRedirectPage>
     with TickerProviderStateMixin {
   bool _isLoading = false;
   bool _isEmailVerified = false;
@@ -44,7 +46,7 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -52,7 +54,7 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
       parent: _animationController,
       curve: Curves.easeIn,
     ));
-    
+
     _slideAnimation = Tween<double>(
       begin: 100.0,
       end: 0.0,
@@ -60,7 +62,7 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
       parent: _animationController,
       curve: Curves.easeOutBack,
     ));
-    
+
     _animationController.forward();
   }
 
@@ -82,11 +84,13 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
       }
 
       if (kDebugMode) {
-        debugPrint('EnhancedEmailVerificationPage: Initialized for email: ${_currentEmail?.replaceRange(2, _currentEmail!.indexOf('@'), '***')}');
+        debugPrint(
+            'EnhancedEmailVerificationPage: Initialized for email: ${_currentEmail?.replaceRange(2, _currentEmail!.indexOf('@'), '***')}');
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('EnhancedEmailVerificationPage: Error initializing data: $e');
+        debugPrint(
+            'EnhancedEmailVerificationPage: Error initializing data: $e');
       }
     }
   }
@@ -98,7 +102,7 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
         // Force reload to get latest status
         await currentUser.reload();
         final updatedUser = FirebaseAuth.instance.currentUser!;
-        
+
         setState(() {
           _isEmailVerified = updatedUser.emailVerified;
           _currentEmail = updatedUser.email;
@@ -124,7 +128,8 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('EnhancedEmailVerificationPage: Error checking verification status: $e');
+        debugPrint(
+            'EnhancedEmailVerificationPage: Error checking verification status: $e');
       }
     }
   }
@@ -138,11 +143,12 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null && !currentUser.emailVerified) {
         await currentUser.sendEmailVerification();
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Doğrulama e-postası başarıyla gönderildi! 📧'),
+              content:
+                  const Text('Doğrulama e-postası başarıyla gönderildi! 📧'),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 4),
               action: SnackBarAction(
@@ -157,7 +163,8 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Kullanıcı oturumu bulunamadı veya e-posta zaten doğrulanmış'),
+              content: Text(
+                  'Kullanıcı oturumu bulunamadı veya e-posta zaten doğrulanmış'),
               backgroundColor: Colors.orange,
             ),
           );
@@ -166,7 +173,9 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
     } catch (e) {
       if (mounted) {
         final errorMessage = FirebaseAuthService.handleAuthError(
-          e is FirebaseAuthException ? e : FirebaseAuthException(code: 'unknown'),
+          e is FirebaseAuthException
+              ? e
+              : FirebaseAuthException(code: 'unknown'),
           context: 'email_verification',
         );
         ScaffoldMessenger.of(context).showSnackBar(
@@ -298,12 +307,12 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                             Container(
                               padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
-                                color: _isEmailVerified 
+                                color: _isEmailVerified
                                     ? Colors.green.withValues(alpha: 0.1)
                                     : Colors.orange.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: _isEmailVerified 
+                                  color: _isEmailVerified
                                       ? Colors.green.withValues(alpha: 0.3)
                                       : Colors.orange.withValues(alpha: 0.3),
                                   width: 2,
@@ -312,19 +321,25 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                               child: Column(
                                 children: [
                                   Icon(
-                                    _isEmailVerified ? Icons.verified : Icons.security,
-                                    color: _isEmailVerified ? Colors.green : Colors.orange,
+                                    _isEmailVerified
+                                        ? Icons.verified
+                                        : Icons.security,
+                                    color: _isEmailVerified
+                                        ? Colors.green
+                                        : Colors.orange,
                                     size: 64,
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
-                                    _isEmailVerified 
+                                    _isEmailVerified
                                         ? 'E-posta Doğrulama Tamamlandı!'
                                         : 'E-posta Doğrulama Gerekli',
                                     style: TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
-                                      color: _isEmailVerified ? Colors.green : Colors.orange,
+                                      color: _isEmailVerified
+                                          ? Colors.green
+                                          : Colors.orange,
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
@@ -335,22 +350,24 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                                         : 'Hesabınızın güvenliği için e-posta adresinizin doğrulanmamış olduğunu görüyoruz.',
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: ThemeColors.getSecondaryText(context),
+                                      color:
+                                          ThemeColors.getSecondaryText(context),
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
                                 ],
                               ),
                             ),
-                            
+
                             const SizedBox(height: 24),
-                            
+
                             // User Email Display
                             if (_currentEmail != null) ...[
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: ThemeColors.getDialogContentBackground(context),
+                                  color: ThemeColors.getDialogContentBackground(
+                                      context),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
                                     color: Colors.blue.withValues(alpha: 0.3),
@@ -366,13 +383,16 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             'E-posta Adresi',
                                             style: TextStyle(
                                               fontSize: 12,
-                                              color: ThemeColors.getSecondaryText(context),
+                                              color:
+                                                  ThemeColors.getSecondaryText(
+                                                      context),
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
@@ -381,7 +401,8 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                                             _currentEmail!,
                                             style: TextStyle(
                                               fontSize: 16,
-                                              color: ThemeColors.getText(context),
+                                              color:
+                                                  ThemeColors.getText(context),
                                               fontWeight: FontWeight.w600,
                                             ),
                                           ),
@@ -393,7 +414,7 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                               ),
                               const SizedBox(height: 24),
                             ],
-                            
+
                             // Action Buttons
                             if (!_isEmailVerified) ...[
                               // Enhanced Send Verification Email Button
@@ -401,7 +422,9 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                                 width: double.infinity,
                                 height: 56,
                                 child: ElevatedButton.icon(
-                                  onPressed: _isLoading ? null : _sendVerificationEmail,
+                                  onPressed: _isLoading
+                                      ? null
+                                      : _sendVerificationEmail,
                                   icon: _isLoading
                                       ? const SizedBox(
                                           width: 20,
@@ -413,7 +436,9 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                                         )
                                       : const Icon(Icons.send, size: 20),
                                   label: Text(
-                                    _isLoading ? 'Gönderiliyor...' : 'Doğrulama E-postasını Tekrar Gönder',
+                                    _isLoading
+                                        ? 'Gönderiliyor...'
+                                        : 'Doğrulama E-postasını Tekrar Gönder',
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -429,15 +454,17 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                                   ),
                                 ),
                               ),
-                              
+
                               const SizedBox(height: 12),
-                              
+
                               // Check Status Button
                               SizedBox(
                                 width: double.infinity,
                                 height: 50,
                                 child: OutlinedButton.icon(
-                                  onPressed: _isLoading ? null : _checkEmailVerificationStatus,
+                                  onPressed: _isLoading
+                                      ? null
+                                      : _checkEmailVerificationStatus,
                                   icon: const Icon(Icons.refresh, size: 20),
                                   label: const Text(
                                     'Doğrulama Durumunu Kontrol Et',
@@ -448,7 +475,8 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                                   ),
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: Colors.blue,
-                                    side: const BorderSide(color: Colors.blue, width: 2),
+                                    side: const BorderSide(
+                                        color: Colors.blue, width: 2),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(16),
                                     ),
@@ -464,7 +492,8 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                                   onPressed: () {
                                     Navigator.of(context).pop(true);
                                   },
-                                  icon: const Icon(Icons.check_circle, size: 20),
+                                  icon:
+                                      const Icon(Icons.check_circle, size: 20),
                                   label: const Text(
                                     'Devam Et',
                                     style: TextStyle(
@@ -483,17 +512,19 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                                 ),
                               ),
                             ],
-                            
+
                             const SizedBox(height: 16),
-                            
+
                             // Later Button (only show if not verified)
                             if (!_isEmailVerified)
                               SizedBox(
                                 width: double.infinity,
                                 height: 50,
                                 child: OutlinedButton.icon(
-                                  onPressed: _isLoading ? null : _navigateBackToMain,
-                                  icon: const Icon(Icons.arrow_forward, size: 20),
+                                  onPressed:
+                                      _isLoading ? null : _navigateBackToMain,
+                                  icon:
+                                      const Icon(Icons.arrow_forward, size: 20),
                                   label: const Text(
                                     'Daha Sonra Yap',
                                     style: TextStyle(
@@ -502,7 +533,8 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                                     ),
                                   ),
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: ThemeColors.getSecondaryText(context),
+                                    foregroundColor:
+                                        ThemeColors.getSecondaryText(context),
                                     side: BorderSide(
                                       color: ThemeColors.getBorder(context),
                                     ),
@@ -512,9 +544,9 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                                   ),
                                 ),
                               ),
-                            
+
                             const SizedBox(height: 24),
-                            
+
                             // Enhanced Help Information
                             Container(
                               padding: const EdgeInsets.all(20),
@@ -547,9 +579,9 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                                 ],
                               ),
                             ),
-                            
+
                             const SizedBox(height: 16),
-                            
+
                             // Help Tips
                             if (!_isEmailVerified) ...[
                               Container(
@@ -582,14 +614,16 @@ class _EnhancedEmailVerificationRedirectPageState extends State<EnhancedEmailVer
                                 ),
                               ),
                             ],
-                            
+
                             const SizedBox(height: 20),
-                            
+
                             // Back Navigation
                             TextButton(
-                              onPressed: _isLoading ? null : () {
-                                Navigator.of(context).pop();
-                              },
+                              onPressed: _isLoading
+                                  ? null
+                                  : () {
+                                      Navigator.of(context).pop();
+                                    },
                               child: Text(
                                 'Geri Dön',
                                 style: TextStyle(

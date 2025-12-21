@@ -19,8 +19,9 @@ class _DuelPageState extends State<DuelPage> {
   final DuelGameLogic _duelLogic = DuelGameLogic();
   final FirestoreService _firestoreService = FirestoreService();
   final TextEditingController _answerController = TextEditingController();
-  final AuthenticationStateService _authStateService = AuthenticationStateService();
-  
+  final AuthenticationStateService _authStateService =
+      AuthenticationStateService();
+
   DuelRoom? _currentRoom;
   bool _isCreatingRoom = false;
   bool _isJoiningRoom = false;
@@ -60,10 +61,16 @@ class _DuelPageState extends State<DuelPage> {
 
     try {
       // Create a simple board for duel mode
-      final boardTiles = List.generate(20, (index) => {
-        'type': index == 0 ? 'start' : index == 19 ? 'finish' : 'quiz',
-        'position': index,
-      });
+      final boardTiles = List.generate(
+          20,
+          (index) => {
+                'type': index == 0
+                    ? 'start'
+                    : index == 19
+                        ? 'finish'
+                        : 'quiz',
+                'position': index,
+              });
 
       // Get current player info from global authentication state
       final playerId = await _getPlayerId();
@@ -74,7 +81,7 @@ class _DuelPageState extends State<DuelPage> {
         playerNickname,
         boardTiles,
       );
-      
+
       if (room != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -193,7 +200,7 @@ class _DuelPageState extends State<DuelPage> {
 
   void _showJoinRoomDialog() {
     final roomIdController = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -321,11 +328,12 @@ class _DuelPageState extends State<DuelPage> {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: _isCreatingRoom ? null : _createDuelRoom,
-                      icon: _isCreatingRoom 
+                      icon: _isCreatingRoom
                           ? const SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.add),
                       label: const Text('Oda Oluştur'),
@@ -344,11 +352,12 @@ class _DuelPageState extends State<DuelPage> {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: _isJoiningRoom ? null : _showJoinRoomDialog,
-                      icon: _isJoiningRoom 
+                      icon: _isJoiningRoom
                           ? const SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.login),
                       label: const Text('Odaya Katıl'),
@@ -371,7 +380,8 @@ class _DuelPageState extends State<DuelPage> {
                         return FutureBuilder<String>(
                           future: _getPlayerNickname(),
                           builder: (context, playerNicknameSnapshot) {
-                            if (playerIdSnapshot.hasData && playerNicknameSnapshot.hasData) {
+                            if (playerIdSnapshot.hasData &&
+                                playerNicknameSnapshot.hasData) {
                               return SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton.icon(
@@ -381,7 +391,8 @@ class _DuelPageState extends State<DuelPage> {
                                       builder: (context) => DuelInviteDialog(
                                         roomId: _currentRoom!.id,
                                         hostId: playerIdSnapshot.data!,
-                                        hostNickname: playerNicknameSnapshot.data!,
+                                        hostNickname:
+                                            playerNicknameSnapshot.data!,
                                       ),
                                     );
                                   },
@@ -390,7 +401,8 @@ class _DuelPageState extends State<DuelPage> {
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFFFF9800),
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
@@ -468,13 +480,13 @@ class _DuelPageState extends State<DuelPage> {
                 children: [
                   // Game Status
                   _buildGameStatus(),
-                  
+
                   // Current Question
                   if (_duelLogic.currentQuestion != null) _buildQuestionCard(),
-                  
+
                   // Answer Input
                   if (_duelLogic.isGameActive) _buildAnswerInput(),
-                  
+
                   // Score Board
                   _buildScoreBoard(),
                 ],
@@ -542,7 +554,7 @@ class _DuelPageState extends State<DuelPage> {
 
   Widget _buildQuestionCard() {
     final question = _duelLogic.currentQuestion!;
-    
+
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(24),
@@ -604,7 +616,8 @@ class _DuelPageState extends State<DuelPage> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: ThemeColors.getGreen(context), width: 2),
+                  borderSide: BorderSide(
+                      color: ThemeColors.getGreen(context), width: 2),
                 ),
               ),
               style: TextStyle(color: ThemeColors.getText(context)),
@@ -655,40 +668,40 @@ class _DuelPageState extends State<DuelPage> {
               ),
               const SizedBox(height: 8),
               ..._currentRoom!.players.map((player) => Container(
-                width: double.infinity,
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: player.id == playerIdSnapshot.data!
-                      ? ThemeColors.getGreen(context).withValues(alpha: 0.2)
-                      : ThemeColors.getCardBackgroundLight(context),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: player.id == playerIdSnapshot.data!
-                        ? ThemeColors.getGreen(context)
-                        : ThemeColors.getBorder(context),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      player.nickname,
-                      style: TextStyle(
-                        color: ThemeColors.getText(context),
-                        fontWeight: FontWeight.w500,
+                    width: double.infinity,
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: player.id == playerIdSnapshot.data!
+                          ? ThemeColors.getGreen(context).withValues(alpha: 0.2)
+                          : ThemeColors.getCardBackgroundLight(context),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: player.id == playerIdSnapshot.data!
+                            ? ThemeColors.getGreen(context)
+                            : ThemeColors.getBorder(context),
                       ),
                     ),
-                    Text(
-                      '${player.duelScore} puan',
-                      style: TextStyle(
-                        color: ThemeColors.getText(context),
-                        fontWeight: FontWeight.bold,
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          player.nickname,
+                          style: TextStyle(
+                            color: ThemeColors.getText(context),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          '${player.duelScore} puan',
+                          style: TextStyle(
+                            color: ThemeColors.getText(context),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              )),
+                  )),
             ],
           ),
         );

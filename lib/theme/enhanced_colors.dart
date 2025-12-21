@@ -68,7 +68,7 @@ class EnhancedColors {
   /// Get primary color by intensity (50-900)
   static Color getPrimaryColorByIntensity(BuildContext context, int intensity) {
     final brightness = Theme.of(context).brightness;
-    
+
     switch (intensity) {
       case 50:
         return brightness == Brightness.light ? primary50 : primary900;
@@ -98,7 +98,7 @@ class EnhancedColors {
   /// Get semantic color for different contexts
   static Color getSemanticColor(BuildContext context, SemanticColorType type) {
     final brightness = Theme.of(context).brightness;
-    
+
     switch (type) {
       case SemanticColorType.success:
         return brightness == Brightness.light ? success : success.lighten(0.2);
@@ -118,7 +118,8 @@ class EnhancedColors {
   }
 
   /// Get gradient by semantic type
-  static List<Color> getSemanticGradient(BuildContext context, SemanticColorType type) {
+  static List<Color> getSemanticGradient(
+      BuildContext context, SemanticColorType type) {
     switch (type) {
       case SemanticColorType.success:
         return [success, success.lighten(0.2)];
@@ -130,7 +131,7 @@ class EnhancedColors {
         return [info, info.lighten(0.2)];
       case SemanticColorType.surface:
         final brightness = Theme.of(context).brightness;
-        return brightness == Brightness.light 
+        return brightness == Brightness.light
             ? [surface, surfaceVariant]
             : [neutral800, neutral700];
       default:
@@ -164,10 +165,10 @@ class EnhancedColors {
   static double calculateContrastRatio(Color foreground, Color background) {
     final fL = foreground.getLuminance();
     final bL = background.getLuminance();
-    
+
     final lighter = math.max(fL, bL);
     final darker = math.min(fL, bL);
-    
+
     return (lighter + 0.05) / (darker + 0.05);
   }
 
@@ -175,7 +176,7 @@ class EnhancedColors {
   static Color getTextColorForBackground(Color background) {
     final blackContrast = calculateContrastRatio(Colors.black, background);
     final whiteContrast = calculateContrastRatio(Colors.white, background);
-    
+
     return blackContrast > whiteContrast ? Colors.black : Colors.white;
   }
 }
@@ -185,7 +186,7 @@ class EnhancedTypography {
   // Font families
   static const String primaryFontFamily = 'Montserrat';
   static const String secondaryFontFamily = 'Roboto';
-  
+
   // Font weights
   static const FontWeight light = FontWeight.w300;
   static const FontWeight regular = FontWeight.w400;
@@ -447,7 +448,8 @@ extension ColorExtensions on Color {
   Color lighten(double amount) {
     assert(amount >= 0 && amount <= 1);
     final hsl = HSLColor.fromColor(this);
-    final hslLight = hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0));
+    final hslLight =
+        hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0));
     return hslLight.toColor();
   }
 
@@ -463,8 +465,8 @@ extension ColorExtensions on Color {
   double getLuminance() {
     final rgb = [red, green, blue].map((channel) {
       channel = channel ~/ 255;
-      return channel <= 0.03928 
-          ? channel / 12.92 
+      return channel <= 0.03928
+          ? channel / 12.92
           : math.pow((channel + 0.055) / 1.055, 2.4).toDouble();
     }).toList();
     return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
@@ -472,4 +474,12 @@ extension ColorExtensions on Color {
 }
 
 // Enums
-enum SemanticColorType { success, warning, error, info, surface, surfaceVariant, outline }
+enum SemanticColorType {
+  success,
+  warning,
+  error,
+  info,
+  surface,
+  surfaceVariant,
+  outline
+}

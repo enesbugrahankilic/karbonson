@@ -30,8 +30,9 @@ class _GameInvitationDialogState extends State<GameInvitationDialog> {
     setState(() => _isProcessing = true);
 
     try {
-      final result = await _invitationService.acceptInvitation(widget.invitation.id);
-      
+      final result =
+          await _invitationService.acceptInvitation(widget.invitation.id);
+
       if (mounted) {
         if (result.success) {
           // Show success message and navigate to game
@@ -82,8 +83,9 @@ class _GameInvitationDialogState extends State<GameInvitationDialog> {
     setState(() => _isProcessing = true);
 
     try {
-      final result = await _invitationService.declineInvitation(widget.invitation.id);
-      
+      final result =
+          await _invitationService.declineInvitation(widget.invitation.id);
+
       if (mounted) {
         if (result.success) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -241,7 +243,7 @@ class _GameInvitationDialogState extends State<GameInvitationDialog> {
   String _formatTime(DateTime dateTime) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
-    
+
     if (difference.inMinutes < 1) {
       return 'Az önce';
     } else if (difference.inMinutes < 60) {

@@ -105,34 +105,39 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<UpdateProfilePicture>(_onUpdateProfilePicture);
   }
 
-  Future<void> _onLoadProfile(LoadProfile event, Emitter<ProfileState> emit) async {
+  Future<void> _onLoadProfile(
+      LoadProfile event, Emitter<ProfileState> emit) async {
     emit(ProfileLoading());
     try {
       // Get current authenticated user
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
-        emit(ProfileError('Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.'));
+        emit(ProfileError(
+            'Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.'));
         return;
       }
 
       // Cache current user nickname for later use
       await profileService.cacheNickname(event.userNickname);
-      
+
       // Load profile data with two-stage loading strategy
       final profileData = await profileService.getProfileData();
-      
+
       // If no server data available, create a minimal profile from Auth user
       if (profileData.serverData == null) {
-        final serverData = profileData.serverData ?? ServerProfileData(
-          uid: currentUser.uid,
-          nickname: event.userNickname.isNotEmpty 
-              ? event.userNickname 
-              : (await profileService.getCurrentNickname() ?? currentUser.email?.split('@')[0] ?? 'Kullanıcı'),
-          profilePictureUrl: null,
-          lastLogin: DateTime.now(),
-          createdAt: null,
-        );
-        
+        final serverData = profileData.serverData ??
+            ServerProfileData(
+              uid: currentUser.uid,
+              nickname: event.userNickname.isNotEmpty
+                  ? event.userNickname
+                  : (await profileService.getCurrentNickname() ??
+                      currentUser.email?.split('@')[0] ??
+                      'Kullanıcı'),
+              profilePictureUrl: null,
+              lastLogin: DateTime.now(),
+              createdAt: null,
+            );
+
         final updatedProfile = profileData.copyWith(serverData: serverData);
         emit(ProfileLoaded(
           profileData: updatedProfile,
@@ -141,17 +146,22 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       } else {
         emit(ProfileLoaded(
           profileData: profileData,
-          currentNickname: event.userNickname.isNotEmpty ? event.userNickname : (profileData.serverData?.nickname ?? 'Kullanıcı'),
+          currentNickname: event.userNickname.isNotEmpty
+              ? event.userNickname
+              : (profileData.serverData?.nickname ?? 'Kullanıcı'),
         ));
       }
 
       // Refresh server data in background
       if (profileData.serverData == null) {
-        final updatedProfile = await profileService.refreshServerData(profileData);
+        final updatedProfile =
+            await profileService.refreshServerData(profileData);
         if (updatedProfile.serverData != null) {
           emit(ProfileLoaded(
             profileData: updatedProfile,
-            currentNickname: event.userNickname.isNotEmpty ? event.userNickname : (updatedProfile.serverData?.nickname ?? 'Kullanıcı'),
+            currentNickname: event.userNickname.isNotEmpty
+                ? event.userNickname
+                : (updatedProfile.serverData?.nickname ?? 'Kullanıcı'),
           ));
         }
       }
@@ -160,12 +170,14 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     }
   }
 
-  Future<void> _onRefreshServerData(RefreshServerData event, Emitter<ProfileState> emit) async {
+  Future<void> _onRefreshServerData(
+      RefreshServerData event, Emitter<ProfileState> emit) async {
     final currentState = state;
     if (currentState is ProfileLoaded) {
       try {
-        final updatedProfile = await profileService.refreshServerData(currentState.profileData);
-        
+        final updatedProfile =
+            await profileService.refreshServerData(currentState.profileData);
+
         if (updatedProfile.serverData != currentState.profileData.serverData) {
           emit(ProfileLoaded(
             profileData: updatedProfile,
@@ -177,31 +189,34 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         if (e.toString().contains('PERMISSION_DENIED')) {
           // User might not be logged in, ignore silently
         } else {
-          emit(ProfileError('Sunucu verisi güncellenirken hata oluştu: ${e.toString()}'));
+          emit(ProfileError(
+              'Sunucu verisi güncellenirken hata oluştu: ${e.toString()}'));
         }
       }
     }
   }
 
-  Future<void> _onUpdateNickname(UpdateNickname event, Emitter<ProfileState> emit) async {
+  Future<void> _onUpdateNickname(
+      UpdateNickname event, Emitter<ProfileState> emit) async {
     final currentState = state;
     if (currentState is ProfileLoaded) {
       try {
         final success = await profileService.updateNickname(event.newNickname);
-        
+
         if (success) {
           // Update local cache
           await profileService.cacheNickname(event.newNickname);
-          
+
           // Update profile data with new nickname
-          final updatedServerData = currentState.profileData.serverData?.copyWith(
+          final updatedServerData =
+              currentState.profileData.serverData?.copyWith(
             nickname: event.newNickname,
           );
-          
+
           final updatedProfile = currentState.profileData.copyWith(
             serverData: updatedServerData,
           );
-          
+
           emit(ProfileLoaded(
             profileData: updatedProfile,
             currentNickname: event.newNickname,
@@ -210,12 +225,14 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           emit(ProfileError('Takma ad güncellenirken hata oluştu'));
         }
       } catch (e) {
-        emit(ProfileError('Takma ad güncellenirken hata oluştu: ${e.toString()}'));
+        emit(ProfileError(
+            'Takma ad güncellenirken hata oluştu: ${e.toString()}'));
       }
     }
   }
 
-  Future<void> _onAddGameResult(AddGameResult event, Emitter<ProfileState> emit) async {
+  Future<void> _onAddGameResult(
+      AddGameResult event, Emitter<ProfileState> emit) async {
     final currentState = state;
     if (currentState is ProfileLoaded) {
       try {
@@ -237,12 +254,14 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           currentNickname: currentState.currentNickname,
         ));
       } catch (e) {
-        emit(ProfileError('Oyun sonucu kaydedilirken hata oluştu: ${e.toString()}'));
+        emit(ProfileError(
+            'Oyun sonucu kaydedilirken hata oluştu: ${e.toString()}'));
       }
     }
   }
 
-  Future<void> _onUpdateProfilePicture(UpdateProfilePicture event, Emitter<ProfileState> emit) async {
+  Future<void> _onUpdateProfilePicture(
+      UpdateProfilePicture event, Emitter<ProfileState> emit) async {
     final currentState = state;
     if (currentState is ProfileLoaded) {
       try {
@@ -250,17 +269,18 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         final updatedServerData = currentState.profileData.serverData?.copyWith(
           profilePictureUrl: event.imageUrl,
         );
-        
+
         final updatedProfile = currentState.profileData.copyWith(
           serverData: updatedServerData,
         );
-        
+
         emit(ProfileLoaded(
           profileData: updatedProfile,
           currentNickname: currentState.currentNickname,
         ));
       } catch (e) {
-        emit(ProfileError('Profil resmi güncellenirken hata oluştu: ${e.toString()}'));
+        emit(ProfileError(
+            'Profil resmi güncellenirken hata oluştu: ${e.toString()}'));
       }
     }
   }

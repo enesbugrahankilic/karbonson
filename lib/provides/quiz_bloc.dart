@@ -14,11 +14,12 @@ abstract class QuizEvent extends Equatable {
 
 class LoadQuiz extends QuizEvent {
   final AppLanguage language;
+  final String? category;
 
-  const LoadQuiz({this.language = AppLanguage.turkish});
+  const LoadQuiz({this.language = AppLanguage.turkish, this.category});
 
   @override
-  List<Object> get props => [language];
+  List<Object> get props => [language, category ?? ''];
 }
 
 class AnswerQuestion extends QuizEvent {
@@ -49,7 +50,9 @@ abstract class QuizState extends Equatable {
 }
 
 class QuizInitial extends QuizState {}
+
 class QuizLoading extends QuizState {}
+
 class QuizLoaded extends QuizState {
   final List<Question> questions;
   final int currentQuestion;
@@ -66,8 +69,10 @@ class QuizLoaded extends QuizState {
   });
 
   @override
-  List<Object> get props => [questions, currentQuestion, score, answers, currentLanguage];
+  List<Object> get props =>
+      [questions, currentQuestion, score, answers, currentLanguage];
 }
+
 class QuizError extends QuizState {
   final String message;
 
@@ -92,9 +97,9 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
     try {
       // Set language if provided
       await quizLogic.setLanguage(event.language);
-      
+
       // Start a new quiz and preload questions
-      await quizLogic.startNewQuiz();
+      await quizLogic.startNewQuiz(category: event.category);
       final questions = await quizLogic.getQuestions();
       emit(QuizLoaded(
         questions: questions,
@@ -108,7 +113,8 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
     }
   }
 
-  Future<void> _onChangeLanguage(ChangeLanguage event, Emitter<QuizState> emit) async {
+  Future<void> _onChangeLanguage(
+      ChangeLanguage event, Emitter<QuizState> emit) async {
     emit(QuizLoading());
     try {
       // Set language and restart quiz
@@ -127,7 +133,8 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
     }
   }
 
-  Future<void> _onAnswerQuestion(AnswerQuestion event, Emitter<QuizState> emit) async {
+  Future<void> _onAnswerQuestion(
+      AnswerQuestion event, Emitter<QuizState> emit) async {
     final currentState = state;
     if (currentState is QuizLoaded) {
       final isCorrect = await quizLogic.checkAnswer(
@@ -137,11 +144,18 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
       List<String> newAnswers = List.from(currentState.answers);
       newAnswers[event.questionIndex] = event.answer;
 
+      // Record wrong answer category for learning improvement
+      if (!isCorrect) {
+        final question = currentState.questions[event.questionIndex];
+        quizLogic.recordWrongAnswer(question.category);
+      }
+
       // Prevent advancing the index past the last question to avoid
       // RangeError when the UI accesses `questions[currentQuestion]`.
-      final nextIndex = (event.questionIndex + 1) >= currentState.questions.length
-          ? currentState.questions.length - 1
-          : event.questionIndex + 1;
+      final nextIndex =
+          (event.questionIndex + 1) >= currentState.questions.length
+              ? currentState.questions.length - 1
+              : event.questionIndex + 1;
 
       emit(QuizLoaded(
         questions: currentState.questions,

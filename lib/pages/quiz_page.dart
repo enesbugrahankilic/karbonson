@@ -21,8 +21,10 @@ class QuizPage extends StatefulWidget {
 
 class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
   bool _didLoadQuiz = false;
-  final AuthenticationStateService _authStateService = AuthenticationStateService();
-  
+  final AuthenticationStateService _authStateService =
+      AuthenticationStateService();
+  String? _selectedCategory;
+
   // Animation controllers
   late AnimationController _fadeController;
   late AnimationController _slideController;
@@ -30,18 +32,18 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize animation controllers
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     // Start animations
     _fadeController.forward();
     _slideController.forward();
@@ -64,7 +66,68 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
     super.didChangeDependencies();
     if (!_didLoadQuiz) {
       _didLoadQuiz = true;
-      context.read<QuizBloc>().add(LoadQuiz());
+
+      // Check if category was passed as argument
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final passedCategory = args?['category'] as String?;
+
+      if (passedCategory != null) {
+        // Use passed category directly
+        _selectedCategory = passedCategory;
+        context.read<QuizBloc>().add(LoadQuiz(
+            category: passedCategory == 'Tümü' ? null : passedCategory));
+      } else {
+        // Show category selection dialog
+        _showCategorySelection();
+      }
+    }
+  }
+
+  Future<void> _showCategorySelection() async {
+    final categories = [
+      'Tümü',
+      'Enerji',
+      'Su',
+      'Orman',
+      'Geri Dönüşüm',
+      'Ulaşım',
+      'Tüketim'
+    ];
+
+    final selectedCategory = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Quiz Kategorisi Seç'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: categories.map((category) {
+            return ListTile(
+              title: Text(category),
+              leading: Radio<String>(
+                value: category,
+                groupValue: _selectedCategory,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCategory = value;
+                  });
+                  Navigator.of(context).pop(value);
+                },
+              ),
+              onTap: () {
+                Navigator.of(context).pop(category);
+              },
+            );
+          }).toList(),
+        ),
+      ),
+    );
+
+    if (selectedCategory != null) {
+      _selectedCategory = selectedCategory;
+      context.read<QuizBloc>().add(LoadQuiz(
+          category: selectedCategory == 'Tümü' ? null : selectedCategory));
     }
   }
 
@@ -77,9 +140,11 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
       builder: (context) => DesignSystem.semantic(
         context,
         label: 'Quiz çıkış onay dialog',
-        hint: 'Quizden çıkmak istediğinizi onaylamanız gerektiğini belirten dialog',
+        hint:
+            'Quizden çıkmak istediğinizi onaylamanız gerektiğini belirten dialog',
         child: AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignSystem.radiusL)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL)),
           title: DesignSystem.semantic(
             context,
             label: 'Quizden Çıkış başlığı',
@@ -88,7 +153,8 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
           content: DesignSystem.semantic(
             context,
             label: 'Dialog içeriği',
-            child: const Text('Quizden çıkarsanız, ilerlemeniz kaydedilmeyecek. Devam etmek istiyor musunuz?'),
+            child: const Text(
+                'Quizden çıkarsanız, ilerlemeniz kaydedilmeyecek. Devam etmek istiyor musunuz?'),
           ),
           actions: [
             TextButton(
@@ -125,7 +191,8 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         ).animate(_slideController),
         child: DesignSystem.card(
           context,
-          backgroundColor: ThemeColors.getSuccessColor(context).withValues(alpha: 0.1),
+          backgroundColor:
+              ThemeColors.getSuccessColor(context).withValues(alpha: 0.1),
           child: Column(
             children: [
               Text(
@@ -149,7 +216,8 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: DesignSystem.spacingM),
-              if (state.currentQuestion == state.questions.length - 1 && state.answers[state.currentQuestion].isNotEmpty)
+              if (state.currentQuestion == state.questions.length - 1 &&
+                  state.answers[state.currentQuestion].isNotEmpty)
                 AnimatedBuilder(
                   animation: _fadeController,
                   builder: (context, child) {
@@ -157,8 +225,11 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                       scale: _fadeController.value,
                       child: ElevatedButton.icon(
                         onPressed: () => Navigator.pop(context, state.score),
-                        icon: const Icon(Icons.check_circle, color: Colors.white),
-                        label: const Text('Quizi Bitir', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        icon:
+                            const Icon(Icons.check_circle, color: Colors.white),
+                        label: const Text('Quizi Bitir',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
                         style: DesignSystem.getPrimaryButtonStyle(context),
                       ),
                     );
@@ -185,7 +256,8 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                   end: Alignment.bottomRight,
                 ),
               ),
-              child: DesignSystem.loadingIndicator(context, message: 'Quiz yükleniyor...'),
+              child: DesignSystem.loadingIndicator(context,
+                  message: 'Quiz yükleniyor...'),
             ),
           );
         }
@@ -204,7 +276,10 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                 context,
                 message: 'Error: ${state.message}',
                 onRetry: () {
-                  context.read<QuizBloc>().add(LoadQuiz());
+                  context.read<QuizBloc>().add(LoadQuiz(
+                      category: _selectedCategory == 'Tümü'
+                          ? null
+                          : _selectedCategory));
                 },
                 retryText: 'Tekrar Dene',
               ),
@@ -213,7 +288,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         }
 
         if (state is QuizLoaded) {
-           final currentQuestion = state.questions[state.currentQuestion];
+          final currentQuestion = state.questions[state.currentQuestion];
 
           return Scaffold(
             extendBodyBehindAppBar: true,
@@ -255,9 +330,8 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: DesignSystem.spacingM, 
-                          vertical: DesignSystem.spacingL
-                        ),
+                            horizontal: DesignSystem.spacingM,
+                            vertical: DesignSystem.spacingL),
                         child: FadeTransition(
                           opacity: _fadeController,
                           child: SlideTransition(
@@ -269,10 +343,15 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                               context,
                               child: CustomQuestionCard(
                                 question: currentQuestion.text,
-                                options: currentQuestion.options.map((o) => o.text).toList(),
-                                onOptionSelected: (answer) => _onAnswerSelected(answer, state.currentQuestion),
-                                isAnswered: state.answers[state.currentQuestion].isNotEmpty,
-                                selectedAnswer: state.answers[state.currentQuestion],
+                                options: currentQuestion.options
+                                    .map((o) => o.text)
+                                    .toList(),
+                                onOptionSelected: (answer) => _onAnswerSelected(
+                                    answer, state.currentQuestion),
+                                isAnswered: state
+                                    .answers[state.currentQuestion].isNotEmpty,
+                                selectedAnswer:
+                                    state.answers[state.currentQuestion],
                                 correctAnswer: currentQuestion.options
                                     .firstWhere((o) => o.score > 0)
                                     .text,
@@ -283,9 +362,8 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: DesignSystem.spacingM, 
-                          vertical: DesignSystem.spacingS
-                        ),
+                            horizontal: DesignSystem.spacingM,
+                            vertical: DesignSystem.spacingS),
                         child: _buildScoreArea(state),
                       ),
                     ],
@@ -315,4 +393,6 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
       },
     );
   }
+
+
 }

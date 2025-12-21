@@ -96,7 +96,7 @@ class ProfilePictureService {
 
       // Yukleme durumunu bekle
       final TaskSnapshot snapshot = await uploadTask;
-      
+
       if (snapshot.state == TaskState.success) {
         // Yuklenen resmin URL ini al
         final String downloadUrl = await storageRef.getDownloadURL();
@@ -113,7 +113,8 @@ class ProfilePictureService {
   }
 
   /// Profil fotografini guncelle
-  Future<bool> updateProfilePicture(String imageUrl, ProfileService profileService) async {
+  Future<bool> updateProfilePicture(
+      String imageUrl, ProfileService profileService) async {
     try {
       final User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
@@ -122,16 +123,16 @@ class ProfilePictureService {
       }
 
       debugPrint('📸 Profil fotografi guncelleniyor: $imageUrl');
-      
+
       // ProfileService uzerinden Firestore'u guncelle
       final success = await profileService.updateProfilePicture(imageUrl);
-      
+
       if (success) {
         debugPrint('✅ Profil fotografi basariyla guncellendi: $imageUrl');
       } else {
         debugPrint('❌ Profil fotografi guncellenemedi');
       }
-      
+
       return success;
     } catch (e) {
       debugPrint('🚨 Profil fotografi guncelleme hatasi: $e');
@@ -143,13 +144,16 @@ class ProfilePictureService {
   Future<bool> deleteImageFromFirebase(String imageUrl) async {
     try {
       // URL den dosya yolunu cikar
-      final String storagePath = imageUrl.split('?')[0].replaceFirst(
-        'https://firebasestorage.googleapis.com/v0/b/', ''
-      ).replaceFirst('${FirebaseStorage.instance.app.options.projectId}.appspot.com/o/', '');
+      final String storagePath = imageUrl
+          .split('?')[0]
+          .replaceFirst('https://firebasestorage.googleapis.com/v0/b/', '')
+          .replaceFirst(
+              '${FirebaseStorage.instance.app.options.projectId}.appspot.com/o/',
+              '');
 
       final Reference storageRef = _storage.ref().child(storagePath);
       await storageRef.delete();
-      
+
       debugPrint('🗑️ Eski profil fotografi silindi: $storagePath');
       return true;
     } catch (e) {
@@ -159,7 +163,8 @@ class ProfilePictureService {
   }
 
   /// Eski profil fotoğrafını temizle ve yenisini yükle
-  Future<String?> replaceProfilePicture(String newImageUrl, ProfileService profileService) async {
+  Future<String?> replaceProfilePicture(
+      String newImageUrl, ProfileService profileService) async {
     try {
       final User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
@@ -185,7 +190,8 @@ class ProfilePictureService {
           oldImageUrl != newImageUrl) {
         final deleteSuccess = await deleteImageFromFirebase(oldImageUrl);
         if (!deleteSuccess) {
-          debugPrint('⚠️ Eski profil fotografi silinirken hata olustu: $oldImageUrl');
+          debugPrint(
+              '⚠️ Eski profil fotografi silinirken hata olustu: $oldImageUrl');
         }
       }
 

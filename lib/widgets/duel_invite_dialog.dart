@@ -1,5 +1,6 @@
 // lib/widgets/duel_invite_dialog.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/friendship_service.dart';
 import '../services/notification_service.dart';
@@ -28,7 +29,7 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
     with TickerProviderStateMixin {
   final FriendshipService _friendshipService = FriendshipService();
   final NotificationService _notificationService = NotificationService();
-  
+
   List<board.Friend> _friends = [];
   List<String> _selectedFriendIds = [];
   bool _isLoading = true;
@@ -41,12 +42,12 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
   @override
   void initState() {
     super.initState();
-    
+
     _dialogController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _scaleAnimation = Tween<double>(
       begin: 0.8,
       end: 1.0,
@@ -54,7 +55,7 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
       parent: _dialogController,
       curve: Curves.elasticOut,
     ));
-    
+
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -62,7 +63,7 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
       parent: _dialogController,
       curve: Curves.easeInOut,
     ));
-    
+
     _dialogController.forward();
     _loadFriends();
   }
@@ -80,7 +81,7 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
         _friends = friends;
         _isLoading = false;
       });
-      
+
       // Animate friends list appearance
       Future.delayed(const Duration(milliseconds: 200), () {
         if (mounted) {
@@ -129,11 +130,11 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
                 // Enhanced header with modern styling
                 _buildHeader(),
                 const SizedBox(height: DesignSystem.spacingL),
-                
+
                 // Room info card with gradient
                 _buildRoomInfoCard(),
                 const SizedBox(height: DesignSystem.spacingL),
-                
+
                 // Friends list with animations
                 _buildFriendsList(),
               ],
@@ -163,7 +164,8 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
         ),
         borderRadius: BorderRadius.circular(DesignSystem.radiusL),
         border: Border.all(
-          color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.2),
+          color:
+              ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.2),
         ),
       ),
       child: Row(
@@ -261,9 +263,9 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
                 Text(
                   'Düello Daveti',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: ThemeColors.getSecondaryText(context),
-                    fontWeight: FontWeight.w500,
-                  ),
+                        color: ThemeColors.getSecondaryText(context),
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
               ],
             ),
@@ -278,11 +280,11 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
     if (_isLoading) {
       return _buildLoadingState();
     }
-    
+
     if (_friends.isEmpty) {
       return _buildEmptyState();
     }
-    
+
     return _buildFriendsListContent();
   }
 
@@ -340,7 +342,7 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
         itemBuilder: (context, index) {
           final friend = _friends[index];
           final isSelected = _selectedFriendIds.contains(friend.id);
-          
+
           return TweenAnimationBuilder<double>(
             tween: Tween(begin: 0.0, end: 1.0),
             duration: Duration(milliseconds: 300 + (index * 50)),
@@ -369,27 +371,34 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
           child: Container(
             padding: const EdgeInsets.all(DesignSystem.spacingM),
             decoration: BoxDecoration(
-              gradient: isSelected ? LinearGradient(
-                colors: [
-                  ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1),
-                  ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.05),
-                ],
-              ) : null,
+              gradient: isSelected
+                  ? LinearGradient(
+                      colors: [
+                        ThemeColors.getPrimaryButtonColor(context)
+                            .withValues(alpha: 0.1),
+                        ThemeColors.getPrimaryButtonColor(context)
+                            .withValues(alpha: 0.05),
+                      ],
+                    )
+                  : null,
               color: isSelected ? null : ThemeColors.getCardBackground(context),
               borderRadius: BorderRadius.circular(DesignSystem.radiusM),
               border: Border.all(
-                color: isSelected 
+                color: isSelected
                     ? ThemeColors.getPrimaryButtonColor(context)
                     : ThemeColors.getBorder(context),
                 width: isSelected ? 2 : 1,
               ),
-              boxShadow: isSelected ? [
-                BoxShadow(
-                  color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.2),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ] : null,
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: ThemeColors.getPrimaryButtonColor(context)
+                            .withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : null,
             ),
             child: Row(
               children: [
@@ -398,7 +407,8 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
                   children: [
                     CircleAvatar(
                       radius: 24,
-                      backgroundColor: ThemeColors.getCardBackgroundLight(context),
+                      backgroundColor:
+                          ThemeColors.getCardBackgroundLight(context),
                       child: Text(
                         friend.nickname.substring(0, 1).toUpperCase(),
                         style: DesignSystem.getTitleMedium(context).copyWith(
@@ -419,7 +429,7 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
                   ],
                 ),
                 const SizedBox(width: DesignSystem.spacingM),
-                
+
                 // Friend info
                 Expanded(
                   child: Column(
@@ -429,26 +439,27 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
                         friend.nickname,
                         style: DesignSystem.getTitleMedium(context).copyWith(
                           color: ThemeColors.getText(context),
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Arkadaş',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: ThemeColors.getSecondaryText(context),
-                        ),
+                              color: ThemeColors.getSecondaryText(context),
+                            ),
                       ),
                     ],
                   ),
                 ),
-                
+
                 // Selection indicator
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   child: Icon(
                     isSelected ? Icons.check_circle : Icons.circle_outlined,
-                    color: isSelected 
+                    color: isSelected
                         ? ThemeColors.getPrimaryButtonColor(context)
                         : ThemeColors.getSecondaryText(context),
                     size: 24,
@@ -473,14 +484,30 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
 
   Future<void> _performSendInvitations() async {
     try {
-      // TODO: Implement actual duel invitation sending via NotificationService
-      // For now, just simulate sending invitations
+      // Send duel invitations to selected friends
+      for (final friendId in _selectedFriendIds) {
+        final friend = _friends.firstWhere((f) => f.id == friendId);
+
+        // Send duel invitation notification
+        await NotificationService.showDuelInvitationNotification(
+          fromNickname: widget.hostNickname,
+          roomCode: widget.roomId,
+        );
+
+        if (kDebugMode) {
+          debugPrint(
+              'Duel invitation sent to ${friend.nickname} for room ${widget.roomId}');
+        }
+      }
+
+      // Simulate network delay
       await Future.delayed(const Duration(seconds: 1));
 
       if (mounted) {
         ModernUI.showModernToast(
           context,
-          message: '${_selectedFriendIds.length} arkadaşınıza düello daveti gönderildi!',
+          message:
+              '${_selectedFriendIds.length} arkadaşınıza düello daveti gönderildi!',
           type: ToastType.success,
         );
         Navigator.of(context).pop(_selectedFriendIds);
@@ -530,10 +557,12 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
           scale: _isInviting ? 0.95 : 1.0,
           child: ModernUI.animatedButton(
             context,
-            text: _selectedFriendIds.isEmpty 
-                ? 'Davet Et' 
+            text: _selectedFriendIds.isEmpty
+                ? 'Davet Et'
                 : 'Seçilenleri Davet Et (${_selectedFriendIds.length})',
-            onPressed: (_isInviting || _selectedFriendIds.isEmpty) ? null : _sendInvitations,
+            onPressed: (_isInviting || _selectedFriendIds.isEmpty)
+                ? null
+                : _sendInvitations,
             isLoading: _isInviting,
             backgroundColor: ThemeColors.getPrimaryButtonColor(context),
             width: 160,

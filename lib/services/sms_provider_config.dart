@@ -4,7 +4,8 @@
 
 class SmsProviderConfig {
   // Twilio Account SID
-  static const String? twilioAccountSid = null; // e.g. 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+  static const String? twilioAccountSid =
+      null; // e.g. 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
   // Twilio Auth Token
   static const String? twilioAuthToken = null; // e.g. 'your_auth_token'
@@ -13,5 +14,7 @@ class SmsProviderConfig {
   static const String? twilioFromNumber = null; // e.g. '+1234567890'
 
   static bool get isConfigured =>
-      twilioAccountSid != null && twilioAuthToken != null && twilioFromNumber != null;
+      twilioAccountSid != null &&
+      twilioAuthToken != null &&
+      twilioFromNumber != null;
 }

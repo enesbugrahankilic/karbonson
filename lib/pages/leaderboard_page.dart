@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
- 
+
 import '../widgets/leaderboard_item.dart';
 import '../widgets/home_button.dart';
 import 'login_page.dart';
@@ -12,7 +12,7 @@ import '../provides/language_provider.dart';
 
 class LeaderboardPage extends StatelessWidget {
   // YENİ: Oyuncunun takma adını almak için eklendi
-  final String? currentPlayerNickname; 
+  final String? currentPlayerNickname;
 
   const LeaderboardPage({super.key, this.currentPlayerNickname});
 
@@ -56,7 +56,8 @@ class LeaderboardPage extends StatelessWidget {
             }
 
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              return const Center(child: Text('Henüz kayıtlı skor bulunmuyor!'));
+              return const Center(
+                  child: Text('Henüz kayıtlı skor bulunmuyor!'));
             }
 
             return SingleChildScrollView(
@@ -83,15 +84,16 @@ class LeaderboardPage extends StatelessWidget {
                       final data = doc.data() as Map<String, dynamic>;
                       final username = data['nickname'] as String? ?? 'Anonim';
                       final rank = index + 1;
-                      final isCurrentPlayerInTop10 = rank <= 10 && username == currentPlayerNickname;
+                      final isCurrentPlayerInTop10 =
+                          rank <= 10 && username == currentPlayerNickname;
 
-                        return LeaderboardItem(
-                          username: username,
-                          score: data['score'] as int? ?? 0,
-                          avatarUrl: data['avatarUrl'] as String?,
-                          rank: rank,
-                          isCurrentPlayerInTop10: isCurrentPlayerInTop10,
-                        );
+                      return LeaderboardItem(
+                        username: username,
+                        score: data['score'] as int? ?? 0,
+                        avatarUrl: data['avatarUrl'] as String?,
+                        rank: rank,
+                        isCurrentPlayerInTop10: isCurrentPlayerInTop10,
+                      );
                     },
                   ),
                 ],
@@ -102,4 +104,6 @@ class LeaderboardPage extends StatelessWidget {
       ),
     );
   }
+
+
 }
