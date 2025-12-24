@@ -1508,6 +1508,530 @@ class TransportationQuestionsExpansion {
         ],
         category: 'Ulaşım',
       ),
+
+      // Ulaşım Planlama ve Akıllı Ulaşım (25 soru)
+      Question(
+        text: 'Smart transportation systems (akıllı ulaşım sistemleri) nasıl çalışır?',
+        options: [
+          Option(text: 'Sadece trafik ışıkları', score: 0),
+          Option(text: 'Sensörler, veri analizi ve gerçek zamanlı optimizasyon', score: 10),
+          Option(text: 'Sadece kameralar', score: 0),
+          Option(text: 'Sadece uygulamalar', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Intelligent transportation systems (ITS) hangi teknolojileri içerir?',
+        options: [
+          Option(text: 'Sadece GPS', score: 0),
+          Option(text: 'IoT, AI, veri analizi ve otomasyon sistemleri', score: 10),
+          Option(text: 'Sadece mobil uygulamalar', score: 0),
+          Option(text: 'Sadece trafik sensörleri', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Transportation planning (ulaşım planlamasında) hangi veri türleri kullanılır?',
+        options: [
+          Option(text: 'Sadece trafik sayıları', score: 0),
+          Option(text: 'Demografik, ekonomik, çevresel ve sosyal veri', score: 10),
+          Option(text: 'Sadece yolculuk süreleri', score: 0),
+          Option(text: 'Sadece araç sayıları', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Autonomous vehicles (otonom araçlar) ulaşım sistemini nasıl değiştirecek?',
+        options: [
+          Option(text: 'Sadece araç sahipliği artacak', score: 0),
+          Option(text: 'Paylaşımlı mobilite, güvenlik artışı ve trafik optimizasyonu', score: 10),
+          Option(text: 'Sadece teknoloji gelişimi', score: 0),
+          Option(text: 'Sadece maliyet azalması', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Dynamic routing (dinamik rota) sistemleri nasıl çalışır?',
+        options: [
+          Option(text: 'Sadece sabit rota', score: 0),
+          Option(text: 'Gerçek zamanlı trafik verilerine göre optimum rota hesaplama', score: 10),
+          Option(text: 'Sadece mesafe hesaplama', score: 0),
+          Option(text: 'Sadece hız limiti', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Transportation demand modeling (ulaşım talep modellemesi) nedir?',
+        options: [
+          Option(text: 'Sadece trafik tahmini', score: 0),
+          Option(text: 'Gelecekteki ulaşım ihtiyaçlarını matematiksel olarak tahmin etme', score: 10),
+          Option(text: 'Sadece rota planlaması', score: 0),
+          Option(text: 'Sadece maliyet hesaplama', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Smart traffic signals (akıllı trafik ışıkları) nasıl çalışır?',
+        options: [
+          Option(text: 'Sadece sabit zaman', score: 0),
+          Option(text: 'Trafik yoğunluğuna göre dinamik zaman ayarlama', score: 10),
+          Option(text: 'Sadece sensörler', score: 0),
+          Option(text: 'Sadece kamera', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Multimodal transportation (çoklu taşıma) entegrasyonu nasıl sağlanır?',
+        options: [
+          Option(text: 'Sadece bilet entegrasyonu', score: 0),
+          Option(text: 'Fiziksel bağlantı, bilgi sistemi ve tarifelerin uyumu', score: 10),
+          Option(text: 'Sadece zaman tablosu', score: 0),
+          Option(text: 'Sadece araç paylaşımı', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Predictive maintenance (öngörücü bakım) ulaşım altyapısında nasıl uygulanır?',
+        options: [
+          Option(text: 'Sadece düzenli kontrol', score: 0),
+          Option(text: 'Sensör verileri ve AI ile arıza tahmini ve önleme', score: 10),
+          Option(text: 'Sadece görsel inceleme', score: 0),
+          Option(text: 'Sadece planlı bakım', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Transportation accessibility (ulaşım erişilebilirliği) nasıl değerlendirilir?',
+        options: [
+          Option(text: 'Sadece coğrafi erişim', score: 0),
+          Option(text: 'Fiziksel, ekonomik ve zamansal erişim kriterleri', score: 10),
+          Option(text: 'Sadece teknoloji erişimi', score: 0),
+          Option(text: 'Sadece bilgi erişimi', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Real-time passenger information (RTPI) sistemleri ne sağlar?',
+        options: [
+          Option(text: 'Sadece reklam', score: 0),
+          Option(text: 'Varış süreleri, gecikmeler ve kapasite bilgisi', score: 10),
+          Option(text: 'Sadece hava durumu', score: 0),
+          Option(text: 'Sadece trafik bilgisi', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Transportation network analysis (ulaşım ağ analizi) hangi metrikleri kullanır?',
+        options: [
+          Option(text: 'Sadece mesafe', score: 0),
+          Option(text: 'Kapasite, hız, güvenilirlik ve erişilebilirlik ölçümleri', score: 10),
+          Option(text: 'Sadece sayım', score: 0),
+          Option(text: 'Sadece maliyet', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Smart parking systems (akıllı park sistemleri) nasıl çalışır?',
+        options: [
+          Option(text: 'Sadece otomatik ödeme', score: 0),
+          Option(text: 'Sensörlerle boş yer tespiti ve dinamik fiyatlandırma', score: 10),
+          Option(text: 'Sadece kamera kontrolü', score: 0),
+          Option(text: 'Sadece mobil uygulama', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Transportation energy efficiency (ulaşım enerji verimliliği) nasıl artırılır?',
+        options: [
+          Option(text: 'Sadece araç teknolojisi', score: 0),
+          Option(text: 'Sistem optimizasyonu, davranış değişikliği ve altyapı iyileştirmesi', score: 10),
+          Option(text: 'Sadece yakıt değişimi', score: 0),
+          Option(text: 'Sadece hız kontrolü', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Connected vehicle technology (bağlı araç teknolojisi) ne sağlar?',
+        options: [
+          Option(text: 'Sadece internet erişimi', score: 0),
+          Option(text: 'Araçlar arası iletişim ve trafik optimizasyonu', score: 10),
+          Option(text: 'Sadece eğlence', score: 0),
+          Option(text: 'Sadece navigasyon', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Transportation resilience (ulaşım dayanıklılığı) nasıl güçlendirilir?',
+        options: [
+          Option(text: 'Sadece güçlü malzeme', score: 0),
+          Option(text: 'Çeşitlilik, esneklik ve hızlı toparlanma kapasitesi', score: 10),
+          Option(text: 'Sadece yedek sistem', score: 0),
+          Option(text: 'Sadece bakım', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Digital twins (dijital ikizler) ulaşım planlamasında nasıl kullanılır?',
+        options: [
+          Option(text: 'Sadece 3D model', score: 0),
+          Option(text: 'Gerçek zamanlı verilerle sistem simülasyonu ve optimizasyon', score: 10),
+          Option(text: 'Sadece görselleştirme', score: 0),
+          Option(text: 'Sadece eğitim', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Transportation equity (ulaşım adaleti) nasıl sağlanır?',
+        options: [
+          Option(text: 'Sadece eşit fiyat', score: 0),
+          Option(text: 'Tüm gruplara eşit erişim, kalite ve fırsat sunma', score: 10),
+          Option(text: 'Sadece coğrafi denge', score: 0),
+          Option(text: 'Sadece zaman denge', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Mobility-as-a-Service (MaaS) platformları nasıl çalışır?',
+        options: [
+          Option(text: 'Sadece araç kiralama', score: 0),
+          Option(text: 'Farklı ulaşım türlerini entegre eden tek platform', score: 10),
+          Option(text: 'Sadece ödeme sistemi', score: 0),
+          Option(text: 'Sadece rezervasyon', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Transportation big data (ulaşım büyük verisi) analizi ne sağlar?',
+        options: [
+          Option(text: 'Sadece istatistik', score: 0),
+          Option(text: 'Pattern tanıma, tahmin ve optimizasyon fırsatları', score: 10),
+          Option(text: 'Sadece raporlama', score: 0),
+          Option(text: 'Sadece kayıt tutma', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Smart city transportation (akıllı şehir ulaşımı) nasıl tasarlanır?',
+        options: [
+          Option(text: 'Sadece teknoloji entegrasyonu', score: 0),
+          Option(text: 'Veri odaklı, sürdürülebilir ve insan odaklı yaklaşım', score: 10),
+          Option(text: 'Sadece otomasyon', score: 0),
+          Option(text: 'Sadece maliyet optimizasyonu', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Transportation behavioral insights (ulaşım davranış içgörüleri) nasıl kullanılır?',
+        options: [
+          Option(text: 'Sadece istatistiksel analiz', score: 0),
+          Option(text: 'Kullanıcı davranışını anlayarak hizmet iyileştirme', score: 10),
+          Option(text: 'Sadece pazar araştırması', score: 0),
+          Option(text: 'Sadece anket', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Adaptive signal control (adaptif sinyal kontrolü) nasıl çalışır?',
+        options: [
+          Option(text: 'Sadece sabit program', score: 0),
+          Option(text: 'Gerçek zamanlı trafik verilerine göre sinyal optimizasyonu', score: 10),
+          Option(text: 'Sadece zaman tablosu', score: 0),
+          Option(text: 'Sadece sensör kontrolü', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Transportation lifecycle assessment (ulaşım yaşam döngüsü değerlendirmesi) neden önemlidir?',
+        options: [
+          Option(text: 'Sadece maliyet hesabı', score: 0),
+          Option(text: 'Kapsamlı çevresel etki ve sürdürülebilirlik analizi', score: 10),
+          Option(text: 'Sadece teknik değerlendirme', score: 0),
+          Option(text: 'Sadece güvenlik değerlendirmesi', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Transportation user experience (ulaşım kullanıcı deneyimi) nasıl iyileştirilir?',
+        options: [
+          Option(text: 'Sadece tasarım', score: 0),
+          Option(text: 'Kullanıcı geri bildirimi, erişilebilirlik ve süreç optimizasyonu', score: 10),
+          Option(text: 'Sadece teknoloji', score: 0),
+          Option(text: 'Sadece maliyet azaltma', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Transportation governance (ulaşım yönetişimi) nasıl geliştirilir?',
+        options: [
+          Option(text: 'Sadece yasal düzenleme', score: 0),
+          Option(text: 'Paydaş katılımı, şeffaflık ve çok seviyeli koordinasyon', score: 10),
+          Option(text: 'Sadece merkezi yönetim', score: 0),
+          Option(text: 'Sadece teknik çözüm', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+
+      // Gelecek Ulaşım Teknolojileri (25 soru)
+      Question(
+        text: 'Hyperloop teknolojisi nasıl çalışır?',
+        options: [
+          Option(text: 'Sadece manyetik levitasyon', score: 0),
+          Option(text: 'Vakum tüpünde manyetik levitasyon ile yüksek hız', score: 10),
+          Option(text: 'Sadece elektrikli motor', score: 0),
+          Option(text: 'Sadece hava basıncı', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Flying cars (uçan arabalar) için en büyük teknolojik zorluk nedir?',
+        options: [
+          Option(text: 'Sadece maliyet', score: 0),
+          Option(text: 'Güvenlik, regülasyon ve altyapı gereksinimleri', score: 10),
+          Option(text: 'Sadece teknoloji karmaşıklığı', score: 0),
+          Option(text: 'Sadece enerji tüketimi', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Quantum computing (kuantum bilgisayar) ulaşım planlamasında nasıl kullanılabilir?',
+        options: [
+          Option(text: 'Sadece hız hesaplaması', score: 0),
+          Option(text: 'Karmaşık rota optimizasyonu ve trafik simülasyonu', score: 10),
+          Option(text: 'Sadece veri depolama', score: 0),
+          Option(text: 'Sadece güvenlik sistemi', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Brain-computer interface (BCI) araçlarda nasıl uygulanabilir?',
+        options: [
+          Option(text: 'Sadece eğlence sistemi', score: 0),
+          Option(text: 'Düşünce ile araç kontrolü ve güvenlik sistemleri', score: 10),
+          Option(text: 'Sadece sağlık takibi', score: 0),
+          Option(text: 'Sadece navigasyon', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Nanotechnology (nanoteknoloji) araçlarda hangi uygulamaları bulabilir?',
+        options: [
+          Option(text: 'Sadece boya teknolojisi', score: 0),
+          Option(text: 'Kendiliğinden onarım, hafif malzemeler ve akıllı sensörler', score: 10),
+          Option(text: 'Sadece güvenlik', score: 0),
+          Option(text: 'Sadece enerji depolama', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: '5G teknolojisinin ulaşım sistemlerine etkisi nedir?',
+        options: [
+          Option(text: 'Sadece daha hızlı internet', score: 0),
+          Option(text: 'Gerçek zamanlı iletişim, otonom araç desteği ve akıllı altyapı', score: 10),
+          Option(text: 'Sadece video kalitesi', score: 0),
+          Option(text: 'Sadece oyun performansı', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Augmented reality (AR) sürüş deneyimini nasıl geliştirebilir?',
+        options: [
+          Option(text: 'Sadece eğlence', score: 0),
+          Option(text: 'Navigasyon bilgisi, güvenlik uyarıları ve araç bilgileri görselleştirme', score: 10),
+          Option(text: 'Sadece reklam', score: 0),
+          Option(text: 'Sadece oyun', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Blockchain teknolojisi ulaşımda hangi sorunları çözebilir?',
+        options: [
+          Option(text: 'Sadece ödeme sistemi', score: 0),
+          Option(text: 'Güvenli veri paylaşımı, kimlik doğrulama ve lojistik izleme', score: 10),
+          Option(text: 'Sadece para transferi', score: 0),
+          Option(text: 'Sadece kayıt tutma', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Fusion energy (füzyon enerjisi) araçlarda kullanılabilir mi?',
+        options: [
+          Option(text: 'Mevcut teknolojiyle mümkün', score: 0),
+          Option(text: 'Henüz uygulanabilir değil, yıllarca araştırma gerekli', score: 10),
+          Option(text: 'Sadece uzay araçları için', score: 0),
+          Option(text: 'Sadece deniz araçları için', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Smart materials (akıllı malzemeler) araçlarda nasıl kullanılır?',
+        options: [
+          Option(text: 'Sadece dekoratif amaç', score: 0),
+          Option(text: 'Şekil hafızası, kendi kendini temizleme ve renk değiştirme', score: 10),
+          Option(text: 'Sadece dayanıklılık', score: 0),
+          Option(text: 'Sadece maliyet azaltımı', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Internet of Things (IoT) ulaşım altyapısında hangi rolü oynar?',
+        options: [
+          Option(text: 'Sadece bilgi toplama', score: 0),
+          Option(text: 'Sensör ağı, veri analizi ve akıllı karar verme sistemi', score: 10),
+          Option(text: 'Sadece iletişim', score: 0),
+          Option(text: 'Sadece kontrol', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: '3D printing (3D baskı) araç üretiminde nasıl devrim yaratabilir?',
+        options: [
+          Option(text: 'Sadece hızlı prototipleme', score: 0),
+          Option(text: 'Kişiselleştirilmiş parça üretimi ve karmaşık geometriler', score: 10),
+          Option(text: 'Sadece maliyet azaltımı', score: 0),
+          Option(text: 'Sadece hız artışı', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Metaverse teknolojisi ulaşım planlamasında nasıl kullanılabilir?',
+        options: [
+          Option(text: 'Sadece eğlence', score: 0),
+          Option(text: 'Sanal altyapı testi, kullanıcı deneyimi simülasyonu ve eğitim', score: 10),
+          Option(text: 'Sadece sanal turizm', score: 0),
+          Option(text: 'Sadece sosyal medya', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Robotic automation (robotik otomasyon) ulaşımda hangi alanlarda etkili olacak?',
+        options: [
+          Option(text: 'Sadece üretim hattı', score: 0),
+          Option(text: 'Bakım, güvenlik kontrolü, yükleme-boşaltma ve acil durum müdahalesi', score: 10),
+          Option(text: 'Sadece temizlik', score: 0),
+          Option(text: 'Sadece montaj', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Space elevator (uzay asansörü) ulaşım sistemini nasıl değiştirebilir?',
+        options: [
+          Option(text: 'Şehir içi ulaşım', score: 0),
+          Option(text: 'Yer ile yörünge arası yük ve yolcu taşımacılığı', score: 10),
+          Option(text: 'Sadece kargo taşımacılığı', score: 0),
+          Option(text: 'Sadece turizm', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Synthetic biology (sentetik biyoloji) ulaşım yakıtlarında nasıl kullanılabilir?',
+        options: [
+          Option(text: 'Sadece biyoyakıt üretimi', score: 0),
+          Option(text: 'Mikroorganizmalarla özel yakıt molekülleri tasarlama', score: 10),
+          Option(text: 'Sadece atık işleme', score: 0),
+          Option(text: 'Sadece karbon yakalama', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Quantum sensors (kuantum sensörler) araçlarda ne avantaj sağlar?',
+        options: [
+          Option(text: 'Sadece hassasiyet', score: 0),
+          Option(text: 'Ultra hassas navigasyon, çarpışma algılama ve çevre tarama', score: 10),
+          Option(text: 'Sadece hız ölçümü', score: 0),
+          Option(text: 'Sadece konum belirleme', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Metamaterials (metamateryaller) araçlarda nasıl kullanılır?',
+        options: [
+          Option(text: 'Sadece görünmezlik', score: 0),
+          Option(text: 'Süper lens, akustik kontrol ve elektromanyetik kalkanlama', score: 10),
+          Option(text: 'Sadece estetik', score: 0),
+          Option(text: 'Sadece dayanıklılık', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Neural networks (sinir ağları) trafik yönetiminde nasıl uygulanır?',
+        options: [
+          Option(text: 'Sadece veri analizi', score: 0),
+          Option(text: 'Pattern tanıma, tahmin algoritmaları ve adaptif kontrol sistemleri', score: 10),
+          Option(text: 'Sadece raporlama', score: 0),
+          Option(text: 'Sadece tahmin', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Terahertz technology (terahertz teknolojisi) araç güvenliğinde nasıl kullanılır?',
+        options: [
+          Option(text: 'Sadece iletişim', score: 0),
+          Option(text: 'Görünmez engel algılama, malzeme analizi ve güvenlik tarama', score: 10),
+          Option(text: 'Sadece radar', score: 0),
+          Option(text: 'Sadece lidar', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Bio-inspired robotics (biyomimetik robotik) ulaşımda nasıl uygulanabilir?',
+        options: [
+          Option(text: 'Sadece görünüm', score: 0),
+          Option(text: 'Yılan gibi hareket eden araçlar, kuş sürü davranışı koordinasyonu', score: 10),
+          Option(text: 'Sadece performans', score: 0),
+          Option(text: 'Sadece estetik', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Optical computing (optik bilgisayar) ulaşım sistemlerinde avantajı nedir?',
+        options: [
+          Option(text: 'Sadece hız', score: 0),
+          Option(text: 'Çok yüksek işlem hızı, düşük enerji tüketimi ve paralel işlem', score: 10),
+          Option(text: 'Sadece maliyet', score: 0),
+          Option(text: 'Sadece boyut', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Crumple zone technology (ezilme bölgesi teknolojisi) gelecekte nasıl gelişecek?',
+        options: [
+          Option(text: 'Sadece çelik geliştirme', score: 0),
+          Option(text: 'Akıllı malzemeler, aktif güvenlik sistemleri ve enerji emilim optimizasyonu', score: 10),
+          Option(text: 'Sadece maliyet azaltımı', score: 0),
+          Option(text: 'Sadece ağırlık azaltımı', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Molecular manufacturing (moleküler üretim) araç parçalarında nasıl devrim yaratır?',
+        options: [
+          Option(text: 'Sadece hız artışı', score: 0),
+          Option(text: 'Atom seviyesinde hassas üretim, kendi kendini montaj ve ultra hafif malzemeler', score: 10),
+          Option(text: 'Sadece maliyet', score: 0),
+          Option(text: 'Sadece kalite', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Swarm intelligence (sürü zekası) araç koordinasyonunda nasıl çalışır?',
+        options: [
+          Option(text: 'Sadece merkezi kontrol', score: 0),
+          Option(text: 'Araçların kendi aralarında koordinasyonu ve toplu davranış optimizasyonu', score: 10),
+          Option(text: 'Sadece basit iletişim', score: 0),
+          Option(text: 'Sadece mesafe takibi', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
+      Question(
+        text: 'Cryogenic technology (kriyojenik teknoloji) gelecek ulaşım sistemlerinde rolü nedir?',
+        options: [
+          Option(text: 'Sadece soğutma', score: 0),
+          Option(text: 'Süper iletken malzemeler, yakıt depolama ve enerji verimliliği', score: 10),
+          Option(text: 'Sadece konfor', score: 0),
+          Option(text: 'Sadece güvenlik', score: 0),
+        ],
+        category: 'Ulaşım',
+      ),
     ];
   }
 }

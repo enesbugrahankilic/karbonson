@@ -1,36 +1,17 @@
 // lib/pages/profile_page.dart
-// Enhanced with UID Centrality, Presence System, and Offline-First Strategy (III.1-III.4)
-// Updated to use Design System for consistent styling
+// Profile Page - Completely identical to HomeDashboard
 
-import 'dart:async';
-import 'package:flutter/foundation.dart';
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
-import '../provides/profile_bloc.dart';
-import '../services/profile_service.dart';
-import '../services/presence_service.dart';
-import '../services/friendship_service.dart';
-import '../services/authentication_state_service.dart';
-import '../services/email_otp_service.dart';
-import '../services/biometric_user_service.dart';
-import '../services/biometric_service.dart';
-import '../models/profile_data.dart';
-import '../models/user_data.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
-import '../theme/app_theme.dart';
-import '../widgets/copy_to_clipboard_widget.dart';
-import '../widgets/profile_picture_change_dialog.dart';
-import '../widgets/biometric_setup_widget.dart';
+import '../core/navigation/app_router.dart';
 import '../widgets/home_button.dart';
-import 'register_page.dart';
-import 'login_page.dart';
-import 'email_otp_verification_page.dart';
-import '../services/app_localizations.dart';
-import '../provides/language_provider.dart';
+import '../widgets/language_selector_button.dart';
+import '../services/notification_service.dart';
+import '../services/achievement_service.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -41,29 +22,15 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage>
     with TickerProviderStateMixin {
-  // Animation controllers
   late AnimationController _fadeController;
   late AnimationController _slideController;
-
-  // Services for enhanced functionality
-  final PresenceService _presenceService = PresenceService();
-  final FriendshipService _friendshipService = FriendshipService();
-  final ProfileService _profileService = ProfileService();
-  final AuthenticationStateService _authStateService =
-      AuthenticationStateService();
-
-  // Stream for real-time presence updates
-  StreamSubscription? _presenceSubscription;
-  Map<String, PresenceStatus> _friendPresence = {};
-
-  // Registration status
-  bool _isRegistered = false;
-  bool _isCheckingRegistration = true;
+  late List<AnimationController> _buttonControllers;
+  String? _lastSelectedTheme;
+  bool _rememberTheme = false;
 
   @override
   void initState() {
     super.initState();
-
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -73,812 +40,1111 @@ class _ProfilePageState extends State<ProfilePage>
       vsync: this,
     );
 
-    // Check registration status first
-    _checkRegistrationStatus();
+    _buttonControllers = List.generate(
+        6,
+        (index) => AnimationController(
+              duration: const Duration(milliseconds: 300),
+              vsync: this,
+            ));
 
-    // Listen to language changes
-    context.read<LanguageProvider>().addListener(() {
-      if (mounted) setState(() {});
-    });
-  }
+    // Load saved theme preference
+    _loadThemePreference();
 
-  Future<void> _checkRegistrationStatus() async {
-    setState(() {
-      _isCheckingRegistration = true;
-    });
+    // Start animations
+    _fadeController.forward();
+    _slideController.forward();
 
-    try {
-      final isRegistered = await _profileService.isUserRegistered();
-      setState(() {
-        _isRegistered = isRegistered;
-        _isCheckingRegistration = false;
-      });
-
-      if (_isRegistered) {
-        // Start animations for registered users
-        _fadeController.forward();
-        _slideController.forward();
-
-        // Initialize presence service
-        _initializePresenceService();
-
-        // Initialize authentication state service
-        await _authStateService.initializeAuthState();
-      }
-    } catch (e) {
-      setState(() {
-        _isRegistered = false;
-        _isCheckingRegistration = false;
+    // Stagger button animations
+    for (int i = 0; i < _buttonControllers.length; i++) {
+      Future.delayed(Duration(milliseconds: 200 + (i * 100)), () {
+        if (mounted) {
+          _buttonControllers[i].forward();
+        }
       });
     }
-  }
-
-  Future<void> _initializePresenceService() async {
-    await _presenceService.initialize();
-
-    // Set user as online
-    _presenceService.setUserOnline();
-
-    // Listen to friends presence if available
-    _setupFriendsPresenceListener();
-  }
-
-  void _setupFriendsPresenceListener() {
-    // Get friends and set up presence listener
-    _friendshipService.getFriends().then((friends) {
-      if (friends.isNotEmpty) {
-        final friendIds = friends.map((friend) => friend.id).toList();
-        _presenceSubscription =
-            _presenceService.listenToFriendsPresence(friendIds).listen(
-          (presenceMap) {
-            if (mounted) {
-              setState(() {
-                _friendPresence = presenceMap;
-              });
-            }
-          },
-        );
-      }
-    });
   }
 
   @override
   void dispose() {
     _fadeController.dispose();
     _slideController.dispose();
-    _presenceSubscription?.cancel();
-    _presenceService.dispose();
+    for (final controller in _buttonControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
+  Future<void> _loadThemePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    _lastSelectedTheme = prefs.getString('lastSelectedTheme');
+    _rememberTheme = prefs.getBool('rememberTheme') ?? false;
+  }
+
+  Future<void> _saveThemePreference(String theme, bool remember) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (remember) {
+      await prefs.setString('lastSelectedTheme', theme);
+    }
+    await prefs.setBool('rememberTheme', remember);
+    _lastSelectedTheme = theme;
+    _rememberTheme = remember;
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Show loading while checking registration status
-    if (_isCheckingRegistration) {
-      return const _RegistrationCheckScreen();
-    }
+    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = screenSize.width;
+    final screenHeight = screenSize.height;
 
-    // Show registration prompt for unregistered users
-    if (!_isRegistered) {
-      return const _UnregisteredUserScreen();
-    }
+    // Responsive values
+    final isSmallScreen = screenWidth < 360;
+    final isMediumScreen = screenWidth < 600;
 
-    // Show profile page for registered users
+    final appBarHeight =
+        isSmallScreen ? 80.0 : (isMediumScreen ? 100.0 : 120.0);
+    final titleFontSize = isSmallScreen ? 18.0 : (isMediumScreen ? 20.0 : 22.0);
+
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: const HomeButton(),
-        title: Consumer<LanguageProvider>(
-          builder: (context, languageProvider, child) {
-            return DesignSystem.semantic(
-              context,
-              label: 'Profil sayfası başlığı',
-              child: Text(AppLocalizations.profile,
-                  style: TextStyle(color: ThemeColors.getAppBarText(context))),
-            );
-          },
-        ),
-        iconTheme: IconThemeData(color: ThemeColors.getAppBarIcon(context)),
-        actions: [
-          // Change Password button
-          DesignSystem.semantic(
-            context,
-            label: 'Şifre değiştir butonu',
-            hint: 'Şifre değiştirme dialogunu açar',
-            child: IconButton(
-              icon: const Icon(Icons.lock_reset),
-              onPressed: () => _showChangePasswordDialog(context),
-              tooltip: 'Şifre Değiştir',
-            ),
-          ),
-          // Logout button
-          DesignSystem.semantic(
-            context,
-            label: 'Çıkış yap butonu',
-            hint: 'Kullanıcıyı uygulamadan çıkarır',
-            child: IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () => _showLogoutDialog(context),
-              tooltip: 'Çıkış Yap',
-            ),
-          ),
-        ],
-      ),
+      backgroundColor: ThemeColors.getCardBackground(context),
       body: Container(
-        decoration: const BoxDecoration(
+        height: screenHeight,
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            colors: [
+              ThemeColors.getCardBackground(context),
+              ThemeColors.getCardBackground(context).withValues(alpha: 0.95),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
         ),
         child: SafeArea(
-          child: Center(
-            child: Scrollbar(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: ThemeColors.getContainerBackground(context),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: ThemeColors.getShadow(context),
-                              blurRadius: 15,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Icon(
-                              Icons.person,
-                              size: 60,
-                              color: const Color(0xFF4CAF50),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Profil Bilgileri',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: ThemeColors.getTitleText(context),
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            BlocProvider(
-                              create: (context) => ProfileBloc(
-                                profileService: ProfileService(),
-                              ),
-                              child: const ProfileContent(),
-                            ),
-                          ],
+          child: Column(
+            children: [
+              // Minimal App Bar
+              Container(
+                height: appBarHeight,
+                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  children: [
+                    const HomeButton(),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: FadeTransition(
+                        opacity: _fadeController,
+                        child: Text(
+                          'Profil',
+                          style: TextStyle(
+                            color: ThemeColors.getText(context),
+                            fontWeight: FontWeight.w600,
+                            fontSize: titleFontSize,
+                          ),
                         ),
                       ),
-                    ],
+                    ),
+                    const LanguageSelectorButton(),
+                  ],
+                ),
+              ),
+
+              // Main Content - Scrollable if needed but fits screen
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: isSmallScreen ? 16.0 : 20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Welcome Section
+                        SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0, 0.2),
+                            end: Offset.zero,
+                          ).animate(CurvedAnimation(
+                            parent: _slideController,
+                            curve: Curves.easeOut,
+                          )),
+                          child: _buildWelcomeSection(context),
+                        ),
+
+                        SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
+                        // Quick Quiz Start Section
+                        _buildQuickQuizSection(context),
+
+                        SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
+                        // Progress & Achievements Section
+                        _buildProgressSection(context),
+
+                        SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
+                        // Daily Challenges Section
+                        _buildDailyChallengesSection(context),
+
+                        SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
+                        // Statistics Summary Section
+                        _buildStatisticsSummarySection(context),
+
+                        SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
+                        // Recent Activity
+                        _buildRecentActivitySection(context),
+
+                        SizedBox(height: 20.0),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),
+      floatingActionButton: _buildFloatingActionButton(context),
     );
   }
 
-  void _showChangePasswordDialog(BuildContext context) {
+  Widget _buildWelcomeSection(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null || user.email == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Kullanıcı bilgileri bulunamadı'),
-          backgroundColor: ThemeColors.getErrorColor(context),
-        ),
-      );
-      return;
-    }
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
 
-    // Email OTP ile şifre sıfırlama
-    _sendPasswordResetCode(context, user.email!);
-  }
-
-  Future<void> _sendPasswordResetCode(
-      BuildContext context, String email) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return DesignSystem.semantic(
-          context,
-          label: 'Şifre sıfırlama dialog',
-          hint: 'E-posta ile şifre sıfırlama için kod gönderme dialog',
-          child: AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
-            ),
-            title: DesignSystem.semantic(
-              context,
-              label: 'Şifre Sıfırlama başlığı',
-              child: const Text('Şifre Sıfırlama'),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.email_outlined,
-                  size: 48,
-                  color: ThemeColors.getInfoColor(context),
-                ),
-                const SizedBox(height: DesignSystem.spacingM),
-                DesignSystem.semantic(
-                  context,
-                  label: 'E-posta açıklaması',
-                  child: Text(
-                    '${email.replaceRange(2, email.indexOf('@'), '***')} adresine 6 haneli doğrulama kodu gönderilecek.',
-                    style: DesignSystem.getBodyMedium(context),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('İptal'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  await _startEmailOtpFlow(context, email);
-                },
-                style: DesignSystem.getPrimaryButtonStyle(context),
-                child: const Text('Kod Gönder'),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _startEmailOtpFlow(BuildContext context, String email) async {
-    try {
-      final result = await EmailOtpService.sendOtpCode(
-        email: email,
-        purpose: 'profile_reset',
-      );
-
-      if (result.isSuccess) {
-        // Email OTP sayfasına yönlendir
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => EmailOtpVerificationPage(
-              email: email,
-              purpose: 'profile_reset',
-            ),
-          ),
-        );
-      } else {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result.message),
-              backgroundColor: ThemeColors.getErrorColor(context),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Kod gönderilemedi: ${e.toString()}'),
-            backgroundColor: ThemeColors.getErrorColor(context),
-          ),
-        );
-      }
-    }
-  }
-
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return DesignSystem.semantic(
-          context,
-          label: 'Çıkış onay dialog',
-          hint:
-              'Çıkış yapmak istediğinizi onaylamanız gerektiğini belirten dialog',
-          child: AlertDialog(
-            title: DesignSystem.semantic(
-              context,
-              label: 'Çıkış Yap başlığı',
-              child: const Text('Çıkış Yap'),
-            ),
-            content: DesignSystem.semantic(
-              context,
-              label: 'Dialog içeriği',
-              child: const Text(
-                  'Hesabınızdan çıkış yapmak istediğinizden emin misiniz?'),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('İptal'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.of(context).pop(); // Close dialog
-                  await _logout(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      ThemeColors.getLogoutButtonBackground(context),
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('Çıkış Yap'),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _logout(BuildContext context) async {
-    try {
-      // Set user as offline
-      _presenceService.setUserOffline();
-      _presenceService.dispose();
-
-      // Clear authentication state service
-      _authStateService.clearAuthenticationState();
-
-      // Sign out from Firebase
-      await FirebaseAuth.instance.signOut();
-
-      // Navigate back to login page
-      if (context.mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginPage()),
-          (route) => false,
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Çıkış yapılırken hata oluştu: $e'),
-            backgroundColor: ThemeColors.getErrorColor(context),
-          ),
-        );
-      }
-    }
-  }
-}
-
-class ProfileContent extends StatefulWidget {
-  const ProfileContent({super.key});
-
-  @override
-  State<ProfileContent> createState() => _ProfileContentState();
-}
-
-class _ProfileContentState extends State<ProfileContent> {
-  @override
-  void initState() {
-    super.initState();
-    // Automatically load profile when widget is created
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProfileBloc>().add(const LoadProfile(''));
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<ProfileBloc, ProfileState>(
-      builder: (context, state) {
-        if (state is ProfileLoading) {
-          return const _LoadingState();
-        } else if (state is ProfileLoaded) {
-          return _buildProfileContent(context, state);
-        } else if (state is ProfileError) {
-          return _ErrorState(message: state.message);
-        } else {
-          return const _LoadingState();
-        }
-      },
-    );
-  }
-
-  Widget _buildProfileContent(BuildContext context, ProfileLoaded state) {
     return Container(
+      padding: EdgeInsets.all(isSmallScreen ? 20.0 : 24.0),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: ThemeColors.getGradientColors(context),
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: ThemeColors.getCardBackground(context),
+        borderRadius: BorderRadius.circular(isSmallScreen ? 16.0 : 20.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      child: RefreshIndicator(
-        onRefresh: () async {
-          context.read<ProfileBloc>().add(RefreshServerData());
-        },
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: FadeTransition(
-                opacity: Tween<double>(
-                  begin: 0.0,
-                  end: 1.0,
-                ).animate(CurvedAnimation(
-                  parent: ModalRoute.of(context)!.animation!,
-                  curve: Curves.easeIn,
-                )),
-                child: _IdentityCard(profileData: state.profileData),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0, 0.3),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(
-                  parent: ModalRoute.of(context)!.animation!,
-                  curve: Curves.easeOut,
-                )),
-                child: _StatisticsCards(localData: state.profileData.localData),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0, 0.5),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(
-                  parent: ModalRoute.of(context)!.animation!,
-                  curve: Curves.easeOut,
-                )),
-                // Biyometrik ayarları ayarlar sayfasına taşındı
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0, 0.5),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(
-                  parent: ModalRoute.of(context)!.animation!,
-                  curve: Curves.easeOut,
-                )),
-                child: _GameHistoryList(
-                    games: state.profileData.localData.recentGames),
-              ),
-            ),
-            const SliverToBoxAdapter(
-                child: SizedBox(height: DesignSystem.spacingL)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _LoadingState extends StatelessWidget {
-  const _LoadingState();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: ThemeColors.getGradientColors(context),
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Center(
-        child: DesignSystem.loadingIndicator(
-          context,
-          message: 'Profil yükleniyor...',
-        ),
-      ),
-    );
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  final String message;
-
-  const _ErrorState({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: ThemeColors.getGradientColors(context),
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: DesignSystem.errorState(
-        context,
-        message: message,
-        onRetry: () {
-          // Refresh or retry logic
-          final nickname = 'Oyuncu'; // Default fallback
-          context.read<ProfileBloc>().add(LoadProfile(nickname));
-        },
-        retryText: 'Tekrar Dene',
-      ),
-    );
-  }
-}
-
-class _IdentityCard extends StatelessWidget {
-  final ProfileData profileData;
-
-  const _IdentityCard({required this.profileData});
-
-  @override
-  Widget build(BuildContext context) {
-    return DesignSystem.glassCard(
-      context,
-      padding: const EdgeInsets.all(DesignSystem.spacingXl),
-      child: Column(
+      child: Row(
         children: [
-          // Profile Picture with Level Ring
-          GestureDetector(
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (context) => ProfilePictureChangeDialog(
-                  currentProfilePictureUrl:
-                      profileData.serverData?.profilePictureUrl,
-                  onProfilePictureUpdated: (imageUrl) {
-                    // Image cache'i temizle
-                    imageCache.clearLiveImages();
-                    imageCache.clear();
-                    imageCache.clearLiveImages();
-                    // Profil resmini hemen güncelle
-                    context
-                        .read<ProfileBloc>()
-                        .add(UpdateProfilePicture(imageUrl));
-                    // Backend'i de senkronize et (arka planda)
-                    context.read<ProfileBloc>().add(RefreshServerData());
-                  },
+          // Avatar
+          Container(
+            width: isSmallScreen ? 50.0 : 60.0,
+            height: isSmallScreen ? 50.0 : 60.0,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  ThemeColors.getPrimaryButtonColor(context),
+                  ThemeColors.getAccentButtonColor(context),
+                ],
+              ),
+            ),
+            child: Center(
+              child: Text(
+                user?.displayName?.isNotEmpty == true
+                    ? user!.displayName![0].toUpperCase()
+                    : (user?.email?.isNotEmpty == true
+                        ? user!.email![0].toUpperCase()
+                        : 'U'),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: isSmallScreen ? 18.0 : 22.0,
+                  fontWeight: FontWeight.w600,
                 ),
-              );
-            },
-            child: Stack(
-              alignment: Alignment.center,
+              ),
+            ),
+          ),
+
+          SizedBox(width: isSmallScreen ? 16.0 : 20.0),
+
+          // Welcome Text
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Level Ring
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: ThemeColors.getPrimaryButtonColor(context),
-                      width: 4,
-                    ),
-                  ),
-                  child: CircleAvatar(
-                    radius: 56,
-                    backgroundColor:
-                        ThemeColors.getCardBackgroundLight(context),
-                    backgroundImage:
-                        profileData.serverData?.profilePictureUrl != null &&
-                                profileData
-                                    .serverData!.profilePictureUrl!.isNotEmpty
-                            ? NetworkImage(
-                                profileData.serverData!.profilePictureUrl!)
-                            : null,
-                    onBackgroundImageError:
-                        profileData.serverData?.profilePictureUrl != null
-                            ? (exception, stackTrace) {
-                                if (kDebugMode) {
-                                  print(
-                                      '❌ Failed to load profile picture: $exception');
-                                }
-                              }
-                            : null,
-                    child: (profileData.serverData?.profilePictureUrl == null ||
-                            profileData.serverData!.profilePictureUrl!.isEmpty)
-                        ? Icon(Icons.person,
-                            size: 56,
-                            color: ThemeColors.getSecondaryText(context))
-                        : null,
+                Text(
+                  'Merhaba 👋',
+                  style: TextStyle(
+                    color: ThemeColors.getText(context),
+                    fontSize: isSmallScreen ? 20.0 : 24.0,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                // Edit Icon
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: ThemeColors.getInfoColor(context),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.edit,
-                      size: 16,
-                      color: Colors.white,
-                    ),
+                SizedBox(height: 4.0),
+                Text(
+                  user?.displayName ?? user?.email ?? 'Kullanıcı',
+                  style: TextStyle(
+                    color: ThemeColors.getSecondaryText(context),
+                    fontSize: isSmallScreen ? 14.0 : 16.0,
+                    fontWeight: FontWeight.w400,
                   ),
-                ),
-                // Level Badge
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: ThemeColors.getPrimaryButtonColor(context),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      'Lvl 1',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          const SizedBox(height: DesignSystem.spacingL),
 
-          // Nickname
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 500),
-            child: Text(
-              profileData.serverData?.nickname ?? 'Yükleniyor...',
-              key: ValueKey(profileData.serverData?.nickname),
-              style: AppTheme.getGameTitleStyle(context),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(height: DesignSystem.spacingS),
-
-          // UID with copy button
-          if (profileData.serverData?.uid != null)
-            CopyToClipboardWidget(
-              textToCopy: profileData.serverData!.uid,
-              successMessage: 'UID kopyalandı!',
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+          // Stats
+          Column(
+            children: [
+              Row(
                 children: [
+                  Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                    size: isSmallScreen ? 16.0 : 18.0,
+                  ),
+                  SizedBox(width: 4.0),
                   Text(
-                    'UID: ${profileData.serverData!.uid}',
-                    style: DesignSystem.getBodyMedium(context).copyWith(
-                      color: ThemeColors.getStatsCardText(context),
-                      fontFamily: 'monospace',
+                    '1250 Puan',
+                    style: TextStyle(
+                      color: ThemeColors.getText(context),
+                      fontSize: isSmallScreen ? 12.0 : 14.0,
+                      fontWeight: FontWeight.w500,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
-            )
-          else
-            Text(
-              'UID: Yükleniyor...',
-              style: DesignSystem.getBodyMedium(context).copyWith(
-                color: ThemeColors.getStatsCardText(context),
+              SizedBox(height: 4.0),
+              Row(
+                children: [
+                  Icon(
+                    Icons.emoji_events,
+                    color: Colors.orange,
+                    size: isSmallScreen ? 16.0 : 18.0,
+                  ),
+                  SizedBox(width: 4.0),
+                  Text(
+                    '3 Rozet',
+                    style: TextStyle(
+                      color: ThemeColors.getText(context),
+                      fontSize: isSmallScreen ? 12.0 : 14.0,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          // Time display
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            decoration: BoxDecoration(
+              color: ThemeColors.getPrimaryButtonColor(context)
+                  .withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: Text(
+              '${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}',
+              style: TextStyle(
+                color: ThemeColors.getSuccessColor(context),
+                fontSize: isSmallScreen ? 12.0 : 14.0,
+                fontWeight: FontWeight.w500,
               ),
             ),
-
-          const SizedBox(height: DesignSystem.spacingM),
-
-          // Last Login
-          if (profileData.serverData?.lastLogin != null)
-            Text(
-              'Son giriş: ${_formatDate(profileData.serverData!.lastLogin!)}',
-              style: Theme.of(context).textTheme.bodySmall ??
-                  TextStyle().copyWith(
-                    color: ThemeColors.getStatsCardText(context),
-                  ),
-            ),
+          ),
         ],
       ),
     );
   }
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
+  Widget _buildRecentActivitySection(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final sectionTitleFontSize = isSmallScreen ? 18.0 : 22.0;
 
-    if (difference.inMinutes < 1) {
-      return 'Az önce';
-    } else if (difference.inHours < 1) {
-      return '${difference.inMinutes} dakika önce';
-    } else if (difference.inDays < 1) {
-      return '${difference.inHours} saat önce';
-    } else {
-      return '${difference.inDays} gün önce';
-    }
-  }
-}
-
-class _StatisticsCards extends StatelessWidget {
-  final LocalStatisticsData localData;
-
-  const _StatisticsCards({required this.localData});
-
-  @override
-  Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingM),
+      margin: EdgeInsets.all(
+          isSmallScreen ? DesignSystem.spacingS : DesignSystem.spacingM),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(DesignSystem.spacingM),
+            padding: EdgeInsets.symmetric(
+                horizontal: isSmallScreen
+                    ? DesignSystem.spacingS
+                    : DesignSystem.spacingM,
+                vertical: DesignSystem.spacingS),
             child: Text(
-              'Oyun İstatistikleri',
+              'Son Aktiviteler',
               style: DesignSystem.getTitleLarge(context).copyWith(
                 color: Colors.white,
+                fontSize: sectionTitleFontSize,
+                fontWeight: FontWeight.w700,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    offset: const Offset(0, 2),
+                    blurRadius: 4,
+                  ),
+                ],
               ),
             ),
           ),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: DesignSystem.spacingS,
-            crossAxisSpacing: DesignSystem.spacingS,
-            childAspectRatio: 1.2,
+          Container(
+            decoration: BoxDecoration(
+              color: ThemeColors.getCardBackground(context),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(isSmallScreen
+                  ? DesignSystem.spacingS
+                  : DesignSystem.spacingM),
+              child: Column(
+                children: [
+                  _buildActivityItem(
+                    context,
+                    icon: Icons.quiz,
+                    title: 'Quiz tamamlandı',
+                    subtitle: '2 saat önce',
+                    color: ThemeColors.getSuccessColor(context),
+                  ),
+                  SizedBox(height: DesignSystem.spacingM),
+                  _buildActivityItem(
+                    context,
+                    icon: Icons.people,
+                    title: 'Yeni arkadaş eklendi',
+                    subtitle: '1 gün önce',
+                    color: ThemeColors.getInfoColor(context),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActivityItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            size: 16,
+            color: color,
+          ),
+        ),
+        const SizedBox(width: DesignSystem.spacingM),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildStatCard(
-                context,
-                icon: Icons.trending_up,
-                title: 'Kazanma Oranı',
-                value: '${(localData.winRate * 100).toInt()}%',
-                color: ThemeColors.getSuccessColor(context),
+              Text(
+                title,
+                style: DesignSystem.getBodyMedium(context),
               ),
-              _buildStatCard(
-                context,
-                icon: Icons.gamepad,
-                title: 'Toplam Oyun',
-                value: localData.totalGamesPlayed.toString(),
-                color: ThemeColors.getInfoColor(context),
-              ),
-              _buildStatCard(
-                context,
-                icon: Icons.star,
-                title: 'En Yüksek Skor',
-                value: localData.highestScore.toString(),
-                color: ThemeColors.getWarningColor(context),
-              ),
-              _buildStatCard(
-                context,
-                icon: Icons.analytics,
-                title: 'Ortalama Puan',
-                value: localData.averageScore.toString(),
-                color: ThemeColors.getAccentButtonColor(context),
+              Text(
+                subtitle,
+                style: DesignSystem.getBodyMedium(context).copyWith(
+                  color: ThemeColors.getSecondaryText(context),
+                ),
               ),
             ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFloatingActionButton(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            ThemeColors.getPrimaryButtonColor(context),
+            ThemeColors.getAccentButtonColor(context),
+          ],
+        ),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: ThemeColors.getPrimaryButtonColor(context)
+                .withValues(alpha: 0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: FloatingActionButton(
+        onPressed: () => _showQuickMenu(context),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Icon(
+          Icons.add,
+          color: Colors.white,
+          size: 28,
+        ),
+      ),
+    );
+  }
+
+  void _showQuickMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            decoration: BoxDecoration(
+              color:
+                  ThemeColors.getCardBackground(context).withValues(alpha: 0.9),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            padding: const EdgeInsets.all(DesignSystem.spacingXl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: DesignSystem.spacingL),
+                Text(
+                  'Hızlı Menü',
+                  style: DesignSystem.getTitleLarge(context).copyWith(
+                    color: ThemeColors.getText(context),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: DesignSystem.spacingL),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildSimpleMenuButton(
+                      context,
+                      icon: Icons.quiz,
+                      label: 'Quiz Başlat',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed(AppRoutes.quiz);
+                      },
+                    ),
+                    _buildSimpleMenuButton(
+                      context,
+                      icon: Icons.people,
+                      label: 'Düello',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context)
+                            .pushNamed(AppRoutes.multiplayerLobby);
+                      },
+                    ),
+                    _buildSimpleMenuButton(
+                      context,
+                      icon: Icons.leaderboard,
+                      label: 'Liderlik',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed(AppRoutes.leaderboard);
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: DesignSystem.spacingM),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildSimpleMenuButton(
+                      context,
+                      icon: Icons.person,
+                      label: 'Arkadaşlar',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed(AppRoutes.friends);
+                      },
+                    ),
+                    _buildSimpleMenuButton(
+                      context,
+                      icon: Icons.settings,
+                      label: 'Ayarlar',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed(AppRoutes.settings);
+                      },
+                    ),
+                    _buildSimpleMenuButton(
+                      context,
+                      icon: Icons.help_outline,
+                      label: 'Yardım',
+                      onTap: () {
+                        Navigator.pop(context);
+                        // Show help dialog
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: DesignSystem.spacingM),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickQuizSection(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    return Container(
+      margin: const EdgeInsets.all(DesignSystem.spacingM),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: isSmallScreen
+                    ? DesignSystem.spacingS
+                    : DesignSystem.spacingM,
+                vertical: DesignSystem.spacingS),
+            child: Text(
+              'Hızlı Quiz Başlat',
+              style: DesignSystem.getTitleLarge(context).copyWith(
+                color: Colors.white,
+                fontSize: isSmallScreen ? 18.0 : 22.0,
+                fontWeight: FontWeight.w700,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    offset: const Offset(0, 2),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(
+                isSmallScreen ? DesignSystem.spacingM : DesignSystem.spacingL),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  ThemeColors.getPrimaryButtonColor(context),
+                  ThemeColors.getAccentButtonColor(context),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+              boxShadow: [
+                BoxShadow(
+                  color: ThemeColors.getPrimaryButtonColor(context)
+                      .withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: InkWell(
+              onTap: () => _showThemeSelectionDialog(context),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.quiz,
+                    size: isSmallScreen ? 48.0 : 64.0,
+                    color: Colors.white,
+                  ),
+                  SizedBox(height: DesignSystem.spacingM),
+                  Text(
+                    'Çevre Bilgisi Quiz\'i',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isSmallScreen ? 18.0 : 22.0,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: DesignSystem.spacingS),
+                  Text(
+                    'Çevre bilincini artır, puan kazan!',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: isSmallScreen ? 14.0 : 16.0,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: DesignSystem.spacingM),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: DesignSystem.spacingM,
+                      vertical: DesignSystem.spacingS,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                    ),
+                    child: Text(
+                      'Şimdi Başlat',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: isSmallScreen ? 14.0 : 16.0,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProgressSection(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final sectionTitleFontSize = isSmallScreen ? 16.0 : 20.0;
+
+    return Container(
+      margin: const EdgeInsets.all(DesignSystem.spacingM),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: isSmallScreen
+                    ? DesignSystem.spacingS
+                    : DesignSystem.spacingM,
+                vertical: DesignSystem.spacingS),
+            child: Text(
+              'İlerleme & Başarılar',
+              style: DesignSystem.getTitleLarge(context).copyWith(
+                color: Colors.white,
+                fontSize: sectionTitleFontSize,
+                fontWeight: FontWeight.w700,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    offset: const Offset(0, 2),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: ThemeColors.getCardBackground(context),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(isSmallScreen
+                  ? DesignSystem.spacingS
+                  : DesignSystem.spacingM),
+              child: Column(
+                children: [
+                  // Level Progress
+                  _buildLevelProgress(context),
+                  SizedBox(height: DesignSystem.spacingM),
+                  // Quiz Stats
+                  _buildQuizStats(context),
+                  SizedBox(height: DesignSystem.spacingM),
+                  // Recent Achievements
+                  _buildRecentAchievements(context),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLevelProgress(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    return Container(
+      padding: EdgeInsets.all(
+          isSmallScreen ? DesignSystem.spacingS : DesignSystem.spacingM),
+      decoration: BoxDecoration(
+        color:
+            ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Seviye 5',
+                style: TextStyle(
+                  color: ThemeColors.getText(context),
+                  fontSize: isSmallScreen ? 14.0 : 16.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                '450/500 XP',
+                style: TextStyle(
+                  color: ThemeColors.getSecondaryText(context),
+                  fontSize: isSmallScreen ? 12.0 : 14.0,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: DesignSystem.spacingS),
+          LinearProgressIndicator(
+            value: 0.9, // 450/500 = 0.9
+            backgroundColor:
+                ThemeColors.getCardBackground(context).withValues(alpha: 0.3),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              ThemeColors.getPrimaryButtonColor(context),
+            ),
+          ),
+          SizedBox(height: DesignSystem.spacingS),
+          Text(
+            'Sonraki seviyeye 50 XP kaldı',
+            style: TextStyle(
+              color: ThemeColors.getSecondaryText(context),
+              fontSize: isSmallScreen ? 11.0 : 12.0,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuizStats(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    return Container(
+      padding: EdgeInsets.all(
+          isSmallScreen ? DesignSystem.spacingS : DesignSystem.spacingM),
+      decoration: BoxDecoration(
+        color: ThemeColors.getSuccessColor(context).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Quiz İstatistikleri',
+            style: TextStyle(
+              color: ThemeColors.getText(context),
+              fontSize: isSmallScreen ? 14.0 : 16.0,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: DesignSystem.spacingS),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildStatItem(
+                context,
+                icon: Icons.quiz,
+                value: '47',
+                label: 'Toplam Quiz',
+                color: ThemeColors.getSuccessColor(context),
+              ),
+              _buildStatItem(
+                context,
+                icon: Icons.check_circle,
+                value: '89%',
+                label: 'Doğru Oran',
+                color: ThemeColors.getSuccessColor(context),
+              ),
+              _buildStatItem(
+                context,
+                icon: Icons.timer,
+                value: '2.3dk',
+                label: 'Ort. Süre',
+                color: ThemeColors.getInfoColor(context),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(
+    BuildContext context, {
+    required IconData icon,
+    required String value,
+    required String label,
+    required Color color,
+  }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: color,
+            size: isSmallScreen ? 20.0 : 24.0,
+          ),
+        ),
+        SizedBox(height: DesignSystem.spacingXs),
+        Text(
+          value,
+          style: TextStyle(
+            color: ThemeColors.getText(context),
+            fontSize: isSmallScreen ? 14.0 : 16.0,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            color: ThemeColors.getSecondaryText(context),
+            fontSize: isSmallScreen ? 10.0 : 12.0,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecentAchievements(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    final achievements = [
+      {'icon': '🏆', 'title': 'Quiz Ustası', 'rarity': 'Nadir'},
+      {'icon': '⚔️', 'title': 'Düello Başlangıcı', 'rarity': 'Sıradan'},
+      {'icon': '🔥', 'title': 'Düzenli Oyuncu', 'rarity': 'Destansı'},
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Son Başarılar',
+          style: TextStyle(
+            color: ThemeColors.getText(context),
+            fontSize: isSmallScreen ? 14.0 : 16.0,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        SizedBox(height: DesignSystem.spacingS),
+        SizedBox(
+          height: 80,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: achievements.length,
+            itemBuilder: (context, index) {
+              final achievement = achievements[index];
+              return Container(
+                width: 70,
+                margin: EdgeInsets.only(right: DesignSystem.spacingS),
+                decoration: BoxDecoration(
+                  color: ThemeColors.getCardBackground(context)
+                      .withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                  border: Border.all(
+                    color: _getRarityColor(achievement['rarity'] as String)
+                        .withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      achievement['icon'] as String,
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      achievement['title'] as String,
+                      style: TextStyle(
+                        color: ThemeColors.getText(context),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatisticsSummarySection(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final sectionTitleFontSize = isSmallScreen ? 16.0 : 20.0;
+
+    return Container(
+      margin: const EdgeInsets.all(DesignSystem.spacingM),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: isSmallScreen
+                    ? DesignSystem.spacingS
+                    : DesignSystem.spacingM,
+                vertical: DesignSystem.spacingS),
+            child: Text(
+              'İstatistik Özeti',
+              style: DesignSystem.getTitleLarge(context).copyWith(
+                color: Colors.white,
+                fontSize: sectionTitleFontSize,
+                fontWeight: FontWeight.w700,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    offset: const Offset(0, 2),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: ThemeColors.getCardBackground(context),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(isSmallScreen
+                  ? DesignSystem.spacingS
+                  : DesignSystem.spacingM),
+              child: Column(
+                children: [
+                  // Quick Stats Grid
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: DesignSystem.spacingS,
+                    crossAxisSpacing: DesignSystem.spacingS,
+                    childAspectRatio: isSmallScreen ? 1.5 : 1.8,
+                    children: [
+                      _buildStatCard(
+                        context,
+                        icon: Icons.timer,
+                        title: 'Toplam Süre',
+                        value: '12.5 saat',
+                        subtitle: 'Son 30 gün',
+                        color: ThemeColors.getInfoColor(context),
+                      ),
+                      _buildStatCard(
+                        context,
+                        icon: Icons.local_fire_department,
+                        title: 'En Uzun Seri',
+                        value: '7 gün',
+                        subtitle: 'Günlük quiz',
+                        color: ThemeColors.getSuccessColor(context),
+                      ),
+                      _buildStatCard(
+                        context,
+                        icon: Icons.trending_up,
+                        title: 'En Yüksek Skor',
+                        value: '14/15',
+                        subtitle: 'Enerji konusu',
+                        color: ThemeColors.getWarningColor(context),
+                      ),
+                      _buildStatCard(
+                        context,
+                        icon: Icons.people,
+                        title: 'Düello Kazanma',
+                        value: '%68',
+                        subtitle: '15 düello',
+                        color: Colors.purple,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: DesignSystem.spacingM),
+                  
+                  // Weekly Progress Chart
+                  Container(
+                    padding: EdgeInsets.all(DesignSystem.spacingM),
+                    decoration: BoxDecoration(
+                      color: ThemeColors.getPrimaryButtonColor(context)
+                          .withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Haftalık Aktivite',
+                          style: TextStyle(
+                            color: ThemeColors.getText(context),
+                            fontSize: isSmallScreen ? 14.0 : 16.0,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: DesignSystem.spacingS),
+                        _buildWeeklyChart(context),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -890,523 +1156,832 @@ class _StatisticsCards extends StatelessWidget {
     required IconData icon,
     required String title,
     required String value,
+    required String subtitle,
     required Color color,
   }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
-      decoration: DesignSystem.getCardDecoration(context),
-      child: Padding(
-        padding: const EdgeInsets.all(DesignSystem.spacingM),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 32, color: color),
-            const SizedBox(height: DesignSystem.spacingS),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall ??
-                  TextStyle().copyWith(
-                    color: ThemeColors.getStatsCardText(context),
-                    fontWeight: FontWeight.w500,
-                  ),
-            ),
-          ],
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    return Container(
+      padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+        border: Border.all(
+          color: color.withValues(alpha: 0.2),
+          width: 1,
         ),
       ),
-    );
-  }
-}
-
-class _GameHistoryList extends StatelessWidget {
-  final List<GameHistoryItem> games;
-
-  const _GameHistoryList({required this.games});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(DesignSystem.spacingM),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(DesignSystem.spacingM),
-            child: Text(
-              'Son Skorlar ve Geçmiş',
-              style: DesignSystem.getTitleLarge(context).copyWith(
-                color: Colors.white,
-              ),
+          Icon(
+            icon,
+            color: color,
+            size: isSmallScreen ? 20.0 : 24.0,
+          ),
+          SizedBox(height: 4.0),
+          Text(
+            value,
+            style: TextStyle(
+              color: ThemeColors.getText(context),
+              fontSize: isSmallScreen ? 14.0 : 16.0,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          if (games.isEmpty)
-            _buildEmptyState(context)
-          else
-            _buildGameList(context),
+          Text(
+            title,
+            style: TextStyle(
+              color: ThemeColors.getSecondaryText(context),
+              fontSize: isSmallScreen ? 10.0 : 12.0,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            subtitle,
+            style: TextStyle(
+              color: ThemeColors.getSecondaryText(context),
+              fontSize: isSmallScreen ? 8.0 : 10.0,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
-    return DesignSystem.emptyState(
-      context,
-      message: 'Henüz oyun geçmişi yok',
-      icon: Icons.gamepad,
-    );
-  }
-
-  Widget _buildGameList(BuildContext context) {
-    return DesignSystem.card(
-      context,
-      backgroundColor: ThemeColors.getHistoryCardBackground(context),
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: games.length,
-        separatorBuilder: (context, index) =>
-            DesignSystem.modernDivider(context),
-        itemBuilder: (context, index) {
-          final game = games[index];
-          return _buildGameItem(context, game);
-        },
-      ),
-    );
-  }
-
-  Widget _buildGameItem(BuildContext context, GameHistoryItem game) {
-    return ListTile(
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: game.isWin
-              ? ThemeColors.getSuccessColor(context)
-              : ThemeColors.getErrorColor(context),
-        ),
-        child: Icon(
-          game.isWin ? Icons.check : Icons.close,
-          color: Colors.white,
-          size: 20,
-        ),
-      ),
-      title: Text(
-        '${game.score} puan',
-        style: DesignSystem.getTitleMedium(context),
-      ),
-      subtitle: Text(
-        '${_formatGameDate(game.playedAt)} • ${_getGameTypeText(game.gameType)}',
-        style: Theme.of(context).textTheme.bodySmall ??
-            TextStyle().copyWith(
-              color: ThemeColors.getStatsCardText(context),
-            ),
-      ),
-      trailing: DesignSystem.modernChip(
-        context,
-        label: game.isWin ? 'Kazandın' : 'Kaybettin',
-        backgroundColor: game.isWin
-            ? ThemeColors.getSuccessColor(context).withValues(alpha: 0.1)
-            : ThemeColors.getErrorColor(context).withValues(alpha: 0.1),
-        isSelected: true,
-      ),
-    );
-  }
-
-  String _formatGameDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inMinutes < 1) {
-      return 'Az önce';
-    } else if (difference.inHours < 1) {
-      return '${difference.inMinutes} dakika önce';
-    } else if (difference.inDays < 1) {
-      return '${difference.inHours} saat önce';
-    } else {
-      return '${difference.inDays} gün önce';
-    }
-  }
-
-  String _getGameTypeText(String gameType) {
-    switch (gameType) {
-      case 'multiplayer':
-        return 'Çok Oyunculu';
-      default:
-        return 'Tek Oyuncu';
-    }
-  }
-}
-
-// Biyometri ayarları bölümü
-class _BiometricSettingsSection extends StatefulWidget {
-  const _BiometricSettingsSection();
-
-  @override
-  State<_BiometricSettingsSection> createState() =>
-      _BiometricSettingsSectionState();
-}
-
-class _BiometricSettingsSectionState extends State<_BiometricSettingsSection> {
-  bool _isBiometricEnabled = false;
-  bool _isLoading = false;
-  String _biometricType = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadBiometricStatus();
-  }
-
-  Future<void> _loadBiometricStatus() async {
-    try {
-      final isEnabled = await BiometricUserService.isUserBiometricEnabled();
-      if (mounted) {
-        setState(() {
-          _isBiometricEnabled = isEnabled;
-        });
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Biyometri durumu yükleme hatası: $e');
-      }
-    }
-  }
-
-  Future<void> _disableBiometric() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final success = await BiometricUserService.disableBiometric();
-
-      if (success) {
-        setState(() {
-          _isBiometricEnabled = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Biyometrik giriş devre dışı bırakıldı'),
-            backgroundColor: ThemeColors.getSuccessColor(context),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Biyometrik giriş devre dışı bırakılamadı'),
-            backgroundColor: ThemeColors.getErrorColor(context),
-          ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Hata: ${e.toString()}'),
-          backgroundColor: ThemeColors.getErrorColor(context),
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _enableBiometric() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // Biyometrik kimlik doğrulama iste
-      final authenticated = await BiometricService.authenticate(
-        localizedReason:
-            'Biyometrik giriş etkinleştirmek için kimlik doğrulama gerekli',
-        useErrorDialogs: true,
-      );
-
-      if (authenticated) {
-        // Kurulumu kaydet
-        final success = await BiometricUserService.saveBiometricSetup();
-
-        if (success) {
-          if (mounted) {
-            setState(() {
-              _isBiometricEnabled = true;
-            });
-
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content:
-                    const Text('Biyometrik giriş başarıyla etkinleştirildi'),
-                backgroundColor: ThemeColors.getSuccessColor(context),
+  Widget _buildWeeklyChart(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    
+    // Sample data for weekly activity
+    final weekData = [
+      {'day': 'Pzt', 'value': 0.8},
+      {'day': 'Sal', 'value': 0.6},
+      {'day': 'Çar', 'value': 0.9},
+      {'day': 'Per', 'value': 0.7},
+      {'day': 'Cum', 'value': 0.5},
+      {'day': 'Cmt', 'value': 0.4},
+      {'day': 'Paz', 'value': 0.3},
+    ];
+    
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: weekData.map((data) {
+        final value = data['value'] as double;
+        return Column(
+          children: [
+            Container(
+              width: isSmallScreen ? 16.0 : 20.0,
+              height: isSmallScreen ? 40.0 : 60.0,
+              decoration: BoxDecoration(
+                color: ThemeColors.getPrimaryButtonColor(context),
+                borderRadius: BorderRadius.circular(4.0),
               ),
-            );
-          }
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Biyometrik kurulumu kaydetme başarısız'),
-              backgroundColor: ThemeColors.getErrorColor(context),
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  width: double.infinity,
+                  height: (isSmallScreen ? 40.0 : 60.0) * value,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                ),
+              ),
             ),
-          );
-        }
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Hata: ${e.toString()}'),
-          backgroundColor: ThemeColors.getErrorColor(context),
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
+            SizedBox(height: 4.0),
+            Text(
+              data['day'] as String,
+              style: TextStyle(
+                color: ThemeColors.getSecondaryText(context),
+                fontSize: isSmallScreen ? 10.0 : 12.0,
+              ),
+            ),
+          ],
+        );
+      }).toList(),
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildDailyChallengesSection(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final sectionTitleFontSize = isSmallScreen ? 16.0 : 20.0;
+
     return Container(
       margin: const EdgeInsets.all(DesignSystem.spacingM),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(DesignSystem.spacingM),
+            padding: EdgeInsets.symmetric(
+                horizontal: isSmallScreen
+                    ? DesignSystem.spacingS
+                    : DesignSystem.spacingM,
+                vertical: DesignSystem.spacingS),
             child: Text(
-              'Güvenlik Ayarları',
+              'Günlük Görevler',
               style: DesignSystem.getTitleLarge(context).copyWith(
                 color: Colors.white,
+                fontSize: sectionTitleFontSize,
+                fontWeight: FontWeight.w700,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    offset: const Offset(0, 2),
+                    blurRadius: 4,
+                  ),
+                ],
               ),
             ),
           ),
-          DesignSystem.card(
-            context,
+          Container(
+            decoration: BoxDecoration(
+              color: ThemeColors.getCardBackground(context),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
             child: Padding(
-              padding: const EdgeInsets.all(DesignSystem.spacingM),
+              padding: EdgeInsets.all(isSmallScreen
+                  ? DesignSystem.spacingS
+                  : DesignSystem.spacingM),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.security,
-                        color: ThemeColors.getGreen(context),
-                        size: 24,
+                  _buildDailyChallengeItem(
+                    context,
+                    icon: Icons.quiz,
+                    title: 'Günlük Quiz',
+                    description: 'Bugün 3 quiz tamamla',
+                    progress: 2,
+                    target: 3,
+                    reward: '25 Puan',
+                    color: ThemeColors.getSuccessColor(context),
+                  ),
+                  SizedBox(height: DesignSystem.spacingM),
+                  _buildDailyChallengeItem(
+                    context,
+                    icon: Icons.security,
+                    title: 'Düello Mücadelesi',
+                    description: 'Bugün 2 düello kazan',
+                    progress: 1,
+                    target: 2,
+                    reward: '50 Puan',
+                    color: Colors.purple,
+                  ),
+                  SizedBox(height: DesignSystem.spacingM),
+                  _buildDailyChallengeItem(
+                    context,
+                    icon: Icons.people,
+                    title: 'Sosyal Bağ',
+                    description: 'Bugün 1 arkadaş ekle',
+                    progress: 0,
+                    target: 1,
+                    reward: '15 Puan',
+                    color: ThemeColors.getInfoColor(context),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDailyChallengeItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String description,
+    required int progress,
+    required int target,
+    required String reward,
+    required Color color,
+  }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final progressPercentage = progress / target;
+
+    return Container(
+      padding: EdgeInsets.all(
+          isSmallScreen ? DesignSystem.spacingS : DesignSystem.spacingM),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+        border: Border.all(
+          color: color.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: 20,
+              color: color,
+            ),
+          ),
+          SizedBox(width: DesignSystem.spacingM),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: ThemeColors.getText(context),
+                    fontSize: isSmallScreen ? 14.0 : 16.0,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  description,
+                  style: TextStyle(
+                    color: ThemeColors.getSecondaryText(context),
+                    fontSize: isSmallScreen ? 12.0 : 14.0,
+                  ),
+                ),
+                SizedBox(height: DesignSystem.spacingS),
+                Row(
+                  children: [
+                    Expanded(
+                      child: LinearProgressIndicator(
+                        value: progressPercentage,
+                        backgroundColor: ThemeColors.getCardBackground(context)
+                            .withValues(alpha: 0.3),
+                        valueColor: AlwaysStoppedAnimation<Color>(color),
                       ),
-                      const SizedBox(width: DesignSystem.spacingM),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Biyometrik Giriş',
-                              style: DesignSystem.getTitleMedium(context),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _isBiometricEnabled
-                                  ? 'Biyometrik kimlik doğrulama etkin'
-                                  : 'Biyometrik kimlik doğrulama devre dışı',
-                              style:
-                                  DesignSystem.getBodyMedium(context).copyWith(
-                                color: ThemeColors.getSecondaryText(context),
-                              ),
-                            ),
-                          ],
+                    ),
+                    SizedBox(width: DesignSystem.spacingS),
+                    Text(
+                      '$progress/$target',
+                      style: TextStyle(
+                        color: ThemeColors.getText(context),
+                        fontSize: isSmallScreen ? 12.0 : 14.0,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Ödül: $reward',
+                  style: TextStyle(
+                    color: color,
+                    fontSize: isSmallScreen ? 11.0 : 12.0,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSimpleMenuButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(DesignSystem.spacingL),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  ThemeColors.getPrimaryButtonColor(context)
+                      .withValues(alpha: 0.2),
+                  ThemeColors.getPrimaryButtonColor(context)
+                      .withValues(alpha: 0.1),
+                ],
+              ),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: ThemeColors.getPrimaryButtonColor(context)
+                    .withValues(alpha: 0.3),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: ThemeColors.getPrimaryButtonColor(context)
+                      .withValues(alpha: 0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(
+              icon,
+              size: 28,
+              color: ThemeColors.getPrimaryButtonColor(context),
+            ),
+          ),
+          const SizedBox(height: DesignSystem.spacingS),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: ThemeColors.getText(context),
+                  fontWeight: FontWeight.w500,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getRarityColor(String rarity) {
+    switch (rarity) {
+      case 'Sıradan':
+        return Colors.grey;
+      case 'Nadir':
+        return Colors.blue;
+      case 'Destansı':
+        return Colors.purple;
+      case 'Efsanevi':
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Future<void> _showThemeSelectionDialog(BuildContext context) async {
+    // If theme is remembered and we have a last selected theme, use it directly
+    if (_rememberTheme && _lastSelectedTheme != null) {
+      final result = await Navigator.of(context).pushNamed(
+        AppRoutes.quiz,
+        arguments: {
+          'category': _lastSelectedTheme == 'Tümü' ? null : _lastSelectedTheme
+        },
+      );
+
+      // Show quiz completion summary if quiz was completed
+      if (result != null && result is int && mounted) {
+        await _showQuizCompletionSummary(context, result);
+      }
+      return;
+    }
+
+    final themes = [
+      {
+        'name': 'Tümü',
+        'description': 'Tüm çevre konularından karışık sorular',
+        'icon': Icons.all_inclusive,
+        'color': ThemeColors.getPrimaryButtonColor(context),
+      },
+      {
+        'name': 'Enerji',
+        'description': 'Enerji tasarrufu ve sürdürülebilir enerji',
+        'icon': Icons.flash_on,
+        'color': Colors.yellow,
+      },
+      {
+        'name': 'Su',
+        'description': 'Su tasarrufu ve su kaynakları yönetimi',
+        'icon': Icons.water_drop,
+        'color': Colors.blue,
+      },
+      {
+        'name': 'Orman',
+        'description': 'Orman koruma ve ağaçlandırma çalışmaları',
+        'icon': Icons.forest,
+        'color': Colors.green,
+      },
+      {
+        'name': 'Geri Dönüşüm',
+        'description': 'Atık yönetimi ve geri dönüşüm',
+        'icon': Icons.recycling,
+        'color': Colors.orange,
+      },
+      {
+        'name': 'Ulaşım',
+        'description': 'Çevre dostu ulaşım alternatifleri',
+        'icon': Icons.directions_car,
+        'color': Colors.purple,
+      },
+      {
+        'name': 'Tüketim',
+        'description': 'Sürdürülebilir tüketim alışkanlıkları',
+        'icon': Icons.shopping_bag,
+        'color': Colors.pink,
+      },
+    ];
+
+    bool rememberThemeChoice = _rememberTheme;
+
+    final selectedTheme = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(DesignSystem.spacingL),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: ThemeColors.getGradientColors(context),
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Row(
+                  children: [
+                    Icon(
+                      Icons.quiz,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                    const SizedBox(width: DesignSystem.spacingM),
+                    Expanded(
+                      child: Text(
+                        'Quiz Teması Seç',
+                        style: DesignSystem.getHeadlineSmall(context).copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      Switch(
-                        value: _isBiometricEnabled,
-                        onChanged: _isLoading
-                            ? null
-                            : (value) {
-                                if (value) {
-                                  // Biyometriyi etkinleştir
-                                  _enableBiometric();
-                                } else {
-                                  // Biyometriyi devre dışı bırak
-                                  _disableBiometric();
-                                }
-                              },
-                        activeThumbColor: ThemeColors.getGreen(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: DesignSystem.spacingM),
+                Text(
+                  'Hangi çevre temasında yarışmak istersiniz?',
+                  style: DesignSystem.getBodyLarge(context).copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: DesignSystem.spacingL),
+
+                // Theme Options
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: themes.map((theme) {
+                        return Container(
+                          margin: const EdgeInsets.only(
+                              bottom: DesignSystem.spacingM),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            borderRadius:
+                                BorderRadius.circular(DesignSystem.radiusM),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              width: 1,
+                            ),
+                          ),
+                          child: InkWell(
+                            onTap: () =>
+                                Navigator.pop(context, theme['name'] as String),
+                            borderRadius:
+                                BorderRadius.circular(DesignSystem.radiusM),
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.all(DesignSystem.spacingM),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(
+                                        DesignSystem.spacingS),
+                                    decoration: BoxDecoration(
+                                      color: (theme['color'] as Color)
+                                          .withValues(alpha: 0.2),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      theme['icon'] as IconData,
+                                      color: theme['color'] as Color,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: DesignSystem.spacingM),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          theme['name'] as String,
+                                          style: DesignSystem.getTitleMedium(
+                                                  context)
+                                              .copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          theme['description'] as String,
+                                          style:
+                                              DesignSystem.getBodySmall(context)
+                                                  .copyWith(
+                                            color: Colors.white
+                                                .withValues(alpha: 0.7),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.chevron_right,
+                                    color: Colors.white.withValues(alpha: 0.5),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: DesignSystem.spacingM),
+
+                // Remember Theme Checkbox
+                Container(
+                  padding: const EdgeInsets.all(DesignSystem.spacingM),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                  ),
+                  child: Row(
+                    children: [
+                      Checkbox(
+                        value: rememberThemeChoice,
+                        onChanged: (value) {
+                          setState(() {
+                            rememberThemeChoice = value ?? false;
+                          });
+                        },
+                        activeColor: Colors.white,
+                        checkColor: ThemeColors.getPrimaryButtonColor(context),
+                      ),
+                      const SizedBox(width: DesignSystem.spacingS),
+                      Expanded(
+                        child: Text(
+                          'Bu temayı hatırla (sonraki quiz\'lerde otomatik seçilsin)',
+                          style: DesignSystem.getBodySmall(context).copyWith(
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: DesignSystem.spacingM),
-                  const BiometricSetupStatus(),
-                  const SizedBox(height: DesignSystem.spacingM),
-                  if (_isBiometricEnabled)
-                    Container(
-                      padding: const EdgeInsets.all(DesignSystem.spacingM),
-                      decoration: BoxDecoration(
-                        color: ThemeColors.getInfoColor(context)
-                            .withValues(alpha: 0.1),
-                        borderRadius:
-                            BorderRadius.circular(DesignSystem.radiusS),
-                        border: Border.all(
-                          color: ThemeColors.getInfoColor(context)
-                              .withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.info,
-                              color: ThemeColors.getInfoColor(context),
-                              size: 20),
-                          const SizedBox(width: DesignSystem.spacingS),
-                          Expanded(
-                            child: Text(
-                              'Giriş yaparken biyometrik kimlik doğrulama seçeneği görünecektir.',
-                              style: Theme.of(context).textTheme.bodySmall ??
-                                  TextStyle().copyWith(
-                                    color: ThemeColors.getInfoColor(context),
-                                  ),
-                            ),
-                          ),
-                        ],
-                      ),
+                ),
+
+                const SizedBox(height: DesignSystem.spacingL),
+
+                // Cancel Button
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'İptal',
+                    style: DesignSystem.getLabelLarge(context).copyWith(
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
-                ],
-              ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-// Registration check screen widget
-class _RegistrationCheckScreen extends StatelessWidget {
-  const _RegistrationCheckScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: ThemeColors.getGradientColors(context),
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: DesignSystem.loadingIndicator(
-          context,
-          message: 'Profil kontrol ediliyor...',
         ),
       ),
     );
+
+    if (selectedTheme != null && mounted) {
+      // Save theme preference
+      await _saveThemePreference(selectedTheme, rememberThemeChoice);
+
+      // Navigate to quiz with selected theme and handle result
+      final result = await Navigator.of(context).pushNamed(
+        AppRoutes.quiz,
+        arguments: {'category': selectedTheme == 'Tümü' ? null : selectedTheme},
+      );
+
+      // Show quiz completion summary if quiz was completed
+      if (result != null && result is int && mounted) {
+        await _showQuizCompletionSummary(context, result);
+      }
+    }
   }
-}
 
-// Unregistered user screen widget
-class _UnregisteredUserScreen extends StatelessWidget {
-  const _UnregisteredUserScreen();
+  Future<void> _showQuizCompletionSummary(
+      BuildContext context, int score) async {
+    // Update user progress and achievements
+    AchievementService().updateProgress(
+      completedQuizzes: 1,
+    );
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Consumer<LanguageProvider>(
-          builder: (context, languageProvider, child) {
-            return DesignSystem.semantic(
-              context,
-              label: 'Profil sayfası başlığı',
-              child: Text(AppLocalizations.profile,
-                  style: TextStyle(color: ThemeColors.getAppBarText(context))),
-            );
-          },
+    // Send a reminder notification for next quiz
+    await NotificationService.scheduleQuizReminderNotificationStatic();
+
+    // Get wrong answer categories from quiz logic
+    // We need to access the quiz logic through the bloc
+    // For now, we'll show a simple summary
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(DesignSystem.radiusL),
         ),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: DesignSystem.elevationS,
-        iconTheme: IconThemeData(color: ThemeColors.getAppBarIcon(context)),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: ThemeColors.getGradientColors(context),
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+        child: Container(
+          padding: const EdgeInsets.all(DesignSystem.spacingL),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: ThemeColors.getGradientColors(context),
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(DesignSystem.radiusL),
           ),
-        ),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(DesignSystem.spacingXl),
-            child: DesignSystem.glassCard(
-              context,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Row(
                 children: [
                   Icon(
-                    Icons.person_add,
-                    size: 80,
-                    color: ThemeColors.getPrimaryButtonColor(context),
+                    score >= 12
+                        ? Icons.emoji_events
+                        : score >= 8
+                            ? Icons.thumb_up
+                            : Icons.lightbulb,
+                    color: Colors.white,
+                    size: 32,
                   ),
-                  const SizedBox(height: DesignSystem.spacingL),
-                  Text(
-                    'Kayıt Olmanız Gerekiyor',
-                    style: AppTheme.getGameTitleStyle(context),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: DesignSystem.spacingM),
-                  Text(
-                    'Profil sayfasına erişebilmek için önce kayıt olmanız gerekiyor. Kayıt olarak daha fazla özellikten yararlanabilirsiniz.',
-                    style: DesignSystem.getBodyLarge(context).copyWith(
-                      color: ThemeColors.getStatsCardText(context),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: DesignSystem.spacingXl),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                              builder: (context) => const RegisterPage()),
-                          (route) => false,
-                        );
-                      },
-                      icon: const Icon(Icons.person_add),
-                      label: const Text('Kayıt Ol'),
-                      style: DesignSystem.getPrimaryButtonStyle(context),
-                    ),
-                  ),
-                  const SizedBox(height: DesignSystem.spacingS),
-                  SizedBox(
-                    width: double.infinity,
-                    child: TextButton.icon(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      icon: const Icon(Icons.arrow_back),
-                      label: const Text('Geri Dön'),
-                      style: DesignSystem.getTextButtonStyle(context),
+                  const SizedBox(width: DesignSystem.spacingM),
+                  Expanded(
+                    child: Text(
+                      'Quiz Tamamlandı!',
+                      style: DesignSystem.getHeadlineSmall(context).copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
+              const SizedBox(height: DesignSystem.spacingM),
+
+              // Score Display
+              Container(
+                padding: const EdgeInsets.all(DesignSystem.spacingM),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      '$score/15',
+                      style: DesignSystem.getDisplaySmall(context).copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: DesignSystem.spacingS),
+                    Text(
+                      score >= 12
+                          ? 'Harika! Çevre konusunda çok bilgilisiniz!'
+                          : score >= 8
+                              ? 'Güzel! Daha fazla öğrenebilirsiniz.'
+                              : 'Çalışmaya devam edin, çevre bilinciniz artacak!',
+                      style: DesignSystem.getBodyMedium(context).copyWith(
+                        color: Colors.white.withValues(alpha: 0.9),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: DesignSystem.spacingL),
+
+              // Learning Suggestion
+              Container(
+                padding: const EdgeInsets.all(DesignSystem.spacingM),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.lightbulb_outline,
+                          color: Colors.yellow,
+                          size: 20,
+                        ),
+                        const SizedBox(width: DesignSystem.spacingS),
+                        Text(
+                          'Öğrenme Önerisi',
+                          style: DesignSystem.getTitleMedium(context).copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: DesignSystem.spacingS),
+                    Text(
+                      'Bir sonraki quiz\'de yanlış cevapladığınız konulardan daha fazla soru çıkacak. Bu sayede zayıf olduğunuz alanlarda gelişebilirsiniz!',
+                      style: DesignSystem.getBodySmall(context).copyWith(
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: DesignSystem.spacingL),
+
+              // Action Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        'Ana Sayfa',
+                        style: DesignSystem.getLabelLarge(context).copyWith(
+                          color: Colors.white.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: DesignSystem.spacingS),
+                  if (_rememberTheme)
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _showThemeSelectionDialog(context);
+                        },
+                        child: Text(
+                          'Tema Değiştir',
+                          style: DesignSystem.getLabelLarge(context).copyWith(
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(width: DesignSystem.spacingS),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _showThemeSelectionDialog(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white.withValues(alpha: 0.2),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(DesignSystem.radiusM),
+                        ),
+                      ),
+                      child: const Text('Tekrar Oyna'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

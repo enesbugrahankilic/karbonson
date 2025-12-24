@@ -9,6 +9,7 @@ import '../widgets/custom_form_field.dart';
 import '../theme/theme_colors.dart';
 import 'login_page.dart';
 import 'tutorial_page.dart';
+import 'profile_page.dart';
 
 class RegisterPageRefactored extends StatefulWidget {
   const RegisterPageRefactored({super.key});
@@ -119,7 +120,7 @@ class _RegisterPageRefactoredState extends State<RegisterPageRefactored> {
       message: 'Kayıt başarılı! Yönlendiriliyorsunuz...',
     );
 
-    // Navigate to tutorial page after a short delay
+    // Navigate to profile page after a short delay
     await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
@@ -127,7 +128,7 @@ class _RegisterPageRefactoredState extends State<RegisterPageRefactored> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const TutorialPage(),
+        builder: (context) => const ProfilePage(),
       ),
     );
   }

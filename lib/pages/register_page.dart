@@ -8,7 +8,9 @@ import '../services/firebase_auth_service.dart';
 import '../services/email_usage_service.dart';
 import '../models/user_data.dart';
 import '../theme/theme_colors.dart';
+import '../widgets/language_selector_button.dart';
 import 'tutorial_page.dart';
+import 'profile_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -265,13 +267,13 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           );
 
-          // Yeni kullanıcıları tutorial sayfasına yönlendir
+          // Yeni kullanıcıları profil sayfasına yönlendir
           if (!mounted) return;
 
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => const TutorialPage(),
+              builder: (context) => const ProfilePage(),
             ),
           );
         }
@@ -341,6 +343,9 @@ class _RegisterPageState extends State<RegisterPage> {
         title: Text('Kayıt Ol',
             style: TextStyle(color: ThemeColors.getAppBarText(context))),
         iconTheme: IconThemeData(color: ThemeColors.getAppBarIcon(context)),
+        actions: [
+          const LanguageSelectorButton(),
+        ],
       ),
       body: Container(
         decoration: const BoxDecoration(

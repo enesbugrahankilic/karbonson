@@ -8,9 +8,7 @@ import '../pages/uid_debug_page.dart';
 import '../pages/two_factor_auth_setup_page.dart';
 import '../services/firebase_auth_service.dart';
 import '../widgets/home_button.dart';
-import '../services/biometric_service.dart';
-import '../services/biometric_user_service.dart';
-import '../widgets/biometric_setup_widget.dart';
+
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -164,20 +162,7 @@ class SettingsPage extends StatelessWidget {
                           _showSecuritySettings(context);
                         },
                       ),
-                      const Divider(),
-                      ListTile(
-                        leading: Icon(
-                          Icons.fingerprint,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        title: const Text('Biyometrik Kimlik Doğrulama'),
-                        subtitle:
-                            const Text('Parmak izi veya yüz tanıma ile giriş'),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                        onTap: () {
-                          _showBiometricSettings(context);
-                        },
-                      ),
+
                     ],
                   ),
                 ),
@@ -543,34 +528,5 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  void _showBiometricSettings(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Biyometrik Kimlik Doğrulama'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            BiometricSetupStatus(),
-            SizedBox(height: 16),
-            Text(
-              'Güvenlik ipuçları:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text('• Biyometrik veriler cihazınızda güvenle saklanır'),
-            Text('• Sadece kimlik doğrulama için kullanılır'),
-            Text('• İstediğiniz zaman devre dışı bırakabilirsiniz'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Kapat'),
-          ),
-        ],
-      ),
-    );
-  }
+
 }

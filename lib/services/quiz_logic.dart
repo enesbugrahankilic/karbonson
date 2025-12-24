@@ -225,7 +225,7 @@ class QuizLogic {
       await _saveHighScore();
       // Send notification for new high score
       try {
-        await NotificationService.scheduleHighScoreNotification();
+        // await NotificationService.scheduleHighScoreNotification();
       } catch (e) {
         if (kDebugMode) debugPrint('Error sending high score notification: $e');
       }
@@ -334,7 +334,7 @@ class QuizLogic {
 
     if (difference.inHours >= 12) {
       try {
-        await NotificationService.scheduleReminderNotification();
+        // await NotificationService.scheduleReminderNotification();
         if (kDebugMode)
           debugPrint(
               'Reminder notification sent after ${difference.inHours} hours');

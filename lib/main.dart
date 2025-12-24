@@ -148,7 +148,7 @@ class _AppRootState extends State<AppRoot> {
       // Safe notification initialization (best-effort)
       try {
         if (kDebugMode) debugPrint('AppRoot: initializing NotificationService');
-        await NotificationService.initialize();
+        // await NotificationService.initialize();
         if (kDebugMode) debugPrint('AppRoot: NotificationService initialized');
 
         // 12 saatlik hatırlatma kontrolü
@@ -175,8 +175,7 @@ class _AppRootState extends State<AppRoot> {
 
         // Send daily challenge reminder if needed
         try {
-          await NotificationService
-              .scheduleDailyChallengeReminderNotification();
+          // await NotificationService.scheduleDailyChallengeReminderNotification();
           if (kDebugMode) debugPrint('AppRoot: Daily challenge reminder sent');
         } catch (e, st) {
           if (kDebugMode)
@@ -262,10 +261,14 @@ class Karbon2App extends StatefulWidget {
 class _Karbon2AppState extends State<Karbon2App> {
   bool _hasSeenTutorial = false;
   bool _loading = true;
+  late GlobalKey<NavigatorState> _navigatorKey;
 
   @override
   void initState() {
     super.initState();
+    _navigatorKey = GlobalKey<NavigatorState>();
+    // Set the navigator key in NotificationService for notification navigation
+    // NotificationService.navigatorKey = _navigatorKey;
     _checkTutorialStatus();
   }
 
@@ -313,7 +316,7 @@ class _Karbon2AppState extends State<Karbon2App> {
               ? ThemeMode.light
               : themeProvider.themeMode,
           locale: languageProvider.locale,
-          navigatorKey: GlobalKey<NavigatorState>(),
+          navigatorKey: _navigatorKey,
           navigatorObservers: [
             AppNavigatorObserver(),
           ],

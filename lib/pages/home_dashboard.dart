@@ -6,6 +6,7 @@ import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../core/navigation/app_router.dart';
 import '../widgets/home_button.dart';
+import '../widgets/language_selector_button.dart';
 import '../services/notification_service.dart';
 import '../services/achievement_service.dart';
 
@@ -138,6 +139,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                         ),
                       ),
                     ),
+                    const LanguageSelectorButton(),
                   ],
                 ),
               ),
@@ -171,13 +173,28 @@ class _HomeDashboardState extends State<HomeDashboard>
 
                         SizedBox(height: isSmallScreen ? 20.0 : 24.0),
 
+                        // Duel Mode Section
+                        _buildDuelModeSection(context),
+
+                        SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
                         // Progress & Achievements Section
                         _buildProgressSection(context),
 
                         SizedBox(height: isSmallScreen ? 20.0 : 24.0),
 
+                        // Multiplayer Section
+                        _buildMultiplayerSection(context),
+
+                        SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
                         // Daily Challenges Section
                         _buildDailyChallengesSection(context),
+
+                        SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
+                        // Statistics Summary Section
+                        _buildStatisticsSummarySection(context),
 
                         SizedBox(height: isSmallScreen ? 20.0 : 24.0),
 
@@ -1013,6 +1030,780 @@ class _HomeDashboardState extends State<HomeDashboard>
     );
   }
 
+  Widget _buildStatisticsSummarySection(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final sectionTitleFontSize = isSmallScreen ? 16.0 : 20.0;
+
+    return Container(
+      margin: const EdgeInsets.all(DesignSystem.spacingM),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: isSmallScreen
+                    ? DesignSystem.spacingS
+                    : DesignSystem.spacingM,
+                vertical: DesignSystem.spacingS),
+            child: Text(
+              'İstatistik Özeti',
+              style: DesignSystem.getTitleLarge(context).copyWith(
+                color: Colors.white,
+                fontSize: sectionTitleFontSize,
+                fontWeight: FontWeight.w700,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    offset: const Offset(0, 2),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: ThemeColors.getCardBackground(context),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(isSmallScreen
+                  ? DesignSystem.spacingS
+                  : DesignSystem.spacingM),
+              child: Column(
+                children: [
+                  // Quick Stats Grid
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: DesignSystem.spacingS,
+                    crossAxisSpacing: DesignSystem.spacingS,
+                    childAspectRatio: isSmallScreen ? 1.5 : 1.8,
+                    children: [
+                      _buildStatCard(
+                        context,
+                        icon: Icons.timer,
+                        title: 'Toplam Süre',
+                        value: '12.5 saat',
+                        subtitle: 'Son 30 gün',
+                        color: ThemeColors.getInfoColor(context),
+                      ),
+                      _buildStatCard(
+                        context,
+                        icon: Icons.local_fire_department,
+                        title: 'En Uzun Seri',
+                        value: '7 gün',
+                        subtitle: 'Günlük quiz',
+                        color: ThemeColors.getSuccessColor(context),
+                      ),
+                      _buildStatCard(
+                        context,
+                        icon: Icons.trending_up,
+                        title: 'En Yüksek Skor',
+                        value: '14/15',
+                        subtitle: 'Enerji konusu',
+                        color: ThemeColors.getWarningColor(context),
+                      ),
+                      _buildStatCard(
+                        context,
+                        icon: Icons.people,
+                        title: 'Düello Kazanma',
+                        value: '%68',
+                        subtitle: '15 düello',
+                        color: Colors.purple,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: DesignSystem.spacingM),
+                  
+                  // Weekly Progress Chart
+                  Container(
+                    padding: EdgeInsets.all(DesignSystem.spacingM),
+                    decoration: BoxDecoration(
+                      color: ThemeColors.getPrimaryButtonColor(context)
+                          .withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Haftalık Aktivite',
+                          style: TextStyle(
+                            color: ThemeColors.getText(context),
+                            fontSize: isSmallScreen ? 14.0 : 16.0,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: DesignSystem.spacingS),
+                        _buildWeeklyChart(context),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String value,
+    required String subtitle,
+    required Color color,
+  }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    return Container(
+      padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+        border: Border.all(
+          color: color.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            color: color,
+            size: isSmallScreen ? 20.0 : 24.0,
+          ),
+          SizedBox(height: 4.0),
+          Text(
+            value,
+            style: TextStyle(
+              color: ThemeColors.getText(context),
+              fontSize: isSmallScreen ? 14.0 : 16.0,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          Text(
+            title,
+            style: TextStyle(
+              color: ThemeColors.getSecondaryText(context),
+              fontSize: isSmallScreen ? 10.0 : 12.0,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            subtitle,
+            style: TextStyle(
+              color: ThemeColors.getSecondaryText(context),
+              fontSize: isSmallScreen ? 8.0 : 10.0,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDuelModeSection(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    return Container(
+      margin: const EdgeInsets.all(DesignSystem.spacingM),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: isSmallScreen
+                    ? DesignSystem.spacingS
+                    : DesignSystem.spacingM,
+                vertical: DesignSystem.spacingS),
+            child: Text(
+              'Düello Modu',
+              style: DesignSystem.getTitleLarge(context).copyWith(
+                color: Colors.white,
+                fontSize: isSmallScreen ? 18.0 : 22.0,
+                fontWeight: FontWeight.w700,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    offset: const Offset(0, 2),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.all(
+                      isSmallScreen ? DesignSystem.spacingM : DesignSystem.spacingL),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.purple,
+                        Colors.deepPurple,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.purple.withValues(alpha: 0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: InkWell(
+                    onTap: () => _showDuelOptionsDialog(context),
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.security,
+                          size: isSmallScreen ? 48.0 : 64.0,
+                          color: Colors.white,
+                        ),
+                        SizedBox(height: DesignSystem.spacingM),
+                        Text(
+                          'Hızlı Düello',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: isSmallScreen ? 18.0 : 22.0,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: DesignSystem.spacingS),
+                        Text(
+                          'Arkadaşınla hızlı yarış!',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: isSmallScreen ? 14.0 : 16.0,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: DesignSystem.spacingM),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: DesignSystem.spacingM,
+                            vertical: DesignSystem.spacingS,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                          ),
+                          child: Text(
+                            'Başlat',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: isSmallScreen ? 14.0 : 16.0,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: isSmallScreen ? 12.0 : 16.0),
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.all(
+                      isSmallScreen ? DesignSystem.spacingM : DesignSystem.spacingL),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.orange,
+                        Colors.red,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.orange.withValues(alpha: 0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: InkWell(
+                    onTap: () => Navigator.of(context).pushNamed(AppRoutes.duel),
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.people,
+                          size: isSmallScreen ? 48.0 : 64.0,
+                          color: Colors.white,
+                        ),
+                        SizedBox(height: DesignSystem.spacingM),
+                        Text(
+                          'Oda Oluştur',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: isSmallScreen ? 18.0 : 22.0,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: DesignSystem.spacingS),
+                        Text(
+                          'Kalıcı düello odası',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: isSmallScreen ? 14.0 : 16.0,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: DesignSystem.spacingM),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: DesignSystem.spacingM,
+                            vertical: DesignSystem.spacingS,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                          ),
+                          child: Text(
+                            'Oluştur',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: isSmallScreen ? 14.0 : 16.0,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMultiplayerSection(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    return Container(
+      margin: const EdgeInsets.all(DesignSystem.spacingM),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: isSmallScreen
+                    ? DesignSystem.spacingS
+                    : DesignSystem.spacingM,
+                vertical: DesignSystem.spacingS),
+            child: Text(
+              'Çoklu Oynama',
+              style: DesignSystem.getTitleLarge(context).copyWith(
+                color: Colors.white,
+                fontSize: isSmallScreen ? 18.0 : 22.0,
+                fontWeight: FontWeight.w700,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    offset: const Offset(0, 2),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(
+                isSmallScreen ? DesignSystem.spacingM : DesignSystem.spacingL),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.teal,
+                  Colors.cyan,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.teal.withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: InkWell(
+              onTap: () => Navigator.of(context).pushNamed(AppRoutes.multiplayerLobby),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.group,
+                        size: isSmallScreen ? 48.0 : 64.0,
+                        color: Colors.white,
+                      ),
+                      SizedBox(width: DesignSystem.spacingM),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Takım Oyunu',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: isSmallScreen ? 18.0 : 22.0,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              textAlign: TextAlign.left,
+                            ),
+                            SizedBox(height: DesignSystem.spacingS),
+                            Text(
+                              '4 kişiye kadar oyna!',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.9),
+                                fontSize: isSmallScreen ? 14.0 : 16.0,
+                              ),
+                              textAlign: TextAlign.left,
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: DesignSystem.spacingM,
+                          vertical: DesignSystem.spacingS,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                        ),
+                        child: Text(
+                          'Oyna',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: isSmallScreen ? 14.0 : 16.0,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: DesignSystem.spacingM),
+                  Container(
+                    padding: EdgeInsets.all(DesignSystem.spacingS),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildMultiplayerFeature(
+                          context,
+                          icon: Icons.add_circle,
+                          text: 'Oda Oluştur',
+                          color: Colors.white,
+                        ),
+                        _buildMultiplayerFeature(
+                          context,
+                          icon: Icons.login,
+                          text: 'Koda Katıl',
+                          color: Colors.white,
+                        ),
+                        _buildMultiplayerFeature(
+                          context,
+                          icon: Icons.people,
+                          text: 'Aktif Odalar',
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMultiplayerFeature(
+    BuildContext context, {
+    required IconData icon,
+    required String text,
+    required Color color,
+  }) {
+    return Column(
+      children: [
+        Icon(
+          icon,
+          color: color,
+          size: 20,
+        ),
+        SizedBox(height: 4),
+        Text(
+          text,
+          style: TextStyle(
+            color: color,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  void _showDuelOptionsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(DesignSystem.spacingXl),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: ThemeColors.getGradientColors(context),
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.security,
+                    color: Colors.white,
+                    size: 32,
+                  ),
+                  const SizedBox(width: DesignSystem.spacingM),
+                  Expanded(
+                    child: Text(
+                      'Düello Seçenekleri',
+                      style: DesignSystem.getHeadlineSmall(context).copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: DesignSystem.spacingL),
+              Text(
+                'Hangi düello türünü tercih edersiniz?',
+                style: DesignSystem.getBodyLarge(context).copyWith(
+                  color: Colors.white.withValues(alpha: 0.9),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: DesignSystem.spacingL),
+              Column(
+                children: [
+                  _buildDuelOptionButton(
+                    context,
+                    icon: Icons.flash_on,
+                    title: 'Hızlı Düello',
+                    description: '5 soru, 15 saniye süre',
+                    color: Colors.purple,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.of(context).pushNamed(AppRoutes.duel);
+                    },
+                  ),
+                  SizedBox(height: DesignSystem.spacingM),
+                  _buildDuelOptionButton(
+                    context,
+                    icon: Icons.people,
+                    title: 'Oda Düellosu',
+                    description: 'Kalıcı oda ile arkadaşınla oyna',
+                    color: Colors.orange,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.of(context).pushNamed(AppRoutes.duel);
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: DesignSystem.spacingL),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'İptal',
+                  style: DesignSystem.getLabelLarge(context).copyWith(
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDuelOptionButton(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String description,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(DesignSystem.spacingM),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.2),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(DesignSystem.spacingS),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: DesignSystem.spacingM),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: DesignSystem.getTitleMedium(context).copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    description,
+                    style: DesignSystem.getBodySmall(context).copyWith(
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: Colors.white.withValues(alpha: 0.5),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWeeklyChart(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    
+    // Sample data for weekly activity
+    final weekData = [
+      {'day': 'Pzt', 'value': 0.8},
+      {'day': 'Sal', 'value': 0.6},
+      {'day': 'Çar', 'value': 0.9},
+      {'day': 'Per', 'value': 0.7},
+      {'day': 'Cum', 'value': 0.5},
+      {'day': 'Cmt', 'value': 0.4},
+      {'day': 'Paz', 'value': 0.3},
+    ];
+    
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: weekData.map((data) {
+        final value = data['value'] as double;
+        return Column(
+          children: [
+            Container(
+              width: isSmallScreen ? 16.0 : 20.0,
+              height: isSmallScreen ? 40.0 : 60.0,
+              decoration: BoxDecoration(
+                color: ThemeColors.getPrimaryButtonColor(context),
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  width: double.infinity,
+                  height: (isSmallScreen ? 40.0 : 60.0) * value,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 4.0),
+            Text(
+              data['day'] as String,
+              style: TextStyle(
+                color: ThemeColors.getSecondaryText(context),
+                fontSize: isSmallScreen ? 10.0 : 12.0,
+              ),
+            ),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
   Widget _buildDailyChallengesSection(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
@@ -1550,7 +2341,7 @@ class _HomeDashboardState extends State<HomeDashboard>
     );
 
     // Send a reminder notification for next quiz
-    await NotificationService.scheduleQuizReminderNotification();
+    // await NotificationService.scheduleQuizReminderNotification();
 
     // Get wrong answer categories from quiz logic
     // We need to access the quiz logic through the bloc

@@ -22,7 +22,7 @@ import '../theme/app_theme.dart';
 import '../provides/language_provider.dart';
 import '../widgets/login_dialog.dart';
 import '../widgets/authentication_options_widget.dart';
-import '../widgets/biometric_status_card.dart';
+import '../widgets/language_selector_button.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -899,6 +899,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               tooltip: 'Oyun Yardımı',
             ),
           ),
+          const LanguageSelectorButton(),
         ],
       ),
       body: Container(
@@ -1080,46 +1081,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   animationDelay: 200,
                                 ),
                                 const SizedBox(height: DesignSystem.spacingM),
-
-                                // Biyometrik durum kartı (daha kompakt)
-                                Container(
-                                  margin: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  child: BiometricStatusCard(
-                                    onBiometricEnabled: () {
-                                      if (mounted) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: const Text(
-                                                'Biyometrik giriş başarıyla etkinleştirildi!'),
-                                            backgroundColor:
-                                                ThemeColors.getSuccessColor(
-                                                    context),
-                                            duration:
-                                                const Duration(seconds: 3),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                    onBiometricDisabled: () {
-                                      if (mounted) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: const Text(
-                                                'Biyometrik giriş devre dışı bırakıldı.'),
-                                            backgroundColor:
-                                                ThemeColors.getInfoColor(
-                                                    context),
-                                            duration:
-                                                const Duration(seconds: 3),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  ),
-                                ),
                               ],
                             ),
                           ),

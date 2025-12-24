@@ -4,11 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firebase_2fa_service.dart';
 import '../services/profile_service.dart';
-import '../services/biometric_user_service.dart';
 import '../theme/theme_colors.dart';
 import '../pages/forgot_password_page.dart';
 import '../pages/two_factor_auth_verification_page.dart';
-import 'biometric_setup_widget.dart';
 
 class LoginDialog extends StatefulWidget {
   const LoginDialog({super.key});
@@ -306,49 +304,7 @@ class _LoginDialogState extends State<LoginDialog> {
                 ),
               ),
 
-              const SizedBox(height: 16),
 
-              // Biyometrik giriş seçeneği
-              FutureBuilder<bool>(
-                future: BiometricUserService.isUserBiometricEnabled(),
-                builder: (context, snapshot) {
-                  final isBiometricEnabled = snapshot.data ?? false;
-
-                  if (!isBiometricEnabled) {
-                    return const SizedBox.shrink();
-                  }
-
-                  return Column(
-                    children: [
-                      const Divider(),
-                      const SizedBox(height: 8),
-                      Text(
-                        'veya',
-                        style: TextStyle(
-                          color: ThemeColors.getSecondaryText(context),
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      BiometricOnlyLoginWidget(
-                        onLoginSuccess: () {
-                          Navigator.of(context).pop(true);
-                        },
-                        onError: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  'Biyometrik giriş başarısız. Lütfen email/şifre ile giriş yapmayı deneyin.'),
-                              backgroundColor: Colors.orange,
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-                  );
-                },
-              ),
 
               const SizedBox(height: 8),
 

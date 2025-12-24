@@ -74,7 +74,7 @@ class DuelGameLogic extends ChangeNotifier {
 
     // Send game started notification
     final playerNames = room.players.map((p) => p.nickname).toList();
-    await NotificationService.showGameStartedNotification(
+    await NotificationService().showGameStartedNotification(
       gameMode: 'Düello Modu',
       playerNames: playerNames,
     );
@@ -340,7 +340,7 @@ class DuelGameLogic extends ChangeNotifier {
   }
 
   /// End the game
-  void _endGame() {
+  Future<void> _endGame() async {
     if (_currentRoom == null) return;
 
     _isGameActive = false;
@@ -388,7 +388,7 @@ class DuelGameLogic extends ChangeNotifier {
     }
 
     // Send game finished notification
-    NotificationService.showGameFinishedNotification(
+    await NotificationService().showGameFinishedNotification(
       winnerName: winnerName,
       gameMode: 'Düello Modu',
       score: winnerScore,

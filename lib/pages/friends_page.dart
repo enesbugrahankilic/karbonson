@@ -480,9 +480,9 @@ class _FriendsPageState extends State<FriendsPage>
             final fromUserId = requestData['fromUserId'] as String;
 
             // Send friend request accepted notification
-            await NotificationService.showFriendRequestAcceptedNotification(
-              acceptedByNickname: currentUser.displayName ?? 'Kullanıcı',
-              acceptedByUserId: currentUser.uid,
+            await NotificationService.showFriendRequestAcceptedNotificationStatic(
+              currentUser.displayName ?? 'Kullanıcı',
+              currentUser.uid,
             );
           }
 

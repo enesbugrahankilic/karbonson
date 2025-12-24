@@ -96,10 +96,9 @@ class GameInvitationService {
 
       // Send game invitation notification (local notification for now)
       // TODO: Implement FCM push notification to target user
-      await NotificationService.showGameInvitationNotification(
-        fromNickname: inviterNickname,
-        roomHostNickname: roomData['hostNickname'] as String,
-        roomCode: roomId,
+      await NotificationService.showGameInvitationNotificationStatic(
+        inviterNickname,
+        'Multiplayer Game',
       );
 
       return GameInvitationResult(

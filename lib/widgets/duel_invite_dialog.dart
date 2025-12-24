@@ -489,9 +489,9 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
         final friend = _friends.firstWhere((f) => f.id == friendId);
 
         // Send duel invitation notification
-        await NotificationService.showDuelInvitationNotification(
-          fromNickname: widget.hostNickname,
-          roomCode: widget.roomId,
+        await NotificationService.showDuelInvitationNotificationStatic(
+          widget.hostNickname,
+          widget.roomId,
         );
 
         if (kDebugMode) {

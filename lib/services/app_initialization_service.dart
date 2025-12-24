@@ -230,7 +230,7 @@ class AppInitializationService {
       if (kDebugMode) debugPrint('🔔 Initializing notifications...');
 
       // Initialize notifications with error isolation
-      await NotificationService.initialize().timeout(
+      await NotificationService.initializeStatic().timeout(
         const Duration(seconds: 5),
         onTimeout: () {
           if (kDebugMode) debugPrint('⏰ Notification initialization timed out');

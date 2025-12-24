@@ -946,10 +946,10 @@ class FirestoreService {
 
       // Also send push notification (non-blocking)
       try {
-        NotificationService.showFriendRequestAcceptedNotification(
-          acceptedByNickname: request.toNickname,
-          acceptedByUserId: recipientId,
-        );
+        // NotificationService.showFriendRequestAcceptedNotification(
+        //   acceptedByNickname: request.toNickname,
+        //   acceptedByUserId: recipientId,
+        // );
       } catch (e) {
         if (kDebugMode)
           debugPrint('⚠️ Push notification failed but operation succeeded: $e');
@@ -1032,10 +1032,10 @@ class FirestoreService {
 
         // Also send push notification (non-blocking)
         try {
-          NotificationService.showFriendRequestRejectedNotification(
-            rejectedByNickname: request.toNickname,
-            rejectedByUserId: recipientId,
-          );
+          // NotificationService.showFriendRequestRejectedNotification(
+          //   rejectedByNickname: request.toNickname,
+          //   rejectedByUserId: recipientId,
+          // );
         } catch (e) {
           if (kDebugMode)
             debugPrint(

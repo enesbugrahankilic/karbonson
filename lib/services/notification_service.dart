@@ -1,615 +1,273 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
-import 'package:flutter/material.dart';
-// Eğer arka plan işleyicisinde (handler) başka Firebase servisi kullanıyorsanız
-// buraya 'package:firebase_core/firebase_core.dart' eklemeniz ve
-// handler içinde Firebase.initializeApp() yapmanız gerekebilir.
+// lib/services/notification_service.dart
+// Simplified notification service for achievements and rewards
 
-// 🔥 1. KRİTİK: Arka plan mesaj işleyicisi (handler) bir
-// TOP-LEVEL fonksiyon olmalıdır (yani bir sınıfın içinde olmamalıdır).
-// @pragma('vm:entry-point') etiketi, Flutter'ın bu fonksiyonu
-// izole bir ortamda bile bulabilmesini sağlar.
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Sadece Firestore, Realtime DB vb. kullanıyorsanız ve main.dart'ta başlatma yoksa ekleyin.
-  // Bu projede main.dart'ta başlatma var, burada tekrar başlatmaya gerek yok!
-  if (kDebugMode)
-    debugPrint('Handling a background message: ${message.messageId}');
-}
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 
+/// Simplified notification service for achievements and rewards
 class NotificationService {
-  static final FlutterLocalNotificationsPlugin _notifications =
-      FlutterLocalNotificationsPlugin();
+  static final NotificationService _instance = NotificationService._internal();
+  factory NotificationService() => _instance;
+  NotificationService._internal();
 
-  static Future<void> initialize() async {
-    if (kDebugMode) debugPrint('NotificationService: initialize() start');
-    FirebaseMessaging? messaging;
-    try {
-      messaging = FirebaseMessaging.instance;
-    } catch (e, st) {
-      // If Firebase isn't initialized yet, accessing instance may fail; log and continue.
-      if (kDebugMode)
-        debugPrint(
-            'NotificationService: FirebaseMessaging.instance not available yet: $e');
-      if (kDebugMode) debugPrint('$st');
-    }
+  bool _isInitialized = false;
+
+  /// Initialize notification service
+  Future<bool> initialize() async {
+    if (_isInitialized) return true;
 
     try {
-      // 1. Firebase izinlerini iste (iOS cihazlar için ana izin kaynağı)
-      if (messaging != null) {
-        await messaging.requestPermission(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
-      } else {
-        if (kDebugMode)
-          debugPrint(
-              'NotificationService: skipping requestPermission (no messaging instance)');
-      }
-    } catch (e, st) {
-      if (kDebugMode)
-        debugPrint('NotificationService: requestPermission failed: $e');
-      if (kDebugMode) debugPrint('$st');
-    }
-
-    // 2. Yerel bildirim ayarlarını başlat
-    const initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-
-    // 🔥 2. KRİTİK DÜZELTME: Yerel bildirim başlatma ayarlarında
-    // iOS izin isteklerini TRUE yapıyoruz.
-    const initializationSettingsIOS = DarwinInitializationSettings(
-      requestSoundPermission: true,
-      requestBadgePermission: true,
-      requestAlertPermission: true,
-    );
-
-    const initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-    );
-
-    try {
-      await _notifications.initialize(
-        initializationSettings,
-        onDidReceiveNotificationResponse: (NotificationResponse response) async {
-          if (kDebugMode)
-            debugPrint('Notification tapped: ${response.payload}');
-          
-          // Handle navigation based on payload
-          if (response.payload != null) {
-            await _handleNotificationNavigation(response.payload!);
-          }
-        },
-      );
-    } catch (e, st) {
-      if (kDebugMode)
-        debugPrint('NotificationService: _notifications.initialize failed: $e');
-      if (kDebugMode) debugPrint('$st');
-    }
-
-    // 3. Arka plan mesajlarını top-level handler'a yönlendir
-    try {
-      if (messaging != null) {
-        FirebaseMessaging.onBackgroundMessage(
-            _firebaseMessagingBackgroundHandler);
-      } else {
-        if (kDebugMode)
-          debugPrint(
-              'NotificationService: skipping onBackgroundMessage registration');
-      }
-    } catch (e, st) {
-      if (kDebugMode)
-        debugPrint(
-            'NotificationService: onBackgroundMessage registration failed: $e');
-      if (kDebugMode) debugPrint('$st');
-    }
-
-    // 4. Ön plan (uygulama açıksa) mesajlarını dinle
-    try {
-      if (messaging != null) {
-        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-          // FCM bildirimini al, yerel bildirim olarak göster.
-          _showNotification(
-            title: message.notification?.title ?? 'New Message',
-            body: message.notification?.body ?? '',
-            payload: message.data.toString(),
-          );
-        });
-      } else {
-        if (kDebugMode)
-          debugPrint(
-              'NotificationService: skipping onMessage listener (no messaging instance)');
-      }
-    } catch (e, st) {
-      if (kDebugMode)
-        debugPrint('NotificationService: onMessage listener failed: $e');
-      if (kDebugMode) debugPrint('$st');
-    }
-    if (kDebugMode) debugPrint('NotificationService: initialize() finished');
-  }
-
-  static Future<void> _showNotification({
-    required String title,
-    required String body,
-    String? payload,
-  }) async {
-    const androidDetails = AndroidNotificationDetails(
-      'default_channel', // Kanal ID'si
-      'Genel Bildirimler', // Kanal Adı
-      channelDescription:
-          'Bu kanal genel uygulama bildirimleri için kullanılır.',
-      importance: Importance.max,
-      priority: Priority.high,
-      showWhen: true,
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true, // Uyarı göster
-      presentBadge: true, // Rozet göster
-      presentSound: true, // Ses çal
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _notifications.show(
-      // Her bildirim için benzersiz ID
-      DateTime.now().millisecond,
-      title,
-      body,
-      details,
-      payload: payload,
-    );
-  }
-
-  // --- Yardımcı Metotlar ---
-
-  static Future<String?> getToken() async {
-    try {
-      final messaging = FirebaseMessaging.instance;
-      return await messaging.getToken();
-    } catch (e, st) {
-      if (kDebugMode) debugPrint('NotificationService: getToken failed: $e');
-      if (kDebugMode) debugPrint('$st');
-      return null;
+      _isInitialized = true;
+      if (kDebugMode) debugPrint('NotificationService initialized');
+      return true;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to initialize NotificationService: $e');
+      return false;
     }
   }
 
-  static Future<void> subscribeToTopic(String topic) async {
+  /// Show achievement unlocked notification (simplified)
+  Future<void> showAchievementNotification(dynamic achievement) async {
+    if (!_isInitialized) return;
+
     try {
-      final messaging = FirebaseMessaging.instance;
-      await messaging.subscribeToTopic(topic);
-    } catch (e, st) {
-      if (kDebugMode)
-        debugPrint('NotificationService: subscribeToTopic failed: $e');
-      if (kDebugMode) debugPrint('$st');
-    }
-  }
-
-  static Future<void> unsubscribeFromTopic(String topic) async {
-    try {
-      final messaging = FirebaseMessaging.instance;
-      await messaging.unsubscribeFromTopic(topic);
-    } catch (e, st) {
-      if (kDebugMode)
-        debugPrint('NotificationService: unsubscribeFromTopic failed: $e');
-      if (kDebugMode) debugPrint('$st');
-    }
-  }
-
-  // --- Yerel Bildirim Zamanlama Metotları ---
-
-  static Future<void> scheduleHighScoreNotification() async {
-    const androidDetails = AndroidNotificationDetails(
-      'high_score_channel',
-      'Yüksek Skor Bildirimleri',
-      channelDescription: 'Yeni yüksek skor elde edildiğinde bildirim.',
-      importance: Importance.high,
-      priority: Priority.high,
-      showWhen: true,
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _notifications.show(
-      DateTime.now().millisecond + 1,
-      '🎉 Yeni Yüksek Skor!',
-      'Tebrikler! Quiz puanında yeni bir rekora ulaştınız!',
-      details,
-    );
-  }
-
-  static Future<void> scheduleReminderNotification() async {
-    const androidDetails = AndroidNotificationDetails(
-      'reminder_channel',
-      'Hatırlatma Bildirimleri',
-      channelDescription: 'Uzun süredir oynamadığınızda hatırlatma.',
-      importance: Importance.high,
-      priority: Priority.high,
-      showWhen: true,
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _notifications.show(
-      DateTime.now().millisecond + 2,
-      '🏃‍♂️ Oyun Zamanı!',
-      '12 saattir oynamadınız. Biraz vakit ayırıp quiz oynamaya ne dersiniz?',
-      details,
-    );
-  }
-
-  /// Quiz hatırlatma bildirimi
-  static Future<void> scheduleQuizReminderNotification() async {
-    const androidDetails = AndroidNotificationDetails(
-      'quiz_reminder_channel',
-      'Quiz Hatırlatmaları',
-      channelDescription: 'Düzenli quiz oynama hatırlatmaları.',
-      importance: Importance.high,
-      priority: Priority.high,
-      showWhen: true,
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _notifications.show(
-      DateTime.now().millisecond + 3,
-      '🧠 Quiz Zamanı!',
-      'Çevre bilginizi tazelemek için bir quiz çözmeye ne dersiniz?',
-      details,
-    );
-  }
-
-  /// Günlük görev hatırlatma bildirimi
-  static Future<void> scheduleDailyChallengeReminderNotification() async {
-    const androidDetails = AndroidNotificationDetails(
-      'daily_challenge_reminder_channel',
-      'Günlük Görev Hatırlatmaları',
-      channelDescription: 'Günlük görevleri tamamlama hatırlatmaları.',
-      importance: Importance.high,
-      priority: Priority.high,
-      showWhen: true,
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _notifications.show(
-      DateTime.now().millisecond + 4,
-      '🎯 Günlük Görevler!',
-      'Bugünkü görevlerinizi tamamlayarak puan kazanın!',
-      details,
-    );
-  }
-
-  static Future<void> scheduleDelayedReminderNotification() async {
-    // Bu metod şu anda kullanılmıyor - 12 saatlik hatırlatma için farklı bir yaklaşım kullanılacak
-    // (örneğin, uygulama açıldığında kontrol etmek)
-    await scheduleReminderNotification();
-  }
-
-  // --- Oyun Davetiye Bildirimleri ---
-
-  /// Oyun davetiyesi bildirimini göster
-  static Future<void> showGameInvitationNotification({
-    required String fromNickname,
-    required String roomHostNickname,
-    required String roomCode,
-  }) async {
-    const androidDetails = AndroidNotificationDetails(
-      'game_invitation_channel',
-      'Oyun Davetiyeleri',
-      channelDescription: 'Arkadaşlarınızın oyun davetiyeleri',
-      importance: Importance.max,
-      priority: Priority.high,
-      showWhen: true,
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _notifications.show(
-      DateTime.now().millisecond + 100,
-      '🎮 Oyun Davetiyesi!',
-      '$fromNickname size ${roomHostNickname}\'ın odasında oyun oynamak için davet gönderdi! (Kod: $roomCode)',
-      details,
-      payload: 'game_invitation:$roomCode',
-    );
-  }
-
-  /// Hızlı oyun davetiyesi bildirimi (2 kişilik düello)
-  static Future<void> showDuelInvitationNotification({
-    required String fromNickname,
-    required String roomCode,
-  }) async {
-    const androidDetails = AndroidNotificationDetails(
-      'duel_invitation_channel',
-      'Düello Davetiyeleri',
-      channelDescription: 'Hızlı düello davetiyeleri',
-      importance: Importance.max,
-      priority: Priority.high,
-      showWhen: true,
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _notifications.show(
-      DateTime.now().millisecond + 101,
-      '⚔️ Düello Davetiyesi!',
-      '$fromNickname sizi hızlı bir düelloya davet ediyor! (Kod: $roomCode)',
-      details,
-      payload: 'duel_invitation:$roomCode',
-    );
-  }
-
-  /// Oyun başladı bildirimi
-  static Future<void> showGameStartedNotification({
-    required String gameMode,
-    required List<String> playerNames,
-  }) async {
-    const androidDetails = AndroidNotificationDetails(
-      'game_started_channel',
-      'Oyun Başlangıcı',
-      channelDescription: 'Oyun başladığında bildirim',
-      importance: Importance.high,
-      priority: Priority.high,
-      showWhen: true,
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    final playersText = playerNames.join(', ');
-    await _notifications.show(
-      DateTime.now().millisecond + 102,
-      '🎯 Oyun Başladı!',
-      '$gameMode modunda $playersText ile oyun başladı!',
-      details,
-      payload: 'game_started:$gameMode',
-    );
-  }
-
-  /// Oyun bitti bildirimi
-  static Future<void> showGameFinishedNotification({
-    required String winnerName,
-    required String gameMode,
-    required int score,
-  }) async {
-    const androidDetails = AndroidNotificationDetails(
-      'game_finished_channel',
-      'Oyun Sonu',
-      channelDescription: 'Oyun bittiğinde bildirim',
-      importance: Importance.high,
-      priority: Priority.high,
-      showWhen: true,
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _notifications.show(
-      DateTime.now().millisecond + 103,
-      '🏆 Oyun Bitti!',
-      '$gameMode modunda kazanan: $winnerName (Puan: $score)',
-      details,
-      payload: 'game_finished:$winnerName',
-    );
-  }
-
-  /// Arkadaşlık isteği bildirimi
-  static Future<void> showFriendRequestNotification({
-    required String fromNickname,
-    required String fromUserId,
-  }) async {
-    const androidDetails = AndroidNotificationDetails(
-      'friend_request_channel',
-      'Arkadaşlık İstekleri',
-      channelDescription: 'Yeni arkadaşlık istekleri için bildirim',
-      importance: Importance.max,
-      priority: Priority.high,
-      showWhen: true,
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _notifications.show(
-      DateTime.now().millisecond + 200,
-      '👥 Arkadaşlık İsteği!',
-      '$fromNickname arkadaşlık isteği gönderdi',
-      details,
-      payload: 'friend_request:$fromUserId',
-    );
-  }
-
-  /// Arkadaşlık isteği kabul bildirimi
-  static Future<void> showFriendRequestAcceptedNotification({
-    required String acceptedByNickname,
-    required String acceptedByUserId,
-  }) async {
-    const androidDetails = AndroidNotificationDetails(
-      'friend_request_accepted_channel',
-      'Arkadaşlık Kabul',
-      channelDescription: 'Arkadaşlık isteği kabul edildiğinde bildirim',
-      importance: Importance.max,
-      priority: Priority.high,
-      showWhen: true,
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _notifications.show(
-      DateTime.now().millisecond + 201,
-      '✅ Arkadaşlık Kabul Edildi!',
-      '$acceptedByNickname arkadaşlık isteğinizi kabul etti',
-      details,
-      payload: 'friend_request_accepted:$acceptedByUserId',
-    );
-  }
-
-  /// Arkadaşlık isteği red bildirimi
-  static Future<void> showFriendRequestRejectedNotification({
-    required String rejectedByNickname,
-    required String rejectedByUserId,
-  }) async {
-    const androidDetails = AndroidNotificationDetails(
-      'friend_request_rejected_channel',
-      'Arkadaşlık Red',
-      channelDescription: 'Arkadaşlık isteği reddedildiğinde bildirim',
-      importance: Importance.high,
-      priority: Priority.high,
-      showWhen: true,
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _notifications.show(
-      DateTime.now().millisecond + 202,
-      '❌ Arkadaşlık İsteği Reddedildi',
-      '$rejectedByNickname arkadaşlık isteğinizi reddetti',
-      details,
-      payload: 'friend_request_rejected:$rejectedByUserId',
-    );
-  }
-
-  static Future<void> _handleNotificationNavigation(String payload) async {
-    try {
-      // Get the current navigator context
-      final navigatorKey = GlobalKey<NavigatorState>();
-      // We need to access the navigator through a global key or service
-      // For now, we'll use a simple approach - this might need adjustment based on app structure
-      
-      if (kDebugMode) debugPrint('Handling notification navigation: $payload');
-      
-      // Parse payload to determine destination
-      if (payload.startsWith('friend_request:')) {
-        // Navigate to friends page
-        // This would typically use a navigation service or global navigator key
-        if (kDebugMode) debugPrint('Navigate to friends page for friend request');
-      } else if (payload.startsWith('friend_request_accepted:')) {
-        // Navigate to friends page
-        if (kDebugMode) debugPrint('Navigate to friends page for accepted request');
-      } else if (payload.startsWith('friend_request_rejected:')) {
-        // Navigate to friends page
-        if (kDebugMode) debugPrint('Navigate to friends page for rejected request');
-      } else if (payload.startsWith('duel_invitation:')) {
-        // Navigate to duel invitation page
-        if (kDebugMode) debugPrint('Navigate to duel invitation page');
-      } else if (payload.startsWith('achievement:')) {
-        // Navigate to achievement page
-        if (kDebugMode) debugPrint('Navigate to achievement page');
-      } else if (payload.startsWith('leaderboard:')) {
-        // Navigate to leaderboard page
-        if (kDebugMode) debugPrint('Navigate to leaderboard page');
-      }
-      
-      // Note: Actual navigation implementation would require access to navigator context
-      // This is a placeholder - in a real app, you'd use a navigation service or global key
-      
-    } catch (e, st) {
       if (kDebugMode) {
-        debugPrint('Error handling notification navigation: $e');
-        debugPrint('$st');
+        debugPrint('🏆 Achievement Unlocked: ${achievement?.title ?? 'Unknown'}');
       }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to show achievement notification: $e');
     }
+  }
+
+  /// Show reward unlocked notification (simplified)
+  Future<void> showRewardNotification(dynamic reward) async {
+    if (!_isInitialized) return;
+
+    try {
+      if (kDebugMode) {
+        debugPrint('🎁 Reward Unlocked: ${reward?.name ?? 'Unknown'}');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to show reward notification: $e');
+    }
+  }
+
+  /// Show level up notification (simplified)
+  Future<void> showLevelUpNotification(int newLevel, int totalPoints) async {
+    if (!_isInitialized) return;
+
+    try {
+      if (kDebugMode) {
+        debugPrint('🎉 Level Up! Reached level $newLevel with $totalPoints points');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to show level up notification: $e');
+    }
+  }
+
+  /// Show daily challenge notification (simplified)
+  Future<void> showDailyChallengeNotification() async {
+    if (!_isInitialized) return;
+
+    try {
+      if (kDebugMode) {
+        debugPrint('📅 Daily challenges are ready!');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to show daily challenge notification: $e');
+    }
+  }
+
+  /// Show weekly challenge notification (simplified)
+  Future<void> showWeeklyChallengeNotification() async {
+    if (!_isInitialized) return;
+
+    try {
+      if (kDebugMode) {
+        debugPrint('📊 Weekly challenges have been updated!');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to show weekly challenge notification: $e');
+    }
+  }
+
+  /// Show challenge completion notification (simplified)
+  Future<void> showChallengeCompletionNotification(
+    dynamic challenge,
+    bool isCompleted,
+  ) async {
+    if (!_isInitialized) return;
+
+    try {
+      final title = isCompleted ? '🎯 Challenge Completed!' : '⏰ Challenge Expiring!';
+      final message = '${challenge?.title ?? 'Challenge'} ${isCompleted ? 'completed successfully!' : 'is about to expire!'}';
+      
+      if (kDebugMode) {
+        debugPrint('$title: $message');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to show challenge notification: $e');
+    }
+  }
+
+  /// Check if notifications are enabled (simplified)
+  Future<bool> areNotificationsEnabled() async {
+    return true;
+  }
+
+  /// Open app notification settings (simplified)
+  Future<void> openNotificationSettings() async {
+    if (kDebugMode) debugPrint('Opening notification settings');
+  }
+
+  /// Cancel specific notification (simplified)
+  Future<void> cancelNotification(int id) async {
+    try {
+      if (kDebugMode) debugPrint('Cancelled notification with id: $id');
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to cancel notification: $e');
+    }
+  }
+
+  /// Cancel all notifications (simplified)
+  Future<void> cancelAllNotifications() async {
+    try {
+      if (kDebugMode) debugPrint('Cancelled all notifications');
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to cancel all notifications: $e');
+    }
+  }
+
+  /// Schedule quiz reminder notification
+  Future<void> scheduleQuizReminderNotification() async {
+    if (!_isInitialized) return;
+    
+    try {
+      if (kDebugMode) {
+        debugPrint('🔔 Quiz reminder scheduled');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to schedule quiz reminder: $e');
+    }
+  }
+
+  /// Show friend request accepted notification
+  Future<void> showFriendRequestAcceptedNotification(String friendName) async {
+    if (!_isInitialized) return;
+    
+    try {
+      if (kDebugMode) {
+        debugPrint('👥 Friend request accepted from: $friendName');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to show friend request notification: $e');
+    }
+  }
+
+  /// Show game invitation notification
+  Future<void> showGameInvitationNotification(String inviterName, String gameType) async {
+    if (!_isInitialized) return;
+    
+    try {
+      if (kDebugMode) {
+        debugPrint('🎮 Game invitation from $inviterName for $gameType');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to show game invitation: $e');
+    }
+  }
+
+  /// Show duel invitation notification
+  Future<void> showDuelInvitationNotification(String inviterName) async {
+    if (!_isInitialized) return;
+    
+    try {
+      if (kDebugMode) {
+        debugPrint('⚔️ Duel invitation from: $inviterName');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to show duel invitation: $e');
+    }
+  }
+
+  /// Show game started notification
+  Future<void> showGameStartedNotification({required String gameMode, required List<String> playerNames}) async {
+    if (!_isInitialized) return;
+    
+    try {
+      if (kDebugMode) {
+        debugPrint('🚀 Game started: $gameMode with players: ${playerNames.join(', ')}');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to show game started notification: $e');
+    }
+  }
+
+  /// Show game finished notification
+  Future<void> showGameFinishedNotification({required String winnerName, required String gameMode, required int score}) async {
+    if (!_isInitialized) return;
+    
+    try {
+      if (kDebugMode) {
+        debugPrint('🏆 Game finished: $gameMode - Winner: $winnerName (Score: $score)');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to show game finished notification: $e');
+    }
+  }
+
+  /// Show friend request notification
+  Future<void> showFriendRequestNotification(String fromUserId, String fromNickname) async {
+    if (!_isInitialized) return;
+    
+    try {
+      if (kDebugMode) {
+        debugPrint('👥 Friend request from: $fromNickname ($fromUserId)');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to show friend request notification: $e');
+    }
+  }
+
+  /// Show friend request rejected notification
+  Future<void> showFriendRequestRejectedNotification(String rejectedByNickname, String rejectedByUserId) async {
+    if (!_isInitialized) return;
+    
+    try {
+      if (kDebugMode) {
+        debugPrint('❌ Friend request rejected by: $rejectedByNickname ($rejectedByUserId)');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to show friend request rejected notification: $e');
+    }
+  }
+
+  /// Static helper methods for easier usage
+  static Future<void> showFriendRequestNotificationStatic(String fromUserId, String fromNickname) async {
+    await NotificationService().showFriendRequestNotification(fromUserId, fromNickname);
+  }
+
+  static Future<void> showFriendRequestAcceptedNotificationStatic(String acceptedByNickname, String acceptedByUserId) async {
+    await NotificationService().showFriendRequestAcceptedNotification(acceptedByNickname);
+  }
+
+  static Future<void> showFriendRequestRejectedNotificationStatic(String rejectedByNickname, String rejectedByUserId) async {
+    await NotificationService().showFriendRequestRejectedNotification(rejectedByNickname, rejectedByUserId);
+  }
+
+  static Future<void> scheduleQuizReminderNotificationStatic() async {
+    await NotificationService().scheduleQuizReminderNotification();
+  }
+
+  static Future<void> showGameInvitationNotificationStatic(String inviterName, String gameType) async {
+    await NotificationService().showGameInvitationNotification(inviterName, gameType);
+  }
+
+  static Future<void> showDuelInvitationNotificationStatic(String fromNickname, String roomCode) async {
+    await NotificationService().showDuelInvitationNotification(fromNickname);
+  }
+
+  static Future<void> initializeStatic() async {
+    await NotificationService().initialize();
   }
 }

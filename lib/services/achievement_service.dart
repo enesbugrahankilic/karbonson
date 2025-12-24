@@ -8,10 +8,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/achievement.dart';
 import '../models/user_progress.dart';
 import '../models/daily_challenge.dart';
+import '../models/reward_item.dart';
+import '../services/reward_service.dart';
+import '../models/reward_item.dart';
+import '../services/reward_service.dart';
 
 /// Achievement and progress tracking service
 class AchievementService {
   static final AchievementService _instance = AchievementService._internal();
+  final RewardService _rewardService = RewardService();
   factory AchievementService() => _instance;
   AchievementService._internal();
 
@@ -258,7 +263,11 @@ class AchievementService {
 
   /// Create daily challenges for the day
   List<DailyChallenge> _createDailyChallenges(DateTime date) {
-    return [
+    final challenges = <DailyChallenge>[];
+    final random = DateTime.now().millisecond % 4;
+    
+    // Base challenges - always include these
+    challenges.addAll([
       DailyChallenge(
         id: 'daily_quiz_${date.millisecondsSinceEpoch}',
         title: 'Günlük Quiz',
@@ -271,6 +280,8 @@ class AchievementService {
         date: date,
         isCompleted: false,
         expiresAt: date.add(const Duration(days: 1)),
+        difficulty: ChallengeDifficulty.easy,
+        icon: '🧠',
       ),
       DailyChallenge(
         id: 'daily_duel_${date.millisecondsSinceEpoch}',
@@ -284,21 +295,94 @@ class AchievementService {
         date: date,
         isCompleted: false,
         expiresAt: date.add(const Duration(days: 1)),
+        difficulty: ChallengeDifficulty.medium,
+        icon: '⚔️',
       ),
-      DailyChallenge(
-        id: 'daily_social_${date.millisecondsSinceEpoch}',
-        title: 'Sosyal Bağ',
-        description: 'Bugün 1 arkadaş ekle',
-        type: ChallengeType.social,
-        targetValue: 1,
-        currentValue: 0,
-        rewardPoints: 15,
-        rewardType: RewardType.points,
-        date: date,
-        isCompleted: false,
-        expiresAt: date.add(const Duration(days: 1)),
-      ),
-    ];
+    ]);
+    
+    // Variable challenges based on day
+    switch (random) {
+      case 0:
+        challenges.add(
+          DailyChallenge(
+            id: 'daily_social_${date.millisecondsSinceEpoch}',
+            title: 'Sosyal Bağ',
+            description: 'Bugün 1 arkadaş ekle',
+            type: ChallengeType.social,
+            targetValue: 1,
+            currentValue: 0,
+            rewardPoints: 15,
+            rewardType: RewardType.points,
+            date: date,
+            isCompleted: false,
+            expiresAt: date.add(const Duration(days: 1)),
+            difficulty: ChallengeDifficulty.easy,
+            icon: '👥',
+          ),
+        );
+        break;
+      case 1:
+        challenges.add(
+          DailyChallenge(
+            id: 'daily_multiplayer_${date.millisecondsSinceEpoch}',
+            title: 'Takım Ruhu',
+            description: 'Bugün 1 çok oyunculu maç kazan',
+            type: ChallengeType.multiplayer,
+            targetValue: 1,
+            currentValue: 0,
+            rewardPoints: 40,
+            rewardType: RewardType.points,
+            date: date,
+            isCompleted: false,
+            expiresAt: date.add(const Duration(days: 1)),
+            difficulty: ChallengeDifficulty.medium,
+            icon: '🤝',
+          ),
+        );
+        break;
+      case 2:
+        challenges.add(
+          DailyChallenge(
+            id: 'daily_speed_${date.millisecondsSinceEpoch}',
+            title: 'Hız Testi',
+            description: 'Bir soruyu 10 saniyede cevapla',
+            type: ChallengeType.special,
+            targetValue: 1,
+            currentValue: 0,
+            rewardPoints: 30,
+            rewardType: RewardType.feature,
+            rewardItem: 'hint_system',
+            date: date,
+            isCompleted: false,
+            expiresAt: date.add(const Duration(days: 1)),
+            difficulty: ChallengeDifficulty.hard,
+            icon: '⚡',
+          ),
+        );
+        break;
+      case 3:
+        challenges.add(
+          DailyChallenge(
+            id: 'daily_perfect_${date.millisecondsSinceEpoch}',
+            title: 'Mükemmeliyet',
+            description: 'Bir quizde %80+ doğruluk oranı yakala',
+            type: ChallengeType.quiz,
+            targetValue: 1,
+            currentValue: 0,
+            rewardPoints: 60,
+            rewardType: RewardType.avatar,
+            rewardItem: 'star_avatar',
+            date: date,
+            isCompleted: false,
+            expiresAt: date.add(const Duration(days: 1)),
+            difficulty: ChallengeDifficulty.hard,
+            icon: '💎',
+          ),
+        );
+        break;
+    }
+    
+    return challenges;
   }
 
   /// Update user progress
@@ -350,6 +434,9 @@ class AchievementService {
       // Award new achievements
       if (newAchievements.isNotEmpty) {
         await _awardAchievements(userId, newAchievements);
+        
+        // Check for unlockable rewards
+        await _checkForUnlockableRewards(newProgress);
       }
 
       // Update daily challenges
@@ -357,6 +444,7 @@ class AchievementService {
         userId: userId,
         completedQuizzes: completedQuizzes,
         duelWins: duelWins,
+        multiplayerWins: multiplayerWins,
         friendsCount: friendsCount,
       );
     } catch (e) {
@@ -486,6 +574,7 @@ class AchievementService {
     required String userId,
     int? completedQuizzes,
     int? duelWins,
+    int? multiplayerWins,
     int? friendsCount,
   }) async {
     try {
@@ -513,6 +602,13 @@ class AchievementService {
             case ChallengeType.duel:
               if (duelWins != null && duelWins > 0) {
                 challenge.currentValue = (challenge.currentValue + duelWins)
+                    .clamp(0, challenge.targetValue);
+                updated = true;
+              }
+              break;
+            case ChallengeType.multiplayer:
+              if (multiplayerWins != null && multiplayerWins > 0) {
+                challenge.currentValue = (challenge.currentValue + multiplayerWins)
                     .clamp(0, challenge.targetValue);
                 updated = true;
               }
@@ -599,6 +695,22 @@ class AchievementService {
       };
     } catch (e) {
       return {};
+    }
+  }
+
+  /// Check for unlockable rewards based on progress
+  Future<void> _checkForUnlockableRewards(UserProgress progress) async {
+    try {
+      final availableRewards = await _rewardService.getAvailableRewards(progress);
+      
+      for (final reward in availableRewards) {
+        await _rewardService.unlockReward(reward.id);
+        if (kDebugMode) {
+          debugPrint('Unlocked reward: ${reward.name} for user progress');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to check unlockable rewards: $e');
     }
   }
 

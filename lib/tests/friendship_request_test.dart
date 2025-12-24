@@ -181,25 +181,25 @@ void main() {
 
       try {
         // Test friend request notification
-        await NotificationService.showFriendRequestNotification(
-          fromNickname: 'TestUser',
-          fromUserId: 'test_user',
+        await NotificationService.showFriendRequestNotificationStatic(
+          'test_user',
+          'TestUser',
         );
 
         debugPrint('✅ Friend request notification test passed');
 
         // Test friend request accepted notification
-        await NotificationService.showFriendRequestAcceptedNotification(
-          acceptedByNickname: 'TestUser2',
-          acceptedByUserId: 'test_user_2',
+        await NotificationService.showFriendRequestAcceptedNotificationStatic(
+          'TestUser2',
+          'test_user_2',
         );
 
         debugPrint('✅ Friend request accepted notification test passed');
 
         // Test friend request rejected notification
-        await NotificationService.showFriendRequestRejectedNotification(
-          rejectedByNickname: 'TestUser3',
-          rejectedByUserId: 'test_user_3',
+        await NotificationService.showFriendRequestRejectedNotificationStatic(
+          'TestUser3',
+          'test_user_3',
         );
 
         debugPrint('✅ Friend request rejected notification test passed');
