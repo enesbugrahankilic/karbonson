@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provides/language_provider.dart';
 import '../services/language_service.dart';
+import '../enums/app_language.dart';
 import '../theme/theme_colors.dart';
 
 class LanguageSelectorButton extends StatelessWidget {

@@ -77,8 +77,15 @@ class SmsReminderService {
       }
 
       // En önemli görevi bul (en yakın zamanlı)
-      final nextTask = incompleteTasks.reduce((a, b) => 
-        a.scheduledTime.isBefore(b.scheduledTime) ? a : b);
+      if (incompleteTasks.isEmpty) {
+        return SmsReminderResult.failure('Tamamlanacak görev bulunamadı');
+      }
+      
+      final nextTask = incompleteTasks.fold<TaskReminder>(
+        incompleteTasks.first,
+        (task1, task2) => 
+          task2.scheduledTime.isBefore(task1.scheduledTime) ? task2 : task1,
+      );
 
       // SMS gönder
       final message = SmsTemplateService.generateDailyReminderMessage(nextTask, preferences.language);

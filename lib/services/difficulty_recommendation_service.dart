@@ -131,7 +131,7 @@ class DifficultyRecommendationService {
     
     final accuracyScores = recentQuizzes.map((quiz) => quiz['accuracy'] as double).toList();
     final totalAccuracy = accuracyScores.isNotEmpty 
-        ? accuracyScores.reduce((double a, double b) => a + b)
+        ? accuracyScores.fold<double>(0.0, (sum, score) => sum + score)
         : 0.0;
     final avgAccuracy = totalAccuracy / recentQuizzes.length;
 
@@ -259,10 +259,10 @@ class DifficultyRecommendationService {
     
     // Linear regression basit uygulaması
     final n = accuracyScores.length;
-    final sumX = List.generate(n, (i) => i).reduce((a, b) => a + b);
-    final sumY = accuracyScores.reduce((a, b) => a + b);
-    final sumXY = List.generate(n, (i) => i * accuracyScores[i]).reduce((a, b) => a + b);
-    final sumX2 = List.generate(n, (i) => i * i).reduce((a, b) => a + b);
+    final sumX = List.generate(n, (i) => i).fold<int>(0, (sum, value) => sum + value);
+    final sumY = accuracyScores.fold<double>(0.0, (sum, score) => sum + score);
+    final sumXY = List.generate(n, (i) => i * accuracyScores[i]).fold<double>(0.0, (sum, value) => sum + value);
+    final sumX2 = List.generate(n, (i) => i * i).fold<double>(0.0, (sum, value) => sum + value);
 
     final slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
     

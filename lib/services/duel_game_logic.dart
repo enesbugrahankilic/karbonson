@@ -261,13 +261,20 @@ class DuelGameLogic extends ChangeNotifier {
 
   /// Check if answer is correct
   bool _checkAnswer(String userAnswer) {
-    if (_currentQuestion == null) return false;
+    if (_currentQuestion == null || _currentQuestion!.options.isEmpty) return false;
 
     final userAnswerLower = userAnswer.toLowerCase().trim();
 
     // Find the option with the highest score (correct answer)
-    final correctOption =
-        _currentQuestion!.options.reduce((a, b) => a.score > b.score ? a : b);
+    final correctOption = _currentQuestion!.options.fold<Option?>(
+      null,
+      (maxOption, option) => maxOption == null || option.score > maxOption.score 
+          ? option 
+          : maxOption,
+    );
+    
+    if (correctOption == null) return false;
+    
     final correctAnswer = correctOption.text.toLowerCase().trim();
 
     // Direct match

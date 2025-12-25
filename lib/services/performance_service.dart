@@ -1,8 +1,10 @@
+
 // lib/services/performance_service.dart
 
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:collection';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -22,8 +24,8 @@ class PerformanceService {
 
   // Memory Management
   Timer? _memoryCleanupTimer;
-  final int _maxCacheSize = 50; // Maximum number of cached items
-  final int _optimizedCacheSize = 100; // Optimized cache size
+  int _maxCacheSize = 50; // Maximum number of cached items
+  int _optimizedCacheSize = 100; // Optimized cache size
 
   // Image Caching
   final Map<String, ImageCacheEntry> _imageCache = {};
