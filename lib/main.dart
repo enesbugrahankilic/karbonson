@@ -14,7 +14,6 @@ import 'services/ai_service.dart';
 import 'services/quiz_logic.dart';
 import 'services/profile_service.dart';
 import 'firebase_options.dart';
-import 'services/notification_service.dart';
 import 'services/authentication_state_service.dart';
 import 'services/firebase_auth_service.dart';
 import 'services/deep_linking_service.dart';
@@ -89,8 +88,9 @@ class _AppRootState extends State<AppRoot> {
 
     try {
       // Initialize Firebase safely (web uses options; native uses platform files)
-      if (kDebugMode)
+      if (kDebugMode) {
         debugPrint('AppRoot: initializing Firebase (kIsWeb=$kIsWeb)');
+      }
       if (kIsWeb) {
         await Firebase.initializeApp(
             options: DefaultFirebaseOptions.currentPlatform);
@@ -99,9 +99,10 @@ class _AppRootState extends State<AppRoot> {
           await Firebase.initializeApp();
         } on FirebaseException catch (fe) {
           if (fe.code == 'duplicate-app') {
-            if (kDebugMode)
+            if (kDebugMode) {
               debugPrint(
                   'AppRoot: duplicate-app during Firebase.initializeApp - ignoring.');
+            }
           } else {
             rethrow;
           }
@@ -110,14 +111,17 @@ class _AppRootState extends State<AppRoot> {
 
       // Initialize authentication persistence to keep users logged in
       try {
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint('AppRoot: initializing authentication persistence');
+        }
         await FirebaseAuthService.initializeAuthPersistence();
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint('AppRoot: Authentication persistence initialized');
+        }
       } catch (e, st) {
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint('AppRoot: Authentication persistence init failed: $e');
+        }
         if (kDebugMode) debugPrint('$st');
       }
 
@@ -128,20 +132,23 @@ class _AppRootState extends State<AppRoot> {
         await authStateService.initializeAuthState();
         if (kDebugMode) debugPrint('AppRoot: Authentication state restored');
       } catch (e, st) {
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint('AppRoot: Authentication state restoration failed: $e');
+        }
         if (kDebugMode) debugPrint('$st');
       }
 
       // Initialize deep linking service for password reset and 2FA flows
       try {
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint('AppRoot: initializing deep linking service');
+        }
         await DeepLinkingService().initialize();
         if (kDebugMode) debugPrint('AppRoot: Deep linking service initialized');
       } catch (e, st) {
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint('AppRoot: Deep linking service init failed: $e');
+        }
         if (kDebugMode) debugPrint('$st');
       }
 
@@ -154,16 +161,19 @@ class _AppRootState extends State<AppRoot> {
         // 12 saatlik hatırlatma kontrolü
         try {
           await QuizLogic().checkAndSendReminderNotification();
-          if (kDebugMode)
+          if (kDebugMode) {
             debugPrint('AppRoot: Reminder notification check completed');
+          }
         } catch (e, st) {
-          if (kDebugMode)
+          if (kDebugMode) {
             debugPrint('AppRoot: Reminder notification check failed: $e');
+          }
           if (kDebugMode) debugPrint('$st');
         }
       } catch (e, st) {
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint('AppRoot: NotificationService init failed: $e');
+        }
         if (kDebugMode) debugPrint('$st');
       }
 
@@ -178,13 +188,15 @@ class _AppRootState extends State<AppRoot> {
           // await NotificationService.scheduleDailyChallengeReminderNotification();
           if (kDebugMode) debugPrint('AppRoot: Daily challenge reminder sent');
         } catch (e, st) {
-          if (kDebugMode)
+          if (kDebugMode) {
             debugPrint('AppRoot: Daily challenge reminder failed: $e');
+          }
           if (kDebugMode) debugPrint('$st');
         }
       } catch (e, st) {
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint('AppRoot: AchievementService init failed: $e');
+        }
         if (kDebugMode) debugPrint('$st');
       }
 

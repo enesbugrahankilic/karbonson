@@ -2,10 +2,8 @@
 // Comprehensive test for email usage limitation functionality
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/email_usage_service.dart';
 import '../services/registration_service.dart';
-import '../models/user_data.dart';
 
 void main() {
   group('Email Usage Service Tests', () {

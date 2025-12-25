@@ -9,8 +9,9 @@ class ThemeProvider with ChangeNotifier {
   bool get isHighContrast => _isHighContrast;
 
   ThemeMode get themeMode {
-    if (_isHighContrast)
+    if (_isHighContrast) {
       return ThemeMode.light; // High contrast is always light
+    }
     return _isDarkMode ? ThemeMode.dark : ThemeMode.light;
   }
 

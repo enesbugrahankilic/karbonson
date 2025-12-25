@@ -11,11 +11,11 @@ class EmailOtpLoginWidget extends StatefulWidget {
   final bool showAsDialog;
 
   const EmailOtpLoginWidget({
-    Key? key,
+    super.key,
     this.onLoginSuccess,
     this.onError,
     this.showAsDialog = false,
-  }) : super(key: key);
+  });
 
   @override
   State<EmailOtpLoginWidget> createState() => _EmailOtpLoginWidgetState();

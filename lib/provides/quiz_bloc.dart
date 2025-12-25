@@ -15,11 +15,16 @@ abstract class QuizEvent extends Equatable {
 class LoadQuiz extends QuizEvent {
   final AppLanguage language;
   final String? category;
+  final DifficultyLevel? difficulty;
 
-  const LoadQuiz({this.language = AppLanguage.turkish, this.category});
+  const LoadQuiz({
+    this.language = AppLanguage.turkish,
+    this.category,
+    this.difficulty,
+  });
 
   @override
-  List<Object> get props => [language, category ?? ''];
+  List<Object> get props => [language, category ?? '', difficulty ?? ''];
 }
 
 class AnswerQuestion extends QuizEvent {
@@ -98,8 +103,11 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
       // Set language if provided
       await quizLogic.setLanguage(event.language);
 
-      // Start a new quiz and preload questions
-      await quizLogic.startNewQuiz(category: event.category);
+      // Start a new quiz and preload questions with difficulty support
+      await quizLogic.startNewQuiz(
+        category: event.category,
+        difficulty: event.difficulty,
+      );
       final questions = await quizLogic.getQuestions();
       emit(QuizLoaded(
         questions: questions,

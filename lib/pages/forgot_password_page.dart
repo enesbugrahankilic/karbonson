@@ -2,12 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../services/firebase_auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../theme/theme_colors.dart';
-import '../services/email_verification_service.dart';
 import '../services/email_otp_service.dart';
-import 'email_verification_and_password_reset_info_page.dart';
 import 'email_otp_verification_page.dart';
 
 /// Forgot Password Page with comprehensive email validation and auto-population

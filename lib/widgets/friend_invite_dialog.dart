@@ -271,12 +271,12 @@ class _FriendInviteDialogState extends State<FriendInviteDialog> {
                                               textToCopy: user.userId,
                                               successMessage:
                                                   'Kullanıcı ID\'si kopyalandı!',
+                                              iconSize: 14,
                                               child: Text(
                                                 '${user.userId.substring(0, 8)}...',
                                                 style: const TextStyle(
                                                     fontFamily: 'monospace'),
                                               ),
-                                              iconSize: 14,
                                             ),
                                           ),
                                         ],

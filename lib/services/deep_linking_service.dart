@@ -5,7 +5,6 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 

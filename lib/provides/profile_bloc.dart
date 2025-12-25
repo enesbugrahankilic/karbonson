@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/profile_data.dart';
-import '../models/user_data.dart';
 import '../services/profile_service.dart';
 
 // Events

@@ -3,10 +3,8 @@
 // Handles parallel initialization of all services for faster startup
 
 import 'dart:async';
-import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../firebase_options.dart';
 import 'authentication_state_service.dart';
 import 'deep_linking_service.dart';
@@ -135,8 +133,9 @@ class AppInitializationService {
           await Firebase.initializeApp();
         } on FirebaseException catch (fe) {
           if (fe.code == 'duplicate-app') {
-            if (kDebugMode)
+            if (kDebugMode) {
               debugPrint('⚠️ Firebase duplicate-app detected - ignoring');
+            }
           } else {
             rethrow;
           }
@@ -165,8 +164,9 @@ class AppInitializationService {
       await authStateService.initializeAuthState().timeout(
         const Duration(seconds: 5),
         onTimeout: () {
-          if (kDebugMode)
+          if (kDebugMode) {
             debugPrint('⏰ Authentication state initialization timed out');
+          }
           throw TimeoutException('Authentication initialization timeout');
         },
       );

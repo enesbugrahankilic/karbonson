@@ -6,10 +6,10 @@ class AIRecommendationWidget extends StatelessWidget {
   final VoidCallback onTap;
 
   const AIRecommendationWidget({
-    Key? key,
+    super.key,
     required this.recommendation,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

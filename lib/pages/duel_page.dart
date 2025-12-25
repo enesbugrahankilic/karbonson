@@ -95,8 +95,8 @@ class _DuelPageState extends State<DuelPage> {
                 CopyToClipboardWidget(
                   textToCopy: room.id,
                   successMessage: 'Oda kodu kopyalandı!',
-                  child: const Icon(Icons.copy, size: 16, color: Colors.white),
                   iconColor: Colors.white,
+                  child: const Icon(Icons.copy, size: 16, color: Colors.white),
                 ),
               ],
             ),

@@ -4,8 +4,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/scheduler.dart';
 import '../services/email_otp_service.dart';
 import '../theme/theme_colors.dart';
 import 'new_password_page.dart';
@@ -58,12 +57,12 @@ class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage>
     _startCountdown();
 
     // Auto-focus on code field
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_codeFocusNode);
     });
   }
 
-  late FocusNode _codeFocusNode = FocusNode();
+  late final FocusNode _codeFocusNode = FocusNode();
 
   void _startCountdown() {
     const duration = Duration(minutes: 5);

@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:karbonson/models/task_reminder.dart';
 import 'package:karbonson/models/user_preferences.dart';
 import 'package:karbonson/models/weekly_report.dart';
-import 'package:karbonson/services/sms_reminder_service.dart';
 import 'package:karbonson/services/sms_reminder_scheduler.dart';
 import 'package:karbonson/services/sms_template_service.dart';
 

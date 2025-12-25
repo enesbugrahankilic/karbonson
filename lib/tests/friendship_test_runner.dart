@@ -54,26 +54,27 @@ class FriendshipTestRunner {
 
     switch (testType) {
       case TestType.normalAcceptFlow:
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint('Normal Kabul Akışı Testi çalıştırılıyor...');
+        }
         result = await FriendshipTestUtils.testNormalAcceptFlow();
         break;
       case TestType.doubleClickProtection:
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint('Double-click Koruması Testi çalıştırılıyor...');
+        }
         result = await FriendshipTestUtils.testDoubleClickProtection();
         break;
       case TestType.unauthorizedAccess:
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint('Yetkisiz Erişim Koruması Testi çalıştırılıyor...');
+        }
         result = await FriendshipTestUtils.testUnauthorizedAccess();
         break;
     }
 
-    if (result != null) {
-      debugPrint('${result.toString()}');
+    debugPrint(result.toString());
     }
-  }
 
   /// Manuel test senaryoları için utility fonksiyonlar
   static Future<void> demonstrateUsage() async {

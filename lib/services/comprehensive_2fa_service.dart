@@ -4,7 +4,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -552,17 +551,19 @@ class Comprehensive2FAService {
       String userId) async {
     try {
       final userDoc = await _firestore.collection('users').doc(userId).get();
-      final data = userDoc.data() as Map<String, dynamic>?;
+      final data = userDoc.data();
 
       if (data == null) return [];
 
       final methods = <VerificationMethod>[];
       if (data['smsEnabled'] == true) methods.add(VerificationMethod.sms);
       if (data['totpEnabled'] == true) methods.add(VerificationMethod.totp);
-      if (data['hardwareTokenEnabled'] == true)
+      if (data['hardwareTokenEnabled'] == true) {
         methods.add(VerificationMethod.hardwareToken);
-      if (data['backupCodesEnabled'] == true)
+      }
+      if (data['backupCodesEnabled'] == true) {
         methods.add(VerificationMethod.backupCode);
+      }
 
       return methods;
     } catch (e) {

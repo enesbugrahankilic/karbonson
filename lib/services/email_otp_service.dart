@@ -510,7 +510,7 @@ class EmailOtpService {
       // Firestore'a SMS gönderim logu kaydet
       await _firestore
           .collection('sms_logs')
-          .doc('${phoneNumber}-${DateTime.now().millisecondsSinceEpoch}')
+          .doc('$phoneNumber-${DateTime.now().millisecondsSinceEpoch}')
           .set({
         'phoneNumber': phoneNumber,
         'code': code,

@@ -143,7 +143,7 @@ class _GameInvitationListState extends State<GameInvitationList> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 300,
       child: _isLoading
           ? const Center(child: CircularProgressIndicator())

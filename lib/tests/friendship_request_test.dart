@@ -2,7 +2,6 @@
 // Test file for the complete friendship request system
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
@@ -14,8 +13,6 @@ import '../services/presence_service.dart';
 
 // Import models
 import '../models/friendship_data.dart';
-import '../models/notification_data.dart';
-import '../models/user_data.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

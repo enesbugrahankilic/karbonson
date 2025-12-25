@@ -11,10 +11,10 @@ class BiometricOnlyLoginWidget extends StatefulWidget {
   final VoidCallback? onError;
 
   const BiometricOnlyLoginWidget({
-    Key? key,
+    super.key,
     this.onLoginSuccess,
     this.onError,
-  }) : super(key: key);
+  });
 
   @override
   State<BiometricOnlyLoginWidget> createState() =>
@@ -224,10 +224,10 @@ class BiometricStatusCard extends StatefulWidget {
   final VoidCallback? onBiometricDisabled;
 
   const BiometricStatusCard({
-    Key? key,
+    super.key,
     this.onBiometricEnabled,
     this.onBiometricDisabled,
-  }) : super(key: key);
+  });
 
   @override
   State<BiometricStatusCard> createState() => _BiometricStatusCardState();
@@ -386,7 +386,7 @@ class _BiometricStatusCardState extends State<BiometricStatusCard> {
                   Switch(
                     value: _isEnabled,
                     onChanged: (_) => _toggleBiometric(),
-                    activeColor: ThemeColors.getGreen(context),
+                    activeThumbColor: ThemeColors.getGreen(context),
                   ),
               ],
             ),

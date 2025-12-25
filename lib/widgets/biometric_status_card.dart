@@ -12,10 +12,10 @@ class BiometricStatusCard extends StatefulWidget {
   final VoidCallback? onBiometricDisabled;
 
   const BiometricStatusCard({
-    Key? key,
+    super.key,
     this.onBiometricEnabled,
     this.onBiometricDisabled,
-  }) : super(key: key);
+  });
 
   @override
   State<BiometricStatusCard> createState() => _BiometricStatusCardState();

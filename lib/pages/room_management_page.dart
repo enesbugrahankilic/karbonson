@@ -51,8 +51,9 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
     setState(() => _isLoading = true);
 
     try {
-      if (kDebugMode)
+      if (kDebugMode) {
         debugPrint('Starting room creation for: ${widget.userNickname}');
+      }
 
       final gameBoard = GameBoard();
       final boardTiles = gameBoard.tiles
@@ -81,13 +82,15 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
       );
 
       if (room != null && mounted) {
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint('Room created successfully, joining as host...');
+        }
 
         final success = await _firestoreService.joinRoom(room.id, player);
         if (success) {
-          if (kDebugMode)
+          if (kDebugMode) {
             debugPrint('Successfully joined created room, navigating to game');
+          }
 
           setState(() {
             _currentRoom = room;
@@ -719,6 +722,7 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
                                                     textToCopy: room.roomCode,
                                                     successMessage:
                                                         'Oda kodu kopyalandı!',
+                                                    iconSize: 14,
                                                     child: Text(
                                                       'Kod: ${room.roomCode}',
                                                       style: TextStyle(
@@ -726,7 +730,6 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
                                                         fontSize: 12,
                                                       ),
                                                     ),
-                                                    iconSize: 14,
                                                   ),
                                                 ],
                                               ),

@@ -5,9 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firebase_auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/profile_service.dart';
-import '../services/deep_linking_service.dart';
 import '../theme/theme_colors.dart';
-import '../widgets/login_dialog.dart';
 import '../widgets/home_button.dart';
 
 /// Password Change Page for setting new password after email reset link

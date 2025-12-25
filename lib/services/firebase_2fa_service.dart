@@ -4,7 +4,6 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 /// Result class for 2FA operations
 class TwoFactorAuthResult {
@@ -271,8 +270,8 @@ class Firebase2FAService {
 
       final factors = await user.multiFactor.getEnrolledFactors();
       return factors
-          .where((factor) => factor is PhoneMultiFactorInfo)
-          .map((factor) => (factor as PhoneMultiFactorInfo).phoneNumber)
+          .whereType<PhoneMultiFactorInfo>()
+          .map((factor) => (factor).phoneNumber)
           .toList();
     } catch (e) {
       return [];

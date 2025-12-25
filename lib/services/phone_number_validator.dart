@@ -109,8 +109,9 @@ class PhoneNumberValidator {
     // + sonrasından sabit olmayan ilk rakamı bulana kadar oku
     var countryCode = '+';
     for (int i = 1; i < clean.length; i++) {
-      if (clean[i] == '0' && i > 1)
+      if (clean[i] == '0' && i > 1) {
         break; // Ülke kodunda 0 ile başlayan kısım olmaz
+      }
       countryCode += clean[i];
     }
 

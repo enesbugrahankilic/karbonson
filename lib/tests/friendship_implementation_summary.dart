@@ -86,7 +86,7 @@ void main() {
   debugPrint('• Improved error handling');
   debugPrint('• Comprehensive testing suite');
 
-  debugPrint('\n' + '=' * 60);
+  debugPrint('\n${'=' * 60}');
   debugPrint('🎊 ARKADAŞLIK İSTEMİ SİSTEMİ TAMAMEN HAZIR!');
   debugPrint('💬 Artık kullanıcılar arkadaşlık isteği gönderebilir,');
   debugPrint('   kabul edebilir, reddedebilir ve bildirimler alabilir!');

@@ -2,7 +2,6 @@
 // Performance-optimized state management with caching, debouncing, and lazy loading
 
 import 'dart:async';
-import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -415,7 +414,6 @@ class WidgetOptimization {
   }) {
     return ListView(
       key: key,
-      children: children,
       scrollDirection: scrollDirection,
       reverse: reverse,
       controller: controller,
@@ -429,6 +427,7 @@ class WidgetOptimization {
       addSemanticIndexes: addSemanticIndexes,
       cacheExtent: cacheExtent,
       semanticChildCount: semanticChildCount,
+      children: children,
     );
   }
 
@@ -445,13 +444,13 @@ class WidgetOptimization {
   }) {
     return Column(
       key: key,
-      children: children,
       mainAxisAlignment: mainAxisAlignment,
       mainAxisSize: mainAxisSize,
       crossAxisAlignment: crossAxisAlignment,
       textDirection: textDirection,
       verticalDirection: verticalDirection,
       textBaseline: textBaseline,
+      children: children,
     );
   }
 
@@ -468,13 +467,13 @@ class WidgetOptimization {
   }) {
     return Row(
       key: key,
-      children: children,
       mainAxisAlignment: mainAxisAlignment,
       mainAxisSize: mainAxisSize,
       crossAxisAlignment: crossAxisAlignment,
       textDirection: textDirection,
       verticalDirection: verticalDirection,
       textBaseline: textBaseline,
+      children: children,
     );
   }
 }
@@ -524,8 +523,8 @@ class _LazyBuilder extends StatefulWidget {
 
   const _LazyBuilder({
     required this.builder,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<_LazyBuilder> createState() => _LazyBuilderState();

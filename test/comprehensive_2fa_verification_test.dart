@@ -3,10 +3,7 @@
 // Tests all verification methods, error handling, and user interactions
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import '../lib/services/comprehensive_2fa_service.dart';
-import '../lib/pages/comprehensive_2fa_verification_page.dart';
+import 'package:karbonson/services/comprehensive_2fa_service.dart';
 
 void main() {
   group('Comprehensive2FAService Tests', () {

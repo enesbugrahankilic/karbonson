@@ -57,7 +57,6 @@ class AccessibilityUtils {
 
       // Add focus management
       container = Focus(
-        child: container,
         canRequestFocus: isEnabled,
         onFocusChange: (hasFocus) {
           if (hasFocus) {
@@ -65,6 +64,7 @@ class AccessibilityUtils {
             HapticFeedback.lightImpact();
           }
         },
+        child: container,
       );
     }
 
@@ -90,11 +90,11 @@ class AccessibilityUtils {
                 : Theme.of(context).outlinedButtonTheme.style)
             ?.copyWith(
           minimumSize:
-              MaterialStateProperty.all(Size(touchTarget, touchTarget)),
+              WidgetStateProperty.all(Size(touchTarget, touchTarget)),
         ) ??
         ButtonStyle(
           minimumSize:
-              MaterialStateProperty.all(Size(touchTarget, touchTarget)),
+              WidgetStateProperty.all(Size(touchTarget, touchTarget)),
         );
 
     return Semantics(
@@ -350,7 +350,7 @@ class AccessibilityUtils {
       child: Switch(
         value: value,
         onChanged: enabled ? onChanged : null,
-        activeColor: activeColor ?? Theme.of(context).colorScheme.primary,
+        activeThumbColor: activeColor ?? Theme.of(context).colorScheme.primary,
       ),
     );
   }
@@ -395,7 +395,7 @@ class AccessibilityUtils {
   static bool isAccessibilityEnabled(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     return mediaQuery.highContrast ||
-        mediaQuery.textScaleFactor > 1.0 ||
+        mediaQuery.textScaler.scale(1.0) > 1.0 ||
         mediaQuery.accessibleNavigation;
   }
 

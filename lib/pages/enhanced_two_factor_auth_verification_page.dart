@@ -3,7 +3,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../services/enhanced_firebase_2fa_service.dart';
 import '../theme/theme_colors.dart';
 

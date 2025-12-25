@@ -122,7 +122,7 @@ class SmsReminderScheduler {
       }
 
       if (result.isSuccess) {
-        return SchedulerResult.success('${reminderType} hatırlatması gönderildi', userId: userId);
+        return SchedulerResult.success('$reminderType hatırlatması gönderildi', userId: userId);
       } else {
         return SchedulerResult.failure(result.message);
       }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../services/email_otp_service.dart';
-import '../services/phone_number_validator.dart';
 import '../widgets/phone_number_validation_dialog.dart';
 
 /// 2FA SMS Doğrulama Sayfası
@@ -11,11 +10,11 @@ class TwoFactorAuthPage extends StatefulWidget {
   final String? initialPhoneNumber;
 
   const TwoFactorAuthPage({
-    Key? key,
+    super.key,
     required this.userId,
     this.onVerificationSuccess,
     this.initialPhoneNumber,
-  }) : super(key: key);
+  });
 
   @override
   State<TwoFactorAuthPage> createState() => _TwoFactorAuthPageState();

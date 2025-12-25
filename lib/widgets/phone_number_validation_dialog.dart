@@ -8,11 +8,11 @@ class PhoneNumberValidationDialog extends StatefulWidget {
   final VoidCallback? onCancel;
 
   const PhoneNumberValidationDialog({
-    Key? key,
+    super.key,
     this.initialPhoneNumber,
     required this.onValidPhone,
     this.onCancel,
-  }) : super(key: key);
+  });
 
   @override
   State<PhoneNumberValidationDialog> createState() =>

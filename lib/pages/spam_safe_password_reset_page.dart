@@ -4,7 +4,7 @@ import '../services/spam_aware_email_service.dart';
 
 /// Spam filtrelerine karşı optimize edilmiş şifre sıfırlama sayfası
 class SpamSafePasswordResetPage extends StatefulWidget {
-  const SpamSafePasswordResetPage({Key? key}) : super(key: key);
+  const SpamSafePasswordResetPage({super.key});
 
   @override
   State<SpamSafePasswordResetPage> createState() =>
@@ -290,7 +290,7 @@ class _SpamSafePasswordResetPageState extends State<SpamSafePasswordResetPage> {
                 ...analysis.issues
                     .map((issue) =>
                         Text('• $issue', style: TextStyle(fontSize: 12)))
-                    .toList(),
+                    ,
                 SizedBox(height: 8),
               ],
               Text(
@@ -394,7 +394,7 @@ class _SpamSafePasswordResetPageState extends State<SpamSafePasswordResetPage> {
 
 /// E-posta gönderim istatistiklerini gösteren admin sayfası
 class EmailStatsPage extends StatelessWidget {
-  const EmailStatsPage({Key? key}) : super(key: key);
+  const EmailStatsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -577,7 +577,7 @@ class EmailStatsPage extends StatelessWidget {
               Text('Son zamanlarda başarısızlık yok',
                   style: TextStyle(color: Colors.green))
             else
-              ...failures.map((failure) => _buildFailureItem(failure)).toList(),
+              ...failures.map((failure) => _buildFailureItem(failure)),
           ],
         ),
       ),

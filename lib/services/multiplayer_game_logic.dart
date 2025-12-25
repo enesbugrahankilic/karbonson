@@ -4,7 +4,6 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import '../models/game_board.dart';
 import 'quiz_logic.dart';
 import 'firestore_service.dart';
@@ -64,7 +63,7 @@ class MultiplayerGameLogic with ChangeNotifier {
   void notifyListeners() {
     if (!_isDisposed) {
       // Batch notifications to prevent excessive rebuilds
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(Duration.zero, () {
         if (!_isDisposed) {
           super.notifyListeners();
         }
@@ -273,7 +272,7 @@ class MultiplayerGameLogic with ChangeNotifier {
   /// Move player with enhanced validation
   void _movePlayer(MultiplayerPlayer player, int steps) {
     try {
-      if (player == null || steps < 0 || steps > 10) {
+      if (steps < 0 || steps > 10) {
         _setError('Invalid move parameters');
         return;
       }
@@ -342,11 +341,6 @@ class MultiplayerGameLogic with ChangeNotifier {
   /// Apply tile effect with enhanced error handling
   String? applyTileEffect(MultiplayerPlayer player, BoardTile tile) {
     try {
-      if (player == null || tile == null) {
-        _setError('Invalid player or tile');
-        return null;
-      }
-
       String message = "";
 
       switch (tile.type) {
@@ -388,11 +382,6 @@ class MultiplayerGameLogic with ChangeNotifier {
   /// Quiz finished with enhanced error handling
   String? onQuizFinished(int score, MultiplayerPlayer player) {
     try {
-      if (player == null) {
-        _setError('Player cannot be null');
-        return null;
-      }
-
       player.quizScore += score;
       setIsQuizActive(false);
 

@@ -8,9 +8,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/achievement.dart';
 import '../models/user_progress.dart';
 import '../models/daily_challenge.dart';
-import '../models/reward_item.dart';
-import '../services/reward_service.dart';
-import '../models/reward_item.dart';
 import '../services/reward_service.dart';
 
 /// Achievement and progress tracking service
@@ -156,8 +153,9 @@ class AchievementService {
       // Generate daily challenges
       await _generateDailyChallenges(userId);
 
-      if (kDebugMode)
+      if (kDebugMode) {
         debugPrint('AchievementService initialized for user: $userId');
+      }
     } catch (e) {
       if (kDebugMode) debugPrint('Failed to initialize AchievementService: $e');
     }
@@ -497,12 +495,14 @@ class AchievementService {
             if (progress.loginStreak < value) unlocked = false;
             break;
           case 'perfectScore':
-            if (!progress.achievements.contains('perfect_score'))
+            if (!progress.achievements.contains('perfect_score')) {
               unlocked = false;
+            }
             break;
           case 'fastAnswer':
-            if (!progress.achievements.contains('speed_demon'))
+            if (!progress.achievements.contains('speed_demon')) {
               unlocked = false;
+            }
             break;
         }
       });

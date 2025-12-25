@@ -2,9 +2,7 @@
 // Game invitation dialog widget for real-time invitations
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import '../services/game_invitation_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class GameInvitationDialog extends StatefulWidget {
   final GameInvitation invitation;

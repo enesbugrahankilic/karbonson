@@ -3,8 +3,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../services/firestore_service.dart';
-import '../models/game_board.dart';
-import '../models/notification_data.dart';
 
 /// Test Utilities for Friendship Logic
 /// Bu sınıf friendship logic'in test edilmesi için utility fonksiyonları sağlar
@@ -24,8 +22,9 @@ class FriendshipTestUtils {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      if (kDebugMode)
+      if (kDebugMode) {
         debugPrint('Test kullanıcısı oluşturuldu: $nickname ($uid)');
+      }
       return {'uid': uid, 'nickname': nickname};
     } catch (e) {
       if (kDebugMode) debugPrint('Test kullanıcısı oluşturulurken hata: $e');
@@ -55,10 +54,11 @@ class FriendshipTestUtils {
 
       // Request ID'yi alabilmek için Firestore'dan çekmek gerekir
       // Bu basit bir implementation - gerçek testte daha gelişmiş olabilir
-      return 'test_request_id_$fromUserId\_$toUserId';
+      return 'test_request_id_${fromUserId}_$toUserId';
     } catch (e) {
-      if (kDebugMode)
+      if (kDebugMode) {
         debugPrint('Test arkadaşlık isteği oluşturulurken hata: $e');
+      }
       rethrow;
     }
   }

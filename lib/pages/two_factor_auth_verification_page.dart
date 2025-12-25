@@ -80,10 +80,10 @@ class _TwoFactorAuthVerificationPageState
           widget.authResult.multiFactorResolver != null) {
         final hints = widget.authResult.multiFactorResolver!.hints;
         for (final hint in hints) {
-          if (hint is MultiFactorInfo && hint.factorId.contains('phone')) {
+          if (hint.factorId.contains('phone')) {
             // For MultiFactorInfo, phone number might be in displayName or we need to get it differently
             if (hint is PhoneMultiFactorInfo) {
-              phoneNumber = (hint as PhoneMultiFactorInfo).phoneNumber;
+              phoneNumber = (hint).phoneNumber;
               break;
             }
           }
@@ -103,7 +103,7 @@ class _TwoFactorAuthVerificationPageState
       // Start phone verification with the correct phone number
       final verificationResult =
           await Firebase2FAService.startPhoneVerification(
-        phoneNumber: phoneNumber!,
+        phoneNumber: phoneNumber,
       );
 
       if (mounted) {

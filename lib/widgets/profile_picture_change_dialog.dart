@@ -11,10 +11,10 @@ class ProfilePictureChangeDialog extends StatefulWidget {
   final Function(String)? onProfilePictureUpdated;
 
   const ProfilePictureChangeDialog({
-    Key? key,
+    super.key,
     this.currentProfilePictureUrl,
     this.onProfilePictureUpdated,
-  }) : super(key: key);
+  });
 
   @override
   State<ProfilePictureChangeDialog> createState() =>

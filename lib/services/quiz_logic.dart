@@ -7,7 +7,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
-import 'notification_service.dart';
 
 class QuizLogic {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -24,6 +23,9 @@ class QuizLogic {
 
   List<Question> questions = [];
   final Random _random = Random();
+
+  // YENİ ZORLUK SEVİYESİ PROPERTIES
+  DifficultyLevel _currentDifficulty = DifficultyLevel.easy;
 
   QuizLogic() {
     _loadHighScore();
@@ -193,10 +195,155 @@ class QuizLogic {
     }
   }
 
+  // YENİ ZORLUK SEVİYESİ METHOD'LARI
+
+  /// Belirli zorluk seviyesinde soru seçimi
+  void _selectRandomQuestionsByDifficulty(int count,
+      {AppLanguage? language, String? category, DifficultyLevel? difficulty}) {
+    // Use provided language or default to current language
+    final selectedLanguage = language ?? _currentLanguage;
+
+    // Get questions by difficulty from database
+    var allAvailableQuestions =
+        QuestionsDatabase.getQuestionsByDifficulty(selectedLanguage, _currentDifficulty);
+
+    // Filter by category if specified
+    if (category != null && category != 'Tümü') {
+      allAvailableQuestions = allAvailableQuestions
+          .where((q) => q.category == category)
+          .toList();
+    }
+
+    // Clear answered questions for new session to ensure variety
+    _answeredQuestions.clear();
+
+    // Filter out already used questions to prevent duplicates
+    var availableQuestions = allAvailableQuestions
+        .where((q) =>
+            !_usedQuestionIds.contains(_getQuestionId(q, selectedLanguage)))
+        .toList();
+
+    // If we've used too many questions, reset the used set for this language
+    if (availableQuestions.length < count) {
+      _usedQuestionIds.clear();
+      availableQuestions = allAvailableQuestions;
+    }
+
+    // Separate questions by wrong answer categories for weighted selection
+    final wrongCategoryQuestions = <Question>[];
+    final otherCategoryQuestions = <Question>[];
+
+    for (var q in availableQuestions) {
+      if (_wrongAnswerCategories.containsKey(q.category) &&
+          _wrongAnswerCategories[q.category]! > 0) {
+        wrongCategoryQuestions.add(q);
+      } else {
+        otherCategoryQuestions.add(q);
+      }
+    }
+
+    // Calculate how many questions to select from each group
+    final wrongCategoryCount = (count * 0.6).round(); // 60% from wrong categories
+    final otherCategoryCount = count - wrongCategoryCount; // 40% from other categories
+
+    questions = [];
+
+    // First, select from wrong answer categories (if available)
+    if (wrongCategoryQuestions.isNotEmpty) {
+      wrongCategoryQuestions.shuffle(_random);
+      for (var q in wrongCategoryQuestions) {
+        if (questions.length >= wrongCategoryCount) break;
+        questions.add(q);
+        _answeredQuestions.add(q.text);
+        _usedQuestionIds.add(_getQuestionId(q, selectedLanguage));
+      }
+    }
+
+    // Then fill remaining slots with other categories
+    otherCategoryQuestions.shuffle(_random);
+    for (var q in otherCategoryQuestions) {
+      if (questions.length >= count) break;
+      questions.add(q);
+      _answeredQuestions.add(q.text);
+      _usedQuestionIds.add(_getQuestionId(q, selectedLanguage));
+    }
+
+    // If still need more questions, allow duplicates
+    if (questions.length < count) {
+      var allQuestions = List<Question>.from(allAvailableQuestions);
+      allQuestions.shuffle(_random);
+
+      for (var q in allQuestions) {
+        if (questions.length >= count) break;
+        if (!questions.contains(q)) {
+          questions.add(q);
+          _answeredQuestions.add(q.text);
+        }
+      }
+    }
+  }
+
+  /// Karışık zorluk seviyelerinde soru seçimi (kolay:orta:zor = 1:1:1 oranında)
+  void _selectMixedDifficultyQuestions(int count,
+      {AppLanguage? language, String? category}) {
+    // Use provided language or default to current language
+    final selectedLanguage = language ?? _currentLanguage;
+
+    // Get mixed difficulty questions from database
+    var allAvailableQuestions =
+        QuestionsDatabase.getMixedDifficultyQuestions(selectedLanguage, count);
+
+    // Filter by category if specified
+    if (category != null && category != 'Tümü') {
+      allAvailableQuestions = allAvailableQuestions
+          .where((q) => q.category == category)
+          .toList();
+    }
+
+    // Clear answered questions for new session to ensure variety
+    _answeredQuestions.clear();
+
+    // Filter out already used questions to prevent duplicates
+    var availableQuestions = allAvailableQuestions
+        .where((q) =>
+            !_usedQuestionIds.contains(_getQuestionId(q, selectedLanguage)))
+        .toList();
+
+    // If we've used too many questions, reset the used set for this language
+    if (availableQuestions.length < count) {
+      _usedQuestionIds.clear();
+      availableQuestions = allAvailableQuestions;
+    }
+
+    questions = List<Question>.from(availableQuestions);
+    questions.shuffle(_random);
+
+    // Ensure we have the exact count
+    if (questions.length > count) {
+      questions = questions.take(count).toList();
+    }
+
+    // Add to tracking lists
+    for (var q in questions) {
+      _answeredQuestions.add(q.text);
+      _usedQuestionIds.add(_getQuestionId(q, selectedLanguage));
+    }
+  }
+
   String _getQuestionId(Question question, AppLanguage language) {
     // Create a unique ID for each question per language
     return '${language.code}_${question.text.hashCode}';
   }
+
+  // Zorluk seviyesi getter'ı ve setter'ı
+  DifficultyLevel get currentDifficulty => _currentDifficulty;
+
+  void setDifficulty(DifficultyLevel difficulty) {
+    _currentDifficulty = difficulty;
+  }
+
+  // Get current language
+  AppLanguage get currentLanguage => _currentLanguage;
 
   Future<void> setLanguage(AppLanguage language) async {
     if (_currentLanguage != language) {
@@ -242,9 +389,25 @@ class QuizLogic {
     _currentScore = 0;
   }
 
-  Future<void> startNewQuiz({String? category}) async {
+  Future<void> startNewQuiz(
+      {String? category, DifficultyLevel? difficulty}) async {
     resetScore();
-    _selectRandomQuestions(15, category: category); // 15 questions per quiz
+
+    // Use provided difficulty or current difficulty
+    final selectedDifficulty = difficulty ?? _currentDifficulty;
+
+    // Zorluk seviyesine göre soru seçimi
+    if (selectedDifficulty == DifficultyLevel.easy) {
+      _selectRandomQuestionsByDifficulty(15, category: category, difficulty: selectedDifficulty);
+    } else if (selectedDifficulty == DifficultyLevel.medium) {
+      _selectRandomQuestionsByDifficulty(15, category: category, difficulty: selectedDifficulty);
+    } else if (selectedDifficulty == DifficultyLevel.hard) {
+      _selectRandomQuestionsByDifficulty(15, category: category, difficulty: selectedDifficulty);
+    } else {
+      // Mixed difficulty - use balanced selection
+      _selectMixedDifficultyQuestions(15, category: category);
+    }
+
     await _loadHighScore();
     _lastPlayTime = DateTime.now();
     await _saveHighScore(); // Save last play time
@@ -282,6 +445,7 @@ class QuizLogic {
       'currentSessionQuestionTexts': questions.map((q) => q.text).toList(),
       'usedQuestionIds': _usedQuestionIds.toList(),
       'currentLanguage': _currentLanguage.code,
+      'currentDifficulty': _currentDifficulty.toString(),
     };
   }
 
@@ -335,17 +499,15 @@ class QuizLogic {
     if (difference.inHours >= 12) {
       try {
         // await NotificationService.scheduleReminderNotification();
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint(
               'Reminder notification sent after ${difference.inHours} hours');
+        }
       } catch (e) {
         if (kDebugMode) debugPrint('Error sending reminder notification: $e');
       }
     }
   }
-
-  // Get current language
-  AppLanguage get currentLanguage => _currentLanguage;
 
   // Clear used questions (for testing or reset purposes)
   void clearUsedQuestions() {

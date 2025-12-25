@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firebase_auth_service.dart';
 import '../services/profile_service.dart';
-import '../services/deep_linking_service.dart';
 import '../theme/theme_colors.dart';
 
 class PasswordResetInformationPage extends StatefulWidget {

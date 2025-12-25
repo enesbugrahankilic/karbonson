@@ -7,7 +7,6 @@ import '../theme/design_system.dart';
 import '../core/navigation/app_router.dart';
 import '../widgets/home_button.dart';
 import '../widgets/language_selector_button.dart';
-import '../services/notification_service.dart';
 import '../services/achievement_service.dart';
 
 class HomeDashboard extends StatefulWidget {

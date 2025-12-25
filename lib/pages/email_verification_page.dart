@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../services/firebase_auth_service.dart';
 import '../services/profile_service.dart';
-import '../widgets/custom_form_field.dart';
 
 class EmailVerificationPage extends StatefulWidget {
   const EmailVerificationPage({super.key});

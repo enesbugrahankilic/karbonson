@@ -1,10 +1,8 @@
 // lib/widgets/profile_image_upload_widget.dart
 
 import 'dart:typed_data';
-import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/profile_image_data.dart';
 import '../services/profile_image_service.dart';
@@ -24,7 +22,7 @@ class ProfileImageUploadWidget extends StatefulWidget {
   final EdgeInsetsGeometry? padding;
 
   const ProfileImageUploadWidget({
-    Key? key,
+    super.key,
     required this.userId,
     this.avatarSize = 120.0,
     this.onUploadComplete,
@@ -34,7 +32,7 @@ class ProfileImageUploadWidget extends StatefulWidget {
     this.showPreview = true,
     this.customPlaceholder,
     this.padding,
-  }) : super(key: key);
+  });
 
   @override
   State<ProfileImageUploadWidget> createState() =>

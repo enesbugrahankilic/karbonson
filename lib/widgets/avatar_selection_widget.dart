@@ -9,10 +9,10 @@ class AvatarSelectionWidget extends StatefulWidget {
   final String? currentAvatarUrl;
 
   const AvatarSelectionWidget({
-    Key? key,
+    super.key,
     required this.onAvatarSelected,
     this.currentAvatarUrl,
-  }) : super(key: key);
+  });
 
   @override
   State<AvatarSelectionWidget> createState() => _AvatarSelectionWidgetState();
@@ -30,7 +30,7 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: MediaQuery.of(context).size.height * 0.7,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,7 +107,7 @@ class _AvatarSelectionWidgetState extends State<AvatarSelectionWidget> {
       );
     }
 
-    return Container(
+    return SizedBox(
       height: 120,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,

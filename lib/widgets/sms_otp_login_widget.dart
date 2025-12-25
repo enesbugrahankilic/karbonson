@@ -13,11 +13,11 @@ class SmsOtpLoginWidget extends StatefulWidget {
   final bool showAsDialog;
 
   const SmsOtpLoginWidget({
-    Key? key,
+    super.key,
     this.onLoginSuccess,
     this.onError,
     this.showAsDialog = false,
-  }) : super(key: key);
+  });
 
   @override
   State<SmsOtpLoginWidget> createState() => _SmsOtpLoginWidgetState();

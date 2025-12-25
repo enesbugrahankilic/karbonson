@@ -1,7 +1,6 @@
 // lib/services/sms_reminder_service.dart
 // SMS Reminder sistemi ana servisi
 
-import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,7 +9,6 @@ import 'dart:convert';
 import '../models/task_reminder.dart';
 import '../models/user_preferences.dart';
 import '../models/weekly_report.dart';
-import 'email_otp_service.dart';
 import 'sms_template_service.dart';
 
 /// SMS Reminder servisi sonucu

@@ -4,7 +4,7 @@ import '../provides/ai_bloc.dart';
 import '../widgets/ai_recommendation_widget.dart';
 
 class AIRecommendationsPage extends StatelessWidget {
-  const AIRecommendationsPage({Key? key}) : super(key: key);
+  const AIRecommendationsPage({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -85,7 +85,7 @@ class _FriendsPageState extends State<FriendsPage>
 
         // Show dialog for new invitations
         for (final invitation in invitations) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
+          Future.delayed(Duration.zero, () {
             showGameInvitationDialog(
               context: context,
               invitation: invitation,
@@ -124,7 +124,7 @@ class _FriendsPageState extends State<FriendsPage>
             .toList();
 
         if (newRequests.isNotEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
+          Future.delayed(Duration.zero, () {
             for (final request in newRequests) {
               _showFriendRequestNotification(request);
             }
@@ -178,10 +178,8 @@ class _FriendsPageState extends State<FriendsPage>
           onPressed: () {
             // Scroll to requests tab
             final tabController = DefaultTabController.of(context);
-            if (tabController != null) {
-              tabController.animateTo(1);
-            }
-          },
+            tabController.animateTo(1);
+                    },
         ),
         duration: const Duration(seconds: 5),
         behavior: SnackBarBehavior.floating,
@@ -636,10 +634,8 @@ class _FriendsPageState extends State<FriendsPage>
                   onPressed: () {
                     // Switch to requests tab
                     final tabController = DefaultTabController.of(context);
-                    if (tabController != null) {
-                      tabController.animateTo(1);
-                    }
-                  },
+                    tabController.animateTo(1);
+                                    },
                 ),
                 Positioned(
                   right: 8,
@@ -767,7 +763,7 @@ class _FriendsPageState extends State<FriendsPage>
 
                         // Search Results
                         if (_searchResults.isNotEmpty)
-                          Container(
+                          SizedBox(
                             height: MediaQuery.of(context).size.height * 0.7,
                             child: ListView.builder(
                               itemCount: _searchResults.length,
@@ -806,7 +802,7 @@ class _FriendsPageState extends State<FriendsPage>
                           )
                         else
                           // Tab Bar
-                          Container(
+                          SizedBox(
                             height: MediaQuery.of(context).size.height * 0.75,
                             child: Scrollbar(
                               child: DefaultTabController(
@@ -977,7 +973,7 @@ class _FriendsPageState extends State<FriendsPage>
                                                           ),
                                                         ),
                                                         title: Text(
-                                                          '${request.fromNickname}',
+                                                          request.fromNickname,
                                                           style: TextStyle(
                                                             fontWeight:
                                                                 FontWeight.bold,
@@ -1177,7 +1173,7 @@ class _FriendsPageState extends State<FriendsPage>
         title: Text('Bekleyen Oyun Davetleri'),
         content: _gameInvitations.isEmpty
             ? Text('Bekleyen davet yok')
-            : Container(
+            : SizedBox(
                 width: double.maxFinite,
                 child: ListView.builder(
                   shrinkWrap: true,

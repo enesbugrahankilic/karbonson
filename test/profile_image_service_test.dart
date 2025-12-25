@@ -5,14 +5,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'dart:typed_data';
-import 'dart:collection';
-import 'package:image/image.dart' as img;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 // Import the services to test
-import '../lib/services/profile_image_service.dart';
-import '../lib/models/profile_image_data.dart';
+import 'package:karbonson/services/profile_image_service.dart';
+import 'package:karbonson/models/profile_image_data.dart';
 
 // Generate mock classes
 @GenerateMocks([FirebaseStorage, Reference, UploadTask, TaskSnapshot, User])

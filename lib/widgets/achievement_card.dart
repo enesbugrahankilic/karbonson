@@ -11,12 +11,12 @@ class AchievementCard extends StatelessWidget {
   final double progress; // 0.0 to 1.0
 
   const AchievementCard({
-    Key? key,
+    super.key,
     required this.achievement,
     this.isUnlocked = false,
     this.onTap,
     this.progress = 0.0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -276,11 +276,11 @@ class AchievementList extends StatelessWidget {
   final Function(Achievement)? onAchievementTap;
 
   const AchievementList({
-    Key? key,
+    super.key,
     required this.achievements,
     this.showUnlockedOnly = false,
     this.onAchievementTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -344,10 +344,10 @@ class AchievementCategoryFilter extends StatelessWidget {
   final Function(AchievementCategory?) onCategorySelected;
 
   const AchievementCategoryFilter({
-    Key? key,
+    super.key,
     this.selectedCategory,
     required this.onCategorySelected,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

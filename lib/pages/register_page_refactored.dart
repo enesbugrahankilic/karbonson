@@ -2,13 +2,11 @@
 // Refactored registration page with improved architecture
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import '../services/registration_service.dart';
 import '../services/error_feedback_service.dart';
 import '../widgets/custom_form_field.dart';
 import '../theme/theme_colors.dart';
 import 'login_page.dart';
-import 'tutorial_page.dart';
 import 'profile_page.dart';
 
 class RegisterPageRefactored extends StatefulWidget {
@@ -157,8 +155,9 @@ class _RegisterPageRefactoredState extends State<RegisterPageRefactored> {
       _confirmPasswordController.text,
       _passwordController.text,
     );
-    if (confirmPasswordError != null)
+    if (confirmPasswordError != null) {
       errors['Şifre Tekrarı'] = confirmPasswordError;
+    }
 
     final nicknameError = _validateNicknameField(_nicknameController.text);
     if (nicknameError != null) errors['Takma Ad'] = nicknameError;

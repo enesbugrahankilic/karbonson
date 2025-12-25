@@ -2,7 +2,6 @@
 // Performance-optimized asset loading with CDN integration and caching
 
 import 'dart:async';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -404,7 +403,7 @@ class AssetOptimizationService {
             ? ((originalSize - newSize) / originalSize * 100).toStringAsFixed(1)
             : '0.0';
         debugPrint(
-            '🗜️ Image optimized: ${originalSize} -> ${newSize} bytes ($compressionRatio% smaller)');
+            '🗜️ Image optimized: $originalSize -> $newSize bytes ($compressionRatio% smaller)');
       }
 
       return optimizedData;
@@ -519,7 +518,7 @@ class AssetOptimizationService {
 
   /// Load image with timeout and error handling
   Future<Image> _loadImageWithTimeout(String url) async {
-    return await Image.network(
+    return Image.network(
       url,
       fit: BoxFit.cover,
       loadingBuilder: (context, child, loadingProgress) {

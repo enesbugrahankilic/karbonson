@@ -3,7 +3,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firebase_auth_service.dart';
 
 class FirebaseConfigChecker extends StatefulWidget {

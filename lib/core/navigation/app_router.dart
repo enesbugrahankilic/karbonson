@@ -206,8 +206,8 @@ class AppRouter {
           _ProtectedRouteWrapper(
         authService: _authService,
         fallbackRoute: AppRoutes.login,
-        child: page,
         fallbackArguments: {'redirectTo': settings.name},
+        child: page,
       ),
       transitionDuration: const Duration(milliseconds: 300),
       reverseTransitionDuration: const Duration(milliseconds: 300),

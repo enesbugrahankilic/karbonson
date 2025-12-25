@@ -5,7 +5,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 import '../services/comprehensive_2fa_service.dart';
 import '../theme/theme_colors.dart';
 
@@ -342,7 +341,7 @@ class _Comprehensive2FAVerificationPageState
         } else if (_timeLeft <= 30) {
           // Announce when less than 30 seconds remain
           _announceForAccessibility(
-              'Kod ${_timeLeft} saniye sonra süresi dolacak');
+              'Kod $_timeLeft saniye sonra süresi dolacak');
         }
       }
     });
@@ -408,7 +407,7 @@ class _Comprehensive2FAVerificationPageState
   String _formatTime(int seconds) {
     final minutes = seconds ~/ 60;
     final remainingSeconds = seconds % 60;
-    return '${minutes}:${remainingSeconds.toString().padLeft(2, '0')}';
+    return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -559,7 +558,7 @@ class _Comprehensive2FAVerificationPageState
                       dense: true,
                       controlAffinity: ListTileControlAffinity.trailing,
                     ))
-                .toList(),
+                ,
           ],
         ),
       ),

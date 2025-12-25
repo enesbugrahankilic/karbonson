@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/question.dart';
-import '../models/game_board.dart';
 import 'quiz_logic.dart';
 import 'firestore_service.dart';
 import 'notification_service.dart';
@@ -174,7 +173,7 @@ class DuelGameLogic extends ChangeNotifier {
       _startQuestionTimer();
 
       if (kDebugMode) {
-        debugPrint('🔄 Question ${_currentQuestionIndex}: ${question.text}');
+        debugPrint('🔄 Question $_currentQuestionIndex: ${question.text}');
       }
 
       notifyListeners();
@@ -251,9 +250,9 @@ class DuelGameLogic extends ChangeNotifier {
     await _firestoreService.updateDuelGameState(
       _currentRoom!.id,
       questionAnswers:
-          updatedAnswers.map((a) => a.toMap() as Map<String, dynamic>).toList(),
+          updatedAnswers.map((a) => a.toMap()).toList(),
       players:
-          updatedPlayers.map((p) => p.toMap() as Map<String, dynamic>).toList(),
+          updatedPlayers.map((p) => p.toMap()).toList(),
     );
 
     // End question immediately after answer

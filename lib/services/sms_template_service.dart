@@ -2,7 +2,6 @@
 // SMS şablonları ve mesaj oluşturucu servisi
 
 import '../models/task_reminder.dart';
-import '../models/user_preferences.dart';
 import '../models/weekly_report.dart';
 
 /// SMS mesaj şablonları servisi

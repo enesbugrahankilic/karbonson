@@ -1,3 +1,4 @@
+
 // lib/pages/quiz_page.dart
 // Updated to use Design System for consistent styling
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import '../widgets/custom_question_card.dart';
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../theme/app_theme.dart';
+import '../models/question.dart';
 
 class QuizPage extends StatefulWidget {
   final QuizLogic quizLogic;
@@ -24,6 +26,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
   final AuthenticationStateService _authStateService =
       AuthenticationStateService();
   String? _selectedCategory;
+  DifficultyLevel _selectedDifficulty = DifficultyLevel.easy;
 
   // Animation controllers
   late AnimationController _fadeController;
@@ -71,12 +74,17 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
       final args =
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       final passedCategory = args?['category'] as String?;
+      final passedDifficulty = args?['difficulty'] as DifficultyLevel?;
 
       if (passedCategory != null) {
         // Use passed category directly
         _selectedCategory = passedCategory;
+        if (passedDifficulty != null) {
+          _selectedDifficulty = passedDifficulty;
+        }
         context.read<QuizBloc>().add(LoadQuiz(
-            category: passedCategory == 'Tümü' ? null : passedCategory));
+            category: passedCategory == 'Tümü' ? null : passedCategory,
+            difficulty: passedDifficulty ?? _selectedDifficulty));
       } else {
         // Show category selection dialog
         _showCategorySelection();
@@ -95,39 +103,100 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
       'Tüketim'
     ];
 
-    final selectedCategory = await showDialog<String>(
+    final difficulties = [
+      DifficultyLevel.easy,
+      DifficultyLevel.medium,
+      DifficultyLevel.hard,
+    ];
+
+    final selectedValues = await showDialog<Map<String, dynamic>>(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Quiz Kategorisi Seç'),
+        title: const Text('Quiz Ayarları'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: categories.map((category) {
-            return ListTile(
-              title: Text(category),
-              leading: Radio<String>(
-                value: category,
-                groupValue: _selectedCategory,
-                onChanged: (value) {
+          children: [
+            const Text(
+              'Kategori Seçin:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            ...categories.map((category) {
+              return ListTile(
+                title: Text(category),
+                leading: Radio<String>(
+                  value: category,
+                  groupValue: _selectedCategory,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCategory = value;
+                    });
+                  },
+                ),
+                onTap: () {
                   setState(() {
-                    _selectedCategory = value;
+                    _selectedCategory = category;
                   });
-                  Navigator.of(context).pop(value);
                 },
-              ),
-              onTap: () {
-                Navigator.of(context).pop(category);
-              },
-            );
-          }).toList(),
+              );
+            }),
+            const Divider(),
+            const Text(
+              'Zorluk Seviyesi Seçin:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            ...difficulties.map((difficulty) {
+              return ListTile(
+                title: Text(difficulty.displayName),
+                leading: Radio<DifficultyLevel>(
+                  value: difficulty,
+                  groupValue: _selectedDifficulty,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedDifficulty = value!;
+                    });
+                  },
+                ),
+                onTap: () {
+                  setState(() {
+                    _selectedDifficulty = difficulty;
+                  });
+                },
+              );
+            }),
+          ],
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('İptal'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop({
+                'category': _selectedCategory,
+                'difficulty': _selectedDifficulty,
+              });
+            },
+            child: const Text('Başla'),
+          ),
+        ],
       ),
     );
 
-    if (selectedCategory != null) {
-      _selectedCategory = selectedCategory;
-      context.read<QuizBloc>().add(LoadQuiz(
-          category: selectedCategory == 'Tümü' ? null : selectedCategory));
+    if (selectedValues != null) {
+      final selectedCategory = selectedValues['category'] as String?;
+      final selectedDifficulty = selectedValues['difficulty'] as DifficultyLevel?;
+
+      if (selectedCategory != null && selectedDifficulty != null) {
+        _selectedCategory = selectedCategory;
+        _selectedDifficulty = selectedDifficulty;
+        context.read<QuizBloc>().add(LoadQuiz(
+            category: selectedCategory == 'Tümü' ? null : selectedCategory,
+            difficulty: selectedDifficulty));
+      }
     }
   }
 
@@ -355,6 +424,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                                 correctAnswer: currentQuestion.options
                                     .firstWhere((o) => o.score > 0)
                                     .text,
+                                difficulty: _selectedDifficulty,
                               ),
                             ),
                           ),

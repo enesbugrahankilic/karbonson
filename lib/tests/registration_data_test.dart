@@ -2,9 +2,6 @@
 // Test to verify that user registration data is properly saved to Firestore
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import '../services/firestore_service.dart';
 import '../services/profile_service.dart';
 import '../models/user_data.dart';

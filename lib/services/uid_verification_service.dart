@@ -271,8 +271,9 @@ class UIDVerificationService {
 
   /// Verify all Firestore users have corresponding Auth users
   Future<void> _verifyAuthUsersExist(UIDCleanupStatistics stats) async {
-    if (kDebugMode)
+    if (kDebugMode) {
       debugPrint('🔍 Verifying Auth users exist for all Firestore docs...');
+    }
 
     final querySnapshot = await _firestore.collection('users').get();
     final List<String> missingAuthUsers = [];

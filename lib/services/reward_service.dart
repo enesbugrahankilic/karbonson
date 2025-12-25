@@ -234,11 +234,17 @@ class RewardService {
     // Check if already unlocked
     final inventory = await getCurrentInventory();
     if (rewardItem.type == RewardItemType.avatar &&
-        inventory.hasAvatarUnlocked(rewardId)) return false;
+        inventory.hasAvatarUnlocked(rewardId)) {
+      return false;
+    }
     if (rewardItem.type == RewardItemType.theme &&
-        inventory.hasThemeUnlocked(rewardId)) return false;
+        inventory.hasThemeUnlocked(rewardId)) {
+      return false;
+    }
     if (rewardItem.type == RewardItemType.feature &&
-        inventory.hasFeatureUnlocked(rewardId)) return false;
+        inventory.hasFeatureUnlocked(rewardId)) {
+      return false;
+    }
 
     // Check requirement based on reward type
     switch (rewardItem.type) {

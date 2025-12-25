@@ -240,7 +240,7 @@ class WeeklyChallenge extends Equatable {
   final ChallengeDifficulty difficulty;
   final String? bonusReward;
 
-  WeeklyChallenge({
+  const WeeklyChallenge({
     required this.id,
     required this.title,
     required this.description,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import '../widgets/login_dialog.dart';
 import '../theme/theme_colors.dart';
 
@@ -11,11 +10,11 @@ class AuthenticationOptionsWidget extends StatefulWidget {
   final bool showAsDialog;
 
   const AuthenticationOptionsWidget({
-    Key? key,
+    super.key,
     this.onLoginSuccess,
     this.onError,
     this.showAsDialog = false,
-  }) : super(key: key);
+  });
 
   @override
   State<AuthenticationOptionsWidget> createState() =>

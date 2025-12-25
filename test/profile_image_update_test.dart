@@ -4,10 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
 
-import '../lib/provides/profile_bloc.dart';
-import '../lib/widgets/profile_picture_change_dialog.dart';
+import 'package:karbonson/provides/profile_bloc.dart';
+import 'package:karbonson/widgets/profile_picture_change_dialog.dart';
 
 void main() {
   group('Profile Image Update Tests', () {

@@ -1,7 +1,6 @@
 // lib/widgets/duel_invite_dialog.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/friendship_service.dart';
 import '../services/notification_service.dart';
 import '../models/game_board.dart' as board;
@@ -31,7 +30,7 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
   final NotificationService _notificationService = NotificationService();
 
   List<board.Friend> _friends = [];
-  List<String> _selectedFriendIds = [];
+  final List<String> _selectedFriendIds = [];
   bool _isLoading = true;
   bool _isInviting = false;
 

@@ -2,11 +2,9 @@
 // Performance-optimized Firestore service with caching, batching, and lazy loading
 
 import 'dart:async';
-import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 /// Performance metrics for database operations
 class DatabaseMetrics {

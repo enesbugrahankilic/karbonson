@@ -72,8 +72,9 @@ class ProfileService {
     try {
       final User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint('❌ No user available for profile picture update');
+        }
         return false;
       }
 
@@ -85,8 +86,9 @@ class ProfileService {
       // Get current user profile
       final currentProfile = await _firestoreService.getUserProfile(user.uid);
       if (currentProfile == null) {
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint('❌ User profile not found for picture update');
+        }
         return false;
       }
 
@@ -251,8 +253,9 @@ class ProfileService {
     try {
       final currentUser = user ?? _auth.currentUser;
       if (currentUser == null) {
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint('❌ No user available for profile initialization');
+        }
         return;
       }
 
@@ -371,8 +374,9 @@ class ProfileService {
 
       return user.emailVerified;
     } catch (e) {
-      if (kDebugMode)
+      if (kDebugMode) {
         debugPrint('Error checking email verification status: $e');
+      }
       return false;
     }
   }
@@ -444,8 +448,9 @@ class ProfileService {
 
       return success != null;
     } catch (e) {
-      if (kDebugMode)
+      if (kDebugMode) {
         debugPrint('Error updating email verification status: $e');
+      }
       return false;
     }
   }

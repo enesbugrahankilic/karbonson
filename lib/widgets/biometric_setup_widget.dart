@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:local_auth/local_auth.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import '../services/biometric_service.dart';
 import '../services/biometric_user_service.dart';
@@ -12,10 +11,10 @@ class BiometricSetupWidget extends StatefulWidget {
   final VoidCallback? onSetupSkipped;
 
   const BiometricSetupWidget({
-    Key? key,
+    super.key,
     this.onSetupCompleted,
     this.onSetupSkipped,
-  }) : super(key: key);
+  });
 
   @override
   State<BiometricSetupWidget> createState() => _BiometricSetupWidgetState();
@@ -319,7 +318,7 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
 
 /// Biyometri kurulum durumu göstergecisi
 class BiometricSetupStatus extends StatelessWidget {
-  const BiometricSetupStatus({Key? key}) : super(key: key);
+  const BiometricSetupStatus({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -374,10 +373,10 @@ class BiometricOnlyLoginWidget extends StatefulWidget {
   final VoidCallback? onError;
 
   const BiometricOnlyLoginWidget({
-    Key? key,
+    super.key,
     this.onLoginSuccess,
     this.onError,
-  }) : super(key: key);
+  });
 
   @override
   State<BiometricOnlyLoginWidget> createState() =>

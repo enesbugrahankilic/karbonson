@@ -3,7 +3,6 @@
 // Provides UI for running UID verification and cleanup operations
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import '../services/uid_verification_service.dart';
 import '../widgets/home_button.dart';
 
@@ -233,11 +232,11 @@ class _UIDDebugPageState extends State<UIDDebugPage> {
             if (report.needsFullCleanup)
               ElevatedButton(
                 onPressed: _runFullCleanup,
-                child: const Text('Kapsamlı Temizleme Öneriliyor'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
                   foregroundColor: Colors.white,
                 ),
+                child: const Text('Kapsamlı Temizleme Öneriliyor'),
               ),
           ],
         ),

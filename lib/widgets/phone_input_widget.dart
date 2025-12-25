@@ -94,10 +94,12 @@ class _PhoneInputWidgetState extends State<PhoneInputWidget> {
     // Türk telefon formatı: 0555 555 55 55
     if (digits.startsWith('0') && digits.length >= 4) {
       if (digits.length <= 4) return digits;
-      if (digits.length <= 7)
+      if (digits.length <= 7) {
         return '${digits.substring(0, 4)} ${digits.substring(4)}';
-      if (digits.length <= 9)
+      }
+      if (digits.length <= 9) {
         return '${digits.substring(0, 4)} ${digits.substring(4, 7)} ${digits.substring(7)}';
+      }
       return '${digits.substring(0, 4)} ${digits.substring(4, 7)} ${digits.substring(7, 9)} ${digits.substring(9, 11)}';
     }
 

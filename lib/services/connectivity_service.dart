@@ -33,8 +33,9 @@ class ConnectivityService {
       _connectivity.onConnectivityChanged.asyncExpand((dynamic event) {
         try {
           if (event is ConnectivityResult) return Stream.value(event);
-          if (event is Iterable)
+          if (event is Iterable) {
             return Stream.fromIterable(event.whereType<ConnectivityResult>());
+          }
         } catch (_) {
           // fall through to empty
         }

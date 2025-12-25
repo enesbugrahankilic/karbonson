@@ -2,7 +2,6 @@
 // High-performance profile image upload system with 99.9% uptime guarantee
 
 import 'dart:async';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
@@ -11,7 +10,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/profile_image_data.dart';
 import 'asset_optimization_service.dart';
-import '../utils/datetime_parser.dart';
 
 /// Profile image upload service with professional-grade image processing
 class ProfileImageService {
@@ -418,8 +416,7 @@ class ProfileImageService {
   }
 
   String _generateImageId() {
-    return DateTime.now().millisecondsSinceEpoch.toString() +
-        '_${FirebaseAuth.instance.currentUser?.uid ?? 'anonymous'}';
+    return '${DateTime.now().millisecondsSinceEpoch}_${FirebaseAuth.instance.currentUser?.uid ?? 'anonymous'}';
   }
 
   int _calculateUploadTime(int bytes) {
@@ -588,7 +585,7 @@ class ProfileImageService {
   ) async {
     try {
       final optimizedData = await _optimizeImageData(data, params);
-      final path = 'optimized/${userId}_${imageId}.webp';
+      final path = 'optimized/${userId}_$imageId.webp';
 
       return await _uploadImageData(
         optimizedData,
@@ -634,7 +631,7 @@ class ProfileImageService {
         ),
       );
 
-      final path = 'thumbnails/${userId}_${imageId}_${size}.webp';
+      final path = 'thumbnails/${userId}_${imageId}_$size.webp';
 
       return await _uploadImageData(
         thumbnailData,

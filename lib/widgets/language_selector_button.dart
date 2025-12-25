@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provides/language_provider.dart';
-import '../services/app_localizations.dart';
 import '../services/language_service.dart';
 import '../theme/theme_colors.dart';
 
@@ -9,9 +8,9 @@ class LanguageSelectorButton extends StatelessWidget {
   final bool isInAppBar;
 
   const LanguageSelectorButton({
-    Key? key,
+    super.key,
     this.isInAppBar = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

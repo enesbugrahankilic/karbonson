@@ -2,7 +2,6 @@
 // Enhanced navigation utilities with smooth transitions and accessibility
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 /// Enhanced navigation utilities for better user experience
 class NavigationUtils {

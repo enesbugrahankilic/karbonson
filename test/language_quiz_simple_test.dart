@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:karbonson/services/language_service.dart';
 import 'package:karbonson/data/questions_database.dart';
-import 'package:karbonson/models/question.dart';
 
 void main() {
   setUpAll(() async {

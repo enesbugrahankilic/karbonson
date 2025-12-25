@@ -4,7 +4,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/connectivity_service.dart';
-import '../theme/theme_colors.dart';
 
 /// Network status widget that shows connectivity state and provides retry functionality
 ///

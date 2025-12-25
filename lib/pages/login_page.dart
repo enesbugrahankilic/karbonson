@@ -10,12 +10,10 @@ import 'friends_page.dart';
 import 'profile_page.dart';
 import 'register_page.dart';
 import 'settings_page.dart';
-import 'duel_page.dart';
 import 'email_verification_page.dart';
 import '../services/profile_service.dart';
 import '../services/firebase_auth_service.dart';
 import '../services/authentication_state_service.dart';
-import '../services/app_localizations.dart';
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../theme/app_theme.dart';
@@ -1030,8 +1028,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                         authStateService
                                             .getGameNickname()
                                             .then((gameNickname) {
-                                          WidgetsBinding.instance
-                                              .addPostFrameCallback((_) {
+                                          Future.delayed(Duration.zero, () {
                                             if (mounted) {
                                               Navigator.push(
                                                 context,
@@ -1198,7 +1195,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   onPressed: () {
                     final authStateService = AuthenticationStateService();
                     authStateService.getGameNickname().then((gameNickname) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                      Future.delayed(Duration.zero, () {
                         if (mounted) {
                           Navigator.push(
                             context,

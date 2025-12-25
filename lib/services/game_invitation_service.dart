@@ -91,7 +91,7 @@ class GameInvitationService {
 
       if (kDebugMode) {
         debugPrint(
-            '✅ Game invitation sent: ${inviterNickname} -> ${friendNickname} for room $roomId');
+            '✅ Game invitation sent: $inviterNickname -> $friendNickname for room $roomId');
       }
 
       // Send game invitation notification (local notification for now)
@@ -503,7 +503,7 @@ class GameInvitationService {
       final nicknameQuery = await _firestore
           .collection('users')
           .where('nickname', isGreaterThanOrEqualTo: searchQuery.trim())
-          .where('nickname', isLessThanOrEqualTo: searchQuery.trim() + '\uf8ff')
+          .where('nickname', isLessThanOrEqualTo: '${searchQuery.trim()}\uf8ff')
           .limit(10)
           .get();
 

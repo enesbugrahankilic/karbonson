@@ -4,9 +4,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:connectivity_plus/connectivity_plus.dart';
-import '../models/password_reset_data.dart';
-import '../services/profile_service.dart';
-import '../services/password_reset_feedback_service.dart';
 
 /// Result class for email verification operations
 class EmailVerificationResult {
@@ -502,7 +499,7 @@ class FirebaseAuthService {
 
         // If it's the last attempt, throw the error
         if (attempts >= maxRetries) {
-          throw e;
+          rethrow;
         }
 
         // Wait before retrying

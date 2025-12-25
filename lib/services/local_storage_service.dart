@@ -6,7 +6,6 @@ import 'dart:collection';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import '../models/user_data.dart';
-import '../models/game_board.dart';
 import '../models/profile_data.dart';
 
 /// Cache entry with expiry support

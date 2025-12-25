@@ -2,7 +2,6 @@
 // Enerji Teması için 200 Ek Soru
 
 import '../models/question.dart';
-import '../services/language_service.dart';
 
 class EnergyQuestionsExpansion {
   static List<Question> getTurkishEnergyQuestions() {

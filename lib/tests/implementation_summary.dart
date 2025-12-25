@@ -100,7 +100,7 @@ void main() {
   print('   - Push notification metodları');
   print('   - Local notification sistemi');
 
-  print('\n' + '=' * 60);
+  print('\n${'=' * 60}');
   print('🎊 ARKADAŞLIK İSTEMİ SİSTEMİ TAMAMEN HAZIR!');
   print('💬 Artık kullanıcılar arkadaşlık isteği gönderebilir,');
   print('   kabul edebilir, reddedebilir ve bildirimler alabilir!');

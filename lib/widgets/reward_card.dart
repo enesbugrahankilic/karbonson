@@ -12,13 +12,13 @@ class RewardCard extends StatelessWidget {
   final VoidCallback? onUse;
 
   const RewardCard({
-    Key? key,
+    super.key,
     required this.rewardItem,
     this.isUnlocked = false,
     this.isSelected = false,
     this.onTap,
     this.onUse,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -288,12 +288,12 @@ class RewardList extends StatelessWidget {
   final Function(RewardItem)? onRewardUse;
 
   const RewardList({
-    Key? key,
+    super.key,
     required this.rewardItems,
     this.filterType,
     this.onRewardTap,
     this.onRewardUse,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -352,10 +352,10 @@ class RewardTypeFilter extends StatelessWidget {
   final Function(RewardItemType?) onTypeSelected;
 
   const RewardTypeFilter({
-    Key? key,
+    super.key,
     this.selectedType,
     required this.onTypeSelected,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -436,14 +436,14 @@ class RewardInventorySummary extends StatelessWidget {
   final int unlockedFeatures;
 
   const RewardInventorySummary({
-    Key? key,
+    super.key,
     required this.totalAvatars,
     required this.totalThemes,
     required this.totalFeatures,
     required this.unlockedAvatars,
     required this.unlockedThemes,
     required this.unlockedFeatures,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

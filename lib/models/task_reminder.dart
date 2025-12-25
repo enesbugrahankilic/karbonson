@@ -1,7 +1,6 @@
 // lib/models/task_reminder.dart
 // SMS Reminder sistemi için veri modelleri
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Görev durumları
 enum TaskStatus {

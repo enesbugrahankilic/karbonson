@@ -1,7 +1,6 @@
 // lib/models/user_preferences.dart
 // SMS Reminder sistemi için kullanıcı tercihleri modeli
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Zamanı parse etmek için yardımcı sınıf
 class TimeOfDay {

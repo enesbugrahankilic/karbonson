@@ -4,8 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/enhanced_firebase_2fa_service.dart';
 import '../services/profile_service.dart';
 import '../theme/theme_colors.dart';
@@ -40,7 +38,7 @@ class _EnhancedTwoFactorAuthSetupPageState
   // UI State
   bool _waitingForSms = false;
   bool _showBackupCodes = false;
-  bool _enableBiometric = false;
+  final bool _enableBiometric = false;
   bool _generateBackupCodes = true;
 
   // Security data

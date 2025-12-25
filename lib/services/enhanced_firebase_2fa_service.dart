@@ -7,7 +7,6 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Enhanced result classes for 2FA operations
@@ -736,8 +735,8 @@ class EnhancedFirebase2FAService {
 
       final factors = await user.multiFactor.getEnrolledFactors();
       return factors
-          .where((factor) => factor is PhoneMultiFactorInfo)
-          .map((factor) => (factor as PhoneMultiFactorInfo).phoneNumber)
+          .whereType<PhoneMultiFactorInfo>()
+          .map((factor) => (factor).phoneNumber)
           .toList();
     } catch (e) {
       return [];

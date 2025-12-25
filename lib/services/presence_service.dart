@@ -33,8 +33,9 @@ class PresenceService {
     try {
       final user = _auth.currentUser;
       if (user == null) {
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint('⚠️ Cannot initialize presence - user not authenticated');
+        }
         return;
       }
 

@@ -9,7 +9,6 @@ import '../services/email_usage_service.dart';
 import '../models/user_data.dart';
 import '../theme/theme_colors.dart';
 import '../widgets/language_selector_button.dart';
-import 'tutorial_page.dart';
 import 'profile_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -131,8 +130,9 @@ class _RegisterPageState extends State<RegisterPage> {
         if (kDebugMode) debugPrint('Starting registration for: $email');
 
         // Check email usage limitation (maximum 2 uses)
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint('Checking email usage limitation for: $email');
+        }
 
         final emailUsageValidation =
             await _emailUsageService.canEmailBeUsed(email);
@@ -150,9 +150,10 @@ class _RegisterPageState extends State<RegisterPage> {
           return;
         }
 
-        if (kDebugMode)
+        if (kDebugMode) {
           debugPrint(
               'Email usage validation passed: ${emailUsageValidation.emailUsage?.usageCount ?? 0} uses');
+        }
 
         // Check nickname uniqueness before creating user
         if (kDebugMode) debugPrint('Checking nickname uniqueness: $nickname');

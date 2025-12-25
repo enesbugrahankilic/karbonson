@@ -2,7 +2,6 @@
 // Orman Teması için 200 Ek Soru
 
 import '../models/question.dart';
-import '../services/language_service.dart';
 
 class ForestQuestionsExpansion {
   static List<Question> getTurkishForestQuestions() {

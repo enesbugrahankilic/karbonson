@@ -5,6 +5,8 @@ import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../theme/app_theme.dart';
 import '../theme/modern_ui_components.dart';
+import '../theme/responsive_design.dart';
+import '../models/question.dart';
 
 class CustomQuestionCard extends StatefulWidget {
   final String question;
@@ -13,6 +15,7 @@ class CustomQuestionCard extends StatefulWidget {
   final bool isAnswered;
   final String selectedAnswer;
   final String correctAnswer;
+  final DifficultyLevel? difficulty;
 
   const CustomQuestionCard({
     super.key,
@@ -22,6 +25,7 @@ class CustomQuestionCard extends StatefulWidget {
     required this.isAnswered,
     required this.selectedAnswer,
     required this.correctAnswer,
+    this.difficulty,
   });
 
   @override
@@ -97,7 +101,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
                   children: [
                     // Enhanced Question section with gradient background
                     _buildQuestionSection(context),
-                    const SizedBox(height: DesignSystem.spacingXl),
+                    SizedBox(height: ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.xl)),
 
                     // Modern Answer options with staggered animation
                     _buildOptionsSection(context),
@@ -112,8 +116,15 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
   }
 
   Widget _buildQuestionSection(BuildContext context) {
+    // Get responsive values
+    final screenType = ResponsiveDesign.getScreenType(context);
+    final padding = ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.l);
+    final spacingM = ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.m);
+    final iconSize = _getResponsiveIconSize(screenType);
+    final fontSize = _getResponsiveQuestionFontSize(screenType);
+    
     return Container(
-      padding: const EdgeInsets.all(DesignSystem.spacingL),
+      padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -138,16 +149,19 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
       ),
       child: Column(
         children: [
+          // Zorluk Seviyesi İndikatörü
+          if (widget.difficulty != null) _buildDifficultyIndicator(context),
+          
           Icon(
             Icons.help_outline,
             color: ThemeColors.getPrimaryButtonColor(context),
-            size: 32,
+            size: iconSize,
           ),
-          const SizedBox(height: DesignSystem.spacingM),
+          SizedBox(height: spacingM),
           Text(
             widget.question,
             style: AppTheme.getGameQuestionStyle(context).copyWith(
-              fontSize: AppTheme.getAccessibleFontSize(context, 20),
+              fontSize: fontSize,
               height: 1.4,
               fontWeight: FontWeight.w600,
             ),
@@ -159,24 +173,125 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
     );
   }
 
+  Widget _buildDifficultyIndicator(BuildContext context) {
+    final screenType = ResponsiveDesign.getScreenType(context);
+    final indicatorSize = _getResponsiveIndicatorSize(screenType) * 0.8;
+    final fontSize = _getResponsiveOptionFontSize(screenType);
+    
+    final difficultyConfig = _getDifficultyConfig(widget.difficulty!);
+    
+    return Container(
+      margin: EdgeInsets.only(bottom: ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.s)),
+      padding: EdgeInsets.symmetric(
+        horizontal: ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.m),
+        vertical: ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.s) * 0.5,
+      ),
+      decoration: BoxDecoration(
+        color: difficultyConfig['color'] as Color,
+        borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+        boxShadow: [
+          BoxShadow(
+            color: difficultyConfig['color'] as Color,
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            difficultyConfig['icon'] as IconData,
+            color: Colors.white,
+            size: indicatorSize * 0.6,
+          ),
+          SizedBox(width: ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.s)),
+          Text(
+            difficultyConfig['name'] as String,
+            style: AppTheme.getGameOptionStyle(context).copyWith(
+              color: Colors.white,
+              fontSize: fontSize,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Map<String, dynamic> _getDifficultyConfig(DifficultyLevel difficulty) {
+    switch (difficulty) {
+      case DifficultyLevel.easy:
+        return {
+          'name': 'Kolay',
+          'color': Colors.green.shade400,
+          'icon': Icons.sentiment_very_satisfied,
+        };
+      case DifficultyLevel.medium:
+        return {
+          'name': 'Orta',
+          'color': Colors.orange.shade400,
+          'icon': Icons.sentiment_neutral,
+        };
+      case DifficultyLevel.hard:
+        return {
+          'name': 'Zor',
+          'color': Colors.red.shade400,
+          'icon': Icons.sentiment_very_dissatisfied,
+        };
+      default:
+        return {
+          'name': 'Bilinmiyor',
+          'color': Colors.grey.shade400,
+          'icon': Icons.help,
+        };
+    }
+  }
+
+  double _getResponsiveIconSize(ScreenType screenType) {
+    switch (screenType) {
+      case ScreenType.mobile:
+        return 28;
+      case ScreenType.tablet:
+        return 32;
+      case ScreenType.desktop:
+        return 36;
+    }
+  }
+
+  double _getResponsiveQuestionFontSize(ScreenType screenType) {
+    switch (screenType) {
+      case ScreenType.mobile:
+        return 18;
+      case ScreenType.tablet:
+        return 20;
+      case ScreenType.desktop:
+        return 22;
+    }
+  }
+
   Widget _buildOptionsSection(BuildContext context) {
+    // Get responsive values
+    final screenType = ResponsiveDesign.getScreenType(context);
+    final spacingM = ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.m);
+    final verticalSpacing = spacingM * 0.8; // Slightly reduced spacing between options
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: widget.options.asMap().entries.map((entry) {
         final index = entry.key;
         final option = entry.value;
-        final delay = Duration(milliseconds: 100 * index);
 
         return TweenAnimationBuilder<double>(
           tween: Tween(begin: 0.0, end: 1.0),
-          duration: const Duration(milliseconds: 400),
+          duration: Duration(milliseconds: _getAnimationDuration(screenType)),
           curve: Curves.easeOutBack,
           builder: (context, value, child) {
             return Transform.scale(
               scale: value,
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: DesignSystem.spacingM, // Increased vertical spacing between options
+                padding: EdgeInsets.symmetric(
+                  vertical: verticalSpacing, // Responsive vertical spacing
                 ),
                 child: _buildOptionButton(option, context, index),
               ),
@@ -187,9 +302,28 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
     );
   }
 
+  int _getAnimationDuration(ScreenType screenType) {
+    switch (screenType) {
+      case ScreenType.mobile:
+        return 350;
+      case ScreenType.tablet:
+        return 400;
+      case ScreenType.desktop:
+        return 450;
+    }
+  }
+
   Widget _buildOptionButton(String option, BuildContext context, int index) {
+    // Get responsive values
+    final screenType = ResponsiveDesign.getScreenType(context);
+    final spacingM = ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.m);
+    final indicatorSize = _getResponsiveIndicatorSize(screenType);
+    final iconSize = _getResponsiveIconSize(screenType);
+    final fontSize = _getResponsiveOptionFontSize(screenType);
+    final padding = _getResponsiveOptionPadding(screenType);
+    
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+      duration: Duration(milliseconds: _getButtonAnimationDuration(screenType)),
       curve: Curves.easeInOut,
       child: Material(
         color: Colors.transparent,
@@ -198,14 +332,14 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
               widget.isAnswered ? null : () => widget.onOptionSelected(option),
           borderRadius: BorderRadius.circular(DesignSystem.radiusM),
           child: Container(
-              padding: const EdgeInsets.all(DesignSystem.spacingL), // Increased padding for better text display
+            padding: padding, // Responsive padding for better text display
             decoration: _getOptionDecoration(option, context),
             child: Row(
               children: [
                 // Option indicator with modern styling
                 Container(
-                  width: 32,
-                  height: 32,
+                  width: indicatorSize,
+                  height: indicatorSize,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _getIndicatorColor(option, context),
@@ -216,13 +350,13 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
                   ),
                   child: _buildOptionIndicator(option, context),
                 ),
-                const SizedBox(width: DesignSystem.spacingM),
+                SizedBox(width: spacingM),
 
                 // Option text with enhanced styling
                 Expanded(
                   child: Text(
                     option,
-                    style: _getOptionTextStyle(option, context),
+                    style: _getOptionTextStyle(option, context, fontSize),
                     textAlign: TextAlign.left,
                     maxLines: null, // Allow unlimited lines for full text display
                     overflow: TextOverflow.visible, // Show all text instead of ellipsis
@@ -234,7 +368,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
                   Icon(
                     Icons.check_circle,
                     color: Colors.white,
-                    size: 20,
+                    size: iconSize,
                   )
                 else if (widget.isAnswered &&
                     option == widget.selectedAnswer &&
@@ -242,7 +376,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
                   Icon(
                     Icons.cancel,
                     color: Colors.white,
-                    size: 20,
+                    size: iconSize,
                   ),
               ],
             ),
@@ -250,6 +384,53 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         ),
       ),
     );
+  }
+
+  double _getResponsiveIndicatorSize(ScreenType screenType) {
+    switch (screenType) {
+      case ScreenType.mobile:
+        return 28;
+      case ScreenType.tablet:
+        return 32;
+      case ScreenType.desktop:
+        return 36;
+    }
+  }
+
+  double _getResponsiveOptionFontSize(ScreenType screenType) {
+    switch (screenType) {
+      case ScreenType.mobile:
+        return 14;
+      case ScreenType.tablet:
+        return 16;
+      case ScreenType.desktop:
+        return 18;
+    }
+  }
+
+  EdgeInsets _getResponsiveOptionPadding(ScreenType screenType) {
+    switch (screenType) {
+      case ScreenType.mobile:
+        return EdgeInsets.all(DesignSystem.spacingM);
+      case ScreenType.tablet:
+        return EdgeInsets.all(DesignSystem.spacingL);
+      case ScreenType.desktop:
+        return EdgeInsets.symmetric(
+          horizontal: DesignSystem.spacingL,
+          vertical: DesignSystem.spacingM * 1.2,
+        );
+    }
+  }
+
+  int _getButtonAnimationDuration(ScreenType screenType) {
+    switch (screenType) {
+      case ScreenType.mobile:
+        return 150;
+      case ScreenType.tablet:
+        return 200;
+      case ScreenType.desktop:
+        return 250;
+    }
   }
 
   BoxDecoration _getOptionDecoration(String option, BuildContext context) {
@@ -407,9 +588,9 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
     );
   }
 
-  TextStyle _getOptionTextStyle(String option, BuildContext context) {
+  TextStyle _getOptionTextStyle(String option, BuildContext context, double fontSize) {
     final baseStyle = AppTheme.getGameOptionStyle(context).copyWith(
-      fontSize: AppTheme.getAccessibleFontSize(context, 16),
+      fontSize: fontSize,
       height: 1.3,
     );
 

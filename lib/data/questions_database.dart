@@ -5,7 +5,8 @@ import '../services/language_service.dart';
 class QuestionsDatabase {
   static final Map<AppLanguage, List<Question>> _questionsByLanguage = {
     AppLanguage.turkish: [
-      // Question 1
+      // KOLAY SORULAR (8 soru)
+      // Question 1 - Kolay
       Question(
         text: 'Karbon ayak izinizi azaltmanın en etkili yolu nedir?',
         options: [
@@ -15,8 +16,9 @@ class QuestionsDatabase {
           Option(text: 'Eski gazeteleri atmak', score: 0),
         ],
         category: 'Enerji',
+        difficulty: DifficultyLevel.easy,
       ),
-      // Question 2
+      // Question 2 - Kolay
       Question(
         text: 'Yenilenebilir enerji kaynaklarından biri hangisidir?',
         options: [
@@ -26,8 +28,9 @@ class QuestionsDatabase {
           Option(text: 'Petrol', score: 0),
         ],
         category: 'Enerji',
+        difficulty: DifficultyLevel.easy,
       ),
-      // Question 3
+      // Question 3 - Kolay
       Question(
         text: 'Sürdürülebilir ulaşım için en iyi seçenek nedir?',
         options: [
@@ -37,8 +40,9 @@ class QuestionsDatabase {
           Option(text: 'Taksi kullanmak', score: 5),
         ],
         category: 'Ulaşım',
+        difficulty: DifficultyLevel.easy,
       ),
-      // Question 4
+      // Question 4 - Kolay
       Question(
         text: 'Aşağıdakilerden hangisi su tasarrufu sağlamaz?',
         options: [
@@ -48,8 +52,9 @@ class QuestionsDatabase {
           Option(text: 'Çamaşır makinesini tam dolmadan çalıştırmak', score: 0),
         ],
         category: 'Su',
+        difficulty: DifficultyLevel.easy,
       ),
-      // Question 5
+      // Question 5 - Kolay
       Question(
         text: 'Geri dönüşüm kutularının amacı nedir?',
         options: [
@@ -59,19 +64,9 @@ class QuestionsDatabase {
           Option(text: 'Enerji tüketimini artırmak', score: 0),
         ],
         category: 'Geri Dönüşüm',
+        difficulty: DifficultyLevel.easy,
       ),
-      // Question 6
-      Question(
-        text: 'Evde enerji tasarrufu yapmanın en etkili yolu nedir?',
-        options: [
-          Option(text: 'Enerji verimli ampuller kullanmak', score: 10),
-          Option(text: 'Televizyonu bekleme modunda bırakmak', score: 0),
-          Option(text: 'Camları sürekli açık tutmak', score: 0),
-          Option(text: 'Elektronik cihazları fişten çekmek', score: 5),
-        ],
-        category: 'Enerji',
-      ),
-      // Question 7
+      // Question 6 - Kolay
       Question(
         text: 'Ağaç dikmenin çevreye katkısı nedir?',
         options: [
@@ -81,19 +76,9 @@ class QuestionsDatabase {
           Option(text: 'Gürültü kirliliğini artırır', score: 0),
         ],
         category: 'Orman',
+        difficulty: DifficultyLevel.easy,
       ),
-      // Question 8
-      Question(
-        text: 'Hangisi sürdürülebilir tüketim alışkanlığıdır?',
-        options: [
-          Option(text: 'Yalnızca ihtiyaç kadar ürün almak', score: 10),
-          Option(text: 'Sürekli yeni ürünler satın almak', score: 0),
-          Option(text: 'Plastik poşetleri tek kullanmak', score: 0),
-          Option(text: 'Kullanmadığı eşyaları çöpe atmak', score: 0),
-        ],
-        category: 'Tüketim',
-      ),
-      // Question 9
+      // Question 7 - Kolay
       Question(
         text: 'Atık piller nereye atılmalıdır?',
         options: [
@@ -103,48 +88,9 @@ class QuestionsDatabase {
           Option(text: 'Bahçeye gömülmeli', score: 0),
         ],
         category: 'Geri Dönüşüm',
+        difficulty: DifficultyLevel.easy,
       ),
-      // Question 10
-      Question(
-        text: 'Hangisi çevreye zarar verir?',
-        options: [
-          Option(text: 'Denizlere atık boşaltmak', score: 0),
-          Option(text: 'Kağıtları geri dönüştürmek', score: 10),
-          Option(text: 'Toplu taşımayı tercih etmek', score: 10),
-          Option(text: 'Ormanlık alanları korumak', score: 10),
-        ],
-      ),
-      // Question 11
-      Question(
-        text: 'Plastik poşetlerin çevreye etkisi nedir?',
-        options: [
-          Option(text: 'Çok hızlı çözünür', score: 0),
-          Option(text: 'Yüzlerce yıl çözünmeden kalır', score: 10),
-          Option(text: 'Hiç etkisi yoktur', score: 0),
-          Option(text: 'Sadece su kirliliğine sebep olur', score: 0),
-        ],
-      ),
-      // Question 12
-      Question(
-        text: 'Kompost yapmanın faydası nedir?',
-        options: [
-          Option(text: 'Atık miktarını artırır', score: 0),
-          Option(text: 'Organik atıkları doğal gübreye dönüştürür', score: 10),
-          Option(text: 'Kötü koku yaratır', score: 0),
-          Option(text: 'Toprağı kirlenir', score: 0),
-        ],
-      ),
-      // Question 13
-      Question(
-        text: 'Hangi ulaşım aracı en az karbon emisyonu üretir?',
-        options: [
-          Option(text: 'Otomobil', score: 0),
-          Option(text: 'Uçak', score: 0),
-          Option(text: 'Elektrikli bisiklet', score: 10),
-          Option(text: 'Motosiklet', score: 0),
-        ],
-      ),
-      // Question 14
+      // Question 8 - Kolay
       Question(
         text: 'Gıda israfını azaltmanın en iyi yolu nedir?',
         options: [
@@ -153,8 +99,72 @@ class QuestionsDatabase {
           Option(text: 'Yemekleri çöpe atmak', score: 0),
           Option(text: 'Her zaman dışarıda yemek', score: 0),
         ],
+        category: 'Tüketim',
+        difficulty: DifficultyLevel.easy,
       ),
-      // Question 15
+
+      // ORTA ZORLUKTA SORULAR (9 soru)
+      // Question 9 - Orta
+      Question(
+        text: 'Evde enerji tasarrufu yapmanın en etkili yolu nedir?',
+        options: [
+          Option(text: 'Enerji verimli ampuller kullanmak', score: 10),
+          Option(text: 'Televizyonu bekleme modunda bırakmak', score: 0),
+          Option(text: 'Camları sürekli açık tutmak', score: 0),
+          Option(text: 'Elektronik cihazları fişten çekmek', score: 5),
+        ],
+        category: 'Enerji',
+        difficulty: DifficultyLevel.medium,
+      ),
+      // Question 10 - Orta
+      Question(
+        text: 'Hangisi sürdürülebilir tüketim alışkanlığıdır?',
+        options: [
+          Option(text: 'Yalnızca ihtiyaç kadar ürün almak', score: 10),
+          Option(text: 'Sürekli yeni ürünler satın almak', score: 0),
+          Option(text: 'Plastik poşetleri tek kullanmak', score: 0),
+          Option(text: 'Kullanmadığı eşyaları çöpe atmak', score: 0),
+        ],
+        category: 'Tüketim',
+        difficulty: DifficultyLevel.medium,
+      ),
+      // Question 11 - Orta
+      Question(
+        text: 'Plastik poşetlerin çevreye etkisi nedir?',
+        options: [
+          Option(text: 'Çok hızlı çözünür', score: 0),
+          Option(text: 'Yüzlerce yıl çözünmeden kalır', score: 10),
+          Option(text: 'Hiç etkisi yoktur', score: 0),
+          Option(text: 'Sadece su kirliliğine sebep olur', score: 0),
+        ],
+        category: 'Geri Dönüşüm',
+        difficulty: DifficultyLevel.medium,
+      ),
+      // Question 12 - Orta
+      Question(
+        text: 'Kompost yapmanın faydası nedir?',
+        options: [
+          Option(text: 'Atık miktarını artırır', score: 0),
+          Option(text: 'Organik atıkları doğal gübreye dönüştürür', score: 10),
+          Option(text: 'Kötü koku yaratır', score: 0),
+          Option(text: 'Toprağı kirlenir', score: 0),
+        ],
+        category: 'Geri Dönüşüm',
+        difficulty: DifficultyLevel.medium,
+      ),
+      // Question 13 - Orta
+      Question(
+        text: 'Hangi ulaşım aracı en az karbon emisyonu üretir?',
+        options: [
+          Option(text: 'Otomobil', score: 0),
+          Option(text: 'Uçak', score: 0),
+          Option(text: 'Elektrikli bisiklet', score: 10),
+          Option(text: 'Motosiklet', score: 0),
+        ],
+        category: 'Ulaşım',
+        difficulty: DifficultyLevel.medium,
+      ),
+      // Question 14 - Orta
       Question(
         text: 'Hangi ürün en çok su tüketir?',
         options: [
@@ -163,8 +173,10 @@ class QuestionsDatabase {
           Option(text: 'Elma', score: 0),
           Option(text: 'Havuç', score: 0),
         ],
+        category: 'Su',
+        difficulty: DifficultyLevel.medium,
       ),
-      // Question 16
+      // Question 15 - Orta
       Question(
         text: 'Çevre dostu ambalaj hangisidir?',
         options: [
@@ -173,18 +185,10 @@ class QuestionsDatabase {
           Option(text: 'Alüminyum folyo', score: 0),
           Option(text: 'Polistiren köpük', score: 0),
         ],
+        category: 'Tüketim',
+        difficulty: DifficultyLevel.medium,
       ),
-      // Question 17
-      Question(
-        text: 'Küresel ısınmanın ana sebebi nedir?',
-        options: [
-          Option(text: 'Ağaç kesimi', score: 0),
-          Option(text: 'Sera gazları', score: 10),
-          Option(text: 'Volkan patlamaları', score: 0),
-          Option(text: 'Okyanus dalgaları', score: 0),
-        ],
-      ),
-      // Question 18
+      // Question 16 - Orta
       Question(
         text: 'Hangi davranış enerji tasarrufu sağlar?',
         options: [
@@ -194,8 +198,36 @@ class QuestionsDatabase {
           Option(
               text: 'Elektronik cihazları bekleme modunda bırakmak', score: 0),
         ],
+        category: 'Enerji',
+        difficulty: DifficultyLevel.medium,
       ),
-      // Question 19
+      // Question 17 - Orta
+      Question(
+        text: 'Hangi davranış atık azaltımını destekler?',
+        options: [
+          Option(text: 'Tek kullanımlık ürünler tercih etmek', score: 0),
+          Option(text: 'Geri dönüştürülebilir ürünler seçmek', score: 10),
+          Option(text: 'Ambalajsız ürünleri reddetmek', score: 0),
+          Option(text: 'Daha fazla alışveriş yapmak', score: 0),
+        ],
+        category: 'Tüketim',
+        difficulty: DifficultyLevel.medium,
+      ),
+
+      // ZOR SORULAR (8 soru)
+      // Question 18 - Zor
+      Question(
+        text: 'Küresel ısınmanın ana sebebi nedir?',
+        options: [
+          Option(text: 'Ağaç kesimi', score: 0),
+          Option(text: 'Sera gazları', score: 10),
+          Option(text: 'Volkan patlamaları', score: 0),
+          Option(text: 'Okyanus dalgaları', score: 0),
+        ],
+        category: 'Orman',
+        difficulty: DifficultyLevel.hard,
+      ),
+      // Question 19 - Zor
       Question(
         text: 'Biyoçeşitlilik nedir?',
         options: [
@@ -204,8 +236,10 @@ class QuestionsDatabase {
           Option(text: 'Sadece hayvan türlerinin çeşitliliği', score: 0),
           Option(text: 'İnsan nüfusunun çeşitliliği', score: 0),
         ],
+        category: 'Orman',
+        difficulty: DifficultyLevel.hard,
       ),
-      // Question 20
+      // Question 20 - Zor
       Question(
         text: 'Hangi eylem ozon tabakasını korur?',
         options: [
@@ -214,8 +248,10 @@ class QuestionsDatabase {
           Option(text: 'Endüstriyel atıkları havaya salmak', score: 0),
           Option(text: 'Aerosol ürünleri aşırı kullanmak', score: 0),
         ],
+        category: 'Enerji',
+        difficulty: DifficultyLevel.hard,
       ),
-      // Question 21
+      // Question 21 - Zor
       Question(
         text: 'Sürdürülebilir tarım nedir?',
         options: [
@@ -225,8 +261,10 @@ class QuestionsDatabase {
           Option(text: 'Organik ürünleri dışlayan tarım', score: 0),
           Option(text: 'Hızlı büyüme odaklı tarım', score: 0),
         ],
+        category: 'Tüketim',
+        difficulty: DifficultyLevel.hard,
       ),
-      // Question 22
+      // Question 22 - Zor
       Question(
         text: 'Hangi davranış su kirliliğini azaltır?',
         options: [
@@ -235,8 +273,10 @@ class QuestionsDatabase {
           Option(text: 'Atıkları suya atmak', score: 0),
           Option(text: 'Kanalizasyonu arıtmadan deşarj etmek', score: 0),
         ],
+        category: 'Su',
+        difficulty: DifficultyLevel.hard,
       ),
-      // Question 23
+      // Question 23 - Zor
       Question(
         text: 'Çevre korumasında bireysel sorumluluk ne anlama gelir?',
         options: [
@@ -245,8 +285,10 @@ class QuestionsDatabase {
           Option(text: 'Çevreye zarar vermek', score: 0),
           Option(text: 'Sadece büyük şirketlerin sorumluluğu', score: 0),
         ],
+        category: 'Tüketim',
+        difficulty: DifficultyLevel.hard,
       ),
-      // Question 24
+      // Question 24 - Zor
       Question(
         text: 'Ekolojik ayak izi nedir?',
         options: [
@@ -255,20 +297,13 @@ class QuestionsDatabase {
           Option(text: 'Coğrafi sınırlar', score: 0),
           Option(text: 'Kentsel alan büyüklüğü', score: 0),
         ],
-      ),
-      // Question 25
-      Question(
-        text: 'Hangi davranış atık azaltımını destekler?',
-        options: [
-          Option(text: 'Tek kullanımlık ürünler tercih etmek', score: 0),
-          Option(text: 'Geri dönüştürülebilir ürünler seçmek', score: 10),
-          Option(text: 'Ambalajsız ürünleri reddetmek', score: 0),
-          Option(text: 'Daha fazla alışveriş yapmak', score: 0),
-        ],
+        category: 'Tüketim',
+        difficulty: DifficultyLevel.hard,
       ),
     ],
     AppLanguage.english: [
-      // Question 1
+      // KOLAY SORULAR (8 soru)
+      // Question 1 - Easy
       Question(
         text: 'What is the most effective way to reduce your carbon footprint?',
         options: [
@@ -277,8 +312,10 @@ class QuestionsDatabase {
           Option(text: 'Taking very hot showers', score: 0),
           Option(text: 'Throwing away old newspapers', score: 0),
         ],
+        category: 'Energy',
+        difficulty: DifficultyLevel.easy,
       ),
-      // Question 2
+      // Question 2 - Easy
       Question(
         text: 'Which of the following is a renewable energy source?',
         options: [
@@ -287,8 +324,10 @@ class QuestionsDatabase {
           Option(text: 'Natural gas', score: 0),
           Option(text: 'Petroleum', score: 0),
         ],
+        category: 'Energy',
+        difficulty: DifficultyLevel.easy,
       ),
-      // Question 3
+      // Question 3 - Easy
       Question(
         text: 'What is the best option for sustainable transportation?',
         options: [
@@ -297,8 +336,10 @@ class QuestionsDatabase {
           Option(text: 'Cycling or walking', score: 10),
           Option(text: 'Using taxis', score: 5),
         ],
+        category: 'Transportation',
+        difficulty: DifficultyLevel.easy,
       ),
-      // Question 4
+      // Question 4 - Easy
       Question(
         text: 'Which of the following does NOT save water?',
         options: [
@@ -308,8 +349,10 @@ class QuestionsDatabase {
           Option(text: 'Collecting rainwater', score: 10),
           Option(text: 'Running washing machine when not full', score: 0),
         ],
+        category: 'Water',
+        difficulty: DifficultyLevel.easy,
       ),
-      // Question 5
+      // Question 5 - Easy
       Question(
         text: 'What is the purpose of recycling bins?',
         options: [
@@ -318,18 +361,10 @@ class QuestionsDatabase {
           Option(text: 'Hiding trash', score: 0),
           Option(text: 'Increasing energy consumption', score: 0),
         ],
+        category: 'Recycling',
+        difficulty: DifficultyLevel.easy,
       ),
-      // Question 6
-      Question(
-        text: 'What is the most effective way to save energy at home?',
-        options: [
-          Option(text: 'Using energy-efficient light bulbs', score: 10),
-          Option(text: 'Leaving the TV on standby mode', score: 0),
-          Option(text: 'Keeping windows open all the time', score: 0),
-          Option(text: 'Unplugging electronic devices', score: 5),
-        ],
-      ),
-      // Question 7
+      // Question 6 - Easy
       Question(
         text: 'What is the environmental benefit of planting trees?',
         options: [
@@ -338,18 +373,10 @@ class QuestionsDatabase {
           Option(text: 'Increases carbon dioxide levels', score: 0),
           Option(text: 'Increases noise pollution', score: 0),
         ],
+        category: 'Forest',
+        difficulty: DifficultyLevel.easy,
       ),
-      // Question 8
-      Question(
-        text: 'Which is a sustainable consumption habit?',
-        options: [
-          Option(text: 'Buying only what you need', score: 10),
-          Option(text: 'Constantly buying new products', score: 0),
-          Option(text: 'Using plastic bags only once', score: 0),
-          Option(text: 'Throwing away unused items', score: 0),
-        ],
-      ),
-      // Question 9
+      // Question 7 - Easy
       Question(
         text: 'Where should waste batteries be disposed of?',
         options: [
@@ -358,18 +385,48 @@ class QuestionsDatabase {
           Option(text: 'Down the drain', score: 0),
           Option(text: 'Buried in the garden', score: 0),
         ],
+        category: 'Recycling',
+        difficulty: DifficultyLevel.easy,
       ),
-      // Question 10
+      // Question 8 - Easy
       Question(
-        text: 'Which of these harms the environment?',
+        text: 'What is the best way to reduce food waste?',
         options: [
-          Option(text: 'Dumping waste into seas', score: 0),
-          Option(text: 'Recycling paper', score: 10),
-          Option(text: 'Using public transportation', score: 10),
-          Option(text: 'Protecting forest areas', score: 10),
+          Option(text: 'Ordering more food', score: 0),
+          Option(text: 'Controlling portion sizes', score: 10),
+          Option(text: 'Throwing away food', score: 0),
+          Option(text: 'Always eating out', score: 0),
         ],
+        category: 'Consumption',
+        difficulty: DifficultyLevel.easy,
       ),
-      // Question 11
+
+      // ORTA ZORLUKTA SORULAR (9 soru)
+      // Question 9 - Medium
+      Question(
+        text: 'What is the most effective way to save energy at home?',
+        options: [
+          Option(text: 'Using energy-efficient light bulbs', score: 10),
+          Option(text: 'Leaving the TV on standby mode', score: 0),
+          Option(text: 'Keeping windows open all the time', score: 0),
+          Option(text: 'Unplugging electronic devices', score: 5),
+        ],
+        category: 'Energy',
+        difficulty: DifficultyLevel.medium,
+      ),
+      // Question 10 - Medium
+      Question(
+        text: 'Which is a sustainable consumption habit?',
+        options: [
+          Option(text: 'Buying only what you need', score: 10),
+          Option(text: 'Constantly buying new products', score: 0),
+          Option(text: 'Using plastic bags only once', score: 0),
+          Option(text: 'Throwing away unused items', score: 0),
+        ],
+        category: 'Consumption',
+        difficulty: DifficultyLevel.medium,
+      ),
+      // Question 11 - Medium
       Question(
         text: 'What is the environmental impact of plastic bags?',
         options: [
@@ -378,8 +435,10 @@ class QuestionsDatabase {
           Option(text: 'They have no impact', score: 0),
           Option(text: 'They only cause water pollution', score: 0),
         ],
+        category: 'Recycling',
+        difficulty: DifficultyLevel.medium,
       ),
-      // Question 12
+      // Question 12 - Medium
       Question(
         text: 'What is the benefit of composting?',
         options: [
@@ -390,8 +449,10 @@ class QuestionsDatabase {
           Option(text: 'Creates bad odors', score: 0),
           Option(text: 'Pollutes the soil', score: 0),
         ],
+        category: 'Recycling',
+        difficulty: DifficultyLevel.medium,
       ),
-      // Question 13
+      // Question 13 - Medium
       Question(
         text:
             'Which transportation vehicle produces the least carbon emissions?',
@@ -401,18 +462,10 @@ class QuestionsDatabase {
           Option(text: 'Electric bicycle', score: 10),
           Option(text: 'Motorcycle', score: 0),
         ],
+        category: 'Transportation',
+        difficulty: DifficultyLevel.medium,
       ),
-      // Question 14
-      Question(
-        text: 'What is the best way to reduce food waste?',
-        options: [
-          Option(text: 'Ordering more food', score: 0),
-          Option(text: 'Controlling portion sizes', score: 10),
-          Option(text: 'Throwing away food', score: 0),
-          Option(text: 'Always eating out', score: 0),
-        ],
-      ),
-      // Question 15
+      // Question 14 - Medium
       Question(
         text: 'Which product consumes the most water?',
         options: [
@@ -421,8 +474,10 @@ class QuestionsDatabase {
           Option(text: 'Apples', score: 0),
           Option(text: 'Carrots', score: 0),
         ],
+        category: 'Water',
+        difficulty: DifficultyLevel.medium,
       ),
-      // Question 16
+      // Question 15 - Medium
       Question(
         text: 'Which packaging is environmentally friendly?',
         options: [
@@ -431,18 +486,10 @@ class QuestionsDatabase {
           Option(text: 'Aluminum foil', score: 0),
           Option(text: 'Polystyrene foam', score: 0),
         ],
+        category: 'Consumption',
+        difficulty: DifficultyLevel.medium,
       ),
-      // Question 17
-      Question(
-        text: 'What is the main cause of global warming?',
-        options: [
-          Option(text: 'Deforestation', score: 0),
-          Option(text: 'Greenhouse gases', score: 10),
-          Option(text: 'Volcanic eruptions', score: 0),
-          Option(text: 'Ocean waves', score: 0),
-        ],
-      ),
-      // Question 18
+      // Question 16 - Medium
       Question(
         text: 'Which behavior saves energy?',
         options: [
@@ -451,8 +498,36 @@ class QuestionsDatabase {
           Option(text: 'Keeping all lights on during the day', score: 0),
           Option(text: 'Leaving electronic devices in standby mode', score: 0),
         ],
+        category: 'Energy',
+        difficulty: DifficultyLevel.medium,
       ),
-      // Question 19
+      // Question 17 - Medium
+      Question(
+        text: 'Which behavior supports waste reduction?',
+        options: [
+          Option(text: 'Preferring single-use products', score: 0),
+          Option(text: 'Choosing recyclable products', score: 10),
+          Option(text: 'Rejecting unpackaged products', score: 0),
+          Option(text: 'Shopping more', score: 0),
+        ],
+        category: 'Consumption',
+        difficulty: DifficultyLevel.medium,
+      ),
+
+      // ZOR SORULAR (8 soru)
+      // Question 18 - Hard
+      Question(
+        text: 'What is the main cause of global warming?',
+        options: [
+          Option(text: 'Deforestation', score: 0),
+          Option(text: 'Greenhouse gases', score: 10),
+          Option(text: 'Volcanic eruptions', score: 0),
+          Option(text: 'Ocean waves', score: 0),
+        ],
+        category: 'Forest',
+        difficulty: DifficultyLevel.hard,
+      ),
+      // Question 19 - Hard
       Question(
         text: 'What is biodiversity?',
         options: [
@@ -461,8 +536,10 @@ class QuestionsDatabase {
           Option(text: 'Only diversity of animal species', score: 0),
           Option(text: 'Diversity of human population', score: 0),
         ],
+        category: 'Forest',
+        difficulty: DifficultyLevel.hard,
       ),
-      // Question 20
+      // Question 20 - Hard
       Question(
         text: 'Which action protects the ozone layer?',
         options: [
@@ -471,8 +548,10 @@ class QuestionsDatabase {
           Option(text: 'Releasing industrial waste into air', score: 0),
           Option(text: 'Overusing aerosol products', score: 0),
         ],
+        category: 'Energy',
+        difficulty: DifficultyLevel.hard,
       ),
-      // Question 21
+      // Question 21 - Hard
       Question(
         text: 'What is sustainable agriculture?',
         options: [
@@ -484,8 +563,10 @@ class QuestionsDatabase {
           Option(text: 'Agriculture that excludes organic products', score: 0),
           Option(text: 'Agriculture focused on rapid growth', score: 0),
         ],
+        category: 'Consumption',
+        difficulty: DifficultyLevel.hard,
       ),
-      // Question 22
+      // Question 22 - Hard
       Question(
         text: 'Which behavior reduces water pollution?',
         options: [
@@ -494,8 +575,10 @@ class QuestionsDatabase {
           Option(text: 'Throwing waste into water', score: 0),
           Option(text: 'Discharging untreated sewage', score: 0),
         ],
+        category: 'Water',
+        difficulty: DifficultyLevel.hard,
       ),
-      // Question 23
+      // Question 23 - Hard
       Question(
         text:
             'What does individual responsibility in environmental protection mean?',
@@ -506,8 +589,10 @@ class QuestionsDatabase {
           Option(text: 'Harming the environment', score: 0),
           Option(text: 'Only large companies\' responsibility', score: 0),
         ],
+        category: 'Consumption',
+        difficulty: DifficultyLevel.hard,
       ),
-      // Question 24
+      // Question 24 - Hard
       Question(
         text: 'What is ecological footprint?',
         options: [
@@ -517,16 +602,8 @@ class QuestionsDatabase {
           Option(text: 'Geographic boundaries', score: 0),
           Option(text: 'Size of urban areas', score: 0),
         ],
-      ),
-      // Question 25
-      Question(
-        text: 'Which behavior supports waste reduction?',
-        options: [
-          Option(text: 'Preferring single-use products', score: 0),
-          Option(text: 'Choosing recyclable products', score: 10),
-          Option(text: 'Rejecting unpackaged products', score: 0),
-          Option(text: 'Shopping more', score: 0),
-        ],
+        category: 'Consumption',
+        difficulty: DifficultyLevel.hard,
       ),
     ],
   };
@@ -549,5 +626,97 @@ class QuestionsDatabase {
     final questions = getQuestions(language);
     questions.shuffle();
     return questions.take(count).toList();
+  }
+
+  // YENİ ZORLUK SEVİYESİ FİLTRELEME METHOD'LARI
+
+  /// Belirli bir zorluk seviyesindeki soruları getirir
+  static List<Question> getQuestionsByDifficulty(
+      AppLanguage language, DifficultyLevel difficulty) {
+    final allQuestions = getQuestions(language);
+    return allQuestions
+        .where((question) => question.difficulty == difficulty)
+        .toList();
+  }
+
+  /// Belirli zorluk seviyesinden rastgele sorular getirir
+  static List<Question> getRandomQuestionsByDifficulty(
+      AppLanguage language, DifficultyLevel difficulty, int count) {
+    final questions = getQuestionsByDifficulty(language, difficulty);
+    questions.shuffle();
+    return questions.take(count).toList();
+  }
+
+  /// Karışık zorluk seviyelerinde sorular getirir (kolay:orta:zor = 1:1:1 oranında)
+  static List<Question> getMixedDifficultyQuestions(
+      AppLanguage language, int totalQuestions) {
+    final easyQuestions = getQuestionsByDifficulty(language, DifficultyLevel.easy);
+    final mediumQuestions =
+        getQuestionsByDifficulty(language, DifficultyLevel.medium);
+    final hardQuestions = getQuestionsByDifficulty(language, DifficultyLevel.hard);
+
+    // Her seviyeden eşit sayıda soru al
+    final questionsPerLevel = (totalQuestions / 3).round();
+
+    final selectedQuestions = <Question>[];
+
+    // Kolay sorular
+    final shuffledEasy = List<Question>.from(easyQuestions)..shuffle();
+    selectedQuestions.addAll(shuffledEasy.take(questionsPerLevel));
+
+    // Orta sorular
+    final shuffledMedium = List<Question>.from(mediumQuestions)..shuffle();
+    selectedQuestions.addAll(shuffledMedium.take(questionsPerLevel));
+
+    // Zor sorular
+    final shuffledHard = List<Question>.from(hardQuestions)..shuffle();
+    selectedQuestions.addAll(shuffledHard.take(questionsPerLevel));
+
+    // Eğer toplam soru sayısı tam bölünmemişse, kalan soruları ekle
+    while (selectedQuestions.length < totalQuestions) {
+      final remainingEasy = easyQuestions
+          .where((q) => !selectedQuestions.contains(q))
+          .take(1);
+      final remainingMedium = mediumQuestions
+          .where((q) => !selectedQuestions.contains(q))
+          .take(1);
+      final remainingHard = hardQuestions
+          .where((q) => !selectedQuestions.contains(q))
+          .take(1);
+
+      final allRemaining = [...remainingEasy, ...remainingMedium, ...remainingHard];
+      if (allRemaining.isEmpty) break;
+
+      allRemaining.shuffle();
+      selectedQuestions.add(allRemaining.first);
+    }
+
+    selectedQuestions.shuffle();
+    return selectedQuestions.take(totalQuestions).toList();
+  }
+
+  /// Her zorluk seviyesindeki soru sayısını getirir
+  static Map<DifficultyLevel, int> getQuestionCountByDifficulty(
+      AppLanguage language) {
+    final allQuestions = getQuestions(language);
+    final countMap = <DifficultyLevel, int>{};
+
+    for (final difficulty in DifficultyLevel.values) {
+      countMap[difficulty] = allQuestions
+          .where((question) => question.difficulty == difficulty)
+          .length;
+    }
+
+    return countMap;
+  }
+
+  /// Belirli bir kategorideki soruları zorluk seviyesine göre getirir
+  static List<Question> getQuestionsByCategoryAndDifficulty(
+      AppLanguage language, String category, DifficultyLevel difficulty) {
+    final allQuestions = getQuestions(language);
+    return allQuestions
+        .where((question) =>
+            question.category == category && question.difficulty == difficulty)
+        .toList();
   }
 }

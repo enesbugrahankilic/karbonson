@@ -7,7 +7,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/firestore_service.dart';
 import '../services/profile_service.dart';
 import '../services/friendship_service.dart';
-import '../models/user_data.dart';
 
 /// Test suite for UID Centrality implementation
 ///
@@ -271,6 +270,6 @@ void main() async {
   } catch (e) {
     print('\n💥 Test suite failed: $e');
     // Note: In test environment, don't use exit(1) as it would terminate the test runner
-    throw e;
+    rethrow;
   }
 }

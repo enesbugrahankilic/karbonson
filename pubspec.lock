@@ -394,7 +394,7 @@ packages:
     source: hosted
     version: "5.7.0"
   firebase_auth_platform_interface:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: firebase_auth_platform_interface
       sha256: "871c9df4ec9a754d1a793f7eb42fa3b94249d464cfb19152ba93e14a5966b386"
@@ -482,7 +482,7 @@ packages:
     source: hosted
     version: "12.4.10"
   firebase_storage_platform_interface:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: firebase_storage_platform_interface
       sha256: d2661c05293c2a940c8ea4bc0444e1b5566c79dd3202c2271140c082c8cd8dd4
@@ -591,7 +591,7 @@ packages:
     source: hosted
     version: "2.2.3"
   flutter_test:
-    dependency: "direct dev"
+    dependency: transitive
     description: flutter
     source: sdk
     version: "0.0.0"

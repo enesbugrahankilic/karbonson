@@ -3,9 +3,7 @@
 // Supports both profile password reset and forgot password flows
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../services/firebase_auth_service.dart';
 import '../theme/theme_colors.dart';
 import '../core/navigation/app_router.dart';
 import '../widgets/home_button.dart';

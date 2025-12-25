@@ -3,8 +3,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
-import '../lib/services/profile_image_service.dart';
-import '../lib/models/profile_image_data.dart';
+import 'package:karbonson/services/profile_image_service.dart';
+import 'package:karbonson/models/profile_image_data.dart';
 
 void main() {
   group('ProfileImageService - Basic Tests', () {

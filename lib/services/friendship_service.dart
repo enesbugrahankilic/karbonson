@@ -5,7 +5,6 @@
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/user_data.dart';
 import '../models/game_board.dart'; // For existing Friend, FriendRequest, and FriendRequestStatus
 import 'firestore_service.dart';
 
@@ -286,12 +285,13 @@ class FriendshipService {
   Future<Map<String, int>> getFriendStatistics() async {
     try {
       final currentUser = _auth.currentUser;
-      if (currentUser == null)
+      if (currentUser == null) {
         return {
           'totalFriends': 0,
           'pendingReceived': 0,
           'pendingSent': 0,
         };
+      }
 
       // Get all data in parallel for efficiency
       final futures = await Future.wait([
