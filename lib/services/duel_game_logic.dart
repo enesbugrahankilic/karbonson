@@ -250,9 +250,9 @@ class DuelGameLogic extends ChangeNotifier {
     await _firestoreService.updateDuelGameState(
       _currentRoom!.id,
       questionAnswers:
-          updatedAnswers.map((a) => a.toMap()).toList(),
+          updatedAnswers.map((a) => a.toMap() as Map<String, dynamic>).toList(),
       players:
-          updatedPlayers.map((p) => p.toMap()).toList(),
+          updatedPlayers.map((p) => p.toMap() as Map<String, dynamic>).toList(),
     );
 
     // End question immediately after answer

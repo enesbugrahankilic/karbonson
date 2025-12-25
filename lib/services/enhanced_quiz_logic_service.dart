@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/question.dart';
 import '../data/questions_database.dart';
-import '../services/language_service.dart';
+import '../enums/app_language.dart';
 import 'difficulty_recommendation_service.dart';
 
 /// Gelişmiş Quiz Logic Service - Zorluk seviyeleri ve akıllı adaptasyon ile
@@ -426,6 +426,55 @@ class EnhancedQuizLogicService {
   Duration get sessionDuration => _sessionStartTime != null ? 
       DateTime.now().difference(_sessionStartTime!) : Duration.zero;
   
+  // Public setter methods for BLoC compatibility
+  void setDifficulty(DifficultyLevel difficulty) {
+    _currentDifficulty = difficulty;
+    if (_sessionAnswers.length >= 3) {
+      _regenerateRemainingQuestions();
+    }
+  }
+
+  Future<void> setLanguage(AppLanguage language) async {
+    if (_currentLanguage != language) {
+      _currentLanguage = language;
+      // If there's an active quiz, regenerate questions with new language
+      if (_sessionStartTime != null && _currentQuestions.isNotEmpty) {
+        await _regenerateQuestionsForLanguage();
+      }
+      await _saveUserData();
+    }
+  }
+
+  Future<void> _regenerateQuestionsForLanguage() async {
+    try {
+      // Keep track of which questions have been answered
+      final answeredQuestionIds = _sessionQuestions.map((q) => q.text).toSet();
+      final remainingQuestions = _currentQuestions
+          .where((q) => !answeredQuestionIds.contains(q.text))
+          .toList();
+
+      // Generate new questions for the remaining slots
+      final neededCount = _currentQuestions.length - _sessionQuestions.length;
+      if (neededCount > 0) {
+        final availableQuestions = _getQuestionsByDifficulty(_currentDifficulty)
+            .where((q) => !answeredQuestionIds.contains(q.text))
+            .toList();
+        
+        final newQuestions = _selectRandomSubset(availableQuestions, neededCount);
+        remainingQuestions.addAll(newQuestions);
+      }
+
+      // Update the questions list
+      _currentQuestions = [..._sessionQuestions, ...remainingQuestions];
+      
+      if (kDebugMode) {
+        debugPrint('Regenerated ${remainingQuestions.length} questions for language: ${_currentLanguage.code}');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error regenerating questions for language: $e');
+    }
+  }
+  
   // Quiz state getters
   int get answeredQuestions => _sessionAnswers.length;
   int get totalQuestions => _currentQuestions.length;
@@ -556,11 +605,20 @@ class EnhancedQuizLogicService {
   double _calculateOverallAccuracy() {
     if (_performanceHistory.isEmpty) return 0.0;
     
-    final totalAccuracy = _performanceHistory
-        .map((data) => data['accuracy'] as double)
-        .reduce((a, b) => a + b);
+    final validAccuracies = _performanceHistory
+        .map((data) => data['accuracy'] as double?)
+        .where((accuracy) => accuracy != null)
+        .cast<double>()
+        .toList();
     
-    return totalAccuracy / _performanceHistory.length;
+    if (validAccuracies.isEmpty) return 0.0;
+    
+    double totalAccuracy = 0.0;
+    for (final accuracy in validAccuracies) {
+      totalAccuracy += accuracy;
+    }
+    
+    return totalAccuracy / validAccuracies.length;
   }
 
   int _getRecommendedQuestionCount() {

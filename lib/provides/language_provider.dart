@@ -1,7 +1,8 @@
 // lib/provides/language_provider.dart
 import 'package:flutter/material.dart';
 import '../services/language_service.dart';
-import '../services/app_localizations.dart';
+import '../services/app_localizations.dart' as AL;
+import '../enums/app_language.dart';
 
 class LanguageProvider extends ChangeNotifier {
   final LanguageService _languageService = LanguageService();
@@ -17,8 +18,11 @@ class LanguageProvider extends ChangeNotifier {
   Future<void> setLanguage(AppLanguage language) async {
     if (_languageService.currentLanguage == language) return;
     await _languageService.setLanguage(language);
-    // Update AppLocalizations too
-    AppLocalizations.setLanguage(language);
+    // Update AppLocalizations too (convert enum from enums/app_language.dart to the one used by AppLocalizations)
+    final alLanguage = AL.AppLanguage.values.firstWhere(
+      (e) => e.toString().split('.').last == language.toString().split('.').last,
+    );
+    AL.AppLocalizations.setLanguage(alLanguage);
     notifyListeners();
   }
 

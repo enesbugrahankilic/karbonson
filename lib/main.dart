@@ -18,6 +18,8 @@ import 'services/authentication_state_service.dart';
 import 'services/firebase_auth_service.dart';
 import 'services/deep_linking_service.dart';
 import 'services/achievement_service.dart';
+import 'services/music_service.dart';
+import 'services/sound_effects_service.dart';
 // Removed unused imports
 import 'theme/app_theme.dart';
 import 'core/navigation/app_router.dart';
@@ -196,6 +198,29 @@ class _AppRootState extends State<AppRoot> {
       } catch (e, st) {
         if (kDebugMode) {
           debugPrint('AppRoot: AchievementService init failed: $e');
+        }
+        if (kDebugMode) debugPrint('$st');
+      }
+
+      // Initialize music and sound effects services
+      try {
+        if (kDebugMode) debugPrint('AppRoot: initializing MusicService');
+        await MusicService().initialize();
+        if (kDebugMode) debugPrint('AppRoot: MusicService initialized');
+      } catch (e, st) {
+        if (kDebugMode) {
+          debugPrint('AppRoot: MusicService init failed: $e');
+        }
+        if (kDebugMode) debugPrint('$st');
+      }
+
+      try {
+        if (kDebugMode) debugPrint('AppRoot: initializing SoundEffectsService');
+        await SoundEffectsService().initialize();
+        if (kDebugMode) debugPrint('AppRoot: SoundEffectsService initialized');
+      } catch (e, st) {
+        if (kDebugMode) {
+          debugPrint('AppRoot: SoundEffectsService init failed: $e');
         }
         if (kDebugMode) debugPrint('$st');
       }

@@ -1,16 +1,7 @@
 // lib/services/language_service.dart
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-enum AppLanguage {
-  turkish('tr', 'Türkçe', '🇹🇷'),
-  english('en', 'English', '🇺🇸');
-
-  const AppLanguage(this.code, this.displayName, this.flag);
-  final String code;
-  final String displayName;
-  final String flag;
-}
+import '../enums/app_language.dart';
 
 class LanguageService extends ChangeNotifier {
   static const String _languageKey = 'selected_language';

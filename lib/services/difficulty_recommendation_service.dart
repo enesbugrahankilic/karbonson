@@ -125,9 +125,15 @@ class DifficultyRecommendationService {
 
     // Son 3 quiz sonucunu analiz et
     final recentQuizzes = _performanceHistory.take(3).toList();
-    final avgAccuracy = recentQuizzes
-        .map((quiz) => quiz['accuracy'] as double)
-        .reduce((a, b) => a + b) / recentQuizzes.length;
+    if (recentQuizzes.isEmpty) {
+      return DifficultyLevel.easy;
+    }
+    
+    final accuracyScores = recentQuizzes.map((quiz) => quiz['accuracy'] as double).toList();
+    final totalAccuracy = accuracyScores.isNotEmpty 
+        ? accuracyScores.reduce((double a, double b) => a + b)
+        : 0.0;
+    final avgAccuracy = totalAccuracy / recentQuizzes.length;
 
     final lastDifficulty = DifficultyLevel.values.firstWhere(
       (d) => d.toString() == recentQuizzes.last['difficulty'],

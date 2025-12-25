@@ -2,6 +2,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import '../services/language_service.dart';
 import '../provides/language_provider.dart';
+import '../enums/app_language.dart';
 
 extension LocalizedBuildContext on BuildContext {
   LanguageProvider get languageProvider => read<LanguageProvider>();

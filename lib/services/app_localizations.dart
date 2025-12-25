@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/language_service.dart';
 
+enum AppLanguage { turkish, english }
+
 class AppLocalizations extends ChangeNotifier {
   static AppLanguage _currentLanguage = AppLanguage.turkish;
   static final AppLocalizations _instance = AppLocalizations._internal();

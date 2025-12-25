@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../provides/theme_provider.dart';
 import '../provides/language_provider.dart';
 import '../services/language_service.dart';
+import '../enums/app_language.dart';
 import '../pages/uid_debug_page.dart';
 import '../pages/two_factor_auth_setup_page.dart';
 import '../widgets/home_button.dart';
