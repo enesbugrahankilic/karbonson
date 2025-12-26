@@ -27,6 +27,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
       AuthenticationStateService();
   String? _selectedCategory;
   DifficultyLevel _selectedDifficulty = DifficultyLevel.easy;
+  int _selectedQuestionCount = 15;
 
   // Animation controllers
   late AnimationController _fadeController;
@@ -84,7 +85,8 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         }
         context.read<QuizBloc>().add(LoadQuiz(
             category: passedCategory == 'Tümü' ? null : passedCategory,
-            difficulty: passedDifficulty ?? _selectedDifficulty));
+            difficulty: passedDifficulty ?? _selectedDifficulty,
+            questionCount: _selectedQuestionCount));
       } else {
         // Show category selection dialog
         _showCategorySelection();
@@ -166,6 +168,33 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                 },
               );
             }),
+            const Divider(),
+            const Text(
+              'Soru Sayısı Seçin:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<int>(
+              value: _selectedQuestionCount,
+              decoration: const InputDecoration(
+                labelText: 'Soru Sayısı',
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(value: 5, child: Text('5 Soru (2-3 dakika)')),
+                DropdownMenuItem(value: 10, child: Text('10 Soru (~5 dakika)')),
+                DropdownMenuItem(value: 15, child: Text('15 Soru (~7-8 dakika)')),
+                DropdownMenuItem(value: 20, child: Text('20 Soru (~10-12 dakika)')),
+                DropdownMenuItem(value: 25, child: Text('25 Soru (~12-15 dakika)')),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _selectedQuestionCount = value;
+                  });
+                }
+              },
+            ),
           ],
         ),
         actions: [
@@ -178,6 +207,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
               Navigator.of(context).pop({
                 'category': _selectedCategory,
                 'difficulty': _selectedDifficulty,
+                'questionCount': _selectedQuestionCount,
               });
             },
             child: const Text('Başla'),
@@ -189,13 +219,16 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
     if (selectedValues != null) {
       final selectedCategory = selectedValues['category'] as String?;
       final selectedDifficulty = selectedValues['difficulty'] as DifficultyLevel?;
+      final selectedQuestionCount = selectedValues['questionCount'] as int? ?? 15;
 
       if (selectedCategory != null && selectedDifficulty != null) {
         _selectedCategory = selectedCategory;
         _selectedDifficulty = selectedDifficulty;
+        _selectedQuestionCount = selectedQuestionCount;
         context.read<QuizBloc>().add(LoadQuiz(
             category: selectedCategory == 'Tümü' ? null : selectedCategory,
-            difficulty: selectedDifficulty));
+            difficulty: selectedDifficulty,
+            questionCount: selectedQuestionCount));
       }
     }
   }

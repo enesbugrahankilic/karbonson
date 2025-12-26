@@ -17,15 +17,17 @@ class LoadQuiz extends QuizEvent {
   final AppLanguage language;
   final String? category;
   final DifficultyLevel? difficulty;
+  final int questionCount;
 
   const LoadQuiz({
     this.language = AppLanguage.turkish,
     this.category,
     this.difficulty,
+    this.questionCount = 15, // Default 15 questions
   });
 
   @override
-  List<Object> get props => [language, category ?? '', difficulty ?? ''];
+  List<Object> get props => [language, category ?? '', difficulty ?? '', questionCount];
 }
 
 class AnswerQuestion extends QuizEvent {
@@ -104,10 +106,11 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
       // Set language if provided
       await quizLogic.setLanguage(event.language);
 
-      // Start a new quiz and preload questions with difficulty support
+      // Start a new quiz and preload questions with difficulty and question count support
       await quizLogic.startNewQuiz(
         category: event.category,
         difficulty: event.difficulty,
+        questionCount: event.questionCount,
       );
       final questions = await quizLogic.getQuestions();
       emit(QuizLoaded(

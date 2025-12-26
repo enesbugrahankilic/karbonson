@@ -391,7 +391,7 @@ class QuizLogic {
   }
 
   Future<void> startNewQuiz(
-      {String? category, DifficultyLevel? difficulty}) async {
+      {String? category, DifficultyLevel? difficulty, int questionCount = 15}) async {
     resetScore();
 
     // Use provided difficulty or current difficulty
@@ -399,14 +399,14 @@ class QuizLogic {
 
     // Zorluk seviyesine göre soru seçimi
     if (selectedDifficulty == DifficultyLevel.easy) {
-      _selectRandomQuestionsByDifficulty(15, category: category, difficulty: selectedDifficulty);
+      _selectRandomQuestionsByDifficulty(questionCount, category: category, difficulty: selectedDifficulty);
     } else if (selectedDifficulty == DifficultyLevel.medium) {
-      _selectRandomQuestionsByDifficulty(15, category: category, difficulty: selectedDifficulty);
+      _selectRandomQuestionsByDifficulty(questionCount, category: category, difficulty: selectedDifficulty);
     } else if (selectedDifficulty == DifficultyLevel.hard) {
-      _selectRandomQuestionsByDifficulty(15, category: category, difficulty: selectedDifficulty);
+      _selectRandomQuestionsByDifficulty(questionCount, category: category, difficulty: selectedDifficulty);
     } else {
       // Mixed difficulty - use balanced selection
-      _selectMixedDifficultyQuestions(15, category: category);
+      _selectMixedDifficultyQuestions(questionCount, category: category);
     }
 
     await _loadHighScore();
