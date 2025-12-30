@@ -15,14 +15,23 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final titleFontSize = isSmallScreen ? 18.0 : 20.0;
+
     return Scaffold(
       appBar: AppBar(
         leading: const HomeButton(),
         title: Consumer<LanguageProvider>(
           builder: (context, languageProvider, child) {
-            return Text(languageProvider.currentLanguage == AppLanguage.turkish
-                ? 'Ayarlar'
-                : 'Settings');
+            return Text(
+              languageProvider.currentLanguage == AppLanguage.turkish
+                  ? 'Ayarlar'
+                  : 'Settings',
+              style: TextStyle(fontSize: titleFontSize),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            );
           },
         ),
         backgroundColor: Colors.transparent,
@@ -35,7 +44,7 @@ class SettingsPage extends StatelessWidget {
 
           return Scrollbar(
             child: ListView(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(isSmallScreen ? 12.0 : 16.0),
               children: [
                 Card(
                   child: ListTile(

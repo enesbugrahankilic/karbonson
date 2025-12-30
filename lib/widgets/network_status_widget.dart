@@ -174,9 +174,9 @@ class _NetworkStatusWidgetState extends State<NetworkStatusWidget>
           child: Container(
             padding: widget.padding,
             decoration: BoxDecoration(
-              color: Colors.red.withValues(alpha: 0.1),
+              color: Colors.red.shade50,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+              border: Border.all(color: Colors.red.shade200),
             ),
             child: Row(
               children: [
@@ -203,7 +203,7 @@ class _NetworkStatusWidgetState extends State<NetworkStatusWidget>
                       Text(
                         'Lütfen internet bağlantınızı kontrol edin.',
                         style: TextStyle(
-                          color: Colors.red.withValues(alpha: 0.8),
+                          color: Colors.red.shade600,
                           fontSize: 12,
                         ),
                       ),

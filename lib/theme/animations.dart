@@ -177,7 +177,7 @@ class AppAnimations {
         onTap: onTap,
         splashColor: rippleColor ??
             ThemeColors.getPrimaryButtonColor(Colors.black as BuildContext)
-                .withOpacity(0.1),
+                .withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
         child: child,
       ),
@@ -269,7 +269,7 @@ class AppAnimations {
               width: size,
               height: size,
               decoration: BoxDecoration(
-                color: dotColor.withOpacity(
+                color: dotColor.withValues(alpha:
                   0.3 + (_typingController.value * 0.7),
                 ),
                 shape: BoxShape.circle,
@@ -542,7 +542,7 @@ class MicroInteractions {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 2,
                       offset: const Offset(0, 1),
                     ),

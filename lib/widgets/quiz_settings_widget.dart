@@ -215,11 +215,14 @@ class _QuizSettingsWidgetState extends State<QuizSettingsWidget>
   }
 
   Widget _buildCategorySelection() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final crossAxisCount = screenWidth < 600 ? 1 : 2; // Küçük ekranlarda 1 sütun, büyüklerde 2
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
         crossAxisSpacing: DesignSystem.spacingM,
         mainAxisSpacing: DesignSystem.spacingM,
         childAspectRatio: 1.2,
@@ -314,90 +317,84 @@ class _QuizSettingsWidgetState extends State<QuizSettingsWidget>
   }
 
   Widget _buildDifficultySelection() {
-    return Row(
+    return Wrap(
+      spacing: DesignSystem.spacingS,
+      runSpacing: DesignSystem.spacingS,
+      alignment: WrapAlignment.center,
       children: _difficulties.map((difficulty) {
         final isSelected = _selectedDifficulty == difficulty['level'];
-        final index = _difficulties.indexOf(difficulty);
 
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(
-              right: index < _difficulties.length - 1
-                  ? DesignSystem.spacingS
-                  : 0,
-            ),
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedDifficulty = difficulty['level'];
-                });
-                _notifySettingsChanged();
-              },
-              child: DesignSystem.semantic(
-                context,
-                label: '${difficulty['name']} zorluk seviyesi',
-                hint: difficulty['description'],
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  decoration: BoxDecoration(
-                    gradient: isSelected
-                        ? LinearGradient(
-                            colors: [
-                              difficulty['color'],
-                              difficulty['color'].withValues(alpha: 0.8),
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          )
-                        : null,
-                    color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                    border: Border.all(
-                      color: isSelected
-                          ? difficulty['color']
-                          : Colors.white.withValues(alpha: 0.3),
-                      width: 2,
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedDifficulty = difficulty['level'];
+            });
+            _notifySettingsChanged();
+          },
+          child: DesignSystem.semantic(
+            context,
+            label: '${difficulty['name']} zorluk seviyesi',
+            hint: difficulty['description'],
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              constraints: const BoxConstraints(minWidth: 100, maxWidth: 120),
+              decoration: BoxDecoration(
+                gradient: isSelected
+                    ? LinearGradient(
+                        colors: [
+                          difficulty['color'],
+                          difficulty['color'].withValues(alpha: 0.8),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
+                color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                border: Border.all(
+                  color: isSelected
+                      ? difficulty['color']
+                      : Colors.white.withValues(alpha: 0.3),
+                  width: 2,
+                ),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: difficulty['color'].withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(DesignSystem.spacingM),
+                child: Column(
+                  children: [
+                    Icon(
+                      difficulty['icon'],
+                      size: 28,
+                      color: isSelected ? Colors.white : difficulty['color'],
                     ),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: difficulty['color'].withValues(alpha: 0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(DesignSystem.spacingM),
-                    child: Column(
-                      children: [
-                        Icon(
-                          difficulty['icon'],
-                          size: 28,
-                          color: isSelected ? Colors.white : difficulty['color'],
-                        ),
-                        const SizedBox(height: DesignSystem.spacingS),
-                        Text(
-                          difficulty['name'],
-                          style: DesignSystem.getBodyLarge(context).copyWith(
-                            color: isSelected ? Colors.white : null,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: DesignSystem.spacingXs),
-                        Text(
-                          difficulty['multiplier'],
-                          style: DesignSystem.getBodySmall(context).copyWith(
-                            color: isSelected
-                                ? Colors.white.withValues(alpha: 0.9)
-                                : difficulty['color'],
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: DesignSystem.spacingS),
+                    Text(
+                      difficulty['name'],
+                      style: DesignSystem.getBodyLarge(context).copyWith(
+                        color: isSelected ? Colors.white : null,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: DesignSystem.spacingXs),
+                    Text(
+                      difficulty['multiplier'],
+                      style: DesignSystem.getBodySmall(context).copyWith(
+                        color: isSelected
+                            ? Colors.white.withValues(alpha: 0.9)
+                            : difficulty['color'],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

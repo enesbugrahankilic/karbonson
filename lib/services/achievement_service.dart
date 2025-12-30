@@ -593,30 +593,49 @@ class AchievementService {
           switch (challenge.type) {
             case ChallengeType.quiz:
               if (completedQuizzes != null && completedQuizzes > 0) {
-                challenge.currentValue =
-                    (challenge.currentValue + completedQuizzes)
-                        .clamp(0, challenge.targetValue);
+                final newCurrentValue = (challenge.currentValue + completedQuizzes)
+                    .clamp(0, challenge.targetValue);
+                final updatedChallenge = challenge.copyWith(
+                  currentValue: newCurrentValue,
+                  isCompleted: newCurrentValue >= challenge.targetValue,
+                );
+                await doc.reference.update(updatedChallenge.toJson());
                 updated = true;
               }
               break;
             case ChallengeType.duel:
               if (duelWins != null && duelWins > 0) {
-                challenge.currentValue = (challenge.currentValue + duelWins)
+                final newCurrentValue = (challenge.currentValue + duelWins)
                     .clamp(0, challenge.targetValue);
+                final updatedChallenge = challenge.copyWith(
+                  currentValue: newCurrentValue,
+                  isCompleted: newCurrentValue >= challenge.targetValue,
+                );
+                await doc.reference.update(updatedChallenge.toJson());
                 updated = true;
               }
               break;
             case ChallengeType.multiplayer:
               if (multiplayerWins != null && multiplayerWins > 0) {
-                challenge.currentValue = (challenge.currentValue + multiplayerWins)
+                final newCurrentValue = (challenge.currentValue + multiplayerWins)
                     .clamp(0, challenge.targetValue);
+                final updatedChallenge = challenge.copyWith(
+                  currentValue: newCurrentValue,
+                  isCompleted: newCurrentValue >= challenge.targetValue,
+                );
+                await doc.reference.update(updatedChallenge.toJson());
                 updated = true;
               }
               break;
             case ChallengeType.social:
               if (friendsCount != null && friendsCount > 0) {
-                challenge.currentValue = (challenge.currentValue + friendsCount)
+                final newCurrentValue = (challenge.currentValue + friendsCount)
                     .clamp(0, challenge.targetValue);
+                final updatedChallenge = challenge.copyWith(
+                  currentValue: newCurrentValue,
+                  isCompleted: newCurrentValue >= challenge.targetValue,
+                );
+                await doc.reference.update(updatedChallenge.toJson());
                 updated = true;
               }
               break;
@@ -626,9 +645,7 @@ class AchievementService {
           }
 
           if (updated) {
-            challenge.isCompleted =
-                challenge.currentValue >= challenge.targetValue;
-            await doc.reference.update(challenge.toJson());
+            // Challenge was already updated in the switch cases above
           }
         }
       }

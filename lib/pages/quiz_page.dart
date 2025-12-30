@@ -346,6 +346,17 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = screenSize.width;
+    final isSmallScreen = screenWidth < 360;
+    final isMediumScreen = screenWidth < 600;
+    final isLargeScreen = screenWidth > 800;
+
+    // Responsive text sizes
+    final titleFontSize = isSmallScreen ? 18.0 : (isMediumScreen ? 20.0 : (isLargeScreen ? 28.0 : 24.0));
+    final bodyTextSize = isSmallScreen ? 14.0 : (isMediumScreen ? 16.0 : 18.0);
+    final questionTextSize = isSmallScreen ? 16.0 : (isMediumScreen ? 18.0 : 20.0);
+
     return BlocBuilder<QuizBloc, QuizState>(
       builder: (context, state) {
         if (state is QuizLoading) {
@@ -427,50 +438,59 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                 ),
               ),
               child: Scrollbar(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: DesignSystem.spacingM,
-                            vertical: DesignSystem.spacingL),
-                        child: FadeTransition(
-                          opacity: _fadeController,
-                          child: SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(0, 0.2),
-                              end: Offset.zero,
-                            ).animate(_slideController),
-                            child: DesignSystem.glassCard(
-                              context,
-                              child: CustomQuestionCard(
-                                question: currentQuestion.text,
-                                options: currentQuestion.options
-                                    .map((o) => o.text)
-                                    .toList(),
-                                onOptionSelected: (answer) => _onAnswerSelected(
-                                    answer, state.currentQuestion),
-                                isAnswered: state
-                                    .answers[state.currentQuestion].isNotEmpty,
-                                selectedAnswer:
-                                    state.answers[state.currentQuestion],
-                                correctAnswer: currentQuestion.options
-                                    .firstWhere((o) => o.score > 0)
-                                    .text,
-                                difficulty: _selectedDifficulty,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: isSmallScreen ? 16.0 : (isMediumScreen ? 20.0 : 24.0),
+                                  vertical: isSmallScreen ? 20.0 : 24.0),
+                              child: FadeTransition(
+                                opacity: _fadeController,
+                                child: SlideTransition(
+                                  position: Tween<Offset>(
+                                    begin: const Offset(0, 0.2),
+                                    end: Offset.zero,
+                                  ).animate(_slideController),
+                                  child: DesignSystem.glassCard(
+                                    context,
+                                    child: CustomQuestionCard(
+                                      question: currentQuestion.text,
+                                      options: currentQuestion.options
+                                          .map((o) => o.text)
+                                          .toList(),
+                                      onOptionSelected: (answer) => _onAnswerSelected(
+                                          answer, state.currentQuestion),
+                                      isAnswered: state
+                                          .answers[state.currentQuestion].isNotEmpty,
+                                      selectedAnswer:
+                                          state.answers[state.currentQuestion],
+                                      correctAnswer: currentQuestion.options
+                                          .firstWhere((o) => o.score > 0)
+                                          .text,
+                                      difficulty: _selectedDifficulty,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: isSmallScreen ? 16.0 : (isMediumScreen ? 20.0 : 24.0),
+                                  vertical: isSmallScreen ? 12.0 : 16.0),
+                              child: _buildScoreArea(state),
+                            ),
+                          ],
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: DesignSystem.spacingM,
-                            vertical: DesignSystem.spacingS),
-                        child: _buildScoreArea(state),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ),
             ),

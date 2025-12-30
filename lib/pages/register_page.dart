@@ -335,6 +335,18 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = screenSize.width;
+    final isSmallScreen = screenWidth < 360;
+    final isMediumScreen = screenWidth < 600;
+    final isLargeScreen = screenWidth > 800;
+
+    // Responsive text sizes
+    final titleFontSize = isSmallScreen ? 18.0 : (isMediumScreen ? 20.0 : (isLargeScreen ? 28.0 : 24.0));
+    final bodyTextSize = isSmallScreen ? 14.0 : (isMediumScreen ? 16.0 : 18.0);
+    final inputTextSize = isSmallScreen ? 14.0 : 16.0;
+    final buttonTextSize = isSmallScreen ? 14.0 : 16.0;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -342,7 +354,13 @@ class _RegisterPageState extends State<RegisterPage> {
         elevation: 0,
         centerTitle: true,
         title: Text('Kayıt Ol',
-            style: TextStyle(color: ThemeColors.getAppBarText(context))),
+            style: TextStyle(
+              color: ThemeColors.getAppBarText(context),
+              fontSize: titleFontSize,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+        ),
         iconTheme: IconThemeData(color: ThemeColors.getAppBarIcon(context)),
         actions: [
           const LanguageSelectorButton(),
@@ -360,9 +378,11 @@ class _RegisterPageState extends State<RegisterPage> {
           child: Center(
             child: Scrollbar(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(isSmallScreen ? 12.0 : 16.0),
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
+                  constraints: BoxConstraints(
+                    maxWidth: isLargeScreen ? 600 : 500,
+                  ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
@@ -393,10 +413,12 @@ class _RegisterPageState extends State<RegisterPage> {
                               'Yeni Hesap Oluştur',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontSize: 24,
+                                fontSize: titleFontSize,
                                 fontWeight: FontWeight.bold,
                                 color: ThemeColors.getTitleText(context),
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 24),
                             Form(
@@ -613,12 +635,18 @@ class _RegisterPageState extends State<RegisterPage> {
                                     )
                                   : const Icon(Icons.person_add),
                               label: Text(
-                                  _isLoading ? 'Kayıt Oluyor...' : 'Kayıt Ol'),
+                                  _isLoading ? 'Kayıt Oluyor...' : 'Kayıt Ol',
+                                  style: TextStyle(
+                                    fontSize: buttonTextSize,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                              ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF4CAF50),
                                 foregroundColor: Colors.white,
                                 padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
+                                    EdgeInsets.symmetric(vertical: isSmallScreen ? 12 : 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),

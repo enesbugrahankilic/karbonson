@@ -34,18 +34,18 @@ class ModernUI {
           elevation: isLoading ? 0 : 2,
           shadowColor:
               (backgroundColor ?? ThemeColors.getPrimaryButtonColor(context))
-                  .withOpacity(0.3),
+                  .withValues(alpha: 0.3),
         ).copyWith(
           backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
             if (states.contains(WidgetState.hovered)) {
               return Color.alphaBlend(
-                  Colors.white.withOpacity(0.1),
+                  Colors.white.withValues(alpha: 0.1),
                   backgroundColor ??
                       ThemeColors.getPrimaryButtonColor(context));
             }
             if (states.contains(WidgetState.pressed)) {
               return Color.alphaBlend(
-                  Colors.black.withOpacity(0.1),
+                  Colors.black.withValues(alpha: 0.1),
                   backgroundColor ??
                       ThemeColors.getPrimaryButtonColor(context));
             }
@@ -102,8 +102,8 @@ class ModernUI {
         boxShadow: ThemeColors.getModernShadow(context, elevation: 1.0),
         border: Border.all(
           color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white.withOpacity(0.05)
-              : Colors.black.withOpacity(0.05),
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.black.withValues(alpha: 0.05),
           width: 1,
         ),
       ),
@@ -289,7 +289,7 @@ class ModernUI {
               borderRadius: BorderRadius.circular(fabSize / 2),
               boxShadow: [
                 BoxShadow(
-                  color: bgColor.withOpacity(0.3),
+                  color: bgColor.withValues(alpha: 0.3),
                   blurRadius: _isAnimating ? 20 : 8,
                   offset: Offset(0, _isAnimating ? 4 : 2),
                 ),
@@ -372,7 +372,7 @@ class ModernUI {
         borderRadius: BorderRadius.circular(DesignSystem.radiusS),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),

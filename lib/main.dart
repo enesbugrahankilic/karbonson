@@ -5,6 +5,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
 import 'provides/theme_provider.dart';
 import 'provides/language_provider.dart';
 import 'provides/quiz_bloc.dart';
@@ -245,11 +247,13 @@ class _AppRootState extends State<AppRoot> {
           body: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: const [
-                CircularProgressIndicator(),
-                SizedBox(height: 12),
-                Text('Başlatılıyor... Lütfen bekleyin',
-                    style: TextStyle(color: Colors.black87)),
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 12),
+                Text(
+                  AppLocalizations.of(context)?.loading ?? 'Loading...',
+                  style: const TextStyle(color: Colors.black87),
+                ),
               ],
             ),
           ),
@@ -299,6 +303,7 @@ class _Karbon2AppState extends State<Karbon2App> {
   bool _hasSeenTutorial = false;
   bool _loading = true;
   late GlobalKey<NavigatorState> _navigatorKey;
+  String _initialRoute = AppRoutes.login;
 
   @override
   void initState() {
@@ -306,7 +311,12 @@ class _Karbon2AppState extends State<Karbon2App> {
     _navigatorKey = GlobalKey<NavigatorState>();
     // Set the navigator key in NotificationService for notification navigation
     // NotificationService.navigatorKey = _navigatorKey;
-    _checkTutorialStatus();
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    await _checkTutorialStatus();
+    await _determineInitialRoute();
   }
 
   Future<void> _checkTutorialStatus() async {
@@ -314,8 +324,43 @@ class _Karbon2AppState extends State<Karbon2App> {
     final hasSeen = prefs.getBool('hasSeenTutorial') ?? false;
     setState(() {
       _hasSeenTutorial = hasSeen;
-      _loading = false;
     });
+  }
+
+  Future<void> _determineInitialRoute() async {
+    try {
+      // Check if user is already authenticated
+      final authStateService = AuthenticationStateService();
+      final isAuthenticated = await authStateService.isCurrentUserAuthenticated();
+      
+      if (isAuthenticated) {
+        setState(() {
+          _initialRoute = AppRoutes.home;
+        });
+        if (kDebugMode) {
+          debugPrint('main: User is authenticated, starting at home');
+        }
+      } else {
+        setState(() {
+          _initialRoute = AppRoutes.login;
+        });
+        if (kDebugMode) {
+          debugPrint('main: User is not authenticated, starting at login');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('main: Error determining initial route: $e');
+      }
+      // Default to login on error
+      setState(() {
+        _initialRoute = AppRoutes.login;
+      });
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
   }
 
   @override
@@ -353,12 +398,19 @@ class _Karbon2AppState extends State<Karbon2App> {
               ? ThemeMode.light
               : themeProvider.themeMode,
           locale: languageProvider.locale,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
           navigatorKey: _navigatorKey,
           navigatorObservers: [
             AppNavigatorObserver(),
           ],
           onGenerateRoute: AppRouter().generateRoute,
-          initialRoute: _hasSeenTutorial ? AppRoutes.login : AppRoutes.tutorial,
+          initialRoute: _initialRoute,
         );
       },
     );

@@ -45,7 +45,7 @@ class AccessibilityHelper {
 
   /// Get luminance of a color
   static double getLuminance(Color color) {
-    final rgb = [color.red, color.green, color.blue].map((channel) {
+    final rgb = [(color.r * 255).round().clamp(0, 255), (color.g * 255).round().clamp(0, 255), (color.b * 255).round().clamp(0, 255)].map((channel) {
       channel = channel ~/ 255;
       return channel <= 0.03928
           ? channel / 12.92

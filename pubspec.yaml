@@ -37,11 +37,14 @@ dependencies:
   http: ^1.2.2
   local_auth: ^2.2.0
   local_auth_android: ^1.0.7
-  local_auth_ios: ^1.0.6
 
 dev_dependencies:
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  intl_utils: ^2.8.7
   mockito: ^5.5.0
   bloc_test: ^10.0.0
   build_runner: ^2.4.9
@@ -50,6 +53,7 @@ dev_dependencies:
   firebase_storage_platform_interface: any
 flutter:
   uses-material-design: true
+  generate: true
   assets:
     - assets/fonts/
     - assets/avatars/

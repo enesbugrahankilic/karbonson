@@ -42,8 +42,8 @@ class AchievementCard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      _getRarityColor().withOpacity(0.1),
-                      _getRarityColor().withOpacity(0.05),
+                      _getRarityColor().withValues(alpha: 0.1),
+                      _getRarityColor().withValues(alpha: 0.05),
                     ],
                   )
                 : null,
@@ -99,7 +99,7 @@ class AchievementCard extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: isUnlocked
-            ? _getRarityColor().withOpacity(0.2)
+            ? _getRarityColor().withValues(alpha: 0.2)
             : Colors.grey[300],
         border: Border.all(
           color: _getRarityColor(),
@@ -157,7 +157,7 @@ class AchievementCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: _getRarityColor().withOpacity(0.1),
+                color: _getRarityColor().withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(

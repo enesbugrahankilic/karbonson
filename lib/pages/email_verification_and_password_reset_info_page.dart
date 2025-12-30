@@ -212,7 +212,7 @@ class _EmailVerificationAndPasswordResetInfoPageState
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.blue.withValues(alpha: 0.1),
+              Colors.blue.shade50,
               Colors.white,
             ],
           ),
@@ -242,7 +242,7 @@ class _EmailVerificationAndPasswordResetInfoPageState
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: Colors.blue.withValues(alpha: 0.1),
+                                color: Colors.blue.shade50,
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -362,7 +362,7 @@ class _EmailVerificationAndPasswordResetInfoPageState
                                       context),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                    color: Colors.blue.withValues(alpha: 0.3),
+                                    color: Colors.blue.shade200,
                                   ),
                                 ),
                                 child: Row(
@@ -479,10 +479,10 @@ class _EmailVerificationAndPasswordResetInfoPageState
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: Colors.blue.withValues(alpha: 0.05),
+                                color: Colors.blue.shade50,
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: Colors.blue.withValues(alpha: 0.2),
+                                  color: Colors.blue.shade200,
                                 ),
                               ),
                               child: Column(

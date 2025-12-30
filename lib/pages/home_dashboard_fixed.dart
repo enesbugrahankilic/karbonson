@@ -11,6 +11,7 @@ import '../services/achievement_service.dart';
 import '../services/music_service.dart';
 import '../services/profile_service.dart';
 import '../services/user_progress_service.dart';
+import '../services/authentication_state_service.dart';
 import '../models/achievement.dart';
 import '../models/user_progress.dart';
 import '../models/daily_challenge.dart';
@@ -42,6 +43,7 @@ class _HomeDashboardState extends State<HomeDashboard>
   final ProfileService _profileService = ProfileService();
   final UserProgressService _userProgressService = UserProgressService();
   final AchievementService _achievementService = AchievementService();
+  final AuthenticationStateService _authService = AuthenticationStateService();
 
   @override
   void initState() {
@@ -276,13 +278,8 @@ class _HomeDashboardState extends State<HomeDashboard>
 
                         SizedBox(height: isSmallScreen ? 20.0 : 24.0),
 
-                        // Duel Mode Section - Ana odak noktası (EN ÜSTTE)
+                        // Duel Mode Section - Ana odak noktası
                         _buildDuelModeSection(context),
-
-                        SizedBox(height: isSmallScreen ? 20.0 : 24.0),
-
-                        // Quick Access Settings Button
-                        _buildQuickAccessSection(context),
 
                         SizedBox(height: isSmallScreen ? 20.0 : 24.0),
 
@@ -476,124 +473,6 @@ class _HomeDashboardState extends State<HomeDashboard>
     );
   }
 
-  Widget _buildRecentActivitySection(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 360;
-    final sectionTitleFontSize = isSmallScreen ? 18.0 : 22.0;
-
-    return Container(
-      margin: EdgeInsets.all(
-          isSmallScreen ? DesignSystem.spacingS : DesignSystem.spacingM),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: isSmallScreen
-                    ? DesignSystem.spacingS
-                    : DesignSystem.spacingM,
-                vertical: DesignSystem.spacingS),
-            child: Text(
-              'Son Aktiviteler',
-              style: DesignSystem.getTitleLarge(context).copyWith(
-                color: Colors.white,
-                fontSize: sectionTitleFontSize,
-                fontWeight: FontWeight.w700,
-                shadows: [
-                  Shadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    offset: const Offset(0, 2),
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: ThemeColors.getCardBackground(context),
-              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(isSmallScreen
-                  ? DesignSystem.spacingS
-                  : DesignSystem.spacingM),
-              child: Column(
-                children: [
-                  _buildActivityItem(
-                    context,
-                    icon: Icons.quiz,
-                    title: 'Quiz tamamlandı',
-                    subtitle: '2 saat önce',
-                    color: ThemeColors.getSuccessColor(context),
-                  ),
-                  SizedBox(height: DesignSystem.spacingM),
-                  _buildActivityItem(
-                    context,
-                    icon: Icons.people,
-                    title: 'Yeni arkadaş eklendi',
-                    subtitle: '1 gün önce',
-                    color: ThemeColors.getInfoColor(context),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActivityItem(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-  }) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            icon,
-            size: 16,
-            color: color,
-          ),
-        ),
-        const SizedBox(width: DesignSystem.spacingM),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: DesignSystem.getBodyMedium(context),
-              ),
-              Text(
-                subtitle,
-                style: DesignSystem.getBodyMedium(context).copyWith(
-                  color: ThemeColors.getSecondaryText(context),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildFloatingActionButton(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
@@ -657,10 +536,10 @@ class _HomeDashboardState extends State<HomeDashboard>
                 ),
                 const SizedBox(height: DesignSystem.spacingL),
                 Text(
-                  'Hızlı Menü',
+                  '⚔️ Düello Modu',
                   style: DesignSystem.getTitleLarge(context).copyWith(
                     color: ThemeColors.getText(context),
-                    fontSize: 20,
+                    fontSize: 22,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -670,13 +549,28 @@ class _HomeDashboardState extends State<HomeDashboard>
                   children: [
                     _buildSimpleMenuButton(
                       context,
-                      icon: Icons.security,
-                      label: '⚔️ Düello',
+                      icon: Icons.flash_on,
+                      label: 'Hızlı Düello',
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.of(context).pushNamed(AppRoutes.duel);
                       },
                     ),
+                    _buildSimpleMenuButton(
+                      context,
+                      icon: Icons.group,
+                      label: 'Oda Oluştur',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed(AppRoutes.duel);
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: DesignSystem.spacingM),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
                     _buildSimpleMenuButton(
                       context,
                       icon: Icons.people,
@@ -688,44 +582,11 @@ class _HomeDashboardState extends State<HomeDashboard>
                     ),
                     _buildSimpleMenuButton(
                       context,
-                      icon: Icons.quiz,
-                      label: 'Quiz',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed(AppRoutes.quiz);
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: DesignSystem.spacingM),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildSimpleMenuButton(
-                      context,
-                      icon: Icons.person,
-                      label: 'Arkadaşlar',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed(AppRoutes.friends);
-                      },
-                    ),
-                    _buildSimpleMenuButton(
-                      context,
                       icon: Icons.settings,
                       label: 'Ayarlar',
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.of(context).pushNamed(AppRoutes.settings);
-                      },
-                    ),
-                    _buildSimpleMenuButton(
-                      context,
-                      icon: Icons.help_outline,
-                      label: 'Yardım',
-                      onTap: () {
-                        Navigator.pop(context);
-                        // Show help dialog
                       },
                     ),
                   ],
@@ -734,117 +595,6 @@ class _HomeDashboardState extends State<HomeDashboard>
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickAccessSection(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 360;
-
-    return Container(
-      margin: const EdgeInsets.all(DesignSystem.spacingM),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: isSmallScreen
-                    ? DesignSystem.spacingS
-                    : DesignSystem.spacingM,
-                vertical: DesignSystem.spacingS),
-            child: Text(
-              'Hızlı Erişim',
-              style: DesignSystem.getTitleLarge(context).copyWith(
-                color: Colors.white,
-                fontSize: isSmallScreen ? 18.0 : 22.0,
-                fontWeight: FontWeight.w700,
-                shadows: [
-                  Shadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    offset: const Offset(0, 2),
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: _buildQuickAccessButton(
-                  context,
-                  icon: Icons.settings,
-                  label: 'Ayarlar',
-                  color: ThemeColors.getAccentButtonColor(context),
-                  onTap: () {
-                    Navigator.of(context).pushNamed(AppRoutes.settings);
-                  },
-                ),
-              ),
-              SizedBox(width: DesignSystem.spacingS),
-              Expanded(
-                child: _buildQuickAccessButton(
-                  context,
-                  icon: Icons.person,
-                  label: 'Profil',
-                  color: Colors.purple,
-                  onTap: () {
-                    Navigator.of(context).pushNamed(AppRoutes.profile);
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickAccessButton(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 360;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-      child: Container(
-        padding: EdgeInsets.all(isSmallScreen ? 16.0 : 20.0),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-          border: Border.all(
-            color: color.withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              color: color,
-              size: isSmallScreen ? 24.0 : 28.0,
-            ),
-            SizedBox(height: DesignSystem.spacingS),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: isSmallScreen ? 12.0 : 14.0,
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
         ),
       ),
     );
@@ -1286,197 +1036,6 @@ class _HomeDashboardState extends State<HomeDashboard>
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildStatisticsSummarySection(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 360;
-    final sectionTitleFontSize = isSmallScreen ? 16.0 : 20.0;
-
-    return Container(
-      margin: const EdgeInsets.all(DesignSystem.spacingM),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: isSmallScreen
-                    ? DesignSystem.spacingS
-                    : DesignSystem.spacingM,
-                vertical: DesignSystem.spacingS),
-            child: Text(
-              'İstatistik Özeti',
-              style: DesignSystem.getTitleLarge(context).copyWith(
-                color: Colors.white,
-                fontSize: sectionTitleFontSize,
-                fontWeight: FontWeight.w700,
-                shadows: [
-                  Shadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    offset: const Offset(0, 2),
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: ThemeColors.getCardBackground(context),
-              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(isSmallScreen
-                  ? DesignSystem.spacingS
-                  : DesignSystem.spacingM),
-              child: Column(
-                children: [
-                  // Quick Stats Grid
-                  GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: DesignSystem.spacingS,
-                    crossAxisSpacing: DesignSystem.spacingS,
-                    childAspectRatio: isSmallScreen ? 1.5 : 1.8,
-                    children: [
-                      _buildStatCard(
-                        context,
-                        icon: Icons.timer,
-                        title: 'Toplam Süre',
-                        value: '12.5 saat',
-                        subtitle: 'Son 30 gün',
-                        color: ThemeColors.getInfoColor(context),
-                      ),
-                      _buildStatCard(
-                        context,
-                        icon: Icons.local_fire_department,
-                        title: 'En Uzun Seri',
-                        value: '7 gün',
-                        subtitle: 'Günlük quiz',
-                        color: ThemeColors.getSuccessColor(context),
-                      ),
-                      _buildStatCard(
-                        context,
-                        icon: Icons.trending_up,
-                        title: 'En Yüksek Skor',
-                        value: '14/15',
-                        subtitle: 'Enerji konusu',
-                        color: ThemeColors.getWarningColor(context),
-                      ),
-                      _buildStatCard(
-                        context,
-                        icon: Icons.people,
-                        title: 'Düello Kazanma',
-                        value: '%68',
-                        subtitle: '15 düello',
-                        color: Colors.purple,
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: DesignSystem.spacingM),
-                  
-                  // Weekly Progress Chart
-                  Container(
-                    padding: EdgeInsets.all(DesignSystem.spacingM),
-                    decoration: BoxDecoration(
-                      color: ThemeColors.getPrimaryButtonColor(context)
-                          .withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Haftalık Aktivite',
-                          style: TextStyle(
-                            color: ThemeColors.getText(context),
-                            fontSize: isSmallScreen ? 14.0 : 16.0,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        SizedBox(height: DesignSystem.spacingS),
-                        _buildWeeklyChart(context),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String value,
-    required String subtitle,
-    required Color color,
-  }) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 360;
-
-    return Container(
-      padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-        border: Border.all(
-          color: color.withValues(alpha: 0.2),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            color: color,
-            size: isSmallScreen ? 20.0 : 24.0,
-          ),
-          SizedBox(height: 4.0),
-          Text(
-            value,
-            style: TextStyle(
-              color: ThemeColors.getText(context),
-              fontSize: isSmallScreen ? 14.0 : 16.0,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          Text(
-            title,
-            style: TextStyle(
-              color: ThemeColors.getSecondaryText(context),
-              fontSize: isSmallScreen ? 10.0 : 12.0,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            subtitle,
-            style: TextStyle(
-              color: ThemeColors.getSecondaryText(context),
-              fontSize: isSmallScreen ? 8.0 : 10.0,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
     );
   }
 
@@ -2009,60 +1568,6 @@ class _HomeDashboardState extends State<HomeDashboard>
     );
   }
 
-  Widget _buildWeeklyChart(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 360;
-    
-    // Sample data for weekly activity
-    final weekData = [
-      {'day': 'Pzt', 'value': 0.8},
-      {'day': 'Sal', 'value': 0.6},
-      {'day': 'Çar', 'value': 0.9},
-      {'day': 'Per', 'value': 0.7},
-      {'day': 'Cum', 'value': 0.5},
-      {'day': 'Cmt', 'value': 0.4},
-      {'day': 'Paz', 'value': 0.3},
-    ];
-    
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: weekData.map((data) {
-        final value = data['value'] as double;
-        return Column(
-          children: [
-            Container(
-              width: isSmallScreen ? 16.0 : 20.0,
-              height: isSmallScreen ? 40.0 : 60.0,
-              decoration: BoxDecoration(
-                color: ThemeColors.getPrimaryButtonColor(context),
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  width: double.infinity,
-                  height: (isSmallScreen ? 40.0 : 60.0) * value,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(4.0),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 4.0),
-            Text(
-              data['day'] as String,
-              style: TextStyle(
-                color: ThemeColors.getSecondaryText(context),
-                fontSize: isSmallScreen ? 10.0 : 12.0,
-              ),
-            ),
-          ],
-        );
-      }).toList(),
-    );
-  }
-
   Widget _buildDailyChallengesSection(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
@@ -2164,28 +1669,20 @@ class _HomeDashboardState extends State<HomeDashboard>
     BuildContext context, {
     DailyChallenge? challenge,
     bool isSmallScreen = false,
-    // Legacy parameters for backward compatibility
-    IconData? icon,
-    String? title,
-    String? description,
-    int? progress,
-    int? target,
-    String? reward,
-    Color? color,
   }) {
     final screenWidth = MediaQuery.of(context).size.width;
     final smallScreen = isSmallScreen || screenWidth < 360;
     
-    // Use challenge data if available, otherwise use legacy parameters
-    final challengeIcon = challenge?.icon ?? icon ?? Icons.task;
-    final challengeTitle = challenge?.title ?? title ?? 'Görev';
-    final challengeDescription = challenge?.description ?? description ?? '';
-    final challengeProgress = challenge?.currentValue ?? progress ?? 0;
-    final challengeTarget = challenge?.targetValue ?? target ?? 1;
+    // Use challenge data if available
+    final challengeIcon = challenge?.icon ?? Icons.task;
+    final challengeTitle = challenge?.title ?? 'Görev';
+    final challengeDescription = challenge?.description ?? '';
+    final challengeProgress = challenge?.currentValue ?? 0;
+    final challengeTarget = challenge?.targetValue ?? 1;
     final challengeReward = challenge?.rewardPoints != null 
         ? '${challenge!.rewardPoints} Puan'
-        : reward ?? '10 Puan';
-    final challengeColor = _getChallengeColor(challenge?.type, color);
+        : '10 Puan';
+    final challengeColor = ThemeColors.getAccentButtonColor(context);
     
     final progressPercentage = challengeTarget > 0 
         ? (challengeProgress / challengeTarget).clamp(0.0, 1.0)
@@ -2296,24 +1793,170 @@ class _HomeDashboardState extends State<HomeDashboard>
     }
   }
 
-  /// Helper method to get color for challenge type
-  Color _getChallengeColor(ChallengeType? type, Color? fallback) {
-    if (fallback != null) return fallback;
-    
-    switch (type) {
-      case ChallengeType.quiz:
-        return ThemeColors.getSuccessColor(context);
-      case ChallengeType.duel:
-        return Colors.purple;
-      case ChallengeType.multiplayer:
-        return ThemeColors.getInfoColor(context);
-      case ChallengeType.social:
-        return Colors.blue;
-      case ChallengeType.special:
-        return Colors.orange;
-      default:
-        return ThemeColors.getAccentButtonColor(context);
-    }
+  Widget _buildStatisticsSummarySection(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final sectionTitleFontSize = isSmallScreen ? 16.0 : 20.0;
+
+    return Container(
+      margin: const EdgeInsets.all(DesignSystem.spacingM),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: isSmallScreen
+                    ? DesignSystem.spacingS
+                    : DesignSystem.spacingM,
+                vertical: DesignSystem.spacingS),
+            child: Text(
+              'İstatistik Özeti',
+              style: DesignSystem.getTitleLarge(context).copyWith(
+                color: Colors.white,
+                fontSize: sectionTitleFontSize,
+                fontWeight: FontWeight.w700,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    offset: const Offset(0, 2),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: ThemeColors.getCardBackground(context),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(isSmallScreen
+                  ? DesignSystem.spacingS
+                  : DesignSystem.spacingM),
+              child: Column(
+                children: [
+                  // Quick Stats Grid
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: DesignSystem.spacingS,
+                    crossAxisSpacing: DesignSystem.spacingS,
+                    childAspectRatio: isSmallScreen ? 1.5 : 1.8,
+                    children: [
+                      _buildStatCard(
+                        context,
+                        icon: Icons.timer,
+                        title: 'Toplam Süre',
+                        value: '12.5 saat',
+                        subtitle: 'Son 30 gün',
+                        color: ThemeColors.getInfoColor(context),
+                      ),
+                      _buildStatCard(
+                        context,
+                        icon: Icons.local_fire_department,
+                        title: 'En Uzun Seri',
+                        value: '7 gün',
+                        subtitle: 'Günlük quiz',
+                        color: ThemeColors.getSuccessColor(context),
+                      ),
+                      _buildStatCard(
+                        context,
+                        icon: Icons.trending_up,
+                        title: 'En Yüksek Skor',
+                        value: '14/15',
+                        subtitle: 'Enerji konusu',
+                        color: ThemeColors.getWarningColor(context),
+                      ),
+                      _buildStatCard(
+                        context,
+                        icon: Icons.people,
+                        title: 'Düello Kazanma',
+                        value: '%68',
+                        subtitle: '15 düello',
+                        color: Colors.purple,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: DesignSystem.spacingM),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String value,
+    required String subtitle,
+    required Color color,
+  }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    return Container(
+      padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+        border: Border.all(
+          color: color.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            color: color,
+            size: isSmallScreen ? 20.0 : 24.0,
+          ),
+          SizedBox(height: 4.0),
+          Text(
+            value,
+            style: TextStyle(
+              color: ThemeColors.getText(context),
+              fontSize: isSmallScreen ? 14.0 : 16.0,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          Text(
+            title,
+            style: TextStyle(
+              color: ThemeColors.getSecondaryText(context),
+              fontSize: isSmallScreen ? 10.0 : 12.0,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            subtitle,
+            style: TextStyle(
+              color: ThemeColors.getSecondaryText(context),
+              fontSize: isSmallScreen ? 8.0 : 10.0,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildSimpleMenuButton(
@@ -2662,13 +2305,6 @@ class _HomeDashboardState extends State<HomeDashboard>
       completedQuizzes: 1,
     );
 
-    // Send a reminder notification for next quiz
-    // await NotificationService.scheduleQuizReminderNotification();
-
-    // Get wrong answer categories from quiz logic
-    // We need to access the quiz logic through the bloc
-    // For now, we'll show a simple summary
-
     await showDialog(
       context: context,
       barrierDismissible: false,
@@ -2749,46 +2385,6 @@ class _HomeDashboardState extends State<HomeDashboard>
 
               const SizedBox(height: DesignSystem.spacingL),
 
-              // Learning Suggestion
-              Container(
-                padding: const EdgeInsets.all(DesignSystem.spacingM),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.lightbulb_outline,
-                          color: Colors.yellow,
-                          size: 20,
-                        ),
-                        const SizedBox(width: DesignSystem.spacingS),
-                        Text(
-                          'Öğrenme Önerisi',
-                          style: DesignSystem.getTitleMedium(context).copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: DesignSystem.spacingS),
-                    Text(
-                      'Bir sonraki quiz\'de yanlış cevapladığınız konulardan daha fazla soru çıkacak. Bu sayede zayıf olduğunuz alanlarda gelişebilirsiniz!',
-                      style: DesignSystem.getBodySmall(context).copyWith(
-                        color: Colors.white.withValues(alpha: 0.8),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: DesignSystem.spacingL),
-
               // Action Buttons
               Row(
                 children: [
@@ -2843,6 +2439,124 @@ class _HomeDashboardState extends State<HomeDashboard>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildRecentActivitySection(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final sectionTitleFontSize = isSmallScreen ? 18.0 : 22.0;
+
+    return Container(
+      margin: EdgeInsets.all(
+          isSmallScreen ? DesignSystem.spacingS : DesignSystem.spacingM),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: isSmallScreen
+                    ? DesignSystem.spacingS
+                    : DesignSystem.spacingM,
+                vertical: DesignSystem.spacingS),
+            child: Text(
+              'Son Aktiviteler',
+              style: DesignSystem.getTitleLarge(context).copyWith(
+                color: Colors.white,
+                fontSize: sectionTitleFontSize,
+                fontWeight: FontWeight.w700,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    offset: const Offset(0, 2),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: ThemeColors.getCardBackground(context),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(isSmallScreen
+                  ? DesignSystem.spacingS
+                  : DesignSystem.spacingM),
+              child: Column(
+                children: [
+                  _buildActivityItem(
+                    context,
+                    icon: Icons.quiz,
+                    title: 'Quiz tamamlandı',
+                    subtitle: '2 saat önce',
+                    color: ThemeColors.getSuccessColor(context),
+                  ),
+                  SizedBox(height: DesignSystem.spacingM),
+                  _buildActivityItem(
+                    context,
+                    icon: Icons.people,
+                    title: 'Yeni arkadaş eklendi',
+                    subtitle: '1 gün önce',
+                    color: ThemeColors.getInfoColor(context),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActivityItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            size: 16,
+            color: color,
+          ),
+        ),
+        const SizedBox(width: DesignSystem.spacingM),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: DesignSystem.getBodyMedium(context),
+              ),
+              Text(
+                subtitle,
+                style: DesignSystem.getBodyMedium(context).copyWith(
+                  color: ThemeColors.getSecondaryText(context),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

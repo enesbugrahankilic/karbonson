@@ -1,134 +1,129 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../provides/language_provider.dart';
-import '../services/language_service.dart';
-import '../enums/app_language.dart';
 import '../theme/theme_colors.dart';
+import '../provides/language_provider.dart';
+import '../enums/app_language.dart';
 
 class LanguageSelectorButton extends StatelessWidget {
-  final bool isInAppBar;
-
-  const LanguageSelectorButton({
-    super.key,
-    this.isInAppBar = true,
-  });
+  const LanguageSelectorButton({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Consumer<LanguageProvider>(
       builder: (context, languageProvider, child) {
-        if (isInAppBar) {
-          return PopupMenuButton<AppLanguage>(
-            onSelected: (AppLanguage language) {
-              languageProvider.setLanguage(language);
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<AppLanguage>>[
-              PopupMenuItem<AppLanguage>(
-                value: AppLanguage.turkish,
-                child: Row(
-                  children: [
-                    const Text('🇹🇷 ', style: TextStyle(fontSize: 18)),
-                    const Text('Türkçe'),
-                    if (languageProvider.currentLanguage == AppLanguage.turkish)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16.0),
-                        child: Icon(
-                          Icons.check,
-                          color: ThemeColors.getGreen(context),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              PopupMenuItem<AppLanguage>(
-                value: AppLanguage.english,
-                child: Row(
-                  children: [
-                    const Text('🇬🇧 ', style: TextStyle(fontSize: 18)),
-                    const Text('English'),
-                    if (languageProvider.currentLanguage == AppLanguage.english)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16.0),
-                        child: Icon(
-                          Icons.check,
-                          color: ThemeColors.getGreen(context),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ],
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.language, size: 20),
-                    const SizedBox(width: 4),
-                    Text(
-                      languageProvider.currentLanguageFlag,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
+        final isTurkish = languageProvider.currentLanguage == AppLanguage.turkish;
+        final flag = isTurkish ? '🇹🇷' : '🇺🇸';
+        final languageCode = isTurkish ? 'TR' : 'EN';
+
+        return GestureDetector(
+          onTap: () => _showLanguageDialog(context, languageProvider),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.3),
+                width: 1,
               ),
             ),
-          );
-        } else {
-          // Compact button for inline usage
-          return IconButton(
-            icon: const Icon(Icons.language),
-            onPressed: () {
-              _showLanguageDialog(context, languageProvider);
-            },
-            tooltip: 'Dil Seçin / Select Language',
-          );
-        }
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  flag,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  languageCode,
+                  style: TextStyle(
+                    color: ThemeColors.getText(context),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.arrow_drop_down,
+                  size: 16,
+                  color: ThemeColors.getSecondaryText(context),
+                ),
+              ],
+            ),
+          ),
+        );
       },
     );
   }
 
-  void _showLanguageDialog(
-      BuildContext context, LanguageProvider languageProvider) {
+  void _showLanguageDialog(BuildContext context, LanguageProvider languageProvider) {
+    final isTurkishCurrent = languageProvider.currentLanguage == AppLanguage.turkish;
+    
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Dil Seçin / Select Language'),
-          content: Column(
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                ThemeColors.getCardBackground(context),
+                ThemeColors.getCardBackground(context).withOpacity(0.95),
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Text(
+                'Dil Seçin',
+                style: TextStyle(
+                  color: ThemeColors.getText(context),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 20),
               ListTile(
-                title: const Text('🇹🇷 Türkçe'),
-                onTap: () {
-                  languageProvider.setLanguage(AppLanguage.turkish);
-                  Navigator.pop(context);
-                },
-                selected:
-                    languageProvider.currentLanguage == AppLanguage.turkish,
-                trailing: languageProvider.currentLanguage ==
-                        AppLanguage.turkish
-                    ? Icon(Icons.check, color: ThemeColors.getGreen(context))
+                leading: const Text('🇹🇷', style: TextStyle(fontSize: 24)),
+                title: const Text('Türkçe'),
+                subtitle: const Text('Türkiye'),
+                trailing: isTurkishCurrent 
+                    ? const Icon(Icons.check, color: Colors.green)
                     : null,
+                onTap: () {
+                  Navigator.pop(context);
+                  languageProvider.setLanguage(AppLanguage.turkish);
+                },
               ),
               ListTile(
-                title: const Text('🇬🇧 English'),
+                leading: const Text('🇺🇸', style: TextStyle(fontSize: 24)),
+                title: const Text('English'),
+                subtitle: const Text('United States'),
+                trailing: !isTurkishCurrent 
+                    ? const Icon(Icons.check, color: Colors.green)
+                    : null,
                 onTap: () {
-                  languageProvider.setLanguage(AppLanguage.english);
                   Navigator.pop(context);
+                  languageProvider.setLanguage(AppLanguage.english);
                 },
-                selected:
-                    languageProvider.currentLanguage == AppLanguage.english,
-                trailing:
-                    languageProvider.currentLanguage == AppLanguage.english
-                        ? Icon(Icons.check, color: ThemeColors.getGreen(context))
-                        : null,
+              ),
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('İptal'),
               ),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

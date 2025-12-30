@@ -46,6 +46,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   bool _isRegistered = false;
   bool _isCheckingRegistration = true;
   bool _hasCheckedPersistentAuth = false;
+  bool _isAuthStateListenerActive = false;
 
   // Kapsamlı isim önerisi listesi
   final List<String> _availableNames = [
@@ -310,6 +311,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         _isRegistered = isRegistered;
         _isCheckingRegistration = false;
       });
+      
+      if (kDebugMode) {
+        debugPrint('Registration status updated: $isRegistered');
+      }
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Error checking registration status: $e');
@@ -662,6 +667,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           uid: user.uid,
         );
 
+        // Re-check registration status after successful login
+        await _checkRegistrationStatus();
+
         // If email is not verified, show verification dialog first
         if (verificationStatus.hasEmail && !verificationStatus.isVerified) {
           if (!mounted) return;
@@ -882,6 +890,17 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = screenSize.width;
+    final isSmallScreen = screenWidth < 360;
+    final isMediumScreen = screenWidth < 600;
+    final isLargeScreen = screenWidth > 800;
+
+    // Responsive text sizes
+    final titleFontSize = isSmallScreen ? 20.0 : (isMediumScreen ? 24.0 : (isLargeScreen ? 32.0 : 28.0));
+    final bodyTextSize = isSmallScreen ? 14.0 : (isMediumScreen ? 16.0 : 18.0);
+    final smallTextSize = isSmallScreen ? 12.0 : 14.0;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -909,9 +928,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           child: Center(
             child: Scrollbar(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(DesignSystem.spacingM),
+                padding: EdgeInsets.all(isSmallScreen ? 12.0 : DesignSystem.spacingM),
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
+                  constraints: BoxConstraints(
+                    maxWidth: isLargeScreen ? 600 : 500,
+                  ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
@@ -950,7 +971,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 Text(
                                   'Oyuna Başla',
                                   textAlign: TextAlign.center,
-                                  style: AppTheme.getGameTitleStyle(context),
+                                  style: AppTheme.getGameTitleStyle(context).copyWith(
+                                    fontSize: titleFontSize,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: DesignSystem.spacingL),
 
@@ -980,7 +1005,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                           ),
                                         ),
                                         style:
-                                            DesignSystem.getBodyLarge(context),
+                                            DesignSystem.getBodyLarge(context).copyWith(
+                                              fontSize: bodyTextSize,
+                                            ),
                                         validator: (value) {
                                           if (value == null || value.isEmpty) {
                                             return 'Lütfen bir takma ad girin';
@@ -1055,26 +1082,13 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
                                 _buildGameModeButton(
                                   icon: Icons.security,
-                                  label: 'Gelişmiş Giriş',
-                                  color:
-                                      ThemeColors.getAccentButtonColor(context),
+                                  label: 'Düello',
+                                  color: ThemeColors.getAccentButtonColor(context),
                                   onPressed: () {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) =>
-                                            AuthenticationOptionsWidget(
-                                          onLoginSuccess: () {
-                                            // Giriş başarılı olduğunda profile sayfasına yönlendir
-                                            Navigator.pushReplacement(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const ProfilePage(),
-                                              ),
-                                            );
-                                          },
-                                        ),
+                                        builder: (context) => const DuelPage(),
                                       ),
                                     );
                                   },
@@ -1099,67 +1113,31 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   /// Ana sayfa için UI odaklı butonlar
   Widget _buildMainActionButtons(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = screenSize.width;
+    final isSmallScreen = screenWidth < 360;
+    
+    // Kullanıcı zaten giriş yapmışsa farklı butonlar göster
+    final authStateService = AuthenticationStateService();
+    final isLoggedIn = authStateService.hasAuthAccount;
+    
     return Column(
       children: [
-        // Ana işlev butonları - UI Odaklı
-        Row(
-          children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  // Giriş Yap dialog'ını aç
-                  _showLoginDialog();
-                },
-                icon: Icon(Icons.login, size: 20),
-                label: Text('Giriş Yap',
-                    style:
-                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ThemeColors.getPrimaryButtonColor(context),
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                  ),
-                  elevation: 2,
-                ),
-              ),
-            ),
-            SizedBox(width: DesignSystem.spacingS),
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  // Kayıt ol sayfasına git
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const RegisterPage()),
-                  );
-                },
-                icon: Icon(Icons.person_add, size: 20),
-                label: Text('Kayıt Ol',
-                    style:
-                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ThemeColors.getSecondaryButtonColor(context),
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                  ),
-                  elevation: 2,
-                ),
-              ),
-            ),
-          ],
-        ),
+        if (isLoggedIn) ...[
+          // Giriş yapmış kullanıcılar için butonlar
+          _buildLoggedInUserButtons(context, isSmallScreen),
+        ] else ...[
+          // Giriş yapmamış kullanıcılar için butonlar
+          _buildGuestUserButtons(context, isSmallScreen),
+        ],
         SizedBox(height: DesignSystem.spacingS),
-
-        // İkinci sıra butonları
+        
+        // İkinci sıra butonları - her zaman göster
         Row(
           children: [
             Expanded(
               child: _buildSecondaryButton(
+                context,
                 icon: Icons.settings,
                 label: 'Ayarlar',
                 color: ThemeColors.getAccentButtonColor(context),
@@ -1173,9 +1151,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               ),
             ),
             SizedBox(width: DesignSystem.spacingS),
-            if (_isRegistered && !_isCheckingRegistration)
+            if (isLoggedIn)
               Expanded(
                 child: _buildSecondaryButton(
+                  context,
                   icon: Icons.person,
                   label: 'Profil',
                   color: Colors.purple,
@@ -1188,15 +1167,15 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     );
                   },
                 ),
-              ),
-            if (!_isRegistered || _isCheckingRegistration)
+              )
+            else
               Expanded(
                 child: _buildSecondaryButton(
+                  context,
                   icon: Icons.people,
                   label: 'Arkadaşlar',
                   color: ThemeColors.getInfoColor(context),
                   onPressed: () {
-                    final authStateService = AuthenticationStateService();
                     authStateService.getGameNickname().then((gameNickname) {
                       Future.delayed(Duration.zero, () {
                         if (mounted) {
@@ -1213,9 +1192,20 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   },
                 ),
               ),
+            if (isLoggedIn)
+              Expanded(
+                child: _buildSecondaryButton(
+                  context,
+                  icon: Icons.logout,
+                  label: 'Çıkış',
+                  color: ThemeColors.getErrorColor(context),
+                  onPressed: _showLogoutDialog,
+                ),
+              ),
             SizedBox(width: DesignSystem.spacingS),
             Expanded(
               child: _buildSecondaryButton(
+                context,
                 icon: Icons.leaderboard,
                 label: 'Liderlik',
                 color: ThemeColors.getWarningColor(context),
@@ -1223,6 +1213,122 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoggedInUserButtons(BuildContext context, bool isSmallScreen) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () {
+              // Gelişmiş profil sayfasına git
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const ProfilePage()),
+              );
+            },
+            icon: Icon(Icons.person, size: 20),
+            label: Text('Profilim',
+                style:
+                    TextStyle(fontSize: isSmallScreen ? 12 : 14, fontWeight: FontWeight.w600),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.purple,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+              ),
+              elevation: 2,
+            ),
+          ),
+        ),
+        SizedBox(width: DesignSystem.spacingS),
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () {
+              // Çıkış yap
+              _showLogoutDialog();
+            },
+            icon: Icon(Icons.logout, size: 20),
+            label: Text('Çıkış Yap',
+                style:
+                    TextStyle(fontSize: isSmallScreen ? 12 : 14, fontWeight: FontWeight.w600),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ThemeColors.getErrorColor(context),
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+              ),
+              elevation: 2,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGuestUserButtons(BuildContext context, bool isSmallScreen) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () {
+              // Giriş Yap dialog'ını aç
+              _showLoginDialog();
+            },
+            icon: Icon(Icons.login, size: 20),
+            label: Text('Giriş Yap',
+                style:
+                    TextStyle(fontSize: isSmallScreen ? 12 : 14, fontWeight: FontWeight.w600),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ThemeColors.getPrimaryButtonColor(context),
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+              ),
+              elevation: 2,
+            ),
+          ),
+        ),
+        SizedBox(width: DesignSystem.spacingS),
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () {
+              // Kayıt ol sayfasına git
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const RegisterPage()),
+              );
+            },
+            icon: Icon(Icons.person_add, size: 20),
+            label: Text('Kayıt Ol',
+                style:
+                    TextStyle(fontSize: isSmallScreen ? 12 : 14, fontWeight: FontWeight.w600),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ThemeColors.getSecondaryButtonColor(context),
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+              ),
+              elevation: 2,
+            ),
+          ),
         ),
       ],
     );
@@ -1276,18 +1382,23 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildSecondaryButton({
+  Widget _buildSecondaryButton(BuildContext context, {
     required IconData icon,
     required String label,
     required Color color,
     required VoidCallback onPressed,
   }) {
+    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = screenSize.width;
+    final isSmallScreen = screenWidth < 360;
     return TextButton.icon(
       onPressed: onPressed,
       icon: Icon(icon, size: 18, color: color),
       label: Text(label,
           style: TextStyle(
-              fontSize: 14, color: color, fontWeight: FontWeight.w500)),
+              fontSize: isSmallScreen ? 12 : 14, color: color, fontWeight: FontWeight.w500),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis),
       style: TextButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: DesignSystem.spacingM),
         shape: RoundedRectangleBorder(

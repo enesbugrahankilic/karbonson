@@ -35,13 +35,13 @@ class DailyChallenge extends Equatable {
   final String description;
   final ChallengeType type;
   final int targetValue;
-  int currentValue;
+  final int currentValue;
   final int rewardPoints;
   final RewardType rewardType;
   final String? rewardItem; // ID of avatar, theme, or feature
   final DateTime date;
   final DateTime expiresAt;
-  bool isCompleted;
+  final bool isCompleted;
   final ChallengeDifficulty difficulty;
   final String? icon;
 

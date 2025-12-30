@@ -18,12 +18,21 @@ class LeaderboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final titleFontSize = isSmallScreen ? 18.0 : 20.0;
+
     return Scaffold(
       appBar: AppBar(
         leading: const HomeButton(),
         title: Consumer<LanguageProvider>(
           builder: (context, languageProvider, child) {
-            return Text(AppLocalizations.leaderboard);
+            return Text(
+              AppLocalizations.leaderboard,
+              style: TextStyle(fontSize: titleFontSize),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            );
           },
         ),
         actions: [
@@ -64,14 +73,16 @@ class LeaderboardPage extends StatelessWidget {
               child: Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
                     child: Text(
                       'Liderlik Tablosu',
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: isSmallScreen ? 20 : 24,
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.primary,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   ListView.builder(
