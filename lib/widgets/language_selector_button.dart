@@ -20,10 +20,10 @@ class LanguageSelectorButton extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
+              color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha:0.1),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.3),
+                color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha:0.3),
                 width: 1,
               ),
             ),
@@ -72,7 +72,7 @@ class LanguageSelectorButton extends StatelessWidget {
             gradient: LinearGradient(
               colors: [
                 ThemeColors.getCardBackground(context),
-                ThemeColors.getCardBackground(context).withOpacity(0.95),
+                ThemeColors.getCardBackground(context).withValues(alpha:0.95),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,

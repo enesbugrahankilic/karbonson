@@ -158,9 +158,9 @@ class _DifficultySelectionWidgetState extends State<DifficultySelectionWidget> {
     return Container(
       padding: const EdgeInsets.all(DesignSystem.spacingS),
       decoration: BoxDecoration(
-        color: trendColor.withOpacity(0.1),
+        color: trendColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(DesignSystem.radiusS),
-        border: Border.all(color: trendColor.withOpacity(0.3)),
+        border: Border.all(color: trendColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -180,7 +180,7 @@ class _DifficultySelectionWidgetState extends State<DifficultySelectionWidget> {
                 Text(
                   'Son doğruluk oranı: %$recentAccuracy',
                   style: DesignSystem.getBodySmall(context).copyWith(
-                    color: trendColor.withOpacity(0.8),
+                    color: trendColor.withValues(alpha: 0.8),
                   ),
                 ),
               ],
@@ -226,7 +226,7 @@ class _DifficultySelectionWidgetState extends State<DifficultySelectionWidget> {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: _getDifficultyColor(difficulty).withOpacity(0.2),
+                          color: _getDifficultyColor(difficulty).withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(DesignSystem.radiusS),
                         ),
                         child: Icon(
@@ -253,7 +253,7 @@ class _DifficultySelectionWidgetState extends State<DifficultySelectionWidget> {
                             Text(
                               _getDifficultyDescription(difficulty),
                               style: DesignSystem.getBodySmall(context).copyWith(
-                                color: ThemeColors.getText(context).withOpacity(0.7),
+                                color: ThemeColors.getText(context).withValues(alpha: 0.7),
                               ),
                             ),
                             if (stats != null && stats.isNotEmpty) ...[
@@ -290,7 +290,7 @@ class _DifficultySelectionWidgetState extends State<DifficultySelectionWidget> {
       return Text(
         'Henüz oynanmadı',
         style: DesignSystem.getBodySmall(context).copyWith(
-          color: ThemeColors.getText(context).withOpacity(0.5),
+          color: ThemeColors.getText(context).withValues(alpha: 0.5),
         ),
       );
     }
@@ -300,13 +300,13 @@ class _DifficultySelectionWidgetState extends State<DifficultySelectionWidget> {
         Icon(
           Icons.bar_chart,
           size: 16,
-          color: ThemeColors.getText(context).withOpacity(0.6),
+          color: ThemeColors.getText(context).withValues(alpha: 0.6),
         ),
         const SizedBox(width: 4),
         Text(
           '$totalQuizzes quiz • %$averageAccuracy doğruluk',
           style: DesignSystem.getBodySmall(context).copyWith(
-            color: ThemeColors.getText(context).withOpacity(0.7),
+            color: ThemeColors.getText(context).withValues(alpha: 0.7),
           ),
         ),
       ],
@@ -422,7 +422,7 @@ class SimpleDifficultySelector extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: isSelected
                   ? _getDifficultyColor(difficulty)
-                  : Colors.grey.withOpacity(0.2),
+                  : Colors.grey.withValues(alpha: 0.2),
                 foregroundColor: isSelected ? Colors.white : _getDifficultyColor(difficulty),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),

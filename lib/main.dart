@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
+import 'extensions/localization_extension.dart';
 import 'provides/theme_provider.dart';
 import 'provides/language_provider.dart';
 import 'provides/quiz_bloc.dart';
@@ -251,7 +252,7 @@ class _AppRootState extends State<AppRoot> {
                 const CircularProgressIndicator(),
                 const SizedBox(height: 12),
                 Text(
-                  AppLocalizations.of(context)?.loading ?? 'Loading...',
+                  context.l10n.loading,
                   style: const TextStyle(color: Colors.black87),
                 ),
               ],
@@ -266,20 +267,20 @@ class _AppRootState extends State<AppRoot> {
         debugShowCheckedModeBanner: false,
         home: Scaffold(
           appBar: AppBar(
-              title: const Text('Başlatma Hatası',
-                  style: TextStyle(color: Colors.black87))),
+              title: Text(context.l10n.startupError,
+                  style: const TextStyle(color: Colors.black87))),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('Uygulama başlatılırken hata oluştu.',
-                    style: TextStyle(color: Colors.black87)),
+                Text(context.l10n.startupErrorDescription,
+                    style: const TextStyle(color: Colors.black87)),
                 const SizedBox(height: 8),
                 Text(_error ?? '', style: const TextStyle(color: Colors.red)),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                    onPressed: _initialize, child: const Text('Tekrar Dene')),
+                    onPressed: _initialize, child: Text(context.l10n.retry)),
               ],
             ),
           ),
@@ -381,12 +382,12 @@ class _Karbon2AppState extends State<Karbon2App> {
 
         if (themeProvider.isHighContrast) {
           themeToShow = AppTheme.highContrastTheme;
-          title = 'Eco Game - Yüksek Kontrast';
+          title = context.l10n.appNameHighContrast;
         } else {
           themeToShow = themeProvider.themeMode == ThemeMode.dark
               ? AppTheme.darkTheme
               : AppTheme.lightTheme;
-          title = 'Eco Game';
+          title = context.l10n.appName;
         }
 
         return MaterialApp(

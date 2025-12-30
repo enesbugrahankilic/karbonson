@@ -347,7 +347,7 @@ class _ProtectedRouteWrapperState extends State<_ProtectedRouteWrapper> {
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
               Text(
-                'Kimlik doğrulanıyor...',
+                'Authenticating...',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ],

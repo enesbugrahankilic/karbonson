@@ -184,7 +184,7 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  color: Theme.of(context).primaryColor.withValues(alpha:0.1),
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(20)),
                 ),
@@ -348,7 +348,7 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  color: Theme.of(context).primaryColor.withValues(alpha:0.1),
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(20)),
                 ),
@@ -451,9 +451,9 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          color: Theme.of(context).primaryColor.withValues(alpha:0.1),
           border: Border.all(
-            color: Theme.of(context).primaryColor.withOpacity(0.3),
+            color: Theme.of(context).primaryColor.withValues(alpha:0.3),
             width: 2,
           ),
         ),
@@ -519,7 +519,7 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
             child: Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha:0.5),
               ),
               child: Center(
                 child: CircularProgressIndicator(
@@ -545,7 +545,7 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
                   color: Theme.of(context).primaryColor,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha:0.2),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -573,7 +573,7 @@ class _ProfileImageUploadWidgetState extends State<ProfileImageUploadWidget>
                   color: Colors.red,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha:0.2),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),

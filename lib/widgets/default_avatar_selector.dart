@@ -87,7 +87,7 @@ class _DefaultAvatarSelectorState extends State<DefaultAvatarSelector> {
                             BoxShadow(
                               color: Theme.of(context)
                                   .primaryColor
-                                  .withOpacity(0.3),
+                                  .withValues(alpha:0.3),
                               blurRadius: 8,
                               spreadRadius: 2,
                             ),

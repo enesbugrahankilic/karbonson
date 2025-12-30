@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/language_service.dart';
 import '../provides/language_provider.dart';
 import '../enums/app_language.dart';
+import '../l10n/app_localizations.dart';
 
 extension LocalizedBuildContext on BuildContext {
   LanguageProvider get languageProvider => read<LanguageProvider>();
@@ -13,5 +14,10 @@ extension LocalizedBuildContext on BuildContext {
   /// Get localized string based on current language
   String t(String turkish, String english) {
     return isTurkish ? turkish : english;
+  }
+
+  /// Get AppLocalizations instance for current locale
+  AppLocalizations get l10n {
+    return Localizations.of<AppLocalizations>(this, AppLocalizations)!;
   }
 }

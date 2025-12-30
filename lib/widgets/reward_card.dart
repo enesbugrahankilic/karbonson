@@ -2,6 +2,7 @@
 // Reward card widget for displaying reward items
 
 import 'package:flutter/material.dart';
+import '../themes/app_theme.dart';
 import '../models/reward_item.dart';
 
 class RewardCard extends StatelessWidget {
@@ -44,8 +45,8 @@ class RewardCard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      _getRarityColor().withOpacity(0.1),
-                      _getRarityColor().withOpacity(0.05),
+                      _getRarityColor().withValues(alpha:0.1),
+                      _getRarityColor().withValues(alpha:0.05),
                     ],
                   )
                 : null,
@@ -63,7 +64,7 @@ class RewardCard extends StatelessWidget {
                       children: [
                         Text(
                           rewardItem.name,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          style: appTheme.of(context).textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: isUnlocked
                                     ? _getRarityColor()
@@ -73,7 +74,7 @@ class RewardCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           rewardItem.description,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          style: appTheme.of(context).textTheme.bodySmall?.copyWith(
                                 color: Colors.grey[600],
                               ),
                         ),
@@ -101,7 +102,7 @@ class RewardCard extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: isUnlocked
-            ? _getRarityColor().withOpacity(0.2)
+            ? _getRarityColor().withValues(alpha:0.2)
             : Colors.grey[300],
         border: Border.all(
           color: _getRarityColor(),
@@ -156,7 +157,7 @@ class RewardCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
+              color: Colors.green.withValues(alpha:0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -183,7 +184,7 @@ class RewardCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.1),
+              color: Colors.orange.withValues(alpha:0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -417,7 +418,7 @@ class RewardTypeFilter extends StatelessWidget {
         onTypeSelected(selected ? type : null);
       },
       backgroundColor: Colors.grey[200],
-      selectedColor: Theme.of(context).primaryColor,
+      selectedColor: appTheme.of(context).primaryColor,
       labelStyle: TextStyle(
         color: isSelected ? Colors.white : Colors.grey[700],
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -456,7 +457,7 @@ class RewardInventorySummary extends StatelessWidget {
           children: [
             Text(
               'Ödül Envanteri',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              style: appTheme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
@@ -516,10 +517,10 @@ class RewardInventorySummary extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha:0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: color.withOpacity(0.3),
+          color: color.withValues(alpha:0.3),
           width: 1,
         ),
       ),
@@ -533,7 +534,7 @@ class RewardInventorySummary extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             '$unlocked/$total',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            style: appTheme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: color,
                 ),
@@ -541,7 +542,7 @@ class RewardInventorySummary extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            style: appTheme.of(context).textTheme.bodySmall?.copyWith(
                   color: Colors.grey[600],
                 ),
             textAlign: TextAlign.center,

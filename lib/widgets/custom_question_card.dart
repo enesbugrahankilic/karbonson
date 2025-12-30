@@ -128,20 +128,20 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
-            ThemeColors.getPrimaryButtonColor(context).withOpacity(0.05),
+            ThemeColors.getPrimaryButtonColor(context).withValues(alpha:0.1),
+            ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(DesignSystem.radiusL),
         border: Border.all(
-          color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.2),
+          color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
+            color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -457,7 +457,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         gradient: LinearGradient(
           colors: [
             ThemeColors.getSuccessColor(context),
-            ThemeColors.getSuccessColor(context).withOpacity(0.8),
+            ThemeColors.getSuccessColor(context).withValues(alpha: 0.8),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -469,7 +469,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         ),
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.getSuccessColor(context).withOpacity(0.3),
+            color: ThemeColors.getSuccessColor(context).withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -483,7 +483,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         gradient: LinearGradient(
           colors: [
             ThemeColors.getErrorColor(context),
-            ThemeColors.getErrorColor(context).withOpacity(0.8),
+            ThemeColors.getErrorColor(context).withValues(alpha: 0.8),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -495,7 +495,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         ),
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.getErrorColor(context).withOpacity(0.3),
+            color: ThemeColors.getErrorColor(context).withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -505,7 +505,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
 
     // Other incorrect options - dimmed state
     return BoxDecoration(
-      color: ThemeColors.getCardBackgroundLight(context).withOpacity(0.6),
+      color: ThemeColors.getCardBackgroundLight(context).withValues(alpha: 0.6),
       borderRadius: BorderRadius.circular(DesignSystem.radiusM),
       border: Border.all(
         color: ThemeColors.getBorder(context),
@@ -582,7 +582,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         height: 8,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: ThemeColors.getSecondaryText(context).withOpacity(0.5),
+          color: ThemeColors.getSecondaryText(context).withValues(alpha: 0.5),
         ),
       ),
     );

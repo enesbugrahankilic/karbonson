@@ -5,7 +5,7 @@ import '../provides/theme_provider.dart';
 import '../provides/language_provider.dart';
 import '../services/language_service.dart';
 import '../enums/app_language.dart';
-import '../pages/uid_debug_page.dart';
+// import '../pages/uid_debug_page.dart'; // Removed unused import
 import '../pages/two_factor_auth_setup_page.dart';
 import '../widgets/home_button.dart';
 
@@ -201,10 +201,9 @@ class SettingsPage extends StatelessWidget {
                               'UID tutarsızlıklarını kontrol et ve temizle'),
                           trailing: const Icon(Icons.arrow_forward_ios),
                           onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const UIDDebugPage(),
-                              ),
+                            // UID Debug page removed during cleanup
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('UID Debug page is no longer available')),
                             );
                           },
                         ),
@@ -468,14 +467,16 @@ class SettingsPage extends StatelessWidget {
               title: Text('${language.flag} ${language.displayName}'),
               value: language,
               groupValue: languageProvider.currentLanguage,
-              onChanged: (AppLanguage? value) async {
-                if (value != null) {
-                  await languageProvider.setLanguage(value);
-                  if (context.mounted) {
-                    Navigator.of(context).pop();
-                  }
-                }
-              },
+              onChanged: languageProvider.currentLanguage == language
+                  ? null
+                  : (AppLanguage? value) async {
+                      if (value != null) {
+                        await languageProvider.setLanguage(value);
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
+                        }
+                      }
+                    },
             );
           }).toList(),
         ),
