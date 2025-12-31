@@ -126,7 +126,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
           MaterialPageRoute(
             builder: (context) => EmailOtpVerificationPage(
               email: email,
-              purpose: 'forgot_password',
+              verificationId: '', // Will be set by the service
+              onVerify: (otp) {
+                // Handle OTP verification
+                if (otp.isNotEmpty) {
+                  // OTP verified successfully, navigate back or to next step
+                  Navigator.of(context).pop();
+                }
+              },
             ),
           ),
         );

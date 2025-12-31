@@ -17,7 +17,25 @@ extension LocalizedBuildContext on BuildContext {
   }
 
   /// Get AppLocalizations instance for current locale
-  AppLocalizations get l10n {
-    return Localizations.of<AppLocalizations>(this, AppLocalizations)!;
+  AppLocalizations? get l10n {
+    return Localizations.of<AppLocalizations>(this, AppLocalizations);
+  }
+
+  /// Get localized string with fallback to English if l10n is not available
+  String getLocalizedString(String Function(AppLocalizations) getter) {
+    final localizations = l10n;
+    if (localizations != null) {
+      return getter(localizations);
+    }
+    
+    // Fallback to English strings if localization is not loaded yet
+    if (getter.toString().contains('loading')) return 'Loading...';
+    if (getter.toString().contains('startupError')) return 'Startup Error';
+    if (getter.toString().contains('startupErrorDescription')) return 'An error occurred during app startup. Please try again.';
+    if (getter.toString().contains('retry')) return 'Retry';
+    if (getter.toString().contains('appNameHighContrast')) return 'Eco Game (High Contrast)';
+    if (getter.toString().contains('appName')) return 'Eco Game';
+    
+    return 'Loading...';
   }
 }

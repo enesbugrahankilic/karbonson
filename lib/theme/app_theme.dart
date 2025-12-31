@@ -9,6 +9,45 @@ class AppTheme {
   static const Color _darkText = Colors.white;
   static const Color _darkSecondaryText = Colors.white70;
 
+  // Color schemes for widgets
+  static final ColorScheme _lightColorScheme = const ColorScheme.light(
+    primary: Color(0xFF4CAF50),
+    secondary: Color(0xFF8BC34A),
+    surface: Colors.white,
+    onPrimary: Colors.white,
+    onSecondary: Colors.black,
+    onSurface: Colors.black87,
+    outline: Colors.black54,
+    error: Colors.red,
+    onError: Colors.white,
+    tertiary: Color(0xFF00BCD4),
+    onTertiary: Colors.white,
+    secondaryContainer: Color(0xFFE8F5E8),
+    onSecondaryContainer: Colors.black87,
+    primaryContainer: Color(0xFFE8F5E8),
+    onPrimaryContainer: Colors.black87,
+    surfaceVariant: Color(0xFFF5F5F5),
+  );
+
+  static final ColorScheme _darkColorScheme = const ColorScheme.dark(
+    primary: Color(0xFF66BB6A),
+    secondary: Color(0xFF9CCC65),
+    surface: Color(0xFF121212),
+    onPrimary: Colors.black,
+    onSecondary: Colors.black,
+    onSurface: Colors.white,
+    outline: Colors.white54,
+    error: Color(0xFFCF6679),
+    onError: Colors.black,
+    tertiary: Color(0xFF26C6DA),
+    onTertiary: Colors.black,
+    secondaryContainer: Color(0xFF1B5E20),
+    onSecondaryContainer: Colors.white,
+    primaryContainer: Color(0xFF1B5E20),
+    onPrimaryContainer: Colors.white,
+    surfaceVariant: Color(0xFF1E1E1E),
+  );
+
   // High contrast colors for accessibility
   static const Color _highContrastText = Colors.black;
   static const Color _highContrastBackground = Colors.white;
@@ -349,10 +388,7 @@ class AppTheme {
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.green,
-      brightness: Brightness.light,
-    ),
+    colorScheme: _lightColorScheme,
     textTheme: const TextTheme(
       displayLarge: _lightDisplayLarge,
       displayMedium: _lightDisplayMedium,
@@ -385,10 +421,7 @@ class AppTheme {
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.green,
-      brightness: Brightness.dark,
-    ),
+    colorScheme: _darkColorScheme,
     textTheme: const TextTheme(
       displayLarge: _darkDisplayLarge,
       displayMedium: _darkDisplayMedium,
@@ -520,6 +553,15 @@ class AppTheme {
     ),
   );
 
+  // Getters for common_widgets.dart compatibility
+  static ColorScheme get colors => _lightColorScheme;
+  
+  static TextStyle get headlineMedium => _lightHeadlineMedium;
+  static TextStyle get bodyMedium => _lightBodyMedium;
+  static TextStyle get bodySmall => _lightBodySmall;
+  
+  static TextTheme get textTheme => ThemeData.light().textTheme;
+  
   // Accessibility helper methods
   static double getAccessibleFontSize(BuildContext context, double baseSize) {
     final mediaQuery = MediaQuery.of(context);

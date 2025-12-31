@@ -659,9 +659,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get question => 'Soru';
 
   @override
-  String get of => '/';
-
-  @override
   String get loadingQuestions => 'Sorular yükleniyor...';
 
   @override
@@ -747,4 +744,82 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get innovation => 'İnovasyon';
+
+  @override
+  String get developerTools => 'Geliştirici Araçları';
+
+  @override
+  String get debugAndTestTools => 'Debug ve test araçları';
+
+  @override
+  String get accessibilitySettings => 'Erişilebilirlik Ayarları';
+
+  @override
+  String get highContrastMode => 'Yüksek Kontrast';
+
+  @override
+  String get textScaling => 'Metin Ölçekleme';
+
+  @override
+  String get touchTargets => 'Dokunma Hedefleri';
+
+  @override
+  String get followSystemSettings => 'Sistem ayarlarını takip et';
+
+  @override
+  String get activeWCAGCompliant => 'Aktif - WCAG AA uyumlu renkler';
+
+  @override
+  String get inactiveStandardColors => 'Kapalı - Standart renkler';
+
+  @override
+  String get minTouchArea => '48dp minimum dokunma alanı';
+
+  @override
+  String get notificationSettings => 'Bildirim Ayarları';
+
+  @override
+  String get gameStartNotifications => 'Oyun başlangıcı';
+
+  @override
+  String get turnNotifications => 'Sıra bildirimleri';
+
+  @override
+  String get friendRequests => 'Arkadaş istekleri';
+
+  @override
+  String get dailyReminders => 'Günlük hatırlatmalar';
+
+  @override
+  String get securitySettings => 'Güvenlik Ayarları';
+
+  @override
+  String get twoFactorAuthTitle => 'İki Faktörlü Doğrulama';
+
+  @override
+  String get addSecurityLayer => 'Hesabınıza ek güvenlik katmanı ekleyin';
+
+  @override
+  String get securityTips => 'Güvenlik ipuçları:';
+
+  @override
+  String get useStrongPasswords => 'Güçlü şifreler kullanın';
+
+  @override
+  String get updatePasswordRegularly => 'Düzenli olarak şifrenizi güncelleyin';
+
+  @override
+  String get enableTwoFactor => 'İki faktörlü doğrulamayı etkinleştirin';
+
+  @override
+  String get reportSuspiciousActivity => 'Şüpheli aktiviteleri bildirin';
+
+  @override
+  String get primaryColor => 'Birincil Renk';
+
+  @override
+  String get secondaryColor => 'İkincil Renk';
+
+  @override
+  String get surfaceColor => 'Yüzey Rengi';
 }

@@ -159,7 +159,7 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
         // Navigate to email verification redirect page for unverified users
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => const EmailVerificationRedirectPage(),
+            builder: (context) => EmailVerificationRedirectPage(),
           ),
         );
       } else {

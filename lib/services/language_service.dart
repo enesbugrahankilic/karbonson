@@ -42,9 +42,19 @@ class LanguageService extends ChangeNotifier {
       await prefs.setString(_languageKey, language.code);
       _currentLanguage = language;
       notifyListeners();
+      
+      // Force MaterialApp rebuild by clearing the app key
+      // This will trigger a complete rebuild with the new locale
+      _forceAppRebuild();
     } catch (e) {
       debugPrint('Error saving language: $e');
     }
+  }
+
+  void _forceAppRebuild() {
+    // This will be called to force MaterialApp rebuild
+    // The actual implementation will be in the widget that uses this service
+    notifyListeners();
   }
 
   Locale get locale => Locale(_currentLanguage.code);

@@ -5,6 +5,7 @@ import '../provides/theme_provider.dart';
 import '../provides/language_provider.dart';
 import '../services/language_service.dart';
 import '../enums/app_language.dart';
+import '../l10n/app_localizations.dart';
 // import '../pages/uid_debug_page.dart'; // Removed unused import
 import '../pages/two_factor_auth_setup_page.dart';
 import '../widgets/home_button.dart';
@@ -24,10 +25,9 @@ class SettingsPage extends StatelessWidget {
         leading: const HomeButton(),
         title: Consumer<LanguageProvider>(
           builder: (context, languageProvider, child) {
+            final l10n = AppLocalizations.of(context);
             return Text(
-              languageProvider.currentLanguage == AppLanguage.turkish
-                  ? 'Ayarlar'
-                  : 'Settings',
+              l10n?.settings ?? 'Settings',
               style: TextStyle(fontSize: titleFontSize),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -39,6 +39,7 @@ class SettingsPage extends StatelessWidget {
       ),
       body: Consumer2<ThemeProvider, LanguageProvider>(
         builder: (context, themeProvider, languageProvider, child) {
+          final l10n = AppLocalizations.of(context);
           final isTurkish =
               languageProvider.currentLanguage == AppLanguage.turkish;
 
@@ -54,15 +55,11 @@ class SettingsPage extends StatelessWidget {
                           : Icons.light_mode,
                       color: Theme.of(context).colorScheme.primary,
                     ),
-                    title: Text(isTurkish ? 'Tema Ayarları' : 'Theme Settings'),
+                    title: Text(l10n?.theme ?? 'Theme Settings'),
                     subtitle: Text(
-                      isTurkish
-                          ? (themeProvider.isDarkMode
-                              ? 'Karanlık Mod Aktif'
-                              : 'Aydınlık Mod Aktif')
-                          : (themeProvider.isDarkMode
-                              ? 'Dark Mode Active'
-                              : 'Light Mode Active'),
+                      themeProvider.isDarkMode
+                          ? (l10n?.darkMode ?? 'Dark Mode Active')
+                          : (l10n?.lightMode ?? 'Light Mode Active'),
                     ),
                     trailing: Switch(
                       value: themeProvider.isDarkMode,
@@ -84,8 +81,7 @@ class SettingsPage extends StatelessWidget {
                           Icons.language,
                           color: Theme.of(context).colorScheme.primary,
                         ),
-                        title: Text(
-                            isTurkish ? 'Dil Ayarları' : 'Language Settings'),
+                        title: Text(l10n?.language ?? 'Language Settings'),
                         subtitle: Text(
                           '${languageProvider.currentLanguageFlag} ${languageProvider.currentLanguageName}',
                           maxLines: 1,
@@ -108,8 +104,8 @@ class SettingsPage extends StatelessWidget {
                           Icons.info,
                           color: Theme.of(context).colorScheme.secondary,
                         ),
-                        title: const Text('Uygulama Bilgisi'),
-                        subtitle: const Text('Karbon Son v1.0'),
+                        title: Text(l10n?.about ?? 'About'),
+                        subtitle: Text(l10n?.version ?? 'Version'),
                       ),
                       const Divider(),
                       ListTile(
@@ -117,9 +113,8 @@ class SettingsPage extends StatelessWidget {
                           Icons.palette,
                           color: Theme.of(context).colorScheme.tertiary,
                         ),
-                        title: const Text('Tema Önizleme'),
-                        subtitle:
-                            const Text('Mevcut tema renklerini görüntüle'),
+                        title: Text(l10n?.theme ?? 'Theme Preview'),
+                        subtitle: Text(l10n?.settings ?? 'View current theme colors'),
                         trailing: const Icon(Icons.arrow_forward_ios),
                         onTap: () {
                           _showThemePreview(context);
@@ -137,8 +132,8 @@ class SettingsPage extends StatelessWidget {
                           Icons.accessibility,
                           color: Theme.of(context).colorScheme.primary,
                         ),
-                        title: const Text('Erişilebilirlik'),
-                        subtitle: const Text('Görme ve işitme ayarları'),
+                        title: Text(l10n?.settings ?? 'Accessibility'),
+                        subtitle: Text(l10n?.settings ?? 'Visual and audio settings'),
                         trailing: const Icon(Icons.arrow_forward_ios),
                         onTap: () {
                           _showAccessibilitySettings(context);
@@ -150,8 +145,8 @@ class SettingsPage extends StatelessWidget {
                           Icons.notifications,
                           color: Theme.of(context).colorScheme.secondary,
                         ),
-                        title: const Text('Bildirimler'),
-                        subtitle: const Text('Oyun bildirimlerini yönet'),
+                        title: Text(l10n?.notifications ?? 'Notifications'),
+                        subtitle: Text(l10n?.settings ?? 'Manage game notifications'),
                         trailing: const Icon(Icons.arrow_forward_ios),
                         onTap: () {
                           _showNotificationSettings(context);
@@ -163,9 +158,8 @@ class SettingsPage extends StatelessWidget {
                           Icons.security,
                           color: Theme.of(context).colorScheme.primary,
                         ),
-                        title: const Text('Güvenlik Ayarları'),
-                        subtitle: const Text(
-                            'İki faktörlü doğrulama ve diğer güvenlik seçenekleri'),
+                        title: Text(l10n?.settings ?? 'Security Settings'),
+                        subtitle: Text(l10n?.twoFactorAuth ?? 'Two-factor authentication and other security options'),
                         trailing: const Icon(Icons.arrow_forward_ios),
                         onTap: () {
                           _showSecuritySettings(context);
@@ -221,8 +215,10 @@ class SettingsPage extends StatelessWidget {
   void _showThemePreview(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Tema Önizlemesi'),
+      builder: (context) {
+        final l10n = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(l10n?.theme ?? 'Theme Preview'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -235,7 +231,7 @@ class SettingsPage extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  'Ana Renk',
+                  l10n?.settings ?? 'Primary Color',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onPrimary,
                     fontWeight: FontWeight.bold,
@@ -253,7 +249,7 @@ class SettingsPage extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  'İkincil Renk',
+                  l10n?.settings ?? 'Secondary Color',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSecondary,
                     fontWeight: FontWeight.bold,
@@ -273,7 +269,7 @@ class SettingsPage extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  'Yüzey Rengi',
+                  l10n?.settings ?? 'Surface Color',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
@@ -286,10 +282,11 @@ class SettingsPage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Kapat'),
+            child: Text(l10n?.close ?? 'Close'),
           ),
         ],
-      ),
+      );
+      },
     );
   }
 
@@ -454,12 +451,12 @@ class SettingsPage extends StatelessWidget {
 
   void _showLanguageSelection(
       BuildContext context, LanguageProvider languageProvider) {
-    final isTurkish = languageProvider.currentLanguage == AppLanguage.turkish;
-
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(isTurkish ? 'Dil Seçin' : 'Select Language'),
+      builder: (context) {
+        final l10n = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(l10n?.language ?? 'Select Language'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: AppLanguage.values.map((language) {
@@ -483,10 +480,11 @@ class SettingsPage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(isTurkish ? 'İptal' : 'Cancel'),
+            child: Text(l10n?.cancel ?? 'Cancel'),
           ),
         ],
-      ),
+      );
+      },
     );
   }
 

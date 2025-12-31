@@ -12,6 +12,9 @@ void main() {
     late List<VerificationMethod> availableMethods;
 
     setUp(() {
+      // Ensure widget binding is initialized
+      TestWidgetsFlutterBinding.ensureInitialized();
+      
       availableMethods = [
         VerificationMethod.sms,
         VerificationMethod.totp,

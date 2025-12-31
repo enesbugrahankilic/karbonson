@@ -658,9 +658,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get question => 'Question';
 
   @override
-  String get of => 'of';
-
-  @override
   String get loadingQuestions => 'Loading questions...';
 
   @override
@@ -746,4 +743,83 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get innovation => 'Innovation';
+
+  @override
+  String get developerTools => 'Developer Tools';
+
+  @override
+  String get debugAndTestTools => 'Debug and test tools';
+
+  @override
+  String get accessibilitySettings => 'Accessibility Settings';
+
+  @override
+  String get highContrastMode => 'High Contrast';
+
+  @override
+  String get textScaling => 'Text Scaling';
+
+  @override
+  String get touchTargets => 'Touch Targets';
+
+  @override
+  String get followSystemSettings => 'Follow system settings';
+
+  @override
+  String get activeWCAGCompliant => 'Active - WCAG AA compliant colors';
+
+  @override
+  String get inactiveStandardColors => 'Inactive - Standard colors';
+
+  @override
+  String get minTouchArea => '48dp minimum touch area';
+
+  @override
+  String get notificationSettings => 'Notification Settings';
+
+  @override
+  String get gameStartNotifications => 'Game start';
+
+  @override
+  String get turnNotifications => 'Turn notifications';
+
+  @override
+  String get friendRequests => 'Friend requests';
+
+  @override
+  String get dailyReminders => 'Daily reminders';
+
+  @override
+  String get securitySettings => 'Security Settings';
+
+  @override
+  String get twoFactorAuthTitle => 'Two-Factor Authentication';
+
+  @override
+  String get addSecurityLayer =>
+      'Add an extra layer of security to your account';
+
+  @override
+  String get securityTips => 'Security tips:';
+
+  @override
+  String get useStrongPasswords => 'Use strong passwords';
+
+  @override
+  String get updatePasswordRegularly => 'Update your password regularly';
+
+  @override
+  String get enableTwoFactor => 'Enable two-factor authentication';
+
+  @override
+  String get reportSuspiciousActivity => 'Report suspicious activity';
+
+  @override
+  String get primaryColor => 'Primary Color';
+
+  @override
+  String get secondaryColor => 'Secondary Color';
+
+  @override
+  String get surfaceColor => 'Surface Color';
 }

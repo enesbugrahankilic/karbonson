@@ -1,13 +1,13 @@
 // lib/pages/leaderboard_page.dart (GÜNCELLENMİŞ KOD)
 
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/leaderboard_item.dart';
 import '../widgets/home_button.dart';
 import 'login_page.dart';
 import '../services/app_localizations.dart';
+import '../services/firestore_service.dart';
 import '../provides/language_provider.dart';
 
 class LeaderboardPage extends StatelessWidget {
@@ -48,28 +48,69 @@ class LeaderboardPage extends StatelessWidget {
           ),
         ],
       ),
-      body: Scrollbar(
-        child: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection('users')
-              .where('score', isGreaterThan: 0)
-              .orderBy('score', descending: true)
-              .snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: FirestoreService().getLeaderboard(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            if (snapshot.hasError) {
-              return Center(child: Text('Hata: ${snapshot.error}'));
-            }
+          if (snapshot.hasError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Veri yüklenirken hata oluştu',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    snapshot.error.toString(),
+                    style: Theme.of(context).textTheme.bodySmall,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            );
+          }
 
-            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              return const Center(
-                  child: Text('Henüz kayıtlı skor bulunmuyor!'));
-            }
+          final leaderboardData = snapshot.data ?? [];
+          
+          if (leaderboardData.isEmpty) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.emoji_events_outlined,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Henüz kayıtlı skor bulunmuyor!',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
 
-            return SingleChildScrollView(
+          return Scrollbar(
+            controller: PrimaryScrollController.of(context),
+            child: SingleChildScrollView(
+              primary: true,
               child: Column(
                 children: [
                   Container(
@@ -89,10 +130,9 @@ class LeaderboardPage extends StatelessWidget {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(8),
-                    itemCount: snapshot.data!.docs.length,
+                    itemCount: leaderboardData.length,
                     itemBuilder: (context, index) {
-                      final doc = snapshot.data!.docs[index];
-                      final data = doc.data() as Map<String, dynamic>;
+                      final data = leaderboardData[index];
                       final username = data['nickname'] as String? ?? 'Anonim';
                       final rank = index + 1;
                       final isCurrentPlayerInTop10 =
@@ -109,9 +149,9 @@ class LeaderboardPage extends StatelessWidget {
                   ),
                 ],
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }

@@ -1394,12 +1394,6 @@ abstract class AppLocalizations {
   /// **'Question'**
   String get question;
 
-  /// No description provided for @of.
-  ///
-  /// In en, this message translates to:
-  /// **'of'**
-  String get of;
-
   /// No description provided for @loadingQuestions.
   ///
   /// In en, this message translates to:
@@ -1573,6 +1567,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Innovation'**
   String get innovation;
+
+  /// No description provided for @developerTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer Tools'**
+  String get developerTools;
+
+  /// No description provided for @debugAndTestTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Debug and test tools'**
+  String get debugAndTestTools;
+
+  /// No description provided for @accessibilitySettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Accessibility Settings'**
+  String get accessibilitySettings;
+
+  /// No description provided for @highContrastMode.
+  ///
+  /// In en, this message translates to:
+  /// **'High Contrast'**
+  String get highContrastMode;
+
+  /// No description provided for @textScaling.
+  ///
+  /// In en, this message translates to:
+  /// **'Text Scaling'**
+  String get textScaling;
+
+  /// No description provided for @touchTargets.
+  ///
+  /// In en, this message translates to:
+  /// **'Touch Targets'**
+  String get touchTargets;
+
+  /// No description provided for @followSystemSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow system settings'**
+  String get followSystemSettings;
+
+  /// No description provided for @activeWCAGCompliant.
+  ///
+  /// In en, this message translates to:
+  /// **'Active - WCAG AA compliant colors'**
+  String get activeWCAGCompliant;
+
+  /// No description provided for @inactiveStandardColors.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive - Standard colors'**
+  String get inactiveStandardColors;
+
+  /// No description provided for @minTouchArea.
+  ///
+  /// In en, this message translates to:
+  /// **'48dp minimum touch area'**
+  String get minTouchArea;
+
+  /// No description provided for @notificationSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Settings'**
+  String get notificationSettings;
+
+  /// No description provided for @gameStartNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Game start'**
+  String get gameStartNotifications;
+
+  /// No description provided for @turnNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn notifications'**
+  String get turnNotifications;
+
+  /// No description provided for @friendRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Friend requests'**
+  String get friendRequests;
+
+  /// No description provided for @dailyReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily reminders'**
+  String get dailyReminders;
+
+  /// No description provided for @securitySettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Security Settings'**
+  String get securitySettings;
+
+  /// No description provided for @twoFactorAuthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Two-Factor Authentication'**
+  String get twoFactorAuthTitle;
+
+  /// No description provided for @addSecurityLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an extra layer of security to your account'**
+  String get addSecurityLayer;
+
+  /// No description provided for @securityTips.
+  ///
+  /// In en, this message translates to:
+  /// **'Security tips:'**
+  String get securityTips;
+
+  /// No description provided for @useStrongPasswords.
+  ///
+  /// In en, this message translates to:
+  /// **'Use strong passwords'**
+  String get useStrongPasswords;
+
+  /// No description provided for @updatePasswordRegularly.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your password regularly'**
+  String get updatePasswordRegularly;
+
+  /// No description provided for @enableTwoFactor.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable two-factor authentication'**
+  String get enableTwoFactor;
+
+  /// No description provided for @reportSuspiciousActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Report suspicious activity'**
+  String get reportSuspiciousActivity;
+
+  /// No description provided for @primaryColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Primary Color'**
+  String get primaryColor;
+
+  /// No description provided for @secondaryColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Secondary Color'**
+  String get secondaryColor;
+
+  /// No description provided for @surfaceColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Surface Color'**
+  String get surfaceColor;
 }
 
 class _AppLocalizationsDelegate

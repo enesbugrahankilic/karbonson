@@ -19,40 +19,88 @@ class FirestoreService {
   static const String _roomsCollection = 'game_rooms';
 
   /// Yeni bir kullanıcının skorunu Firestore'a kaydeder.
+  /// Updated: Uses UID centrality for proper user score management
   Future<String> saveUserScore(String nickname, int score) async {
     if (score < 10) {
       return 'Skorunuz düşük olduğu için kaydedilmeyecek.';
     }
+    
     try {
-      await _db.collection(_usersCollection).doc().set({
-        'nickname': nickname, // Oyuncu takma adı
-        'score': score, // Oyun sonu skoru
-        'timestamp': FieldValue.serverTimestamp(), // Kayıt zamanı
-      });
-      if (kDebugMode) {
-        debugPrint('Başarılı: Skor $nickname için kaydedildi: $score');
+      final user = _auth.currentUser;
+      if (user == null) {
+        if (kDebugMode) debugPrint('❌ User not authenticated for score save');
+        return 'Kullanıcı kimlik doğrulaması gerekli.';
       }
-      return 'Skor kaydedildi.';
+
+      // Check if user already has a score record
+      final existingDoc = await _db.collection(_usersCollection).doc(user.uid).get();
+      
+      if (existingDoc.exists) {
+        // Update existing score if it's higher
+        final existingData = existingDoc.data() as Map<String, dynamic>;
+        final existingScore = existingData['score'] as int? ?? 0;
+        
+        if (score > existingScore) {
+          await _db.collection(_usersCollection).doc(user.uid).update({
+            'score': score,
+            'nickname': nickname, // Update nickname in case it changed
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+          if (kDebugMode) {
+            debugPrint('✅ Score updated for $nickname: $existingScore → $score');
+          }
+          return 'Skor güncellendi!';
+        } else {
+          if (kDebugMode) {
+            debugPrint('⚠️ Lower score ignored for $nickname: $score < $existingScore');
+          }
+          return 'Mevcut skorunuz daha yüksek! ($existingScore)';
+        }
+      } else {
+        // Create new score record
+        await _db.collection(_usersCollection).doc(user.uid).set({
+          'uid': user.uid, // Store UID for consistency
+          'nickname': nickname, // Oyuncu takma adı
+          'score': score, // Oyun sonu skoru
+          'avatarUrl': null, // Initialize avatar URL
+          'createdAt': FieldValue.serverTimestamp(), // Creation timestamp
+          'updatedAt': FieldValue.serverTimestamp(), // Update timestamp
+        });
+        if (kDebugMode) {
+          debugPrint('✅ Score saved for $nickname: $score');
+        }
+        return 'Skor kaydedildi!';
+      }
     } catch (e) {
-      if (kDebugMode) debugPrint('HATA: Skor kaydederken hata oluştu: $e');
+      if (kDebugMode) debugPrint('🚨 ERROR: Failed to save score: $e');
       return 'Skor kaydedilirken hata oluştu.';
     }
   }
 
   /// Tüm skorları puana göre azalan sırada (en yüksekten en düşüğe) çeker.
+  /// Updated: Filters out users with score <= 0 for better leaderboard display
   Future<List<Map<String, dynamic>>> getLeaderboard() async {
     try {
       final querySnapshot = await _db
           .collection(_usersCollection)
-          .orderBy('score', descending: true) // Skora göre sırala
-          // .limit(10) kaldırılmıştır, tüm kayıtlar çekilir.
+          .where('score', isGreaterThan: 0) // Only users with actual scores
+          .orderBy('score', descending: true) // Sort by score descending
           .get();
 
-      // Dokümanlardan veri haritalarını listeye dönüştür.
-      return querySnapshot.docs.map((doc) => doc.data()).toList();
+      // Map documents to data with proper error handling
+      return querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        // Ensure required fields exist with defaults
+        return {
+          'nickname': data['nickname'] as String? ?? 'Anonim',
+          'score': data['score'] as int? ?? 0,
+          'avatarUrl': data['avatarUrl'] as String?,
+          'uid': data['uid'] as String? ?? doc.id, // Use document ID as fallback
+        };
+      }).toList();
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('HATA: Liderlik tablosu getirilirken hata oluştu: $e');
+        debugPrint('🚨 ERROR: Failed to fetch leaderboard: $e');
       }
       return [];
     }

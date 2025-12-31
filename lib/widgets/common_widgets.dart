@@ -265,7 +265,6 @@ class CommonWidgets {
     VoidCallback? onTap,
     bool? dense,
     EdgeInsetsGeometry? contentPadding,
-    ListTileControlAffinity? controlAffinity,
   }) {
     return ListTile(
       key: key,
@@ -276,7 +275,6 @@ class CommonWidgets {
       onTap: onTap,
       dense: dense ?? false,
       contentPadding: contentPadding,
-      controlAffinity: controlAffinity,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
       ),
@@ -295,7 +293,7 @@ class CommonWidgets {
       animation: controller ?? _defaultController,
       builder: (context, child) {
         return FadeTransition(
-          opacity: controller?.animation ?? _defaultController.animation,
+          opacity: controller?.view ?? _defaultController.animation,
           child: child,
         );
       },
@@ -370,7 +368,7 @@ class CommonWidgets {
     Key? key,
     required String tag,
     required Widget child,
-    Object? flightShuttleBuilder,
+    HeroFlightShuttleBuilder? flightShuttleBuilder,
     Duration? placeholderDuration,
   }) {
     return Hero(
@@ -399,11 +397,11 @@ class CommonWidgets {
     return CustomScrollView(
       key: key,
       controller: controller,
-      physics: physics ?? BouncingScrollPhysics(),
-      padding: padding,
+      physics: physics ?? const BouncingScrollPhysics(),
       primary: primary,
       shrinkWrap: shrinkWrap,
       slivers: [
+        if (padding != null) SliverPadding(padding: padding),
         SliverToBoxAdapter(child: child),
       ],
     );

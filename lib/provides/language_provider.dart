@@ -18,11 +18,6 @@ class LanguageProvider extends ChangeNotifier {
   Future<void> setLanguage(AppLanguage language) async {
     if (_languageService.currentLanguage == language) return;
     await _languageService.setLanguage(language);
-    // Update AppLocalizations too (convert enum from enums/app_language.dart to the one used by AppLocalizations)
-    final alLanguage = AL.AppLanguage.values.firstWhere(
-      (e) => e.toString().split('.').last == language.toString().split('.').last,
-    );
-    AL.AppLocalizations.setLanguage(alLanguage);
     notifyListeners();
   }
 

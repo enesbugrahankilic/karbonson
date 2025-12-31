@@ -28,22 +28,21 @@ dependencies:
   google_fonts: ^6.1.0
   cupertino_icons: ^1.0.8
   uuid: ^4.4.0
-  uni_links: ^0.5.1
+  app_links: ^3.5.0
   qr_flutter: ^4.1.0
   qr_code_scanner: ^1.0.1
   otp: ^3.1.4
   crypto: ^3.0.3
   image: ^4.1.7
   http: ^1.2.2
-  local_auth: ^2.2.0
-  local_auth_android: ^1.0.7
+  local_auth: ^3.0.0
 
 dev_dependencies:
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
   flutter_localizations:
     sdk: flutter
-  intl: any
+  intl: ^0.20.2
   intl_utils: ^2.8.7
   mockito: ^5.5.0
   bloc_test: ^10.0.0

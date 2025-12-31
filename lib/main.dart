@@ -252,7 +252,7 @@ class _AppRootState extends State<AppRoot> {
                 const CircularProgressIndicator(),
                 const SizedBox(height: 12),
                 Text(
-                  context.l10n.loading,
+                  context.l10n?.loading ?? 'Loading...',
                   style: const TextStyle(color: Colors.black87),
                 ),
               ],
@@ -267,20 +267,20 @@ class _AppRootState extends State<AppRoot> {
         debugShowCheckedModeBanner: false,
         home: Scaffold(
           appBar: AppBar(
-              title: Text(context.l10n.startupError,
+              title: Text(context.l10n?.startupError ?? 'Startup Error',
                   style: const TextStyle(color: Colors.black87))),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(context.l10n.startupErrorDescription,
+                Text(context.l10n?.startupErrorDescription ?? 'An error occurred during app startup. Please try again.',
                     style: const TextStyle(color: Colors.black87)),
                 const SizedBox(height: 8),
                 Text(_error ?? '', style: const TextStyle(color: Colors.red)),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                    onPressed: _initialize, child: Text(context.l10n.retry)),
+                    onPressed: _initialize, child: Text(context.l10n?.retry ?? 'Retry')),
               ],
             ),
           ),
@@ -305,6 +305,8 @@ class _Karbon2AppState extends State<Karbon2App> {
   bool _loading = true;
   late GlobalKey<NavigatorState> _navigatorKey;
   String _initialRoute = AppRoutes.login;
+  final GlobalKey _appKey = GlobalKey();
+  Locale? _previousLocale;
 
   @override
   void initState() {
@@ -313,6 +315,27 @@ class _Karbon2AppState extends State<Karbon2App> {
     // Set the navigator key in NotificationService for notification navigation
     // NotificationService.navigatorKey = _navigatorKey;
     _initializeApp();
+    
+    // Listen to language changes and force rebuild
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+      languageProvider.addListener(_onLanguageChanged);
+    });
+  }
+
+  @override
+  void dispose() {
+    // Clean up language listener
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    languageProvider.removeListener(_onLanguageChanged);
+    super.dispose();
+  }
+
+  void _onLanguageChanged() {
+    // Force a complete rebuild when language changes
+    setState(() {
+      // This will trigger a complete rebuild of the MaterialApp
+    });
   }
 
   Future<void> _initializeApp() async {
@@ -382,15 +405,16 @@ class _Karbon2AppState extends State<Karbon2App> {
 
         if (themeProvider.isHighContrast) {
           themeToShow = AppTheme.highContrastTheme;
-          title = context.l10n.appNameHighContrast;
+          title = context.l10n?.appNameHighContrast ?? 'Eco Game (High Contrast)';
         } else {
           themeToShow = themeProvider.themeMode == ThemeMode.dark
               ? AppTheme.darkTheme
               : AppTheme.lightTheme;
-          title = context.l10n.appName;
+          title = context.l10n?.appName ?? 'Eco Game';
         }
 
         return MaterialApp(
+          key: _appKey,
           title: title,
           debugShowCheckedModeBanner: false,
           theme: themeToShow,

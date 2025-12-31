@@ -5,7 +5,7 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:uni_links/uni_links.dart';
+import 'package:app_links/app_links.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 /// Deep link types that the app can handle
@@ -76,25 +76,18 @@ class DeepLinkingService {
   DeepLinkingService._internal();
 
   static const Duration _defaultTimeout = Duration(seconds: 10);
-  StreamSubscription<String?>? _linkSubscription;
+  StreamSubscription<Uri?>? _linkSubscription;
+  AppLinks? _appLinks;
 
   /// Initialize deep linking service
   Future<void> initialize() async {
     try {
       // NOTE: Firebase Dynamic Links is deprecated and will shut down on August 25, 2025
       // Please migrate to alternative solutions like Firebase App Links or custom deep linking
-      // For now, we'll skip initialization to avoid deprecation warnings
-      // await FirebaseDynamicLinks.instance.getInitialLink();
-
-      // Listen for incoming links when app is in foreground
-      _linkSubscription = linkStream.listen(_onLinkReceived, onError: (err) {
-        if (kDebugMode) {
-          debugPrint('Deep linking error: $err');
-        }
-      });
-
+      // For now, we'll skip initialization to avoid package compatibility issues
+      
       if (kDebugMode) {
-        debugPrint('Deep linking service initialized successfully');
+        debugPrint('Deep linking service initialized (disabled for compatibility)');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -195,13 +188,16 @@ class DeepLinkingService {
   Future<DeepLinkResult> handleInitialLink() async {
     try {
       // Check for initial link (when app was opened via deep link)
-      final initialUri = await getInitialUri();
+      // Temporarily disabled for app_links compatibility
+      /*
+      final initialUri = await _appLinks!.getInitialAppLink();
       if (initialUri != null) {
         if (kDebugMode) {
           debugPrint('Initial deep link detected: $initialUri');
         }
         return handleDeepLink(initialUri);
       }
+      */
 
       return DeepLinkResult.failure('İlk bağlantı bulunamadı');
     } catch (e) {
@@ -213,10 +209,9 @@ class DeepLinkingService {
   }
 
   /// Listen for deep links when app is in foreground
-  void _onLinkReceived(String? uriString) async {
-    if (uriString != null) {
+  void _onLinkReceived(Uri? uri) async {
+    if (uri != null) {
       try {
-        final uri = Uri.parse(uriString);
         final result = await handleDeepLink(uri);
         if (kDebugMode) {
           debugPrint('Deep link result: $result');

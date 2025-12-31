@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
-import 'package:local_auth_ios/local_auth_ios.dart';
+import 'package:local_auth_darwin/local_auth_darwin.dart';
 
 class BiometricService {
   static final LocalAuthentication _localAuth = LocalAuthentication();
@@ -77,28 +77,12 @@ class BiometricService {
         authMessages: [
           AndroidAuthMessages(
             signInTitle: 'Biyometrik Kimlik Doğrulama Gerekli!',
-            biometricHint: 'Biyometrik kimlik bilgilerinizi doğrulayın',
             cancelButton: 'İptal',
-            goToSettingsButton: 'Ayarlar',
-            goToSettingsDescription:
-                'Biyometrik ayarlarınızı yapılandırmak için lütfen ayarlara gidin.',
-            biometricNotRecognized:
-                'Biyometrik bilgiler tanınmadı. Lütfen tekrar deneyin.',
           ),
           IOSAuthMessages(
             cancelButton: 'İptal',
-            goToSettingsButton: 'Ayarlar',
-            goToSettingsDescription:
-                'Biyometrik ayarlarınızı yapılandırmak için lütfen ayarlara gidin.',
-            lockOut:
-                'Biyometrik kimlik doğrulama geçici olarak devre dışı. Lütfen cihazınızı kilitleyin ve açın.',
           ),
         ],
-        options: AuthenticationOptions(
-          biometricOnly: true,
-          useErrorDialogs: useErrorDialogs,
-          stickyAuth: stickyOnly,
-        ),
       );
 
       if (kDebugMode) {
@@ -133,28 +117,12 @@ class BiometricService {
         authMessages: [
           AndroidAuthMessages(
             signInTitle: 'Kimlik Doğrulama Gerekli!',
-            biometricHint: 'Kimlik bilgilerinizi doğrulayın',
             cancelButton: 'İptal',
-            goToSettingsButton: 'Ayarlar',
-            goToSettingsDescription:
-                'Kimlik doğrulama ayarlarınızı yapılandırmak için lütfen ayarlara gidin.',
-            biometricNotRecognized:
-                'Biyometrik bilgiler tanınmadı. Lütfen tekrar deneyin.',
           ),
           IOSAuthMessages(
             cancelButton: 'İptal',
-            goToSettingsButton: 'Ayarlar',
-            goToSettingsDescription:
-                'Kimlik doğrulama ayarlarınızı yapılandırmak için lütfen ayarlara gidin.',
-            lockOut:
-                'Kimlik doğrulama geçici olarak devre dışı. Lütfen cihazınızı kilitleyin ve açın.',
           ),
         ],
-        options: AuthenticationOptions(
-          biometricOnly: false, // Allow fallback to device credentials
-          useErrorDialogs: useErrorDialogs,
-          stickyAuth: stickyOnly,
-        ),
       );
     } catch (e) {
       debugPrint('Kimlik doğrulama hatası: $e');

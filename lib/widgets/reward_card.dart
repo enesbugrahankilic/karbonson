@@ -2,7 +2,7 @@
 // Reward card widget for displaying reward items
 
 import 'package:flutter/material.dart';
-import '../themes/app_theme.dart';
+import '../theme/app_theme.dart';
 import '../models/reward_item.dart';
 
 class RewardCard extends StatelessWidget {
@@ -64,7 +64,7 @@ class RewardCard extends StatelessWidget {
                       children: [
                         Text(
                           rewardItem.name,
-                          style: appTheme.of(context).textTheme.titleMedium?.copyWith(
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: isUnlocked
                                     ? _getRarityColor()
@@ -74,7 +74,7 @@ class RewardCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           rewardItem.description,
-                          style: appTheme.of(context).textTheme.bodySmall?.copyWith(
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: Colors.grey[600],
                               ),
                         ),
@@ -418,7 +418,7 @@ class RewardTypeFilter extends StatelessWidget {
         onTypeSelected(selected ? type : null);
       },
       backgroundColor: Colors.grey[200],
-      selectedColor: appTheme.of(context).primaryColor,
+      selectedColor: Theme.of(context).colorScheme.primary,
       labelStyle: TextStyle(
         color: isSelected ? Colors.white : Colors.grey[700],
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -457,7 +457,7 @@ class RewardInventorySummary extends StatelessWidget {
           children: [
             Text(
               'Ödül Envanteri',
-              style: appTheme.of(context).textTheme.titleLarge?.copyWith(
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
@@ -534,7 +534,7 @@ class RewardInventorySummary extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             '$unlocked/$total',
-            style: appTheme.of(context).textTheme.titleMedium?.copyWith(
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: color,
                 ),
@@ -542,7 +542,7 @@ class RewardInventorySummary extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             label,
-            style: appTheme.of(context).textTheme.bodySmall?.copyWith(
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Colors.grey[600],
                 ),
             textAlign: TextAlign.center,
