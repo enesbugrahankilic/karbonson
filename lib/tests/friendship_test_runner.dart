@@ -2,12 +2,10 @@
 
 import 'package:flutter/foundation.dart';
 import '../utils/friendship_test_utils.dart';
-import '../services/firestore_service.dart';
 
 /// Test Runner for Friendship Logic
 /// Bu sınıf friendship logic testlerini çalıştırmak için kullanılır
 class FriendshipTestRunner {
-  static final FirestoreService _firestoreService = FirestoreService();
 
   /// Tüm testleri çalıştır
   static Future<void> runAllTests() async {

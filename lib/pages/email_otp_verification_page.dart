@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/email_otp_service.dart';
-import '../widgets/common_widgets.dart';
+
 
 class EmailOtpVerificationPage extends StatefulWidget {
   final String email;

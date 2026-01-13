@@ -5,6 +5,8 @@
 import '../services/firestore_service.dart';
 import '../utils/datetime_parser.dart';
 
+
+
 /// Server-side user profile data with UID centrality
 /// Specification I.1 & I.2: Document ID MUST be Firebase Auth UID
 class UserData {
@@ -31,7 +33,7 @@ class UserData {
   final String? phoneNumber;
   final DateTime? last2FAVerification;
 
-  UserData({
+  const UserData({
     required this.uid,
     required this.nickname,
     this.profilePictureUrl,
@@ -193,7 +195,7 @@ class NicknameValidationResult {
   final bool isValid;
   final String error;
 
-  NicknameValidationResult({
+  const NicknameValidationResult({
     required this.isValid,
     this.error = '',
   });
@@ -209,7 +211,6 @@ class NicknameValidator {
 
   static const int _minLength = 3;
   static const int _maxLength = 20;
-  static const int _changeCooldownDays = 90; // Specification I.4
 
   /// Validates nickname according to specification rules
   /// This validates format, length, and content but NOT uniqueness

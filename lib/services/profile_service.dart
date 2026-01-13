@@ -7,7 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/profile_data.dart';
-import '../models/user_data.dart';
+import '../models/user_data.dart' as user_model;
+import '../models/email_verification_status.dart' as email_status;
 import 'firestore_service.dart';
 import 'firebase_auth_service.dart';
 
@@ -48,7 +49,7 @@ class ProfileService {
   }
 
   /// Load server profile data from Firebase with UID Centrality (Specification I.1-I.2)
-  Future<UserData?> loadServerProfile({String? uid}) async {
+  Future<user_model.UserData?> loadServerProfile({String? uid}) async {
     try {
       final user = _auth.currentUser;
       if (user == null) {
@@ -125,7 +126,7 @@ class ProfileService {
   }
 
   /// Update user profile in Firebase with UID Centrality (Specification I.1-I.2)
-  Future<bool> updateServerProfile(UserData userData) async {
+  Future<bool> updateServerProfile(user_model.UserData userData) async {
     try {
       final user = _auth.currentUser;
       if (user == null || user.uid != userData.uid) return false;
@@ -204,7 +205,7 @@ class ProfileService {
   }
 
   /// Convert UserData to ServerProfileData for backward compatibility
-  ServerProfileData? _convertUserDataToServerProfileData(UserData? userData) {
+  ServerProfileData? _convertUserDataToServerProfileData(user_model.UserData? userData) {
     if (userData == null) return null;
 
     return ServerProfileData(
@@ -247,7 +248,7 @@ class ProfileService {
   Future<void> initializeProfile({
     required String nickname,
     String? profilePictureUrl,
-    PrivacySettings? privacySettings,
+    user_model.PrivacySettings? privacySettings,
     User? user, // Accept user parameter to avoid race condition
   }) async {
     try {
@@ -331,7 +332,7 @@ class ProfileService {
   }
 
   /// Update privacy settings (Specification II.3)
-  Future<bool> updatePrivacySettings(PrivacySettings privacySettings) async {
+  Future<bool> updatePrivacySettings(user_model.PrivacySettings privacySettings) async {
     return await _firestoreService.updatePrivacySettings(privacySettings);
   }
 

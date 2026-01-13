@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../services/friendship_service.dart';
 import '../theme/theme_colors.dart';
 import '../widgets/home_button.dart';
 import 'duel_page.dart';
@@ -16,7 +15,6 @@ class DuelInvitationPage extends StatefulWidget {
 
 class _DuelInvitationPageState extends State<DuelInvitationPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FriendshipService _friendshipService = FriendshipService();
 
   List<Invitation> _invitations = [];
   bool _isLoading = true;

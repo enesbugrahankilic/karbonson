@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../services/firebase_2fa_service.dart';
-import '../services/profile_service.dart';
 import '../theme/theme_colors.dart';
 import '../widgets/phone_input_widget.dart';
 
@@ -60,9 +59,6 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage>
   final GlobalKey<FormState> _smsFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _backupFormKey = GlobalKey<FormState>();
 
-  // Services
-  final ProfileService _profileService = ProfileService();
-
   // State variables
   bool _is2FAEnabled = false;
   bool _isLoading = true;
@@ -72,12 +68,12 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage>
   List<String>? _backupCodes;
 
   // UI State
-  bool _waitingForSms = false;
-  bool _showBackupCodes = false;
   bool _showAdvancedOptions = false;
   final bool _enableBiometric = false;
   bool _generateBackupCodes = true;
   bool _useBackupCode = false;
+  bool _waitingForSms = false;
+  bool _showBackupCodes = false;
 
   // Animations
   late AnimationController _animationController;
@@ -86,7 +82,6 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage>
   late Animation<double> _pulseAnimation;
 
   // Security data
-  Map<String, dynamic>? _securityStatus;
   List<String> _securityRecommendations = [];
 
   @override

@@ -104,6 +104,32 @@ class ClearError extends ProfileImageEvent {}
 
 class LoadPerformanceMetrics extends ProfileImageEvent {}
 
+class UploadProgressChanged extends ProfileImageEvent {
+  final UploadProgress uploadProgress;
+  final Map<String, dynamic>? optimizationParams;
+
+  const UploadProgressChanged({
+    required this.uploadProgress,
+    this.optimizationParams,
+  });
+
+  @override
+  List<Object> get props => [uploadProgress, optimizationParams ?? {}];
+}
+
+class ImageDataUpdated extends ProfileImageEvent {
+  final ProfileImageData? imageData;
+  final Map<String, dynamic>? optimizationParams;
+
+  const ImageDataUpdated({
+    this.imageData,
+    this.optimizationParams,
+  });
+
+  @override
+  List<Object> get props => [imageData?.toString() ?? '', optimizationParams ?? {}];
+}
+
 // States
 abstract class ProfileImageState extends Equatable {
   const ProfileImageState();
@@ -263,15 +289,22 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
     on<RetryUpload>(_onRetryUpload);
     on<ClearError>(_onClearError);
     on<LoadPerformanceMetrics>(_onLoadPerformanceMetrics);
+    on<UploadProgressChanged>(_onUploadProgressChanged);
+    on<ImageDataUpdated>(_onImageDataUpdated);
 
+    // Initialize service listeners asynchronously
+    _initializeServiceListeners();
+  }
+
+  void _initializeServiceListeners() {
     // Listen to service streams
     _imageService.uploadProgressStream.listen((progress) {
       if (state is ProfileImageUploading) {
         final currentState = state as ProfileImageUploading;
-        emit(ProfileImageUploading(
+        // Update state through event instead of direct emit
+        add(UploadProgressChanged(
           uploadProgress: progress,
-          optimizationParams: currentState.optimizationParams,
-          performanceMetrics: _performanceMetrics,
+          optimizationParams: currentState.optimizationParams as Map<String, dynamic>?,
         ));
       }
     });
@@ -279,11 +312,10 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
     _imageService.imageDataStream.listen((imageData) {
       _currentImage = imageData;
       if (state is ProfileImageUploading || state is ProfileImageOptimizing) {
-        emit(ProfileImageLoaded(
-          currentImage: _currentImage,
-          optimizationParams: _currentOptimizationParams,
-          performanceMetrics: _performanceMetrics,
-          hasExistingImage: true,
+        // Update state through event instead of direct emit
+        add(ImageDataUpdated(
+          imageData: _currentImage,
+          optimizationParams: _currentOptimizationParams as Map<String, dynamic>?,
         ));
       }
     });
@@ -548,6 +580,38 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
     if (state is ProfileImageLoaded) {
       emit((state as ProfileImageLoaded).copyWith(
         performanceMetrics: _performanceMetrics,
+      ));
+    }
+  }
+
+  Future<void> _onUploadProgressChanged(
+    UploadProgressChanged event,
+    Emitter<ProfileImageState> emit,
+  ) async {
+    if (state is ProfileImageUploading) {
+      final currentState = state as ProfileImageUploading;
+      emit(ProfileImageUploading(
+        uploadProgress: event.uploadProgress,
+        optimizationParams: event.optimizationParams ?? currentState.optimizationParams,
+        performanceMetrics: _performanceMetrics,
+      ));
+    }
+  }
+
+  Future<void> _onImageDataUpdated(
+    ImageDataUpdated event,
+    Emitter<ProfileImageState> emit,
+  ) async {
+    if (state is ProfileImageUploading || state is ProfileImageOptimizing) {
+      final imageData = event.imageData;
+      if (imageData != null) {
+        _currentImage = imageData;
+      }
+      emit(ProfileImageLoaded(
+        currentImage: _currentImage,
+        optimizationParams: event.optimizationParams ?? _currentOptimizationParams,
+        performanceMetrics: _performanceMetrics,
+        hasExistingImage: true,
       ));
     }
   }

@@ -20,14 +20,14 @@ void main() {
         (WidgetTester tester) async {
       
       // Given
-      String? callbackImageUrl;
+      final imageUrls = <String>[];
       
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: ProfilePictureChangeDialog(
               onProfilePictureUpdated: (imageUrl) {
-                callbackImageUrl = imageUrl;
+                imageUrls.add(imageUrl);
               },
             ),
           ),

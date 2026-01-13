@@ -50,7 +50,6 @@ class _Comprehensive2FAVerificationPageState
   Timer? _autoSubmitTimer;
 
   // UI state
-  bool _showAdvancedOptions = false;
   String? _lastErrorMessage;
   bool _showPassword = false;
   FocusNode? _currentFocusNode;
@@ -546,17 +545,18 @@ class _Comprehensive2FAVerificationPageState
             ),
             const SizedBox(height: 12),
             ...widget.availableMethods
-                .map((method) => RadioListTile<VerificationMethod>(
-                      value: method,
-                      groupValue: _currentMethod,
-                      onChanged: method != _currentMethod
-                          ? (value) => _switchMethod(value!)
-                          : null,
+                .map((method) => ListTile(
+                      leading: Radio<VerificationMethod>(
+                        value: method,
+                        groupValue: _currentMethod,
+                        onChanged: method != _currentMethod
+                            ? (value) => _switchMethod(value!)
+                            : null,
+                      ),
                       title: Text(method.displayName),
                       subtitle: Text(_getMethodDescription(method)),
-                      secondary: Icon(_getMethodIcon(method)),
+                      trailing: Icon(_getMethodIcon(method)),
                       dense: true,
-                      controlAffinity: ListTileControlAffinity.trailing,
                     ))
                 ,
           ],
@@ -573,9 +573,10 @@ class _Comprehensive2FAVerificationPageState
         title: const Text('Diğer Yöntemler'),
         leading: const Icon(Icons.more_horiz),
         onExpansionChanged: (expanded) {
-          setState(() {
-            _showAdvancedOptions = expanded;
-          });
+          // Handle expansion change
+          if (expanded) {
+            // Log or track expansion
+          }
         },
         children: [
           const Divider(height: 1),

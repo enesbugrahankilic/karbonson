@@ -45,7 +45,7 @@ class DailyChallenge extends Equatable {
   final ChallengeDifficulty difficulty;
   final String? icon;
 
-  DailyChallenge({
+  const DailyChallenge({
     required this.id,
     required this.title,
     required this.description,

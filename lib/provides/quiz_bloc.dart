@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../models/question.dart';
 import '../services/quiz_logic.dart';
-import '../services/language_service.dart';
 import '../enums/app_language.dart';
 
 // Events

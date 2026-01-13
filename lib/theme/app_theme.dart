@@ -26,7 +26,7 @@ class AppTheme {
     onSecondaryContainer: Colors.black87,
     primaryContainer: Color(0xFFE8F5E8),
     onPrimaryContainer: Colors.black87,
-    surfaceVariant: Color(0xFFF5F5F5),
+    surfaceContainerHighest: Color(0xFFF5F5F5),
   );
 
   static final ColorScheme _darkColorScheme = const ColorScheme.dark(
@@ -45,7 +45,7 @@ class AppTheme {
     onSecondaryContainer: Colors.white,
     primaryContainer: Color(0xFF1B5E20),
     onPrimaryContainer: Colors.white,
-    surfaceVariant: Color(0xFF1E1E1E),
+    surfaceContainerHighest: Color(0xFF1E1E1E),
   );
 
   // High contrast colors for accessibility

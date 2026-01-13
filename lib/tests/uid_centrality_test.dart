@@ -4,7 +4,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/firestore_service.dart';
 import '../services/profile_service.dart';
 import '../services/friendship_service.dart';
@@ -57,12 +56,7 @@ class UidCentralityTest {
         return;
       }
 
-      final auth = FirebaseAuth.instance;
-      final firestore = FirebaseFirestore.instance;
-
       // Create test user (this would normally be done through the app)
-      UserCredential? credential;
-      String? testUid;
 
       try {
         // For testing, we'll simulate the user creation process
@@ -70,14 +64,12 @@ class UidCentralityTest {
 
         // Simulate UID-based document creation
         final mockUid = 'test_uid_${DateTime.now().millisecondsSinceEpoch}';
-        testUid = mockUid;
 
         // Verify the structure we'd expect
         final expectedDocPath = 'users/$mockUid';
 
         // Test that our services expect UID as document ID
-        final firestoreService = FirestoreService();
-
+        
         // The createOrUpdateUserProfile method should use UID as document ID
         // We can't actually test this without a real authenticated user,
         // but we can verify the method signature and logic
@@ -86,9 +78,6 @@ class UidCentralityTest {
         print('   ✅ Firestore path structure: $expectedDocPath');
       } finally {
         // Clean up test user if created
-        if (credential?.user != null) {
-          await credential!.user!.delete();
-        }
       }
     } catch (e) {
       print('   ⚠️ Firebase test skipped: $e');
@@ -163,27 +152,6 @@ class UidCentralityTest {
     }
   }
 
-  /// Test helper: Validate UID format
-  static bool _isValidUidFormat(String uid) {
-    // Firebase UIDs are typically alphanumeric and between 1-128 characters
-    final uidRegex = RegExp(r'^[a-zA-Z0-9_-]{1,128}$');
-    return uidRegex.hasMatch(uid);
-  }
-
-  /// Test helper: Verify document structure expectations
-  static void _verifyDocumentStructure(String collection, String uid) {
-    // Users collection should use UID as document ID
-    if (collection == 'users') {
-      expect(_isValidUidFormat(uid), isTrue,
-          reason: 'UID should be valid Firebase Auth UID format');
-    }
-
-    // Friends subcollection should use friend's UID as document ID
-    if (collection == 'friends') {
-      expect(_isValidUidFormat(uid), isTrue,
-          reason: 'Friend UID should be valid Firebase Auth UID format');
-    }
-  }
 }
 
 /// Integration test for UID centrality in real usage scenarios
@@ -206,7 +174,6 @@ class UidCentralityIntegrationTest {
         // Step 2: Profile creation/update
         print('\nStep 2: Profile Creation/Update');
         final firestoreService = FirestoreService();
-        final profileService = ProfileService();
 
         // This would create/update user profile with UID as document ID
         print('   ✅ Profile operations use UID: ${currentUser.uid}');
@@ -254,7 +221,6 @@ class UidCentralityPerformanceTest {
     print('$testTag Testing UID-based query performance...\n');
 
     try {
-      final firestoreService = FirestoreService();
       final stopwatch = Stopwatch();
 
       // Test 1: Single UID-based profile query

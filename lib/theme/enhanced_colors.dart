@@ -62,7 +62,7 @@ class EnhancedColors {
 
   // Surface Colors
   static const Color surface = Color(0xFFFAFAFA);
-  static const Color surfaceVariant = Color(0xFFF5F5F5);
+  static const Color surfaceContainerHighest = Color(0xFFF5F5F5);
   static const Color outline = Color(0xFFE0E0E0);
 
   /// Get primary color by intensity (50-900)
@@ -111,7 +111,7 @@ class EnhancedColors {
       case SemanticColorType.surface:
         return brightness == Brightness.light ? surface : neutral800;
       case SemanticColorType.surfaceVariant:
-        return brightness == Brightness.light ? surfaceVariant : neutral700;
+        return brightness == Brightness.light ? surfaceContainerHighest : neutral700;
       case SemanticColorType.outline:
         return brightness == Brightness.light ? outline : neutral600;
     }
@@ -132,7 +132,7 @@ class EnhancedColors {
       case SemanticColorType.surface:
         final brightness = Theme.of(context).brightness;
         return brightness == Brightness.light
-            ? [surface, surfaceVariant]
+            ? [surface, surfaceContainerHighest]
             : [neutral800, neutral700];
       default:
         return [primary500, primary400];

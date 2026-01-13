@@ -216,9 +216,8 @@ void main() {
       final nickname = NicknameService.getRandomSuggestion();
       expect(nickname, isNotNull);
 
-      // 2. Validate nickname
-      final nicknameValidation = form_validator.FormFieldValidator.validateNickname(nickname);
-      // May be null or contain validation message
+      // 2. Validate nickname validation service exists
+      expect(form_validator.FormFieldValidator.validateNickname(nickname), isA<String?>());
 
       // 3. Test email validation
       final emailValidation = form_validator.FormFieldValidator.validateEmail('test@example.com');

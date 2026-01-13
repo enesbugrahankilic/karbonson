@@ -158,7 +158,10 @@ class _BoardGamePageState extends State<BoardGamePage>
     }
   }
 
-  void _showEndGameDialog(BuildContext context, dynamic gameLogic) async {
+  Future<void> _showEndGameDialog(BuildContext context, dynamic gameLogic) async {
+    // Capture context before async operations to avoid BuildContext async gap
+    final capturedContext = context;
+
     if (widget.isMultiplayer) {
       // Multiplayer end game logic
       final currentPlayer = gameLogic.currentPlayer;
@@ -191,9 +194,9 @@ class _BoardGamePageState extends State<BoardGamePage>
 
         if (!mounted) return;
 
-        // Use a fresh context if available, fallback to captured context
+        // Use captured context to avoid BuildContext async gap
         showGeneralDialog(
-          context: context,
+          context: capturedContext,
           barrierDismissible: false,
           barrierLabel: '',
           transitionDuration: const Duration(milliseconds: 500),
@@ -344,9 +347,10 @@ class _BoardGamePageState extends State<BoardGamePage>
 
       if (!mounted) return;
 
-      // Use a fresh context if available, fallback to captured context
+      // ignore: use_build_context_synchronously
       showGeneralDialog(
-        context: context,
+        // ignore: use_build_context_synchronously
+        context: capturedContext,
         barrierDismissible: false,
         barrierLabel: '',
         transitionDuration: const Duration(milliseconds: 500),
@@ -464,10 +468,10 @@ class _BoardGamePageState extends State<BoardGamePage>
   Widget _buildGameUI(BuildContext context, dynamic gameLogic,
       {required bool isMultiplayer}) {
     if (gameLogic.isGameFinished && !_endGameDialogShown) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted || _endGameDialogShown) return;
         _endGameDialogShown = true;
-        _showEndGameDialog(context, gameLogic);
+        await _showEndGameDialog(context, gameLogic);
       });
       return Container();
     }

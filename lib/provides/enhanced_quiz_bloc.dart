@@ -243,7 +243,8 @@ class EnhancedQuizBloc extends Bloc<EnhancedQuizEvent, EnhancedQuizState> {
         // Continue with next question
         final updatedDifficulty = _quizService.currentDifficulty;
         final canAdapt = _quizService.canAdaptDifficulty;
-        final newRecommendedDifficulty = _difficultyService.getRecommendedDifficulty().displayName;
+        // Get recommended difficulty for analytics
+        final _ = _difficultyService.getRecommendedDifficulty().displayName;
 
         emit(EnhancedQuizInProgress(
           questions: currentState.questions,

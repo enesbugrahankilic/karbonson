@@ -473,10 +473,7 @@ class _FriendsPageState extends State<FriendsPage>
               .get();
 
           if (requestDoc.exists) {
-            final requestData = requestDoc.data()!;
-            final fromNickname = requestData['fromNickname'] as String;
-            final fromUserId = requestData['fromUserId'] as String;
-
+            // Request data exists, process accepted notification
             // Send friend request accepted notification
             await NotificationService.showFriendRequestAcceptedNotificationStatic(
               currentUser.displayName ?? 'Kullanıcı',
@@ -559,12 +556,8 @@ class _FriendsPageState extends State<FriendsPage>
           .doc(requestId)
           .get();
 
-      String? fromNickname;
-      String? fromUserId;
       if (requestDoc.exists) {
-        final requestData = requestDoc.data()!;
-        fromNickname = requestData['fromNickname'] as String;
-        fromUserId = requestData['fromUserId'] as String;
+        // Request data exists, will process rejection
       }
 
       // Atomik reddetme işlemi (bildirim ile)

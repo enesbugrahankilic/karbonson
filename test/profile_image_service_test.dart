@@ -69,7 +69,6 @@ void main() {
       test('should validate image format and reject invalid formats', () async {
         // Arrange
         final testImageData = _createTestImageData(400, 300);
-        const userId = 'test_user_id';
         
         // Act & Assert
         final validation = service.validateImageFile(testImageData, ImageFormat.jpeg);
@@ -80,7 +79,6 @@ void main() {
       test('should reject oversized images', () async {
         // Arrange
         final largeImageData = Uint8List(20 * 1024 * 1024); // 20MB
-        const userId = 'test_user_id';
         
         // Act
         final validation = service.validateImageFile(largeImageData, ImageFormat.jpeg);
@@ -93,7 +91,6 @@ void main() {
       test('should reject very small images', () async {
         // Arrange
         final smallImageData = Uint8List.fromList([0x89, 0x50, 0x4E, 0x47]); // PNG header only
-        const userId = 'test_user_id';
         
         // Act
         final validation = service.validateImageFile(smallImageData, ImageFormat.jpeg);
@@ -108,12 +105,11 @@ void main() {
       test('should validate image optimization workflow', () async {
         // Arrange
         final testImageData = _createTestImageData(1920, 1080);
-        const userId = 'test_user_id';
         
         // Act - test that the service can handle the upload workflow
         final result = await service.uploadProfileImage(
           imageData: testImageData,
-          userId: userId,
+          userId: 'test_user_id',
           optimizationParams: const ImageOptimizationParams(
             maxWidth: 800,
             maxHeight: 600,

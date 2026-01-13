@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provides/theme_provider.dart';
 import '../provides/language_provider.dart';
-import '../services/language_service.dart';
 import '../enums/app_language.dart';
 import '../l10n/app_localizations.dart';
 // import '../pages/uid_debug_page.dart'; // Removed unused import
@@ -40,8 +39,6 @@ class SettingsPage extends StatelessWidget {
       body: Consumer2<ThemeProvider, LanguageProvider>(
         builder: (context, themeProvider, languageProvider, child) {
           final l10n = AppLocalizations.of(context);
-          final isTurkish =
-              languageProvider.currentLanguage == AppLanguage.turkish;
 
           return Scrollbar(
             child: ListView(

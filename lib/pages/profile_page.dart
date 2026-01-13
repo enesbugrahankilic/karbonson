@@ -3,13 +3,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:clipboard/clipboard.dart'; // Using built-in services
 import '../models/profile_data.dart';
 import '../provides/profile_bloc.dart';
 import '../services/profile_service.dart';
 import '../theme/theme_colors.dart';
-import '../theme/design_system.dart';
 import '../core/navigation/app_router.dart';
 import '../widgets/home_button.dart';
 

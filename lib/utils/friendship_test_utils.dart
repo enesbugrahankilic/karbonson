@@ -40,7 +40,7 @@ class FriendshipTestUtils {
     required String toNickname,
   }) async {
     try {
-      final requestId = await _firestoreService.sendFriendRequest(
+      await _firestoreService.sendFriendRequest(
         fromUserId,
         fromNickname,
         toUserId,
@@ -77,9 +77,6 @@ class FriendshipTestUtils {
         final userDoc = db.collection('users').doc(userId);
         batch.delete(userDoc);
 
-        // Kullanıcının friends koleksiyonunu sil
-        final friendsCollection =
-            db.collection('users').doc(userId).collection('friends');
         // Friends subcollection'ı silmek için tüm dokumentları silmek gerekir
         // Bu basit bir implementasyon
 

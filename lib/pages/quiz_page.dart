@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../services/quiz_logic.dart';
-import '../services/authentication_state_service.dart';
 import '../provides/quiz_bloc.dart';
 import '../widgets/custom_question_card.dart';
 import '../theme/theme_colors.dart';
@@ -23,8 +22,6 @@ class QuizPage extends StatefulWidget {
 
 class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
   bool _didLoadQuiz = false;
-  final AuthenticationStateService _authStateService =
-      AuthenticationStateService();
   String? _selectedCategory;
   DifficultyLevel _selectedDifficulty = DifficultyLevel.easy;
   int _selectedQuestionCount = 15;
@@ -58,11 +55,6 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
     _fadeController.dispose();
     _slideController.dispose();
     super.dispose();
-  }
-
-  /// Get authenticated user nickname for display
-  Future<String> _getUserNickname() async {
-    return await _authStateService.getGameNickname();
   }
 
   @override
@@ -216,7 +208,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
       ),
     );
 
-    if (selectedValues != null) {
+    if (selectedValues != null && mounted) {
       final selectedCategory = selectedValues['category'] as String?;
       final selectedDifficulty = selectedValues['difficulty'] as DifficultyLevel?;
       final selectedQuestionCount = selectedValues['questionCount'] as int? ?? 15;
@@ -348,14 +340,8 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final screenWidth = screenSize.width;
-    final isSmallScreen = screenWidth < 360;
-    final isMediumScreen = screenWidth < 600;
-    final isLargeScreen = screenWidth > 800;
-
-    // Responsive text sizes
-    final titleFontSize = isSmallScreen ? 18.0 : (isMediumScreen ? 20.0 : (isLargeScreen ? 28.0 : 24.0));
-    final bodyTextSize = isSmallScreen ? 14.0 : (isMediumScreen ? 16.0 : 18.0);
-    final questionTextSize = isSmallScreen ? 16.0 : (isMediumScreen ? 18.0 : 20.0);
+    final isSmallScreen = screenWidth < 600;
+    final isMediumScreen = screenWidth >= 600 && screenWidth < 1024;
 
     return BlocBuilder<QuizBloc, QuizState>(
       builder: (context, state) {

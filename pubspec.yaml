@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   provider: ^6.1.2
   flutter_bloc: ^9.1.1
   equatable: ^2.0.5
@@ -38,18 +40,15 @@ dependencies:
   local_auth: ^3.0.0
 
 dev_dependencies:
+  flutter_test:
+    sdk: flutter
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
-  flutter_localizations:
-    sdk: flutter
   intl: ^0.20.2
   intl_utils: ^2.8.7
   mockito: ^5.5.0
   bloc_test: ^10.0.0
   build_runner: ^2.4.9
-
-  firebase_auth_platform_interface: any
-  firebase_storage_platform_interface: any
 flutter:
   uses-material-design: true
   generate: true

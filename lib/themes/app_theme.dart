@@ -23,7 +23,7 @@ class AppTheme {
     inverseSurface: Color(0xFF212121),
     onInverseSurface: Color(0xFFFFFFFF),
     inversePrimary: Color(0xFF90CAF9),
-    surfaceVariant: Color(0xFFF5F5F5),
+    surfaceContainerHighest: Color(0xFFF5F5F5),
     onSurfaceVariant: Color(0xFF757575),
   );
 
@@ -44,7 +44,7 @@ class AppTheme {
     inverseSurface: Color(0xFFFAFAFA),
     onInverseSurface: Color(0xFF000000),
     inversePrimary: Color(0xFF64B5F6),
-    surfaceVariant: Color(0xFF2C2C2C),
+    surfaceContainerHighest: Color(0xFF2C2C2C),
     onSurfaceVariant: Color(0xFFBDBDBD),
   );
 
@@ -312,7 +312,7 @@ class AppTheme {
           borderSide: BorderSide(color: colorScheme.error),
         ),
         filled: true,
-        fillColor: colorScheme.surfaceVariant.withValues(alpha:0.5),
+        fillColor: colorScheme.surfaceContainerHighest.withValues(alpha:0.5),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     );

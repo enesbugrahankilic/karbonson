@@ -126,12 +126,8 @@ class _DuelPageState extends State<DuelPage> {
       final playerId = await _getPlayerId();
       final playerNickname = await _getPlayerNickname();
 
-      final player = DuelPlayer(
-        id: playerId,
-        nickname: playerNickname,
-        duelScore: 0,
-        isReady: true,
-      );
+      // Create player object for duel
+      _createPlayerForDuel(playerId, playerNickname);
 
       // Note: This would need to be adapted to work with existing room structure
       // For now, we'll show a simplified message
@@ -157,46 +153,17 @@ class _DuelPageState extends State<DuelPage> {
     }
   }
 
-  void _showCreateRoomDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: ThemeColors.getDialogBackground(context),
-        title: Text(
-          'Düello Odası Oluştur',
-          style: TextStyle(color: ThemeColors.getText(context)),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.security,
-              size: 64,
-              color: ThemeColors.getGreen(context),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Düello odanız oluşturuldu! Arkadaşınızın bu kodu girmesi bekleniyor:',
-              style: TextStyle(
-                color: ThemeColors.getSecondaryText(context),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'Tamam',
-              style: TextStyle(color: ThemeColors.getSecondaryText(context)),
-            ),
-          ),
-        ],
-      ),
+  void _createPlayerForDuel(String playerId, String playerNickname) {
+    // Create DuelPlayer for use in duel operations
+    DuelPlayer(
+      id: playerId,
+      nickname: playerNickname,
+      duelScore: 0,
+      isReady: true,
     );
+    // Player initialized for duel operations
   }
+  
 
   void _showJoinRoomDialog() {
     final roomIdController = TextEditingController();

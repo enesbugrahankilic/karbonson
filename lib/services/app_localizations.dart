@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../services/language_service.dart';
 
 enum AppLanguage { turkish, english }
 

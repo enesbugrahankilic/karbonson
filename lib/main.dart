@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode, debugPrint;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
 import 'extensions/localization_extension.dart';
@@ -301,12 +301,10 @@ class Karbon2App extends StatefulWidget {
 }
 
 class _Karbon2AppState extends State<Karbon2App> {
-  bool _hasSeenTutorial = false;
   bool _loading = true;
   late GlobalKey<NavigatorState> _navigatorKey;
   String _initialRoute = AppRoutes.login;
   final GlobalKey _appKey = GlobalKey();
-  Locale? _previousLocale;
 
   @override
   void initState() {
@@ -339,16 +337,7 @@ class _Karbon2AppState extends State<Karbon2App> {
   }
 
   Future<void> _initializeApp() async {
-    await _checkTutorialStatus();
     await _determineInitialRoute();
-  }
-
-  Future<void> _checkTutorialStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final hasSeen = prefs.getBool('hasSeenTutorial') ?? false;
-    setState(() {
-      _hasSeenTutorial = hasSeen;
-    });
   }
 
   Future<void> _determineInitialRoute() async {
@@ -434,7 +423,7 @@ class _Karbon2AppState extends State<Karbon2App> {
           navigatorObservers: [
             AppNavigatorObserver(),
           ],
-          onGenerateRoute: AppRouter().generateRoute,
+          onGenerateRoute: AppRouter.generateRoute,
           initialRoute: _initialRoute,
         );
       },

@@ -14,13 +14,11 @@ void main() {
   group('Multiplayer and Friend Invitation Tests', () {
     late FirestoreService firestoreService;
     late FriendshipService friendshipService;
-    late GameInvitationService invitationService;
     late PresenceService presenceService;
 
     setUp(() {
       firestoreService = FirestoreService();
       friendshipService = FriendshipService();
-      invitationService = GameInvitationService();
       presenceService = PresenceService();
     });
 

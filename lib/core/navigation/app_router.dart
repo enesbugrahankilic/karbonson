@@ -36,6 +36,8 @@ import '../../services/quiz_logic.dart';
 
 /// Route names constants for better maintainability
 class AppRoutes {
+  const AppRoutes._(); // Private constructor to prevent instantiation
+
   // Authentication routes
   static const String login = '/login';
   static const String tutorial = '/tutorial';
@@ -73,10 +75,12 @@ class AppRoutes {
 
 /// Navigation configuration with route definitions
 class AppRouter {
-  final AuthenticationStateService _authService = AuthenticationStateService();
+  const AppRouter._(); // Private constructor to prevent instantiation
+
+  static final AuthenticationStateService _authService = AuthenticationStateService();
 
   /// Generate routes for the app
-  Route<dynamic> generateRoute(RouteSettings settings) {
+  static PageRoute<dynamic> generateRoute(RouteSettings settings) {
     if (kDebugMode) {
       debugPrint('Navigating to: ${settings.name}');
     }
@@ -177,7 +181,7 @@ class AppRouter {
   }
 
   /// Create a standard route with modern transitions
-  PageRoute<T> _createRoute<T>(Widget page) {
+  static PageRoute<T> _createRoute<T>(Widget page) {
     return PageRouteBuilder<T>(
       pageBuilder: (context, animation, secondaryAnimation) => page,
       transitionDuration: const Duration(milliseconds: 300),
@@ -200,7 +204,7 @@ class AppRouter {
   }
 
   /// Create a protected route that requires authentication
-  PageRoute<T> _createProtectedRoute<T>(Widget page, RouteSettings settings) {
+  static PageRoute<T> _createProtectedRoute<T>(Widget page, RouteSettings settings) {
     return PageRouteBuilder<T>(
       pageBuilder: (context, animation, secondaryAnimation) =>
           _ProtectedRouteWrapper(
@@ -228,41 +232,8 @@ class AppRouter {
     );
   }
 
-  /// Create a fade transition route
-  PageRoute<T> _createFadeRoute<T>(Widget page) {
-    return PageRouteBuilder<T>(
-      pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionDuration: const Duration(milliseconds: 250),
-      reverseTransitionDuration: const Duration(milliseconds: 250),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(
-          opacity: animation,
-          child: child,
-        );
-      },
-    );
-  }
-
-  /// Create a scale transition route
-  PageRoute<T> _createScaleRoute<T>(Widget page) {
-    return PageRouteBuilder<T>(
-      pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionDuration: const Duration(milliseconds: 300),
-      reverseTransitionDuration: const Duration(milliseconds: 300),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return ScaleTransition(
-          scale: animation,
-          child: FadeTransition(
-            opacity: animation,
-            child: child,
-          ),
-        );
-      },
-    );
-  }
-
   /// Create default auth result for 2FA pages (development only)
-  dynamic _createDefaultAuthResult() {
+  static dynamic _createDefaultAuthResult() {
     // This is a placeholder for development - in production this should come from auth flow
     return {
       'requires2FA': false,

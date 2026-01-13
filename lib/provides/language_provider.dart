@@ -1,7 +1,6 @@
 // lib/provides/language_provider.dart
 import 'package:flutter/material.dart';
 import '../services/language_service.dart';
-import '../services/app_localizations.dart' as AL;
 import '../enums/app_language.dart';
 
 class LanguageProvider extends ChangeNotifier {

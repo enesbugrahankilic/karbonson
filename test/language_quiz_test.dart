@@ -108,6 +108,8 @@ void main() {
 
       // Should have different questions (or at least some variation)
       // Due to deduplication logic, we shouldn't see exact same sequence
+      expect(firstSessionQuestions.isNotEmpty, isTrue);
+      expect(secondSessionQuestions.isNotEmpty, isTrue);
       expect(secondSessionQuestions.length, 15);
     });
 

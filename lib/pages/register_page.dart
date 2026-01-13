@@ -343,8 +343,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
     // Responsive text sizes
     final titleFontSize = isSmallScreen ? 18.0 : (isMediumScreen ? 20.0 : (isLargeScreen ? 28.0 : 24.0));
-    final bodyTextSize = isSmallScreen ? 14.0 : (isMediumScreen ? 16.0 : 18.0);
-    final inputTextSize = isSmallScreen ? 14.0 : 16.0;
     final buttonTextSize = isSmallScreen ? 14.0 : 16.0;
 
     return Scaffold(

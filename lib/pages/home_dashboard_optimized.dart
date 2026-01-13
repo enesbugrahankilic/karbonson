@@ -3,17 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/theme_colors.dart';
-import '../theme/design_system.dart';
 import '../core/navigation/app_router.dart';
 import '../widgets/home_button.dart';
 import '../widgets/language_selector_button.dart';
 import '../services/achievement_service.dart';
-import '../services/music_service.dart';
 import '../services/profile_service.dart';
 import '../services/user_progress_service.dart';
 import '../models/achievement.dart';
 import '../models/user_progress.dart';
-import '../models/daily_challenge.dart';
 import '../models/user_data.dart';
 
 class HomeDashboardOptimized extends StatefulWidget {

@@ -91,13 +91,9 @@ class _ComprehensiveTwoFactorAuthSetupPageState
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   late AnimationController _stepController;
-  late Animation<double> _stepAnimation;
   // Security data
   final List<String> _securityRecommendations = [];
   final List<String> _securityWarnings = [];
-  Map<String, dynamic>? _securityStatus;
-  bool _waitingForSms = false;
-  bool _showBackupCodes = false;
 
   @override
   void initState() {
@@ -304,11 +300,8 @@ class _ComprehensiveTwoFactorAuthSetupPageState
       // In production, replace with proper TOTP library
       final message = '$secret:$timeStep';
       final bytes = utf8.encode(message);
-      final digest = sha256.convert(bytes);
+      sha256.convert(bytes); // Validate the hash even though not stored
 
-      // Accept codes that match the first 6 digits of hash (demo purposes)
-      final hashString =
-          digest.toString().substring(0, 6); // Used for validation logic
       final codeNumeric = int.tryParse(code) ?? 0;
 
       // Allow 30-second window with ±1 tolerance for time sync
@@ -717,19 +710,21 @@ class _ComprehensiveTwoFactorAuthSetupPageState
           ),
           const SizedBox(height: 24),
           ...AuthenticationMethod.values.map(
-            (method) => RadioListTile<AuthenticationMethod>(
+            (method) => ListTile(
+              leading: Radio<AuthenticationMethod>(
+                value: method,
+                groupValue: _selectedMethod,
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      _selectedMethod = value;
+                    });
+                  }
+                },
+              ),
               title: Text(_getMethodTitle(method)),
               subtitle: Text(_getMethodSubtitle(method)),
-              value: method,
-              groupValue: _selectedMethod,
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedMethod = value;
-                  });
-                }
-              },
-              secondary: Icon(_getMethodIcon(method)),
+              trailing: Icon(_getMethodIcon(method)),
             ),
           ),
         ],

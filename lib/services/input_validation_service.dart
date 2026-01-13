@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,10 +24,6 @@ class InputValidationService {
 
   static final RegExp _nicknameRegex = RegExp(
     r'^[a-zA-Z0-9_çğıöşüÇĞIİÖŞÜ]+$',
-  );
-
-  static final RegExp _passwordRegex = RegExp(
-    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]',
   );
 
   // Security patterns for content sanitization

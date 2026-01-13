@@ -9,7 +9,6 @@ import 'package:flutter/foundation.dart';
 import '../services/friendship_service.dart';
 import '../services/firestore_service.dart';
 import '../services/notification_service.dart';
-import '../services/presence_service.dart';
 
 // Import models
 import '../models/friendship_data.dart';
@@ -20,12 +19,10 @@ void main() {
   group('Friendship Request System Test', () {
     late FirestoreService firestoreService;
     late FriendshipService friendshipService;
-    late PresenceService presenceService;
 
     setUp(() {
       firestoreService = FirestoreService();
       friendshipService = FriendshipService();
-      presenceService = PresenceService();
     });
 
     test('Friend Request Flow Test', () async {

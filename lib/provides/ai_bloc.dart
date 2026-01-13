@@ -12,6 +12,14 @@ class LoadRecommendations extends AIEvent {
   LoadRecommendations(this.userId);
 }
 
+class AIInitial extends AIState {
+  AIInitial();
+}
+
+class AILoading extends AIState {
+  AILoading();
+}
+
 class RecommendationsLoaded extends AIState {
   final List<AIRecommendation> recommendations;
 
@@ -51,6 +59,3 @@ class AIBloc extends Bloc<AIEvent, AIState> {
   }
 }
 
-class AIInitial extends AIState {}
-
-class AILoading extends AIState {}

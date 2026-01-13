@@ -118,7 +118,6 @@ void main() {
         // Note: This test would require Firebase setup and would be more of an integration test
 
         // Arrange
-        const testEmail = 'integration@example.com';
 
         // Act & Assert
         // The RegistrationService should use EmailUsageService internally

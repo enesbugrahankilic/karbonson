@@ -3,6 +3,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 /// Shared utility class for parsing datetime values from Firestore
 /// Handles both Timestamp and String types to prevent casting errors
