@@ -150,57 +150,21 @@ class ProfileService {
     }
   }
 
-  /// Add a new game result to local statistics
-  Future<void> addGameResult({
+  /// Add a new game result to Firestore statistics
+  Future<bool> addGameResult({
     required int score,
     required bool isWin,
     required String gameType,
   }) async {
     try {
-      final currentStats = await loadLocalStatistics();
-
-      // Create new game history item
-      final newGame = GameHistoryItem(
-        gameId: DateTime.now().millisecondsSinceEpoch.toString(),
+      return await _firestoreService.addGameResult(
         score: score,
         isWin: isWin,
-        playedAt: DateTime.now(),
         gameType: gameType,
       );
-
-      // Update recent games (keep only last 10 games)
-      final updatedGames =
-          [newGame, ...currentStats.recentGames].take(10).toList();
-
-      // Calculate new statistics
-      final totalGames = currentStats.totalGamesPlayed + 1;
-      final totalWins = currentStats.recentGames.where((g) => g.isWin).length +
-          (isWin ? 1 : 0);
-      final newWinRate = totalGames > 0 ? (totalWins / totalGames) : 0.0;
-
-      // Calculate new average score
-      final totalScore = currentStats.recentGames
-              .fold<int>(0, (total, game) => total + game.score) +
-          score;
-      final newAverageScore =
-          totalGames > 0 ? (totalScore / totalGames).round() : score;
-
-      // Update highest score if needed
-      final newHighestScore =
-          score > currentStats.highestScore ? score : currentStats.highestScore;
-
-      final updatedStats = LocalStatisticsData(
-        winRate: newWinRate,
-        totalGamesPlayed: totalGames,
-        highestScore: newHighestScore,
-        averageScore: newAverageScore,
-        recentGames: updatedGames,
-        lastUpdated: DateTime.now(),
-      );
-
-      await saveLocalStatistics(updatedStats);
     } catch (e) {
       if (kDebugMode) debugPrint('Error adding game result: $e');
+      return false;
     }
   }
 

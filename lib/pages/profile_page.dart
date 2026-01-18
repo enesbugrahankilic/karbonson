@@ -235,54 +235,92 @@ class _ProfileContentState extends State<ProfileContent>
       child: Column(
         children: [
           // Profil Resmi ve Seviye Halkası
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              // Seviye Halkası
-              Container(
-                width: isSmallScreen ? 100 : 120,
-                height: isSmallScreen ? 100 : 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3),
-                    width: 4,
+          GestureDetector(
+            onTap: () => _showEditProfilePictureDialog(context),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Seviye Halkası
+                Container(
+                  width: isSmallScreen ? 100 : 120,
+                  height: isSmallScreen ? 100 : 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      width: 4,
+                    ),
                   ),
                 ),
-              ),
-              // Profil Avatarı
-              CircleAvatar(
-                radius: isSmallScreen ? 40 : 48,
-                backgroundColor: Colors.white.withValues(alpha: 0.2),
-                backgroundImage: serverData?.profilePictureUrl != null
-                    ? NetworkImage(serverData!.profilePictureUrl!)
-                    : null,
-                child: serverData?.profilePictureUrl == null
-                    ? Text(
-                        currentNickname.isNotEmpty
-                            ? currentNickname[0].toUpperCase()
-                            : 'U',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: isSmallScreen ? 24 : 28,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      )
-                    : null,
-              ),
-            ],
+                // Profil Avatarı
+                CircleAvatar(
+                  radius: isSmallScreen ? 40 : 48,
+                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  backgroundImage: serverData?.profilePictureUrl != null
+                      ? NetworkImage(serverData!.profilePictureUrl!)
+                      : null,
+                  child: serverData?.profilePictureUrl == null
+                      ? Text(
+                          currentNickname.isNotEmpty
+                              ? currentNickname[0].toUpperCase()
+                              : 'U',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: isSmallScreen ? 24 : 28,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        )
+                      : null,
+                ),
+                // Edit Icon Overlay
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: ThemeColors.getPrimaryButtonColor(context),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 2,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.camera_alt,
+                      color: Colors.white,
+                      size: isSmallScreen ? 14 : 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 16),
 
           // Nickname
-          Text(
-            currentNickname.isNotEmpty ? currentNickname : 'Kullanıcı',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: isSmallScreen ? 20 : 24,
-              fontWeight: FontWeight.w700,
+          GestureDetector(
+            onTap: () => _showEditNicknameDialog(context, currentNickname),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  currentNickname.isNotEmpty ? currentNickname : 'Kullanıcı',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: isSmallScreen ? 20 : 24,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.edit,
+                  color: Colors.white.withValues(alpha: 0.7),
+                  size: isSmallScreen ? 16 : 18,
+                ),
+              ],
             ),
-            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
 
@@ -697,5 +735,207 @@ class _ProfileContentState extends State<ProfileContent>
     } else {
       return '${playedAt.day}/${playedAt.month}';
     }
+  }
+
+  void _showEditNicknameDialog(BuildContext context, String currentNickname) {
+    final TextEditingController controller = TextEditingController(text: currentNickname);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Takma Adı Düzenle',
+            style: TextStyle(
+              fontSize: isSmallScreen ? 18 : 20,
+              fontWeight: FontWeight.w600,
+              color: ThemeColors.getText(context),
+            ),
+          ),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              labelText: 'Yeni Takma Ad',
+              hintText: 'Takma adınızı girin',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: ThemeColors.getPrimaryButtonColor(context),
+                  width: 2,
+                ),
+              ),
+            ),
+            maxLength: 20,
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'İptal',
+                style: TextStyle(
+                  color: ThemeColors.getSecondaryText(context),
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final newNickname = controller.text.trim();
+                if (newNickname.isNotEmpty && newNickname != currentNickname) {
+                  context.read<ProfileBloc>().add(UpdateNickname(newNickname));
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Takma ad güncelleniyor...'),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                } else {
+                  Navigator.of(context).pop();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ThemeColors.getPrimaryButtonColor(context),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Kaydet'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showEditProfilePictureDialog(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    // Available avatar options
+    final avatars = [
+      'assets/avatars/default_avatar_1.svg',
+      'assets/avatars/default_avatar_2.svg',
+      'assets/avatars/default_avatar_3.svg',
+      'assets/avatars/default_avatar_4.svg',
+      'assets/avatars/default_avatar_5.svg',
+      'assets/avatars/emoji_avatar_1.svg',
+      'assets/avatars/emoji_avatar_2.svg',
+    ];
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Profil Resmi Seç',
+            style: TextStyle(
+              fontSize: isSmallScreen ? 18 : 20,
+              fontWeight: FontWeight.w600,
+              color: ThemeColors.getText(context),
+            ),
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: isSmallScreen ? 3 : 4,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemCount: avatars.length,
+              itemBuilder: (context, index) {
+                final avatar = avatars[index];
+                return GestureDetector(
+                  onTap: () {
+                    // For now, just show a message since we need to implement image upload
+                    // In a real implementation, this would upload the image and get URL
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Profil resmi özelliği yakında eklenecek'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                    Navigator.of(context).pop();
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: ThemeColors.getBorder(context),
+                        width: 2,
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.asset(
+                        avatar,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: ThemeColors.getCardBackground(context),
+                            child: Icon(
+                              Icons.person,
+                              color: ThemeColors.getSecondaryText(context),
+                              size: isSmallScreen ? 24 : 32,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'İptal',
+                style: TextStyle(
+                  color: ThemeColors.getSecondaryText(context),
+                ),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                // TODO: Implement camera/gallery picker
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Kamera/galeri özelliği yakında eklenecek'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+                Navigator.of(context).pop();
+              },
+              icon: const Icon(Icons.camera_alt),
+              label: const Text('Fotoğraf Çek'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ThemeColors.getPrimaryButtonColor(context),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

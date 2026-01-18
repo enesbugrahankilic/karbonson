@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/game_board.dart';
 import '../models/notification_data.dart';
 import '../models/user_data.dart';
+import '../models/profile_data.dart'; // For GameHistoryItem
 import '../utils/room_code_generator.dart';
 import 'duel_game_logic.dart';
 
@@ -809,6 +810,79 @@ class FirestoreService {
         }
       }
       return true; // Fail open - allow the operation to continue
+    }
+  }
+
+  /// Add a game result and update user statistics in Firestore
+  Future<bool> addGameResult({
+    required int score,
+    required bool isWin,
+    required String gameType,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        if (kDebugMode) debugPrint('❌ User not authenticated for game result');
+        return false;
+      }
+
+      // Get current user profile
+      final currentProfile = await getUserProfile(user.uid);
+      if (currentProfile == null) {
+        if (kDebugMode) debugPrint('❌ User profile not found for game result');
+        return false;
+      }
+
+      // Create new game history item
+      final newGame = GameHistoryItem(
+        gameId: DateTime.now().millisecondsSinceEpoch.toString(),
+        score: score,
+        isWin: isWin,
+        playedAt: DateTime.now(),
+        gameType: gameType,
+      );
+
+      // Update recent games (keep only last 10 games)
+      final updatedGames = [newGame, ...currentProfile.recentGames].take(10).toList();
+
+      // Calculate new statistics
+      final totalGames = currentProfile.totalGamesPlayed + 1;
+      final totalWins = currentProfile.recentGames.where((g) => g.isWin).length + (isWin ? 1 : 0);
+      final newWinRate = totalGames > 0 ? (totalWins / totalGames) : 0.0;
+
+      // Calculate new average score
+      final totalScore = currentProfile.recentGames.fold<int>(0, (total, game) => total + game.score) + score;
+      final newAverageScore = totalGames > 0 ? (totalScore / totalGames).round() : score;
+
+      // Update highest score if needed
+      final newHighestScore = score > currentProfile.highestScore ? score : currentProfile.highestScore;
+
+      // Create updated user data
+      final updatedUserData = currentProfile.copyWith(
+        winRate: newWinRate,
+        totalGamesPlayed: totalGames,
+        highestScore: newHighestScore,
+        averageScore: newAverageScore,
+        recentGames: updatedGames,
+        updatedAt: DateTime.now(),
+      );
+
+      // Save updated profile
+      final success = await createOrUpdateUserProfile(
+        nickname: updatedUserData.nickname,
+        profilePictureUrl: updatedUserData.profilePictureUrl,
+        privacySettings: updatedUserData.privacySettings,
+        fcmToken: updatedUserData.fcmToken,
+      );
+
+      if (success != null && kDebugMode) {
+        debugPrint('✅ Game result added successfully: score=$score, win=$isWin');
+      }
+
+      return success != null;
+    } catch (e) {
+      if (kDebugMode) debugPrint('🚨 Error adding game result: $e');
+      return false;
     }
   }
 

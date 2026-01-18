@@ -4,6 +4,7 @@
 
 import '../services/firestore_service.dart';
 import '../utils/datetime_parser.dart';
+import '../models/profile_data.dart'; // For GameHistoryItem
 
 
 
@@ -33,6 +34,13 @@ class UserData {
   final String? phoneNumber;
   final DateTime? last2FAVerification;
 
+  // Game Statistics Fields
+  final double winRate;
+  final int totalGamesPlayed;
+  final int highestScore;
+  final int averageScore;
+  final List<GameHistoryItem> recentGames;
+
   const UserData({
     required this.uid,
     required this.nickname,
@@ -48,6 +56,11 @@ class UserData {
     this.is2FAEnabled = false,
     this.phoneNumber,
     this.last2FAVerification,
+    this.winRate = 0.0,
+    this.totalGamesPlayed = 0,
+    this.highestScore = 0,
+    this.averageScore = 0,
+    this.recentGames = const [],
   });
 
   factory UserData.fromMap(Map<String, dynamic> map, String documentId) {
@@ -75,6 +88,14 @@ class UserData {
       is2FAEnabled: map['is2FAEnabled'] ?? false,
       phoneNumber: map['phoneNumber'],
       last2FAVerification: DateTimeParser.parse(map['last2FAVerification']),
+      winRate: (map['winRate'] as num?)?.toDouble() ?? 0.0,
+      totalGamesPlayed: map['totalGamesPlayed'] ?? 0,
+      highestScore: map['highestScore'] ?? 0,
+      averageScore: map['averageScore'] ?? 0,
+      recentGames: (map['recentGames'] as List<dynamic>?)
+              ?.map((item) => GameHistoryItem.fromMap(item as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 
@@ -94,6 +115,11 @@ class UserData {
       'is2FAEnabled': is2FAEnabled,
       'phoneNumber': phoneNumber,
       'last2FAVerification': DateTimeParser.toTimestamp(last2FAVerification),
+      'winRate': winRate,
+      'totalGamesPlayed': totalGamesPlayed,
+      'highestScore': highestScore,
+      'averageScore': averageScore,
+      'recentGames': recentGames.map((item) => item.toMap()).toList(),
     };
   }
 
@@ -112,6 +138,11 @@ class UserData {
     bool? is2FAEnabled,
     String? phoneNumber,
     DateTime? last2FAVerification,
+    double? winRate,
+    int? totalGamesPlayed,
+    int? highestScore,
+    int? averageScore,
+    List<GameHistoryItem>? recentGames,
   }) {
     return UserData(
       uid: uid ?? this.uid,
@@ -128,6 +159,11 @@ class UserData {
       is2FAEnabled: is2FAEnabled ?? this.is2FAEnabled,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       last2FAVerification: last2FAVerification ?? this.last2FAVerification,
+      winRate: winRate ?? this.winRate,
+      totalGamesPlayed: totalGamesPlayed ?? this.totalGamesPlayed,
+      highestScore: highestScore ?? this.highestScore,
+      averageScore: averageScore ?? this.averageScore,
+      recentGames: recentGames ?? this.recentGames,
     );
   }
 }
