@@ -89,6 +89,23 @@ class QuizError extends QuizState {
   List<Object> get props => [message];
 }
 
+class QuizCompleted extends QuizState {
+  final List<Question> questions;
+  final int score;
+  final List<String> answers;
+  final AppLanguage currentLanguage;
+
+  const QuizCompleted({
+    required this.questions,
+    required this.score,
+    required this.answers,
+    this.currentLanguage = AppLanguage.turkish,
+  });
+
+  @override
+  List<Object> get props => [questions, score, answers, currentLanguage];
+}
+
 // Bloc
 class QuizBloc extends Bloc<QuizEvent, QuizState> {
   final QuizLogic quizLogic;
@@ -161,20 +178,28 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         quizLogic.recordWrongAnswer(question.category);
       }
 
-      // Prevent advancing the index past the last question to avoid
-      // RangeError when the UI accesses `questions[currentQuestion]`.
-      final nextIndex =
-          (event.questionIndex + 1) >= currentState.questions.length
-              ? currentState.questions.length - 1
-              : event.questionIndex + 1;
+      final newScore = isCorrect ? currentState.score + 1 : currentState.score;
 
-      emit(QuizLoaded(
-        questions: currentState.questions,
-        currentQuestion: nextIndex,
-        score: isCorrect ? currentState.score + 1 : currentState.score,
-        answers: newAnswers,
-        currentLanguage: currentState.currentLanguage,
-      ));
+      // Check if this is the last question
+      if (event.questionIndex == currentState.questions.length - 1) {
+        // Quiz completed
+        emit(QuizCompleted(
+          questions: currentState.questions,
+          score: newScore,
+          answers: newAnswers,
+          currentLanguage: currentState.currentLanguage,
+        ));
+      } else {
+        // Continue to next question
+        final nextIndex = event.questionIndex + 1;
+        emit(QuizLoaded(
+          questions: currentState.questions,
+          currentQuestion: nextIndex,
+          score: newScore,
+          answers: newAnswers,
+          currentLanguage: currentState.currentLanguage,
+        ));
+      }
     }
   }
 }

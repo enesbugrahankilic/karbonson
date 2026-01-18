@@ -106,107 +106,142 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
     final selectedValues = await showDialog<Map<String, dynamic>>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Quiz Ayarları'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Kategori Seçin:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              ...categories.map((category) {
-                return ListTile(
-                  title: Text(category),
-                  leading: Radio<String>(
-                    value: category,
-                    groupValue: _selectedCategory,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedCategory = value;
-                      });
-                    },
-                  ),
-                  onTap: () {
-                    setState(() {
-                      _selectedCategory = category;
-                    });
-                  },
-                );
-              }).toList(),
-              const Divider(),
-              const Text(
-                'Zorluk Seviyesi Seçin:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              ...difficulties.map((difficulty) {
-                return ListTile(
-                  title: Text(difficulty.displayName),
-                  leading: Radio<DifficultyLevel>(
-                    value: difficulty,
-                    groupValue: _selectedDifficulty,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedDifficulty = value!;
-                      });
-                    },
-                  ),
-                  onTap: () {
-                    setState(() {
-                      _selectedDifficulty = difficulty;
-                    });
-                  },
-                );
-              }),
-              const Divider(),
-              const Text(
-                'Soru Sayısı Seçin:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<int>(
-                value: _selectedQuestionCount,
-                decoration: const InputDecoration(
-                  labelText: 'Soru Sayısı',
-                  border: OutlineInputBorder(),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+        ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 500,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(DesignSystem.spacingL),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Quiz Ayarları',
+                  style: DesignSystem.getHeadlineSmall(context),
+                  textAlign: TextAlign.center,
                 ),
-                items: const [
-                  DropdownMenuItem(value: 5, child: Text('5 Soru (2-3 dakika)')),
-                  DropdownMenuItem(value: 10, child: Text('10 Soru (~5 dakika)')),
-                  DropdownMenuItem(value: 15, child: Text('15 Soru (~7-8 dakika)')),
-                  DropdownMenuItem(value: 20, child: Text('20 Soru (~10-12 dakika)')),
-                  DropdownMenuItem(value: 25, child: Text('25 Soru (~12-15 dakika)')),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _selectedQuestionCount = value;
-                    });
-                  }
-                },
-              ),
-            ],
+                const SizedBox(height: DesignSystem.spacingL),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Kategori Seçin:',
+                          style: DesignSystem.getTitleMedium(context).copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: DesignSystem.spacingS),
+                        Wrap(
+                          spacing: DesignSystem.spacingS,
+                          runSpacing: DesignSystem.spacingS,
+                          children: categories.map((category) {
+                            return SizedBox(
+                              width: (MediaQuery.of(context).size.width - 2 * DesignSystem.spacingL - DesignSystem.spacingS) / 2,
+                              child: RadioListTile<String>(
+                                title: Text(category),
+                                value: category,
+                                groupValue: _selectedCategory,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedCategory = value;
+                                  });
+                                },
+                                dense: true,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const Divider(),
+                        Text(
+                          'Zorluk Seviyesi Seçin:',
+                          style: DesignSystem.getTitleMedium(context).copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: DesignSystem.spacingS),
+                        ...difficulties.map((difficulty) {
+                          return RadioListTile<DifficultyLevel>(
+                            title: Text(difficulty.displayName),
+                            value: difficulty,
+                            groupValue: _selectedDifficulty,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedDifficulty = value!;
+                              });
+                            },
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                          );
+                        }),
+                        const Divider(),
+                        Text(
+                          'Soru Sayısı Seçin:',
+                          style: DesignSystem.getTitleMedium(context).copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: DesignSystem.spacingS),
+                        DropdownButtonFormField<int>(
+                          value: _selectedQuestionCount,
+                          decoration: InputDecoration(
+                            labelText: 'Soru Sayısı',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                            ),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 5, child: Text('5 Soru (2-3 dakika)')),
+                            DropdownMenuItem(value: 10, child: Text('10 Soru (~5 dakika)')),
+                            DropdownMenuItem(value: 15, child: Text('15 Soru (~7-8 dakika)')),
+                            DropdownMenuItem(value: 20, child: Text('20 Soru (~10-12 dakika)')),
+                            DropdownMenuItem(value: 25, child: Text('25 Soru (~12-15 dakika)')),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() {
+                                _selectedQuestionCount = value;
+                              });
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: DesignSystem.spacingL),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('İptal'),
+                    ),
+                    const SizedBox(width: DesignSystem.spacingM),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop({
+                          'category': _selectedCategory,
+                          'difficulty': _selectedDifficulty,
+                          'questionCount': _selectedQuestionCount,
+                        });
+                      },
+                      child: const Text('Başla'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('İptal'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop({
-                'category': _selectedCategory,
-                'difficulty': _selectedDifficulty,
-                'questionCount': _selectedQuestionCount,
-              });
-            },
-            child: const Text('Başla'),
-          ),
-        ],
       ),
     );
 
@@ -277,7 +312,24 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
     context.read<QuizBloc>().add(AnswerQuestion(answer, questionIndex));
   }
 
-  Widget _buildScoreArea(QuizLoaded state) {
+  Widget _buildScoreArea(dynamic state) {
+    int score = 0;
+    int currentQuestion = 0;
+    int totalQuestions = 0;
+    bool isCompleted = false;
+
+    if (state is QuizLoaded) {
+      score = state.score;
+      currentQuestion = state.currentQuestion + 1;
+      totalQuestions = state.questions.length;
+      isCompleted = false;
+    } else if (state is QuizCompleted) {
+      score = state.score;
+      currentQuestion = state.questions.length;
+      totalQuestions = state.questions.length;
+      isCompleted = true;
+    }
+
     return FadeTransition(
       opacity: _fadeController,
       child: SlideTransition(
@@ -292,13 +344,14 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
           child: Column(
             children: [
               Text(
-                'Puan: ${state.score}',
+                'Puan: $score',
                 style: AppTheme.getGameScoreStyle(context),
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: DesignSystem.spacingS),
               Text(
-                'Soru ${state.currentQuestion + 1}/${state.questions.length}',
+                'Soru $currentQuestion/$totalQuestions',
                 style: DesignSystem.getTitleMedium(context).copyWith(
                   color: ThemeColors.getTitleColor(context),
                   shadows: [
@@ -309,18 +362,18 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                     ),
                   ],
                 ),
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: DesignSystem.spacingM),
-              if (state.currentQuestion == state.questions.length - 1 &&
-                  state.answers[state.currentQuestion].isNotEmpty)
+              if (isCompleted)
                 AnimatedBuilder(
                   animation: _fadeController,
                   builder: (context, child) {
                     return Transform.scale(
                       scale: _fadeController.value,
                       child: ElevatedButton.icon(
-                        onPressed: () => Navigator.pop(context, state.score),
+                        onPressed: () => Navigator.pop(context, score),
                         icon:
                             const Icon(Icons.check_circle, color: Colors.white),
                         label: const Text('Quizi Bitir',
@@ -425,60 +478,154 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                   end: Alignment.bottomRight,
                 ),
               ),
-              child: Scrollbar(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return SingleChildScrollView(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: constraints.maxHeight,
-                        ),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: isSmallScreen ? 16.0 : (isMediumScreen ? 20.0 : 24.0),
-                                  vertical: isSmallScreen ? 20.0 : 24.0),
-                              child: FadeTransition(
-                                opacity: _fadeController,
-                                child: SlideTransition(
-                                  position: Tween<Offset>(
-                                    begin: const Offset(0, 0.2),
-                                    end: Offset.zero,
-                                  ).animate(_slideController),
-                                  child: DesignSystem.glassCard(
-                                    context,
-                                    child: CustomQuestionCard(
-                                      question: currentQuestion.text,
-                                      options: currentQuestion.options
-                                          .map((o) => o.text)
-                                          .toList(),
-                                      onOptionSelected: (answer) => _onAnswerSelected(
-                                          answer, state.currentQuestion),
-                                      isAnswered: state
-                                          .answers[state.currentQuestion].isNotEmpty,
-                                      selectedAnswer:
-                                          state.answers[state.currentQuestion],
-                                      correctAnswer: currentQuestion.options
-                                          .firstWhere((o) => o.score > 0)
-                                          .text,
-                                      difficulty: _selectedDifficulty,
-                                    ),
-                                  ),
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    // Puan alanını üst kısımda sabit tut
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: isSmallScreen ? 16.0 : (isMediumScreen ? 20.0 : 24.0),
+                          vertical: isSmallScreen ? 8.0 : 12.0),
+                      child: _buildScoreArea(state),
+                    ),
+                    // Soru kartını kalan alanda genişlet
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: isSmallScreen ? 16.0 : (isMediumScreen ? 20.0 : 24.0),
+                            vertical: isSmallScreen ? 8.0 : 12.0),
+                        child: FadeTransition(
+                          opacity: _fadeController,
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0, 0.2),
+                              end: Offset.zero,
+                            ).animate(_slideController),
+                            child: Container(
+                              constraints: const BoxConstraints(maxWidth: 800),
+                              child: DesignSystem.glassCard(
+                                context,
+                                child: CustomQuestionCard(
+                                  question: currentQuestion.text,
+                                  options: currentQuestion.options
+                                      .map((o) => o.text)
+                                      .toList(),
+                                  onOptionSelected: (answer) => _onAnswerSelected(
+                                      answer, state.currentQuestion),
+                                  isAnswered: state
+                                      .answers[state.currentQuestion].isNotEmpty,
+                                  selectedAnswer:
+                                      state.answers[state.currentQuestion],
+                                  correctAnswer: currentQuestion.options
+                                      .firstWhere((o) => o.score > 0)
+                                      .text,
+                                  difficulty: _selectedDifficulty,
                                 ),
                               ),
                             ),
-                            Padding(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: isSmallScreen ? 16.0 : (isMediumScreen ? 20.0 : 24.0),
-                                  vertical: isSmallScreen ? 12.0 : 16.0),
-                              child: _buildScoreArea(state),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
-                    );
-                  },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        if (state is QuizCompleted) {
+          return Scaffold(
+            extendBodyBehindAppBar: true,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: true,
+              actions: [
+                Container(
+                  margin: const EdgeInsets.only(right: DesignSystem.spacingS),
+                  decoration: BoxDecoration(
+                    color: Colors.black87,
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusS),
+                  ),
+                  child: DesignSystem.semantic(
+                    context,
+                    label: 'Çıkış butonu',
+                    hint: 'Quizden çıkmak için kullanılır',
+                    child: IconButton(
+                      icon: const Icon(Icons.exit_to_app, color: Colors.white),
+                      onPressed: () => Navigator.pop(context, state.score),
+                      tooltip: 'Ana Sayfaya Dön',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            body: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: ThemeColors.getGradientColors(context),
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    // Puan alanını üst kısımda sabit tut
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: isSmallScreen ? 16.0 : (isMediumScreen ? 20.0 : 24.0),
+                          vertical: isSmallScreen ? 8.0 : 12.0),
+                      child: _buildScoreArea(state),
+                    ),
+                    // Tamamlanma mesajını kalan alanda ortala
+                    Expanded(
+                      child: Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: isSmallScreen ? 16.0 : (isMediumScreen ? 20.0 : 24.0)),
+                          child: FadeTransition(
+                            opacity: _fadeController,
+                            child: Container(
+                              constraints: const BoxConstraints(maxWidth: 600),
+                              child: DesignSystem.glassCard(
+                                context,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.celebration,
+                                      size: 80,
+                                      color: ThemeColors.getSuccessColor(context),
+                                    ),
+                                    const SizedBox(height: DesignSystem.spacingL),
+                                    Text(
+                                      'Quiz Tamamlandı!',
+                                      style: AppTheme.getGameQuestionStyle(context).copyWith(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: DesignSystem.spacingM),
+                                    Text(
+                                      'Toplam Puan: ${state.score}/${state.questions.length}',
+                                      style: AppTheme.getGameScoreStyle(context).copyWith(
+                                        fontSize: 20,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: DesignSystem.spacingL),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:animations/animations.dart'
-    show PageTransitionSwitcher, SharedAxisTransition, SharedAxisTransitionType;
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../theme/app_theme.dart';
@@ -73,118 +71,113 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
 
   @override
   Widget build(BuildContext context) {
-    return PageTransitionSwitcher(
-      transitionBuilder: (
-        Widget child,
-        Animation<double> primaryAnimation,
-        Animation<double> secondaryAnimation,
-      ) {
-        return SharedAxisTransition(
-          animation: primaryAnimation,
-          secondaryAnimation: secondaryAnimation,
-          transitionType: SharedAxisTransitionType.horizontal,
-          child: child,
-        );
-      },
-      child: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          return Transform.translate(
-            offset: Offset(0, _slideAnimation.value),
-            child: Opacity(
-              opacity: _fadeAnimation.value,
-              child: ModernUI.animatedCard(
-                context,
-                animation: _fadeAnimation,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Enhanced Question section with gradient background
-                    _buildQuestionSection(context),
-                    SizedBox(height: ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.xl)),
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, _slideAnimation.value),
+          child: Opacity(
+            opacity: _fadeAnimation.value,
+            child: ModernUI.animatedCard(
+              context,
+              animation: _fadeAnimation,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Enhanced Question section with gradient background
+                  _buildQuestionSection(context),
+                  SizedBox(height: ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.xl)),
 
-                    // Modern Answer options with staggered animation
-                    _buildOptionsSection(context),
-                  ],
-                ),
+                  // Modern Answer options with staggered animation
+                  _buildOptionsSection(context),
+                ],
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildQuestionSection(BuildContext context) {
     // Get responsive values
     final screenType = ResponsiveDesign.getScreenType(context);
-    final padding = ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.l);
+    final padding = ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.xl);
     final spacingM = ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.m);
-    final iconSize = _getResponsiveIconSize(screenType);
+    final spacingL = ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.l);
+    final iconSize = _getResponsiveIconSize(screenType) * 1.2;
     final fontSize = _getResponsiveQuestionFontSize(screenType);
-    
+
     return Container(
       padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            ThemeColors.getPrimaryButtonColor(context).withValues(alpha:0.1),
-            ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.05),
+            ThemeColors.getPrimaryButtonColor(context).withValues(alpha:0.08),
+            ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.03),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(DesignSystem.radiusL),
         border: Border.all(
-          color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.2),
-          width: 1,
+          color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.15),
+          width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1),
+            color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.1),
             blurRadius: 8,
-            offset: const Offset(0, 2),
+            offset: const Offset(0, -2),
           ),
         ],
       ),
       child: Column(
-        children: [
-          // Zorluk Seviyesi İndikatörü
-          if (widget.difficulty != null) _buildDifficultyIndicator(context),
-          
-          Icon(
-            Icons.help_outline,
-            color: ThemeColors.getPrimaryButtonColor(context),
-            size: iconSize,
-          ),
-          SizedBox(height: spacingM),
-          Text(
-            widget.question,
-            style: AppTheme.getGameQuestionStyle(context).copyWith(
-              fontSize: fontSize,
-              height: 1.4,
-              fontWeight: FontWeight.w600,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: null,
-          ),
-        ],
-      ),
+         mainAxisSize: MainAxisSize.min,
+         children: [
+           // Zorluk Seviyesi İndikatörü
+           if (widget.difficulty != null) _buildDifficultyIndicator(context),
+
+           SizedBox(height: spacingM),
+           Icon(
+             Icons.help_outline,
+             color: ThemeColors.getPrimaryButtonColor(context),
+             size: iconSize,
+           ),
+           SizedBox(height: spacingL),
+           Text(
+             widget.question,
+             style: AppTheme.getGameQuestionStyle(context).copyWith(
+               fontSize: fontSize,
+               fontWeight: FontWeight.w600,
+             ),
+             textAlign: TextAlign.center,
+             softWrap: true,
+             maxLines: 10,
+             overflow: TextOverflow.ellipsis,
+           ),
+           SizedBox(height: spacingM),
+         ],
+       ),
     );
   }
 
   Widget _buildDifficultyIndicator(BuildContext context) {
     final screenType = ResponsiveDesign.getScreenType(context);
-    final indicatorSize = _getResponsiveIndicatorSize(screenType) * 0.8;
+    final indicatorSize = _getResponsiveIndicatorSize(screenType);
     final fontSize = _getResponsiveOptionFontSize(screenType);
-    
+
     final difficultyConfig = _getDifficultyConfig(widget.difficulty!);
-    
+
     return Container(
-      margin: EdgeInsets.only(bottom: ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.s)),
       padding: EdgeInsets.symmetric(
-        horizontal: ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.m),
-        vertical: ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.s) * 0.5,
+        horizontal: ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.l),
+        vertical: ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.s),
       ),
       decoration: BoxDecoration(
         color: difficultyConfig['color'] as Color,
@@ -192,8 +185,8 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         boxShadow: [
           BoxShadow(
             color: difficultyConfig['color'] as Color,
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -203,7 +196,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
           Icon(
             difficultyConfig['icon'] as IconData,
             color: Colors.white,
-            size: indicatorSize * 0.6,
+            size: indicatorSize * 0.7,
           ),
           SizedBox(width: ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.s)),
           Text(
@@ -262,11 +255,11 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
   double _getResponsiveQuestionFontSize(ScreenType screenType) {
     switch (screenType) {
       case ScreenType.mobile:
-        return 18;
-      case ScreenType.tablet:
-        return 20;
-      case ScreenType.desktop:
         return 22;
+      case ScreenType.tablet:
+        return 24;
+      case ScreenType.desktop:
+        return 26;
     }
   }
 
@@ -274,31 +267,37 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
     // Get responsive values
     final screenType = ResponsiveDesign.getScreenType(context);
     final spacingM = ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.m);
-    final verticalSpacing = spacingM * 0.8; // Slightly reduced spacing between options
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: widget.options.asMap().entries.map((entry) {
-        final index = entry.key;
-        final option = entry.value;
+    final spacingL = ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.l);
+    final verticalSpacing = spacingM; // Better spacing between options
 
-        return TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.0, end: 1.0),
-          duration: Duration(milliseconds: _getAnimationDuration(screenType)),
-          curve: Curves.easeOutBack,
-          builder: (context, value, child) {
-            return Transform.scale(
-              scale: value,
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: verticalSpacing, // Responsive vertical spacing
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(height: spacingL),
+        ...widget.options.asMap().entries.map((entry) {
+          final index = entry.key;
+          final option = entry.value;
+
+          return TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: 1.0),
+            duration: Duration(milliseconds: _getAnimationDuration(screenType)),
+            curve: Curves.easeOutBack,
+            builder: (context, value, child) {
+              return Transform.scale(
+                scale: value,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: verticalSpacing, // Better vertical spacing
+                  ),
+                  child: _buildOptionButton(option, context, index),
                 ),
-                child: _buildOptionButton(option, context, index),
-              ),
-            );
-          },
-        );
-      }).toList(),
+              );
+            },
+          );
+        }).toList(),
+        SizedBox(height: spacingL),
+      ],
     );
   }
 
@@ -358,8 +357,9 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
                     option,
                     style: _getOptionTextStyle(option, context, fontSize),
                     textAlign: TextAlign.left,
-                    maxLines: null, // Allow unlimited lines for full text display
-                    overflow: TextOverflow.visible, // Show all text instead of ellipsis
+                    softWrap: true,
+                    maxLines: 5, // Limit lines to prevent overflow
+                    overflow: TextOverflow.ellipsis, // Show ellipsis for long text
                   ),
                 ),
 
@@ -400,24 +400,24 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
   double _getResponsiveOptionFontSize(ScreenType screenType) {
     switch (screenType) {
       case ScreenType.mobile:
-        return 14;
-      case ScreenType.tablet:
-        return 16;
-      case ScreenType.desktop:
         return 18;
+      case ScreenType.tablet:
+        return 20;
+      case ScreenType.desktop:
+        return 22;
     }
   }
 
   EdgeInsets _getResponsiveOptionPadding(ScreenType screenType) {
     switch (screenType) {
       case ScreenType.mobile:
-        return EdgeInsets.all(DesignSystem.spacingM);
-      case ScreenType.tablet:
         return EdgeInsets.all(DesignSystem.spacingL);
+      case ScreenType.tablet:
+        return EdgeInsets.all(DesignSystem.spacingL * 1.2);
       case ScreenType.desktop:
         return EdgeInsets.symmetric(
-          horizontal: DesignSystem.spacingL,
-          vertical: DesignSystem.spacingM * 1.2,
+          horizontal: DesignSystem.spacingL * 1.2,
+          vertical: DesignSystem.spacingM * 1.5,
         );
     }
   }
@@ -591,7 +591,6 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
   TextStyle _getOptionTextStyle(String option, BuildContext context, double fontSize) {
     final baseStyle = AppTheme.getGameOptionStyle(context).copyWith(
       fontSize: fontSize,
-      height: 1.3,
     );
 
     if (!widget.isAnswered) {
