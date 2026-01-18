@@ -305,12 +305,12 @@ class BottomNavConfigs {
         tooltip: 'Quiz Oyunları',
       ),
       const BottomNavItem(
-        route: AppRoutes.leaderboard,
-        icon: Icons.leaderboard,
-        activeIcon: Icons.leaderboard,
-        label: 'Liderlik',
-        requiresAuth: false,
-        tooltip: 'Sıralamalar',
+        route: AppRoutes.duel,
+        icon: Icons.sports_esports,
+        activeIcon: Icons.sports_esports,
+        label: 'Düello',
+        requiresAuth: true,
+        tooltip: 'Düello',
       ),
       const BottomNavItem(
         route: AppRoutes.profile,
@@ -319,6 +319,47 @@ class BottomNavConfigs {
         label: 'Profil',
         requiresAuth: true,
         tooltip: 'Profiliniz',
+      ),
+    ];
+  }
+
+  /// Extended navigation with more features
+  static List<BottomNavItem> extendedNavigation() {
+    return [
+      const BottomNavItem(
+        route: AppRoutes.home,
+        icon: Icons.home,
+        activeIcon: Icons.home,
+        label: 'Ana Sayfa',
+        requiresAuth: true,
+      ),
+      const BottomNavItem(
+        route: AppRoutes.quiz,
+        icon: Icons.quiz,
+        activeIcon: Icons.quiz,
+        label: 'Quiz',
+        requiresAuth: false,
+      ),
+      const BottomNavItem(
+        route: AppRoutes.leaderboard,
+        icon: Icons.leaderboard,
+        activeIcon: Icons.leaderboard,
+        label: 'Sıralama',
+        requiresAuth: false,
+      ),
+      const BottomNavItem(
+        route: AppRoutes.friends,
+        icon: Icons.people,
+        activeIcon: Icons.people,
+        label: 'Arkadaşlar',
+        requiresAuth: true,
+      ),
+      const BottomNavItem(
+        route: AppRoutes.profile,
+        icon: Icons.person,
+        activeIcon: Icons.person,
+        label: 'Profil',
+        requiresAuth: true,
       ),
     ];
   }

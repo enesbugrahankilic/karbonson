@@ -30,7 +30,13 @@ import '../../pages/comprehensive_two_factor_auth_setup_page.dart';
 import '../../pages/comprehensive_2fa_verification_page.dart';
 import '../../pages/ai_recommendations_page.dart';
 import '../../pages/achievement_page.dart';
+import '../../pages/achievements_gallery_page.dart';
 import '../../pages/daily_challenge_page.dart';
+import '../../pages/email_otp_verification_page.dart';
+import '../../pages/email_verification_redirect_page.dart';
+import '../../pages/how_to_play_page.dart';
+import '../../pages/rewards_shop_page.dart';
+import '../../pages/two_factor_auth_page.dart';
 import '../../services/authentication_state_service.dart';
 import '../../services/quiz_logic.dart';
 
@@ -44,17 +50,24 @@ class AppRoutes {
   static const String register = '/register';
   static const String registerRefactored = '/register-refactored';
   static const String emailVerification = '/email-verification';
+  static const String emailOtpVerification = '/email-otp-verification';
+  static const String emailVerificationRedirect = '/email-verification-redirect';
+  static const String enhancedEmailVerificationRedirect = '/enhanced-email-verification-redirect';
   static const String forgotPassword = '/forgot-password';
   static const String forgotPasswordEnhanced = '/forgot-password-enhanced';
+  static const String spamSafePasswordReset = '/spam-safe-password-reset';
+  static const String passwordResetInformation = '/password-reset-information';
+  static const String passwordChange = '/password-change';
+  static const String newPassword = '/new-password';
 
   // 2FA routes
   static const String twoFactorAuthSetup = '/2fa-setup';
   static const String twoFactorAuthVerification = '/2fa-verification';
+  static const String twoFactorAuthPage = '/2fa-page';
   static const String enhanced2FASetup = '/enhanced-2fa-setup';
   static const String enhanced2FAVerification = '/enhanced-2fa-verification';
   static const String comprehensive2FASetup = '/comprehensive-2fa-setup';
-  static const String comprehensive2FAVerification =
-      '/comprehensive-2fa-verification';
+  static const String comprehensive2FAVerification = '/comprehensive-2fa-verification';
 
   // Main app routes
   static const String home = '/home';
@@ -70,7 +83,14 @@ class AppRoutes {
   static const String settings = '/settings';
   static const String aiRecommendations = '/ai-recommendations';
   static const String achievement = '/achievement';
+  static const String achievementsGallery = '/achievements-gallery';
   static const String dailyChallenge = '/daily-challenge';
+  static const String rewardsShop = '/rewards-shop';
+  static const String howToPlay = '/how-to-play';
+  static const String tutorialPage = '/tutorial-page';
+
+  // Debug routes (only in debug mode)
+  static const String uidDebug = '/uid-debug';
 }
 
 /// Navigation configuration with route definitions
@@ -173,6 +193,45 @@ class AppRouter {
         return _createRoute(const AchievementPage());
       case AppRoutes.dailyChallenge:
         return _createRoute(const DailyChallengePage());
+
+      // Extended app routes
+      case AppRoutes.achievementsGallery:
+        return _createRoute(const AchievementsGalleryPage());
+      case AppRoutes.rewardsShop:
+        return _createRoute(const RewardsShopPage());
+      case AppRoutes.howToPlay:
+        return _createRoute(const HowToPlayPage());
+      case AppRoutes.emailOtpVerification:
+        return _createRoute(EmailOtpVerificationPage(
+          email: settings.arguments is String ? settings.arguments as String : '',
+          verificationId: '',
+          onVerify: (otp) {},
+        ));
+      case AppRoutes.emailVerificationRedirect:
+        return _createRoute(const EmailVerificationRedirectPage());
+      case AppRoutes.enhancedEmailVerificationRedirect:
+        return _createRoute(const EmailVerificationRedirectPage());
+      case AppRoutes.spamSafePasswordReset:
+        return _createRoute(const ForgotPasswordPageEnhanced());
+      case AppRoutes.passwordResetInformation:
+        return _createRoute(const EmailVerificationPage());
+      case AppRoutes.passwordChange:
+        return _createRoute(const ForgotPasswordPage());
+      case AppRoutes.newPassword:
+        return _createRoute(const ForgotPasswordPage());
+      case AppRoutes.twoFactorAuthPage:
+        return _createRoute(TwoFactorAuthPage(
+          userId: settings.arguments is String ? settings.arguments as String : '',
+        ));
+      case AppRoutes.tutorialPage:
+        return _createRoute(const TutorialPage());
+
+      // Debug routes (only in debug mode)
+      case AppRoutes.uidDebug:
+        if (kDebugMode) {
+          return _createRoute(const LoginPage());
+        }
+        return _createRoute(const LoginPage());
 
       default:
         // Default route

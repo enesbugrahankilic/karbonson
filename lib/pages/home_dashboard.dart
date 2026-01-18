@@ -759,27 +759,20 @@ class _HomeDashboardState extends State<HomeDashboard>
                   ),
                 ),
                 const SizedBox(height: DesignSystem.spacingL),
+                
+                // Game Modes Row
+                Text(
+                  'Oyun Modları',
+                  style: TextStyle(
+                    color: ThemeColors.getSecondaryText(context),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: DesignSystem.spacingS),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildSimpleMenuButton(
-                      context,
-                      icon: Icons.security,
-                      label: '⚔️ Düello',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed(AppRoutes.duel);
-                      },
-                    ),
-                    _buildSimpleMenuButton(
-                      context,
-                      icon: Icons.people,
-                      label: 'Takım Oyunu',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed(AppRoutes.multiplayerLobby);
-                      },
-                    ),
                     _buildSimpleMenuButton(
                       context,
                       icon: Icons.quiz,
@@ -789,19 +782,128 @@ class _HomeDashboardState extends State<HomeDashboard>
                         Navigator.of(context).pushNamed(AppRoutes.quiz);
                       },
                     ),
+                    _buildSimpleMenuButton(
+                      context,
+                      icon: Icons.sports_esports,
+                      label: 'Düello',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed(AppRoutes.duel);
+                      },
+                    ),
+                    _buildSimpleMenuButton(
+                      context,
+                      icon: Icons.casino,
+                      label: 'Masa Oyunu',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed(AppRoutes.boardGame);
+                      },
+                    ),
+                    _buildSimpleMenuButton(
+                      context,
+                      icon: Icons.group,
+                      label: 'Takım',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed(AppRoutes.multiplayerLobby);
+                      },
+                    ),
                   ],
                 ),
                 const SizedBox(height: DesignSystem.spacingM),
+                
+                // Social Row
+                Text(
+                  'Sosyal',
+                  style: TextStyle(
+                    color: ThemeColors.getSecondaryText(context),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: DesignSystem.spacingS),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _buildSimpleMenuButton(
                       context,
-                      icon: Icons.person,
+                      icon: Icons.people,
                       label: 'Arkadaşlar',
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.of(context).pushNamed(AppRoutes.friends);
+                      },
+                    ),
+                    _buildSimpleMenuButton(
+                      context,
+                      icon: Icons.leaderboard,
+                      label: 'Sıralama',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed(AppRoutes.leaderboard);
+                      },
+                    ),
+                    _buildSimpleMenuButton(
+                      context,
+                      icon: Icons.task_alt,
+                      label: 'Görevler',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed(AppRoutes.dailyChallenge);
+                      },
+                    ),
+                    _buildSimpleMenuButton(
+                      context,
+                      icon: Icons.emoji_events,
+                      label: 'Başarılar',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed(AppRoutes.achievement);
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: DesignSystem.spacingM),
+                
+                // Other Features Row
+                Text(
+                  'Diğer',
+                  style: TextStyle(
+                    color: ThemeColors.getSecondaryText(context),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: DesignSystem.spacingS),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildSimpleMenuButton(
+                      context,
+                      icon: Icons.card_giftcard,
+                      label: 'Ödül Mağazası',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed('/rewards-shop');
+                      },
+                    ),
+                    _buildSimpleMenuButton(
+                      context,
+                      icon: Icons.lightbulb,
+                      label: 'AI Önerileri',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed(AppRoutes.aiRecommendations);
+                      },
+                    ),
+                    _buildSimpleMenuButton(
+                      context,
+                      icon: Icons.help,
+                      label: 'Nasıl Oynanır',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed(AppRoutes.howToPlay);
                       },
                     ),
                     _buildSimpleMenuButton(
@@ -813,15 +915,6 @@ class _HomeDashboardState extends State<HomeDashboard>
                         Navigator.of(context).pushNamed(AppRoutes.settings);
                       },
                     ),
-                    _buildSimpleMenuButton(
-                      context,
-                      icon: Icons.help_outline,
-                      label: 'Yardım',
-                      onTap: () {
-                        Navigator.pop(context);
-                        // Show help dialog
-                      },
-                    ),
                   ],
                 ),
                 const SizedBox(height: DesignSystem.spacingM),
@@ -829,6 +922,209 @@ class _HomeDashboardState extends State<HomeDashboard>
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showHelpDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+          ),
+          backgroundColor: ThemeColors.getDialogBackground(context),
+          child: Container(
+            padding: const EdgeInsets.all(DesignSystem.spacingXl),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.help_outline,
+                        color: ThemeColors.getPrimaryButtonColor(context),
+                        size: 32,
+                      ),
+                      const SizedBox(width: DesignSystem.spacingM),
+                      Expanded(
+                        child: Text(
+                          'Yardım & Bilgi',
+                          style: DesignSystem.getHeadlineSmall(context).copyWith(
+                            color: ThemeColors.getTitleColor(context),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: DesignSystem.spacingL),
+                  
+                  // About Section
+                  _buildHelpSection(
+                    context,
+                    icon: Icons.info_outline,
+                    title: 'Uygulama Hakkında',
+                    content: 'Eco Game, çevre bilincini artırmak için tasarlanmış eğlenceli bir quiz uygulamasıdır. Enerji, su, orman, geri dönüşüm ve daha birçok konuda sorularla çevre bilginizi test edin!',
+                  ),
+                  const SizedBox(height: DesignSystem.spacingM),
+                  
+                  // Quiz Section
+                  _buildHelpSection(
+                    context,
+                    icon: Icons.quiz,
+                    title: 'Quiz Modu',
+                    content: 'Farklı çevre temalarından 15 soruluk quiz\'ler çözün. Her doğru cevap puan kazandırır. Daha fazla quiz çözerek seviyenizi yükseltin ve yeni başarılar kazanın!',
+                  ),
+                  const SizedBox(height: DesignSystem.spacingM),
+                  
+                  // Duel Section
+                  _buildHelpSection(
+                    context,
+                    icon: Icons.security,
+                    title: 'Düello Modu',
+                    content: 'Arkadaşlarınızla veya rastgele oyuncularla düello yapın! Hızlı düello ile 5 soruda kazanın veya kalıcı bir oda oluşturarak arkadaşlarınızı davet edin.',
+                  ),
+                  const SizedBox(height: DesignSystem.spacingM),
+                  
+                  // Multiplayer Section
+                  _buildHelpSection(
+                    context,
+                    icon: Icons.group,
+                    title: 'Takım Oyunu',
+                    content: '4 oyuncuya kadar bir araya gelin ve birlikte yarışın! Arkadaşlarınızı davet edin veya aktif odalara katılarak yeni arkadaşlıklar kurun.',
+                  ),
+                  const SizedBox(height: DesignSystem.spacingM),
+                  
+                  // Achievements Section
+                  _buildHelpSection(
+                    context,
+                    icon: Icons.emoji_events,
+                    title: 'Başarılar & Rozetler',
+                    content: 'Quiz çözerek, düello kazanarak ve günlük görevleri tamamlayarak rozetler kazanın. Nadir ve efsanevi rozetler için çabalayın!',
+                  ),
+                  const SizedBox(height: DesignSystem.spacingM),
+                  
+                  // Daily Challenges Section
+                  _buildHelpSection(
+                    context,
+                    icon: Icons.task_alt,
+                    title: 'Günlük Görevler',
+                    content: 'Her gün yeni görevler sizi bekliyor. Görevleri tamamlayarak ekstra puan kazanın ve ilerlemenizi hızlandırın.',
+                  ),
+                  const SizedBox(height: DesignSystem.spacingL),
+                  
+                  // Contact Info
+                  Container(
+                    padding: const EdgeInsets.all(DesignSystem.spacingM),
+                    decoration: BoxDecoration(
+                      color: ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.1),
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.email,
+                          color: ThemeColors.getPrimaryButtonColor(context),
+                          size: 20,
+                        ),
+                        const SizedBox(width: DesignSystem.spacingS),
+                        Expanded(
+                          child: Text(
+                            'Destek için: support@ecogame.app',
+                            style: DesignSystem.getBodyMedium(context).copyWith(
+                              color: ThemeColors.getText(context),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: DesignSystem.spacingL),
+                  
+                  // Close Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ThemeColors.getPrimaryButtonColor(context),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: DesignSystem.spacingM),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                        ),
+                      ),
+                      child: const Text('Anladım'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHelpSection(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String content,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(DesignSystem.spacingM),
+      decoration: BoxDecoration(
+        color: ThemeColors.getCardBackground(context).withOpacity( 0.5),
+        borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+        border: Border.all(
+          color: ThemeColors.getBorder(context).withOpacity( 0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: ThemeColors.getPrimaryButtonColor(context),
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: DesignSystem.spacingM),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: DesignSystem.getTitleMedium(context).copyWith(
+                    color: ThemeColors.getText(context),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  content,
+                  style: DesignSystem.getBodySmall(context).copyWith(
+                    color: ThemeColors.getSecondaryText(context),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

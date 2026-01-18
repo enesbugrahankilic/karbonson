@@ -1,11 +1,13 @@
 // lib/pages/leaderboard_page.dart
 // Leaderboard Page - Sosyal karşılaştırma ve lider tabloları
+// Updated: Uses Firestore for real-time data
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../models/user_progress.dart';
-import '../services/achievement_service.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import '../services/firestore_service.dart';
+import '../services/friendship_service.dart';
 import '../widgets/leaderboard_item.dart';
-import '../theme/app_theme.dart';
 
 class LeaderboardPage extends StatefulWidget {
   const LeaderboardPage({super.key});
@@ -16,7 +18,9 @@ class LeaderboardPage extends StatefulWidget {
 
 class _LeaderboardPageState extends State<LeaderboardPage>
     with TickerProviderStateMixin {
-  final AchievementService _achievementService = AchievementService();
+  final FirestoreService _firestoreService = FirestoreService();
+  final FriendshipService _friendshipService = FriendshipService();
+  final firebase_auth.FirebaseAuth _auth = firebase_auth.FirebaseAuth.instance;
   late TabController _tabController;
 
   List<Map<String, dynamic>> _globalLeaderboard = [];
@@ -40,10 +44,10 @@ class _LeaderboardPageState extends State<LeaderboardPage>
     setState(() => _isLoading = true);
 
     try {
-      // Load global leaderboard (simulated data for now)
+      // Load global leaderboard from Firestore
       _globalLeaderboard = await _loadGlobalLeaderboard();
 
-      // Load friends leaderboard (simulated data for now)
+      // Load friends leaderboard from Firestore
       _friendsLeaderboard = await _loadFriendsLeaderboard();
 
       setState(() => _isLoading = false);
@@ -58,100 +62,132 @@ class _LeaderboardPageState extends State<LeaderboardPage>
   }
 
   Future<List<Map<String, dynamic>>> _loadGlobalLeaderboard() async {
-    // Simulated global leaderboard data
-    // In a real app, this would come from Firestore
-    return [
-      {
-        'rank': 1,
-        'userId': 'user1',
-        'displayName': 'QuizMaster2024',
-        'avatar': '🎯',
-        'score': 2500,
-        'level': 15,
-        'achievements': 25,
-        'winRate': 85.5,
-      },
-      {
-        'rank': 2,
-        'userId': 'user2',
-        'displayName': 'BrainTeaser',
-        'avatar': '🧠',
-        'score': 2350,
-        'level': 14,
-        'achievements': 22,
-        'winRate': 82.3,
-      },
-      {
-        'rank': 3,
-        'userId': 'user3',
-        'displayName': 'KnowledgeKing',
-        'avatar': '👑',
-        'score': 2200,
-        'level': 13,
-        'achievements': 20,
-        'winRate': 79.8,
-      },
-      {
-        'rank': 4,
-        'userId': 'user4',
-        'displayName': 'SmartPlayer',
-        'avatar': '🎓',
-        'score': 2100,
-        'level': 12,
-        'achievements': 18,
-        'winRate': 76.4,
-      },
-      {
-        'rank': 5,
-        'userId': 'user5',
-        'displayName': 'QuizWizard',
-        'avatar': '🧙‍♂️',
-        'score': 1950,
-        'level': 11,
-        'achievements': 16,
-        'winRate': 73.2,
-      },
-    ];
+    try {
+      // Get leaderboard data from Firestore
+      final leaderboardData = await _firestoreService.getLeaderboard();
+
+      if (leaderboardData.isEmpty) {
+        // Return empty list if no data in database
+        return [];
+      }
+
+      // Add rank and format data for display
+      return leaderboardData.asMap().entries.map((entry) {
+        final index = entry.key;
+        final user = entry.value;
+        final score = user['score'] as int? ?? 0;
+        
+        // Calculate level based on score (approx 500 points per level)
+        final level = (score / 500).floor() + 1;
+
+        return {
+          'rank': index + 1,
+          'userId': user['uid'] ?? user['userId'] ?? '',
+          'displayName': user['nickname'] ?? user['displayName'] ?? 'Anonim',
+          'avatar': user['avatarUrl'] ?? '🎯',
+          'score': score,
+          'level': level,
+          'achievements': user['achievements'] as int? ?? 0,
+          'winRate': user['winRate'] as double? ?? 0.0,
+        };
+      }).toList();
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error loading global leaderboard: $e');
+      return [];
+    }
   }
 
   Future<List<Map<String, dynamic>>> _loadFriendsLeaderboard() async {
-    // Simulated friends leaderboard data
-    return [
-      {
-        'rank': 1,
-        'userId': 'friend1',
-        'displayName': 'Arkadaşım Ali',
-        'avatar': '🤝',
-        'score': 1800,
-        'level': 10,
-        'achievements': 14,
-        'winRate': 71.5,
-        'isFriend': true,
-      },
-      {
-        'rank': 2,
-        'userId': 'friend2',
-        'displayName': 'Kızkardeşim Ayşe',
-        'avatar': '👩‍👧',
-        'score': 1650,
-        'level': 9,
-        'achievements': 12,
-        'winRate': 68.9,
-        'isFriend': true,
-      },
-      {
-        'rank': 3,
-        'userId': 'current_user',
-        'displayName': 'Ben',
-        'avatar': '👤',
-        'score': 1500,
-        'level': 8,
-        'achievements': 10,
-        'winRate': 65.2,
-        'isFriend': true,
-        'isCurrentUser': true,
-      },
-    ];
+    try {
+      final currentUser = _auth.currentUser;
+      if (currentUser == null) {
+        return [];
+      }
+
+      // Get user's friends
+      final friends = await _friendshipService.getFriends();
+
+      if (friends.isEmpty) {
+        return [];
+      }
+
+      // Get all friend UIDs
+      final friendUids = friends.map((f) => f.id).toList();
+
+      // Get scores for all friends from Firestore
+      final allScores = await _firestoreService.getLeaderboard();
+
+      // Filter and sort friends' scores
+      final friendsScores = allScores.where((user) {
+        final uid = user['uid'] as String?;
+        return uid != null && friendUids.contains(uid);
+      }).toList();
+
+      // Sort by score descending
+      friendsScores.sort((a, b) {
+        final scoreA = a['score'] as int? ?? 0;
+        final scoreB = b['score'] as int? ?? 0;
+        return scoreB.compareTo(scoreA);
+      });
+
+      // Format data for display
+      final result = <Map<String, dynamic>>[];
+      final currentUserUid = currentUser.uid;
+      int currentUserRank = 0;
+
+      for (int i = 0; i < friendsScores.length; i++) {
+        final user = friendsScores[i];
+        final uid = user['uid'] as String? ?? '';
+        final score = user['score'] as int? ?? 0;
+        final level = (score / 500).floor() + 1;
+
+        final entry = {
+          'rank': i + 1,
+          'userId': uid,
+          'displayName': user['nickname'] ?? 'Arkadaş',
+          'avatar': user['avatarUrl'] ?? '👤',
+          'score': score,
+          'level': level,
+          'achievements': user['achievements'] as int? ?? 0,
+          'winRate': user['winRate'] as double? ?? 0.0,
+          'isFriend': true,
+          'isCurrentUser': uid == currentUserUid,
+        };
+
+        if (uid == currentUserUid) {
+          currentUserRank = i + 1;
+        }
+
+        result.add(entry);
+      }
+
+      // Add current user if not already in the list
+      if (currentUserRank == 0) {
+        final currentUserData = allScores.firstWhere(
+          (u) => (u['uid'] as String?) == currentUserUid,
+          orElse: () => {'nickname': 'Ben', 'score': 0},
+        );
+
+        final score = currentUserData['score'] as int? ?? 0;
+        result.add({
+          'rank': result.length + 1,
+          'userId': currentUserUid,
+          'displayName': 'Ben',
+          'avatar': '👤',
+          'score': score,
+          'level': (score / 500).floor() + 1,
+          'achievements': 0,
+          'winRate': 0.0,
+          'isFriend': true,
+          'isCurrentUser': true,
+        });
+      }
+
+      return result;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error loading friends leaderboard: $e');
+      return [];
+    }
   }
 
   @override
@@ -299,7 +335,7 @@ class _LeaderboardPageState extends State<LeaderboardPage>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -344,15 +380,6 @@ class _LeaderboardPageState extends State<LeaderboardPage>
     );
   }
 
-  void _showPlayerProfile(BuildContext context, Map<String, dynamic> player) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => PlayerProfileSheet(player: player),
-    );
-  }
-
   void _showCategoryLeaderboard(BuildContext context, String category,
       List<Map<String, dynamic>> data) {
     Navigator.of(context).push(
@@ -382,7 +409,7 @@ class PlayerProfileSheet extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity( 0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -401,11 +428,11 @@ class PlayerProfileSheet extends StatelessWidget {
                   height: 60,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   ),
                   child: Center(
                     child: Text(
-                      player['avatar'],
+                      player['avatar'] ?? '👤',
                       style: const TextStyle(fontSize: 30),
                     ),
                   ),
@@ -418,7 +445,7 @@ class PlayerProfileSheet extends StatelessWidget {
                       Row(
                         children: [
                           Text(
-                            player['displayName'],
+                            player['displayName'] ?? 'Oyuncu',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -432,7 +459,7 @@ class PlayerProfileSheet extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                                color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -449,7 +476,7 @@ class PlayerProfileSheet extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Seviye ${player['level']} • ${player['score']} puan',
+                        'Seviye ${player['level'] ?? 1} • ${player['score'] ?? 0} puan',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[600],
@@ -473,9 +500,9 @@ class PlayerProfileSheet extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildStatColumn(context, 'Başarımlar', player['achievements'].toString()),
-                _buildStatColumn(context, 'Kazanma Oranı', '%${player['winRate']}'),
-                _buildStatColumn(context, 'Sıralama', '#${player['rank']}'),
+                _buildStatColumn(context, 'Başarımlar', '${player['achievements'] ?? 0}'),
+                _buildStatColumn(context, 'Kazanma Oranı', '%${player['winRate']?.toStringAsFixed(1) ?? '0'}'),
+                _buildStatColumn(context, 'Sıralama', '#${player['rank'] ?? '-'}'),
               ],
             ),
           ),
@@ -571,8 +598,8 @@ class CategoryLeaderboardPage extends StatelessWidget {
           return Container(
             margin: const EdgeInsets.only(bottom: 8),
             child: LeaderboardItem(
-              username: player['displayName'],
-              score: player['score'],
+              username: player['displayName'] ?? 'Oyuncu',
+              score: player['score'] ?? 0,
               avatarUrl: null,
               rank: index + 1,
               isCurrentPlayerInTop10: player['isCurrentUser'] == true,
@@ -582,13 +609,5 @@ class CategoryLeaderboardPage extends StatelessWidget {
       ),
     );
   }
-
-  void _showPlayerProfile(BuildContext context, Map<String, dynamic> player) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => PlayerProfileSheet(player: player),
-    );
-  }
 }
+

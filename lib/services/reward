@@ -1,0 +1,952 @@
+// lib/services/reward_notification_service.dart
+// Ödül Sistemi Bildirim Servisi - Entegre Bildirim Yönetimi
+
+import 'dart:async';
+import 'dart:math';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../models/reward_models.dart';
+import '../models/notification_data.dart';
+
+/// Bildirim tipleri
+enum RewardNotificationType {
+  pointsEarned,
+  pointsSpent,
+  levelUp,
+  achievementUnlocked,
+  rewardUnlocked,
+  streakBonus,
+  streakWarning,
+  streakLost,
+  dailyBonus,
+  milestoneReached,
+  challengeCompleted,
+  challengeExpired,
+  limitedTimeReward,
+  friendBonus,
+  weeklySummary,
+  rankUp,
+}
+
+/// Bildirim öncelik seviyeleri
+enum NotificationPriority {
+  low,
+  normal,
+  high,
+  urgent,
+}
+
+/// Ödül Bildirim Servisi
+class RewardNotificationService {
+  static final RewardNotificationService _instance = RewardNotificationService._internal();
+  factory RewardNotificationService() => _instance;
+  RewardNotificationService._internal();
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // Stream controllers
+  final StreamController<List<RewardNotification>> _notificationsController =
+      StreamController.broadcast();
+  final StreamController<RewardNotification> _newNotificationController =
+      StreamController.broadcast();
+  final StreamController<int> _unreadCountController = StreamController.broadcast();
+
+  // Getters for streams
+  Stream<List<RewardNotification>> get notificationsStream => _notificationsController.stream;
+  Stream<RewardNotification> get newNotificationStream => _newNotificationController.stream;
+  Stream<int> get unreadCountStream => _unreadCountController.stream;
+
+  // Global key for snackbar display
+  final GlobalKey<ScaffoldMessengerState> _scaffoldKey = GlobalKey<ScaffoldMessengerState>();
+  GlobalKey<ScaffoldMessengerState> get scaffoldKey => _scaffoldKey;
+
+  // Settings
+  bool _notificationsEnabled = true;
+  bool _soundEnabled = true;
+  bool _vibrationEnabled = true;
+  bool _streakWarningsEnabled = true;
+  int _maxNotifications = 50;
+
+  // Notification cache
+  final List<RewardNotification> _cachedNotifications = [];
+  int _unreadCount = 0;
+
+  // Initialize service
+  Future<bool> initialize() async {
+    try {
+      await _loadNotifications();
+      if (kDebugMode) debugPrint('✅ RewardNotificationService initialized');
+      return true;
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ Failed to initialize RewardNotificationService: $e');
+      return false;
+    }
+  }
+
+  /// Puan kazanıldı bildirimi
+  Future<void> notifyPointsEarned({
+    required int amount,
+    required String source,
+    String? description,
+    int? currentBalance,
+  }) async {
+    if (!_notificationsEnabled) return;
+
+    final notification = RewardNotification(
+      id: 'points_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(9999)}',
+      type: RewardNotificationType.pointsEarned,
+      title: '💰 Puan Kazanıldı!',
+      body: description ?? '$amount KP kazandınız! ($source)',
+      data: {
+        'amount': amount,
+        'source': source,
+        'currentBalance': currentBalance,
+      },
+      priority: amount > 100 ? NotificationPriority.high : NotificationPriority.normal,
+      timestamp: DateTime.now(),
+      unread: true,
+      icon: '💰',
+    );
+
+    await _addNotification(notification);
+    await _showInAppNotification(notification);
+  }
+
+  /// Puan harcandı bildirimi
+  Future<void> notifyPointsSpent({
+    required int amount,
+    required String item,
+    int? remainingBalance,
+  }) async {
+    if (!_notificationsEnabled) return;
+
+    final notification = RewardNotification(
+      id: 'spent_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(9999)}',
+      type: RewardNotificationType.pointsSpent,
+      title: '💸 Puan Harcandı',
+      body: '$item için $amount KP harcadınız.',
+      data: {
+        'amount': amount,
+        'item': item,
+        'remainingBalance': remainingBalance,
+      },
+      priority: NotificationPriority.normal,
+      timestamp: DateTime.now(),
+      unread: true,
+      icon: '💸',
+    );
+
+    await _addNotification(notification);
+  }
+
+  /// Seviye atlama bildirimi
+  Future<void> notifyLevelUp({
+    required int newLevel,
+    required int totalPoints,
+    int? bonusPoints,
+  }) async {
+    if (!_notificationsEnabled) return;
+
+    final notification = RewardNotification(
+      id: 'levelup_${DateTime.now().millisecondsSinceEpoch}',
+      type: RewardNotificationType.levelUp,
+      title: '🎉 Tebrikler! Seviye $newLevel!',
+      body: bonusPoints != null
+          ? 'Yeni seviyeye ulaştınız! +$bonusPoints KP bonus kazandınız.'
+          : 'Yeni seviyeye ulaştınız! Toplam puanınız: $totalPoints',
+      data: {
+        'newLevel': newLevel,
+        'totalPoints': totalPoints,
+        'bonusPoints': bonusPoints,
+      },
+      priority: NotificationPriority.high,
+      timestamp: DateTime.now(),
+      unread: true,
+      icon: '⬆️',
+      sound: true,
+    );
+
+    await _addNotification(notification);
+    await _showInAppNotification(notification, isCelebration: true);
+  }
+
+  /// Başarı (Achievement) kilidi açıldı bildirimi
+  Future<void> notifyAchievementUnlocked({
+    required String achievementId,
+    required String achievementName,
+    required String icon,
+    required int pointsEarned,
+    bool isFirstOfType = false,
+  }) async {
+    if (!_notificationsEnabled) return;
+
+    final notification = RewardNotification(
+      id: 'achievement_${DateTime.now().millisecondsSinceEpoch}',
+      type: RewardNotificationType.achievementUnlocked,
+      title: '🏆 Başarı Kazanıldı!',
+      body: isFirstOfType
+          ? '$icon İlk $achievementName! +$pointsEarned KP'
+          : '$icon $achievementName kazandınız! +$pointsEarned KP',
+      data: {
+        'achievementId': achievementId,
+        'achievementName': achievementName,
+        'pointsEarned': pointsEarned,
+      },
+      priority: pointsEarned > 50 ? NotificationPriority.high : NotificationPriority.normal,
+      timestamp: DateTime.now(),
+      unread: true,
+      icon: icon,
+      sound: true,
+    );
+
+    await _addNotification(notification);
+    await _showInAppNotification(notification, isCelebration: true);
+  }
+
+  /// Ödül kilidi açıldı bildirimi
+  Future<void> notifyRewardUnlocked({
+    required String rewardId,
+    required String rewardName,
+    required String rewardIcon,
+    required String rarity,
+    bool isExclusive = false,
+  }) async {
+    if (!_notificationsEnabled) return;
+
+    final notification = RewardNotification(
+      id: 'reward_${DateTime.now().millisecondsSinceEpoch}',
+      type: RewardNotificationType.rewardUnlocked,
+      title: isExclusive ? '⭐ Özel Ödül Açıldı!' : '🎁 Yeni Ödül!',
+      body: '$rewardIcon $rewardName ($rarity) kilidi açıldı!',
+      data: {
+        'rewardId': rewardId,
+        'rewardName': rewardName,
+        'rarity': rarity,
+        'isExclusive': isExclusive,
+      },
+      priority: rarity == 'Efsanevi' || rarity == 'Mitolojik' ? NotificationPriority.urgent : NotificationPriority.high,
+      timestamp: DateTime.now(),
+      unread: true,
+      icon: rewardIcon,
+      sound: true,
+    );
+
+    await _addNotification(notification);
+    await _showInAppNotification(notification, isCelebration: true);
+  }
+
+  /// Seri bonusu bildirimi
+  Future<void> notifyStreakBonus({
+    required int streakDays,
+    required int bonusPoints,
+    int? multiplier,
+  }) async {
+    if (!_notificationsEnabled) return;
+
+    final notification = RewardNotification(
+      id: 'streak_${DateTime.now().millisecondsSinceEpoch}',
+      type: RewardNotificationType.streakBonus,
+      title: '🔥 Seri Bonusu!',
+      body: '$streakDays günlük seri! +$bonusPoints KP${multiplier != null ? ' (${multiplier}x çarpan)' : ''}',
+      data: {
+        'streakDays': streakDays,
+        'bonusPoints': bonusPoints,
+        'multiplier': multiplier,
+      },
+      priority: streakDays >= 7 ? NotificationPriority.high : NotificationPriority.normal,
+      timestamp: DateTime.now(),
+      unread: true,
+      icon: '🔥',
+      sound: true,
+    );
+
+    await _addNotification(notification);
+    await _showInAppNotification(notification);
+  }
+
+  /// Seri uyarısı (seri kırılmak üzere)
+  Future<void> notifyStreakWarning({
+    required int daysActive,
+    required int daysMissed,
+  }) async {
+    if (!_notificationsEnabled || !_streakWarningsEnabled) return;
+
+    final notification = RewardNotification(
+      id: 'streakwarn_${DateTime.now().millisecondsSinceEpoch}',
+      type: RewardNotificationType.streakWarning,
+      title: '⚠️ Seri Uyarısı!',
+      body: '$daysMissed gündür giriş yapmadınız! $daysActive günlük seriniz risk altında!',
+      data: {
+        'daysActive': daysActive,
+        'daysMissed': daysMissed,
+      },
+      priority: NotificationPriority.high,
+      timestamp: DateTime.now(),
+      unread: true,
+      icon: '⚠️',
+    );
+
+    await _addNotification(notification);
+    await _showInAppNotification(notification);
+  }
+
+  /// Seri kaybedildi bildirimi
+  Future<void> notifyStreakLost({
+    required int lostStreak,
+    int? longestStreak,
+  }) async {
+    if (!_notificationsEnabled) return;
+
+    final notification = RewardNotification(
+      id: 'streaklost_${DateTime.now().millisecondsSinceEpoch}',
+      type: RewardNotificationType.streakLost,
+      title: '💔 Seri Kırıldı!',
+      body: longestStreak != null && longestStreak > lostStreak
+          ? '$lostStreak günlük seriniz kırıldı. En iyi: $longestStreak gün - Tekrar deneyin!'
+          : '$lostStreak günlük seriniz kırıldı. Tekrar deneyin!',
+      data: {
+        'lostStreak': lostStreak,
+        'longestStreak': longestStreak,
+      },
+      priority: lostStreak >= 7 ? NotificationPriority.urgent : NotificationPriority.high,
+      timestamp: DateTime.now(),
+      unread: true,
+      icon: '💔',
+    );
+
+    await _addNotification(notification);
+    await _showInAppNotification(notification);
+  }
+
+  /// Günlük bonus bildirimi
+  Future<void> notifyDailyBonus({
+    required int dayNumber,
+    required int bonusPoints,
+    int? streakMultiplier,
+  }) async {
+    if (!_notificationsEnabled) return;
+
+    final notification = RewardNotification(
+      id: 'daily_${DateTime.now().millisecondsSinceEpoch}',
+      type: RewardNotificationType.dailyBonus,
+      title: '🎁 Günlük Bonus!',
+      body: '${streakMultiplier != null ? 'Seri çarpanı: ${streakMultiplier}x\n' : ''}$dayNumber. gün bonusu: +$bonusPoints KP',
+      data: {
+        'dayNumber': dayNumber,
+        'bonusPoints': bonusPoints,
+        'streakMultiplier': streakMultiplier,
+      },
+      priority: dayNumber % 7 == 0 ? NotificationPriority.high : NotificationPriority.normal,
+      timestamp: DateTime.now(),
+      unread: true,
+      icon: '🎁',
+      sound: true,
+    );
+
+    await _addNotification(notification);
+    await _showInAppNotification(notification);
+  }
+
+  /// Kilometre taşı bildirimi
+  Future<void> notifyMilestoneReached({
+    required String milestoneName,
+    required String milestoneIcon,
+    required int targetValue,
+    required String targetType,
+    required String rewardName,
+    required String rewardIcon,
+  }) async {
+    if (!_notificationsEnabled) return;
+
+    final notification = RewardNotification(
+      id: 'milestone_${DateTime.now().millisecondsSinceEpoch}',
+      type: RewardNotificationType.milestoneReached,
+      title: '🎯 Kilometre Taşı!',
+      body: '$milestoneIcon $milestoneName ($targetType: $targetValue)\nÖdül: $rewardIcon $rewardName',
+      data: {
+        'milestoneName': milestoneName,
+        'targetValue': targetValue,
+        'targetType': targetType,
+        'rewardName': rewardName,
+        'rewardIcon': rewardIcon,
+      },
+      priority: NotificationPriority.high,
+      timestamp: DateTime.now(),
+      unread: true,
+      icon: milestoneIcon,
+      sound: true,
+    );
+
+    await _addNotification(notification);
+    await _showInAppNotification(notification, isCelebration: true);
+  }
+
+  /// Sınırlı süreli ödür bildirimi
+  Future<void> notifyLimitedTimeReward({
+    required String rewardName,
+    required String rewardIcon,
+    required String rarity,
+    required DateTime expiresAt,
+    int? hoursRemaining,
+  }) async {
+    if (!_notificationsEnabled) return;
+
+    final timeText = hoursRemaining != null
+        ? '$hoursRemaining saat kaldı!'
+        : 'Bu özel fırsat kaçırılmayacak!';
+
+    final notification = RewardNotification(
+      id: 'limited_${DateTime.now().millisecondsSinceEpoch}',
+      type: RewardNotificationType.limitedTimeReward,
+      title: '⏰ Sınırlı Süreli Ödül!',
+      body: '$rewardIcon $rewardName ($rarity)\n$timeText',
+      data: {
+        'rewardName': rewardName,
+        'rarity': rarity,
+        'expiresAt': expiresAt.millisecondsSinceEpoch,
+      },
+      priority: NotificationPriority.urgent,
+      timestamp: DateTime.now(),
+      unread: true,
+      icon: '⏰',
+      sound: true,
+    );
+
+    await _addNotification(notification);
+    await _showInAppNotification(notification);
+  }
+
+  /// Arkadaş bonusu bildirimi
+  Future<void> notifyFriendBonus({
+    required String friendName,
+    required int bonusPoints,
+    String? bonusType,
+  }) async {
+    if (!_notificationsEnabled) return;
+
+    final notification = RewardNotification(
+      id: 'friend_${DateTime.now().millisecondsSinceEpoch}',
+      type: RewardNotificationType.friendBonus,
+      title: '👥 Arkadaş Bonusu!',
+      body: '$friendName seninle oynadı! +$bonusPoints KP${bonusType != null ? ' ($bonusType)' : ''}',
+      data: {
+        'friendName': friendName,
+        'bonusPoints': bonusPoints,
+        'bonusType': bonusType,
+      },
+      priority: NotificationPriority.normal,
+      timestamp: DateTime.now(),
+      unread: true,
+      icon: '👥',
+    );
+
+    await _addNotification(notification);
+  }
+
+  /// Haftalık özet bildirimi
+  Future<void> notifyWeeklySummary({
+    required int totalPoints,
+    required int quizzesCompleted,
+    required int duelsWon,
+    required int streakDays,
+    required int rank,
+    int? rankChange,
+  }) async {
+    if (!_notificationsEnabled) return;
+
+    final changeText = rankChange != null
+        ? rankChange > 0 ? '▲ +$rankChange sıra' : rankChange < 0 ? '▼ $rankChange sıra' : '= Değişmedi'
+        : '';
+
+    final notification = RewardNotification(
+      id: 'weekly_${DateTime.now().millisecondsSinceEpoch}',
+      type: RewardNotificationType.weeklySummary,
+      title: '📊 Haftalık Özetiniz',
+      body: '💰 $totalPoints KP | 🎯 $quizzesCompleted quiz | ⚔️ $duelsWon düello | 🔥 $streakDays gün seri\n🏆 Sıra: #$rank $changeText',
+      data: {
+        'totalPoints': totalPoints,
+        'quizzesCompleted': quizzesCompleted,
+        'duelsWon': duelsWon,
+        'streakDays': streakDays,
+        'rank': rank,
+        'rankChange': rankChange,
+      },
+      priority: NotificationPriority.normal,
+      timestamp: DateTime.now(),
+      unread: true,
+      icon: '📊',
+    );
+
+    await _addNotification(notification);
+  }
+
+  /// Sıra atladı bildirimi
+  Future<void> notifyRankUp({
+    required int newRank,
+    required int previousRank,
+    required int pointsToNextRank,
+  }) async {
+    if (!_notificationsEnabled) return;
+
+    final notification = RewardNotification(
+      id: 'rank_${DateTime.now().millisecondsSinceEpoch}',
+      type: RewardNotificationType.rankUp,
+      title: '🏅 Sıra Atladınız!',
+      body: '#$previousRank → #$newRank\nBir sonraki sıra için $pointsToNextRank KP gerekli',
+      data: {
+        'newRank': newRank,
+        'previousRank': previousRank,
+        'pointsToNextRank': pointsToNextRank,
+      },
+      priority: NotificationPriority.high,
+      timestamp: DateTime.now(),
+      unread: true,
+      icon: '🏅',
+      sound: true,
+    );
+
+    await _addNotification(notification);
+    await _showInAppNotification(notification, isCelebration: true);
+  }
+
+  /// Görev tamamlandı bildirimi
+  Future<void> notifyChallengeCompleted({
+    required String challengeName,
+    required int pointsEarned,
+    String? rewardName,
+  }) async {
+    if (!_notificationsEnabled) return;
+
+    final body = rewardName != null
+        ? '$challengeName tamamlandı! +$pointsEarned KP + $rewardName'
+        : '$challengeName tamamlandı! +$pointsEarned KP';
+
+    final notification = RewardNotification(
+      id: 'challenge_${DateTime.now().millisecondsSinceEpoch}',
+      type: RewardNotificationType.challengeCompleted,
+      title: '✅ Görev Tamamlandı!',
+      body: body,
+      data: {
+        'challengeName': challengeName,
+        'pointsEarned': pointsEarned,
+        'rewardName': rewardName,
+      },
+      priority: NotificationPriority.normal,
+      timestamp: DateTime.now(),
+      unread: true,
+      icon: '✅',
+    );
+
+    await _addNotification(notification);
+    await _showInAppNotification(notification);
+  }
+
+  /// Görev süresi doldu bildirimi
+  Future<void> notifyChallengeExpired({
+    required String challengeName,
+    required int progress,
+    required int target,
+  }) async {
+    if (!_notificationsEnabled) return;
+
+    final notification = RewardNotification(
+      id: 'expired_${DateTime.now().millisecondsSinceEpoch}',
+      type: RewardNotificationType.challengeExpired,
+      title: '⏰ Görev Süresi Doldu!',
+      body: '$challengeName ($progress/$target) - Ödül kaçırıldı!',
+      data: {
+        'challengeName': challengeName,
+        'progress': progress,
+        'target': target,
+      },
+      priority: NotificationPriority.normal,
+      timestamp: DateTime.now(),
+      unread: true,
+      icon: '⏰',
+    );
+
+    await _addNotification(notification);
+  }
+
+  // Helper methods
+  Future<void> _addNotification(RewardNotification notification) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) return;
+
+      // Add to cache
+      _cachedNotifications.insert(0, notification);
+      if (_cachedNotifications.length > _maxNotifications) {
+        _cachedNotifications.removeLast();
+      }
+
+      // Update unread count
+      _unreadCount++;
+      _unreadCountController.add(_unreadCount);
+
+      // Save to Firestore
+      await _firestore
+          .collection('user_notifications')
+          .doc(userId)
+          .collection('notifications')
+          .doc(notification.id)
+          .set(notification.toJson());
+
+      // Update streams
+      _notificationsController.add(List.from(_cachedNotifications));
+      _newNotificationController.add(notification);
+
+      if (kDebugMode) {
+        debugPrint('🔔 Notification added: ${notification.title}');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to add notification: $e');
+    }
+  }
+
+  Future<void> _loadNotifications() async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) return;
+
+      final snapshot = await _firestore
+          .collection('user_notifications')
+          .doc(userId)
+          .collection('notifications')
+          .orderBy('timestamp', descending: true)
+          .limit(_maxNotifications)
+          .get();
+
+      _cachedNotifications.clear();
+      _unreadCount = 0;
+
+      for (final doc in snapshot.docs) {
+        final notification = RewardNotification.fromJson(doc.data()!);
+        _cachedNotifications.add(notification);
+        if (notification.unread) _unreadCount++;
+      }
+
+      _notificationsController.add(List.from(_cachedNotifications));
+      _unreadCountController.add(_unreadCount);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to load notifications: $e');
+    }
+  }
+
+  Future<void> _showInAppNotification(RewardNotification notification, {bool isCelebration = false}) async {
+    if (kDebugMode) {
+      debugPrint('🔔 IN-APP: ${notification.title} - ${notification.body}');
+    }
+    // In-app notifications are handled by the UI layer
+  }
+
+  /// Mark notification as read
+  Future<void> markAsRead(String notificationId) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) return;
+
+      final index = _cachedNotifications.indexWhere((n) => n.id == notificationId);
+      if (index >= 0 && _cachedNotifications[index].unread) {
+        _cachedNotifications[index] = _cachedNotifications[index].copyWith(unread: false);
+        _unreadCount = _cachedNotifications.where((n) => n.unread).length;
+        
+        await _firestore
+            .collection('user_notifications')
+            .doc(userId)
+            .collection('notifications')
+            .doc(notificationId)
+            .update({'unread': false});
+
+        _notificationsController.add(List.from(_cachedNotifications));
+        _unreadCountController.add(_unreadCount);
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to mark notification as read: $e');
+    }
+  }
+
+  /// Mark all notifications as read
+  Future<void> markAllAsRead() async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) return;
+
+      for (final notification in _cachedNotifications) {
+        if (notification.unread) {
+          await _firestore
+              .collection('user_notifications')
+              .doc(userId)
+              .collection('notifications')
+              .doc(notification.id)
+              .update({'unread': false});
+        }
+      }
+
+      _cachedNotifications.replaceAll(
+        _cachedNotifications.map((n) => n.copyWith(unread: false)),
+      );
+      _unreadCount = 0;
+
+      _notificationsController.add(List.from(_cachedNotifications));
+      _unreadCountController.add(_unreadCount);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to mark all as read: $e');
+    }
+  }
+
+  /// Delete notification
+  Future<void> deleteNotification(String notificationId) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) return;
+
+      _cachedNotifications.removeWhere((n) => n.id == notificationId);
+      _unreadCount = _cachedNotifications.where((n) => n.unread).length;
+
+      await _firestore
+          .collection('user_notifications')
+          .doc(userId)
+          .collection('notifications')
+          .doc(notificationId)
+          .delete();
+
+      _notificationsController.add(List.from(_cachedNotifications));
+      _unreadCountController.add(_unreadCount);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to delete notification: $e');
+    }
+  }
+
+  /// Clear all notifications
+  Future<void> clearAllNotifications() async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) return;
+
+      // Delete from Firestore
+      final batch = _firestore.batch();
+      final snapshot = await _firestore
+          .collection('user_notifications')
+          .doc(userId)
+          .collection('notifications')
+          .get();
+
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+
+      // Clear cache
+      _cachedNotifications.clear();
+      _unreadCount = 0;
+
+      _notificationsController.add([]);
+      _unreadCountController.add(0);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to clear notifications: $e');
+    }
+  }
+
+  /// Get unread count
+  Future<int> getUnreadCount() async {
+    return _unreadCount;
+  }
+
+  /// Get all notifications
+  Future<List<RewardNotification>> getNotifications() async {
+    return List.from(_cachedNotifications);
+  }
+
+  /// Get unread notifications
+  Future<List<RewardNotification>> getUnreadNotifications() async {
+    return _cachedNotifications.where((n) => n.unread).toList();
+  }
+
+  // Settings
+  void setNotificationsEnabled(bool enabled) {
+    _notificationsEnabled = enabled;
+  }
+
+  void setSoundEnabled(bool enabled) {
+    _soundEnabled = enabled;
+  }
+
+  void setVibrationEnabled(bool enabled) {
+    _vibrationEnabled = enabled;
+  }
+
+  void setStreakWarningsEnabled(bool enabled) {
+    _streakWarningsEnabled = enabled;
+  }
+
+  bool get notificationsEnabled => _notificationsEnabled;
+  bool get soundEnabled => _soundEnabled;
+  bool get vibrationEnabled => _vibrationEnabled;
+
+  // Cleanup
+  void dispose() {
+    _notificationsController.close();
+    _newNotificationController.close();
+    _unreadCountController.close();
+  }
+}
+
+/// In-app notification display widget
+class RewardNotificationWidget extends StatefulWidget {
+  final RewardNotification notification;
+  final VoidCallback? onDismiss;
+  final VoidCallback? onTap;
+  final Duration displayDuration;
+
+  const RewardNotificationWidget({
+    super.key,
+    required this.notification,
+    this.onDismiss,
+    this.onTap,
+    this.displayDuration = const Duration(seconds: 4),
+  });
+
+  @override
+  State<RewardNotificationWidget> createState() => _RewardNotificationWidgetState();
+}
+
+class _RewardNotificationWidgetState extends State<RewardNotificationWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _slideAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _slideAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+
+    // Auto dismiss
+    Future.delayed(widget.displayDuration, () {
+      if (mounted) {
+        _controller.reverse();
+        Future.delayed(const Duration(milliseconds: 300), widget.onDismiss);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final priorityColors = {
+      NotificationPriority.urgent: Colors.red,
+      NotificationPriority.high: Colors.orange,
+      NotificationPriority.normal: Colors.blue,
+      NotificationPriority.low: Colors.grey,
+    };
+
+    return GestureDetector(
+      onTap: () {
+        widget.onTap?.call();
+        _controller.reverse();
+      },
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: Offset(0, -50 * (1 - _slideAnimation.value)),
+            child: Opacity(
+              opacity: _fadeAnimation.value,
+              child: child,
+            ),
+          );
+        },
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                priorityColors[widget.notification.priority]?.withOpacity(0.9) ?? Colors.blue,
+                priorityColors[widget.notification.priority]?.withOpacity(0.7) ?? Colors.blue[700]!,
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                // Icon
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      widget.notification.icon,
+                      style: const TextStyle(fontSize: 24),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.notification.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        widget.notification.body,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 14,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                // Close button
+                IconButton(
+                  onPressed: () {
+                    _controller.reverse();
+                    Future.delayed(const Duration(milliseconds: 300), widget.onDismiss);
+                  },
+                  icon: const Icon(Icons.close, color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
