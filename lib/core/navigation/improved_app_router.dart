@@ -24,7 +24,7 @@ import '../../pages/achievement_page.dart';
 import '../../pages/daily_challenge_page.dart';
 import '../../services/authentication_state_service.dart';
 import '../../services/quiz_logic.dart';
-import '../../models/verification_method.dart';
+import '../../services/comprehensive_2fa_service.dart';
 
 /// Improved route names with categorization
 class AppRoutesV2 {
@@ -70,7 +70,12 @@ class AppRoutesV2 {
 class ImprovedAppRouter {
   const ImprovedAppRouter._();
 
-  static final AuthenticationStateService _authService = AuthenticationStateService();
+  static late final AuthenticationStateService _authService;
+
+  /// Initialize the router
+  static void initialize() {
+    _authService = AuthenticationStateService();
+  }
 
   /// Generate routes for the app
   static PageRoute<dynamic> generateRoute(RouteSettings settings) {
@@ -216,14 +221,9 @@ class ImprovedAppRouter {
 
   /// Check if user is authenticated
   static Future<bool> isAuthenticated() async {
-    return await _authService.isAuthenticated();
+    return await _authService.isAuthenticated;
   }
 
-  /// Check if 2FA is required
-  static Future<bool> is2FARequired() async {
-    // TODO: Implement 2FA requirement check in AuthenticationStateService
-    return false;
-  }
 }
 
 /// Extension for easy navigation

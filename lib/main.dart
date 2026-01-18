@@ -313,27 +313,11 @@ class _Karbon2AppState extends State<Karbon2App> {
     // Set the navigator key in NotificationService for notification navigation
     // NotificationService.navigatorKey = _navigatorKey;
     _initializeApp();
-    
-    // Listen to language changes and force rebuild
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-      languageProvider.addListener(_onLanguageChanged);
-    });
   }
 
   @override
   void dispose() {
-    // Clean up language listener
-    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-    languageProvider.removeListener(_onLanguageChanged);
     super.dispose();
-  }
-
-  void _onLanguageChanged() {
-    // Force a complete rebuild when language changes
-    setState(() {
-      // This will trigger a complete rebuild of the MaterialApp
-    });
   }
 
   Future<void> _initializeApp() async {
@@ -402,8 +386,11 @@ class _Karbon2AppState extends State<Karbon2App> {
           title = context.l10n?.appName ?? 'Eco Game';
         }
 
+        // Determine the current locale - handle both language changes and app startup
+        final currentLocale = languageProvider.locale;
+
         return MaterialApp(
-          key: _appKey,
+          key: ValueKey(currentLocale.toString()), // Force rebuild when locale changes
           title: title,
           debugShowCheckedModeBanner: false,
           theme: themeToShow,
@@ -411,7 +398,7 @@ class _Karbon2AppState extends State<Karbon2App> {
           themeMode: themeProvider.isHighContrast
               ? ThemeMode.light
               : themeProvider.themeMode,
-          locale: languageProvider.locale,
+          locale: currentLocale,
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: const [
             AppLocalizations.delegate,

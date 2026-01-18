@@ -304,7 +304,7 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
         // Update state through event instead of direct emit
         add(UploadProgressChanged(
           uploadProgress: progress,
-          optimizationParams: currentState.optimizationParams as Map<String, dynamic>?,
+          optimizationParams: _convertOptimizationParamsToMap(currentState.optimizationParams),
         ));
       }
     });
@@ -315,10 +315,20 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
         // Update state through event instead of direct emit
         add(ImageDataUpdated(
           imageData: _currentImage,
-          optimizationParams: _currentOptimizationParams as Map<String, dynamic>?,
+          optimizationParams: _convertOptimizationParamsToMap(_currentOptimizationParams),
         ));
       }
     });
+  }
+
+  /// Convert ImageOptimizationParams to Map<String, dynamic>
+  Map<String, dynamic>? _convertOptimizationParamsToMap(ImageOptimizationParams params) {
+    return {
+      'maxWidth': params.maxWidth,
+      'maxHeight': params.maxHeight,
+      'quality': params.quality,
+      'format': params.format.toString(),
+    };
   }
 
   @override

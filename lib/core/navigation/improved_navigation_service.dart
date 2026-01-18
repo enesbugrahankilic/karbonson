@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'improved_app_router.dart';
+import '../../services/comprehensive_2fa_service.dart';
 
 /// Navigation event for analytics and logging
 class NavigationEvent {

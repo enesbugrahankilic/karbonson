@@ -91,7 +91,12 @@ class _ComprehensiveTwoFactorAuthSetupPageState
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   late AnimationController _stepController;
+  late Animation<double> _stepAnimation;
+  
   // Security data
+  Map<String, dynamic>? _securityStatus;
+  bool _waitingForSms = false;
+  bool _showBackupCodes = false;
   final List<String> _securityRecommendations = [];
   final List<String> _securityWarnings = [];
 
