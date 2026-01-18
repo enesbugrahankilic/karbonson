@@ -40,7 +40,7 @@ class DesignSystem {
         gradient: LinearGradient(
           colors: [
             bgColor,
-            bgColor.withValues(alpha: 0.95),
+            bgColor.withOpacity( 0.95),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -50,8 +50,8 @@ class DesignSystem {
             ThemeColors.getModernShadow(context, elevation: elevation ?? 1.0),
         border: Border.all(
           color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white.withValues(alpha: 0.05)
-              : Colors.black.withValues(alpha: 0.05),
+              ? Colors.white.withOpacity( 0.05)
+              : Colors.black.withOpacity( 0.05),
           width: 1,
         ),
       );
@@ -65,8 +65,8 @@ class DesignSystem {
       border: isElevated
           ? Border.all(
               color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white.withValues(alpha: 0.1)
-                  : Colors.black.withValues(alpha: 0.1),
+                  ? Colors.white.withOpacity( 0.1)
+                  : Colors.black.withOpacity( 0.1),
               width: 1,
             )
           : null,
@@ -86,7 +86,7 @@ class DesignSystem {
         borderRadius: BorderRadius.circular(radiusM),
       ),
       elevation: 2,
-      shadowColor: primaryColor.withValues(alpha: 0.3),
+      shadowColor: primaryColor.withOpacity( 0.3),
       minimumSize: const Size.fromHeight(48), // Accessibility touch target
       textStyle: const TextStyle(
         fontSize: 16,
@@ -102,11 +102,11 @@ class DesignSystem {
         }
         if (states.contains(WidgetState.pressed)) {
           return Color.alphaBlend(
-              Colors.black.withValues(alpha: 0.1), primaryColor);
+              Colors.black.withOpacity( 0.1), primaryColor);
         }
         if (states.contains(WidgetState.hovered)) {
           return Color.alphaBlend(
-              Colors.white.withValues(alpha: 0.1), primaryColor);
+              Colors.white.withOpacity( 0.1), primaryColor);
         }
         return primaryColor;
       }),
@@ -644,8 +644,8 @@ class DesignSystem {
         borderRadius: BorderRadius.circular(radiusL),
         border: Border.all(
           color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white.withValues(alpha: 0.1)
-              : Colors.white.withValues(alpha: 0.2),
+              ? Colors.white.withOpacity( 0.1)
+              : Colors.white.withOpacity( 0.2),
           width: 1,
         ),
         boxShadow: ThemeColors.getModernShadow(context, elevation: 0.5),
@@ -721,8 +721,8 @@ class DesignSystem {
           strokeWidth: strokeWidth,
           valueColor: AlwaysStoppedAnimation<Color>(progressColor),
           backgroundColor: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white.withValues(alpha: 0.1)
-              : Colors.black.withValues(alpha: 0.1),
+              ? Colors.white.withOpacity( 0.1)
+              : Colors.black.withOpacity( 0.1),
         ),
       );
     }

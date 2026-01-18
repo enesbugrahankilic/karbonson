@@ -211,7 +211,7 @@ class _BiometricOnlyLoginWidgetState extends State<BiometricOnlyLoginWidget> {
             borderRadius: BorderRadius.circular(12),
           ),
           elevation: 2,
-          shadowColor: ThemeColors.getGreen(context).withValues(alpha: 0.3),
+          shadowColor: ThemeColors.getGreen(context).withOpacity( 0.3),
         ),
       ),
     );

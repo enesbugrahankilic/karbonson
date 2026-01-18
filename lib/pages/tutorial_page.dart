@@ -142,8 +142,8 @@ class _TutorialPageState extends State<TutorialPage> {
                             ),
                             color:
                                 Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.grey[800]!.withValues(alpha: 0.95)
-                                    : Colors.white.withValues(alpha: 0.95),
+                                    ? Colors.grey[800]!.withOpacity( 0.95)
+                                    : Colors.white.withOpacity( 0.95),
                             child: Padding(
                               padding: const EdgeInsets.all(24.0),
                               child: Text(
@@ -187,8 +187,8 @@ class _TutorialPageState extends State<TutorialPage> {
                                     : Colors.white)
                                 : (Theme.of(context).brightness ==
                                         Brightness.dark
-                                    ? Colors.white.withValues(alpha: 0.5)
-                                    : Colors.white.withValues(alpha: 0.5)),
+                                    ? Colors.white.withOpacity( 0.5)
+                                    : Colors.white.withOpacity( 0.5)),
                           ),
                         ),
                       ),
@@ -203,8 +203,8 @@ class _TutorialPageState extends State<TutorialPage> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Theme.of(context).brightness ==
                                       Brightness.dark
-                                  ? Colors.grey[700]!.withValues(alpha: 0.8)
-                                  : Colors.white.withValues(alpha: 0.8),
+                                  ? Colors.grey[700]!.withOpacity( 0.8)
+                                  : Colors.white.withOpacity( 0.8),
                               foregroundColor: Theme.of(context).brightness ==
                                       Brightness.dark
                                   ? Colors.white

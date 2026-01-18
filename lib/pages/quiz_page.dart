@@ -340,7 +340,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         child: DesignSystem.card(
           context,
           backgroundColor:
-              ThemeColors.getSuccessColor(context).withValues(alpha: 0.1),
+              ThemeColors.getSuccessColor(context).withOpacity( 0.1),
           child: Column(
             children: [
               Text(

@@ -43,7 +43,7 @@ class CommonWidgets {
       key: key,
       style: style ??
           AppTheme.bodyMedium.copyWith(
-            color: AppTheme.colors.onSurface.withValues(alpha: 0.7),
+            color: AppTheme.colors.onSurface.withOpacity( 0.7),
           ),
       textAlign: textAlign,
       maxLines: maxLines,
@@ -66,7 +66,7 @@ class CommonWidgets {
       child: Divider(
         height: height,
         thickness: thickness,
-        color: color ?? AppTheme.colors.outline.withValues(alpha: 0.2),
+        color: color ?? AppTheme.colors.outline.withOpacity( 0.2),
       ),
     );
   }
@@ -357,7 +357,7 @@ class CommonWidgets {
         key: key,
         onTap: onTap,
         borderRadius: borderRadius ?? BorderRadius.circular(8),
-        splashColor: splashColor ?? AppTheme.colors.primary.withValues(alpha: 0.1),
+        splashColor: splashColor ?? AppTheme.colors.primary.withOpacity( 0.1),
         child: child,
       ),
     );

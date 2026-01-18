@@ -45,8 +45,8 @@ class RewardCard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      _getRarityColor().withValues(alpha:0.1),
-                      _getRarityColor().withValues(alpha:0.05),
+                      _getRarityColor().withOpacity(0.1),
+                      _getRarityColor().withOpacity(0.05),
                     ],
                   )
                 : null,
@@ -102,7 +102,7 @@ class RewardCard extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: isUnlocked
-            ? _getRarityColor().withValues(alpha:0.2)
+            ? _getRarityColor().withOpacity(0.2)
             : Colors.grey[300],
         border: Border.all(
           color: _getRarityColor(),
@@ -157,7 +157,7 @@ class RewardCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.green.withValues(alpha:0.1),
+              color: Colors.green.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -184,7 +184,7 @@ class RewardCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.orange.withValues(alpha:0.1),
+              color: Colors.orange.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -517,10 +517,10 @@ class RewardInventorySummary extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha:0.1),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: color.withValues(alpha:0.3),
+          color: color.withOpacity(0.3),
           width: 1,
         ),
       ),

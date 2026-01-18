@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 // import 'package:clipboard/clipboard.dart'; // Using built-in services
 import '../models/profile_data.dart';
+import '../models/user_data.dart';
 import '../provides/profile_bloc.dart';
 import '../services/profile_service.dart';
 import '../services/profile_picture_service.dart';
@@ -101,18 +102,39 @@ class _ProfileContentState extends State<ProfileContent>
             begin: const Offset(0, 0.3),
             end: Offset.zero,
           ).animate(_slideController),
-          child: BlocBuilder<ProfileBloc, ProfileState>(
-            builder: (context, state) {
-              if (state is ProfileLoading) {
-                return _buildLoadingState();
-              } else if (state is ProfileLoaded) {
-                return _buildProfileContent(context, state.profileData, state.currentNickname);
-              } else if (state is ProfileError) {
-                return _buildErrorState(context, state.message);
-              } else {
-                return _buildLoadingState();
+          child: BlocListener<ProfileBloc, ProfileState>(
+            listener: (context, state) {
+              if (state is ProfileError) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: ThemeColors.getErrorColor(context),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              } else if (state is ProfileUpdateSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: ThemeColors.getSuccessColor(context),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
               }
             },
+            child: BlocBuilder<ProfileBloc, ProfileState>(
+              builder: (context, state) {
+                if (state is ProfileLoading) {
+                  return _buildLoadingState();
+                } else if (state is ProfileLoaded) {
+                  return _buildProfileContent(context, state.profileData, state.currentNickname);
+                } else if (state is ProfileError) {
+                  return _buildErrorState(context, state.message);
+                } else {
+                  return _buildLoadingState();
+                }
+              },
+            ),
           ),
         ),
       ),
@@ -232,7 +254,7 @@ class _ProfileContentState extends State<ProfileContent>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.3),
+            color: ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -253,7 +275,7 @@ class _ProfileContentState extends State<ProfileContent>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.3),
+                      color: Colors.white.withOpacity( 0.3),
                       width: 4,
                     ),
                   ),
@@ -261,9 +283,11 @@ class _ProfileContentState extends State<ProfileContent>
                 // Profil Avatarı
                 CircleAvatar(
                   radius: isSmallScreen ? 40 : 48,
-                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  backgroundColor: Colors.white.withOpacity( 0.2),
                   backgroundImage: serverData?.profilePictureUrl != null
-                      ? NetworkImage(serverData!.profilePictureUrl!)
+                      ? (serverData!.profilePictureUrl!.startsWith('assets/')
+                          ? AssetImage(serverData.profilePictureUrl!) as ImageProvider
+                          : NetworkImage(serverData.profilePictureUrl!) as ImageProvider)
                       : null,
                   child: serverData?.profilePictureUrl == null
                       ? Text(
@@ -322,7 +346,7 @@ class _ProfileContentState extends State<ProfileContent>
                 const SizedBox(width: 8),
                 Icon(
                   Icons.edit,
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: Colors.white.withOpacity( 0.7),
                   size: isSmallScreen ? 16 : 18,
                 ),
               ],
@@ -337,14 +361,14 @@ class _ProfileContentState extends State<ProfileContent>
               Icon(
                 Icons.copy,
                 size: 16,
-                color: Colors.white.withValues(alpha: 0.8),
+                color: Colors.white.withOpacity( 0.8),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'UID: ${serverData?.uid.substring(0, 8) ?? "Bilinmiyor"}...',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
+                    color: Colors.white.withOpacity( 0.8),
                     fontSize: isSmallScreen ? 12 : 14,
                     fontFamily: 'monospace',
                   ),
@@ -371,7 +395,7 @@ class _ProfileContentState extends State<ProfileContent>
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withOpacity( 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -392,7 +416,7 @@ class _ProfileContentState extends State<ProfileContent>
           Text(
             _formatLastLogin(serverData?.lastLogin),
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
+              color: Colors.white.withOpacity( 0.7),
               fontSize: isSmallScreen ? 11 : 12,
             ),
             textAlign: TextAlign.center,
@@ -477,12 +501,12 @@ class _ProfileContentState extends State<ProfileContent>
         color: ThemeColors.getCardBackground(context),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: color.withValues(alpha: 0.2),
+          color: color.withOpacity( 0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity( 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -494,7 +518,7 @@ class _ProfileContentState extends State<ProfileContent>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: color.withOpacity( 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -552,8 +576,8 @@ class _ProfileContentState extends State<ProfileContent>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.8),
-                ThemeColors.getAccentButtonColor(context).withValues(alpha: 0.8),
+                ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.8),
+                ThemeColors.getAccentButtonColor(context).withOpacity( 0.8),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -561,7 +585,7 @@ class _ProfileContentState extends State<ProfileContent>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.3),
+                color: ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               ),
@@ -587,7 +611,7 @@ class _ProfileContentState extends State<ProfileContent>
                       Text(
                         '${localData.totalGamesPlayed} oyun oynandı',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
+                          color: Colors.white.withOpacity( 0.8),
                           fontSize: isSmallScreen ? 12 : 14,
                         ),
                       ),
@@ -596,7 +620,7 @@ class _ProfileContentState extends State<ProfileContent>
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withOpacity( 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -618,7 +642,7 @@ class _ProfileContentState extends State<ProfileContent>
                       Text(
                         'Kazanma Oranı',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
+                          color: Colors.white.withOpacity( 0.8),
                           fontSize: isSmallScreen ? 10 : 12,
                         ),
                       ),
@@ -635,7 +659,7 @@ class _ProfileContentState extends State<ProfileContent>
                   const SizedBox(height: 8),
                   LinearProgressIndicator(
                     value: localData.winRate,
-                    backgroundColor: Colors.white.withValues(alpha: 0.3),
+                    backgroundColor: Colors.white.withOpacity( 0.3),
                     valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                     minHeight: 6,
                   ),
@@ -710,12 +734,12 @@ class _ProfileContentState extends State<ProfileContent>
         color: ThemeColors.getCardBackground(context),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: color.withValues(alpha: 0.2),
+          color: color.withOpacity( 0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity( 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -727,7 +751,7 @@ class _ProfileContentState extends State<ProfileContent>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: color.withOpacity( 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -879,8 +903,8 @@ class _ProfileContentState extends State<ProfileContent>
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: game.isWin
-                  ? ThemeColors.getSuccessColor(context).withValues(alpha: 0.1)
-                  : ThemeColors.getErrorColor(context).withValues(alpha: 0.1),
+                  ? ThemeColors.getSuccessColor(context).withOpacity( 0.1)
+                  : ThemeColors.getErrorColor(context).withOpacity( 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -987,77 +1011,102 @@ class _ProfileContentState extends State<ProfileContent>
     final TextEditingController controller = TextEditingController(text: currentNickname);
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
+    String? validationError;
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text(
-            'Takma Adı Düzenle',
-            style: TextStyle(
-              fontSize: isSmallScreen ? 18 : 20,
-              fontWeight: FontWeight.w600,
-              color: ThemeColors.getText(context),
-            ),
-          ),
-          content: TextField(
-            controller: controller,
-            decoration: InputDecoration(
-              labelText: 'Yeni Takma Ad',
-              hintText: 'Takma adınızı girin',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: ThemeColors.getPrimaryButtonColor(context),
-                  width: 2,
-                ),
-              ),
-            ),
-            maxLength: 20,
-            autofocus: true,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'İptal',
+              title: Text(
+                'Takma Adı Düzenle',
                 style: TextStyle(
-                  color: ThemeColors.getSecondaryText(context),
+                  fontSize: isSmallScreen ? 18 : 20,
+                  fontWeight: FontWeight.w600,
+                  color: ThemeColors.getText(context),
                 ),
               ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final newNickname = controller.text.trim();
-                if (newNickname.isNotEmpty && newNickname != currentNickname) {
-                  context.read<ProfileBloc>().add(UpdateNickname(newNickname));
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Takma ad güncelleniyor...'),
-                      duration: Duration(seconds: 1),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: controller,
+                    decoration: InputDecoration(
+                      labelText: 'Yeni Takma Ad',
+                      hintText: 'Takma adınızı girin',
+                      errorText: validationError,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: ThemeColors.getPrimaryButtonColor(context),
+                          width: 2,
+                        ),
+                      ),
                     ),
-                  );
-                } else {
-                  Navigator.of(context).pop();
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ThemeColors.getPrimaryButtonColor(context),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                    maxLength: 20,
+                    autofocus: true,
+                    onChanged: (value) {
+                      // Clear validation error when user starts typing
+                      if (validationError != null) {
+                        setState(() => validationError = null);
+                      }
+                    },
+                  ),
+                ],
               ),
-              child: const Text('Kaydet'),
-            ),
-          ],
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    'İptal',
+                    style: TextStyle(
+                      color: ThemeColors.getSecondaryText(context),
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final newNickname = controller.text.trim();
+
+                    // Import NicknameValidator
+                    final validation = NicknameValidator.validate(newNickname);
+                    if (!validation.isValid) {
+                      setState(() => validationError = validation.error);
+                      return;
+                    }
+
+                    if (newNickname != currentNickname) {
+                      context.read<ProfileBloc>().add(UpdateNickname(newNickname));
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Takma ad güncelleniyor...'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    } else {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ThemeColors.getPrimaryButtonColor(context),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Kaydet'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -1088,76 +1137,162 @@ class _ProfileContentState extends State<ProfileContent>
           ),
           content: SizedBox(
             width: double.maxFinite,
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: isSmallScreen ? 3 : 4,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemCount: avatars.length,
-              itemBuilder: (context, index) {
-                final avatar = avatars[index];
-                return GestureDetector(
-                  onTap: () async {
-                    // ProfilePictureService kullanarak profil resmini güncelle
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Avatarlar Bölümü
+                Text(
+                  'Hazır Avatarlar',
+                  style: TextStyle(
+                    fontSize: isSmallScreen ? 14 : 16,
+                    fontWeight: FontWeight.w600,
+                    color: ThemeColors.getText(context),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: isSmallScreen ? 3 : 4,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemCount: avatars.length,
+                  itemBuilder: (context, index) {
+                    final avatar = avatars[index];
+                    return GestureDetector(
+                      onTap: () async {
+                        // ProfilePictureService kullanarak profil resmini güncelle
+                        final profilePictureService = ProfilePictureService();
+                        final profileService = ProfileService();
+
+                        final success = await profilePictureService.updateProfilePicture(
+                          avatar,
+                          profileService,
+                        );
+
+                        if (success) {
+                          // Bloc'u güncelle
+                          context.read<ProfileBloc>().add(UpdateProfilePicture(avatar));
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Profil resmi güncellendi'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Profil resmi güncellenirken hata oluştu'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                        Navigator.of(context).pop();
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: ThemeColors.getBorder(context),
+                            width: 2,
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.asset(
+                            avatar,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: ThemeColors.getCardBackground(context),
+                                child: Icon(
+                                  Icons.person,
+                                  color: ThemeColors.getSecondaryText(context),
+                                  size: isSmallScreen ? 24 : 32,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 20),
+                // Fotoğraf Yükleme Bölümü
+                ElevatedButton.icon(
+                  onPressed: () async {
                     final profilePictureService = ProfilePictureService();
                     final profileService = ProfileService();
 
-                    final success = await profilePictureService.updateProfilePicture(
-                      avatar,
-                      profileService,
-                    );
+                    // Kullanıcıdan kaynak seçmesini iste
+                    final source = await profilePictureService.showImageSourceDialog(context);
+                    if (source == null) return;
 
-                    if (success) {
-                      // Bloc'u güncelle
-                      context.read<ProfileBloc>().add(UpdateProfilePicture(avatar));
+                    // Resmi seç veya çek
+                    final imageFile = source == ImageSource.camera
+                        ? await profilePictureService.pickImageFromCamera()
+                        : await profilePictureService.pickImageFromGallery();
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Profil resmi güncellendi'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Profil resmi güncellenirken hata oluştu'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
+                    if (imageFile != null) {
+                      // Önizleme ve kırpma
+                      final croppedFile = await profilePictureService.cropImage(imageFile, context);
+
+                      if (croppedFile != null) {
+                        // Firebase'e yükle
+                        final imageUrl = await profilePictureService.uploadImageToFirebase(croppedFile);
+
+                        if (imageUrl != null) {
+                          // Profil resmini güncelle
+                          final success = await profilePictureService.updateProfilePicture(
+                            imageUrl,
+                            profileService,
+                          );
+
+                          if (success) {
+                            // Bloc'u güncelle
+                            context.read<ProfileBloc>().add(UpdateProfilePicture(imageUrl));
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Profil resmi güncellendi'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Profil resmi güncellenirken hata oluştu'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Resim yüklenirken hata oluştu'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      }
                     }
                     Navigator.of(context).pop();
                   },
-                  child: Container(
-                    decoration: BoxDecoration(
+                  icon: const Icon(Icons.photo_camera),
+                  label: const Text('Fotoğraf Yükle'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ThemeColors.getAccentButtonColor(context),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: ThemeColors.getBorder(context),
-                        width: 2,
-                      ),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.asset(
-                        avatar,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: ThemeColors.getCardBackground(context),
-                            child: Icon(
-                              Icons.person,
-                              color: ThemeColors.getSecondaryText(context),
-                              size: isSmallScreen ? 24 : 32,
-                            ),
-                          );
-                        },
-                      ),
                     ),
                   ),
-                );
-              },
+                ),
+              ],
             ),
           ),
           actions: [
@@ -1167,70 +1302,6 @@ class _ProfileContentState extends State<ProfileContent>
                 'İptal',
                 style: TextStyle(
                   color: ThemeColors.getSecondaryText(context),
-                ),
-              ),
-            ),
-            ElevatedButton.icon(
-              onPressed: () async {
-                final profilePictureService = ProfilePictureService();
-                final profileService = ProfileService();
-
-                // Kullanıcıdan kaynak seçmesini iste
-                final source = await profilePictureService.showImageSourceDialog(context);
-                if (source == null) return;
-
-                // Resmi seç veya çek
-                final imageFile = source == ImageSource.camera
-                    ? await profilePictureService.pickImageFromCamera()
-                    : await profilePictureService.pickImageFromGallery();
-
-                if (imageFile != null) {
-                  // Firebase'e yükle
-                  final imageUrl = await profilePictureService.uploadImageToFirebase(imageFile);
-
-                  if (imageUrl != null) {
-                    // Profil resmini güncelle
-                    final success = await profilePictureService.updateProfilePicture(
-                      imageUrl,
-                      profileService,
-                    );
-
-                    if (success) {
-                      // Bloc'u güncelle
-                      context.read<ProfileBloc>().add(UpdateProfilePicture(imageUrl));
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Profil resmi güncellendi'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Profil resmi güncellenirken hata oluştu'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    }
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Resim yüklenirken hata oluştu'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  }
-                }
-                Navigator.of(context).pop();
-              },
-              icon: const Icon(Icons.camera_alt),
-              label: const Text('Fotoğraf Çek'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ThemeColors.getPrimaryButtonColor(context),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),

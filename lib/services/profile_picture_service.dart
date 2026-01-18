@@ -6,12 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:uuid/uuid.dart';
 import 'profile_service.dart';
 
 class ProfilePictureService {
   static const String _defaultAvatarsPath = 'assets/avatars/';
-  static const String _storagePath = 'profile_pictures/';
+  static const String _storagePath = 'profile_images/';
 
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final ImagePicker _picker = ImagePicker();
@@ -235,5 +236,33 @@ class ProfilePictureService {
         );
       },
     );
+  }
+
+  /// Resmi kirp
+  Future<File?> cropImage(File imageFile, BuildContext context) async {
+    try {
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: imageFile.path,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1), // Kare oran
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Resmi Kırp',
+            toolbarColor: Theme.of(context).primaryColor,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: true,
+          ),
+          IOSUiSettings(
+            title: 'Resmi Kırp',
+            aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
+          ),
+        ],
+      );
+      return croppedFile != null ? File(croppedFile.path) : null;
+    } catch (e) {
+      debugPrint('Resim kirpma hatasi: $e');
+      return null;
+    }
   }
 }

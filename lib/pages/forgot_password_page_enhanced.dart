@@ -280,7 +280,7 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
+                    color: Colors.black.withOpacity( 0.2),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -316,7 +316,7 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
                   SizedBox(
                     width: 200,
                     child: LinearProgressIndicator(
-                      backgroundColor: Colors.grey.withValues(alpha: 0.3),
+                      backgroundColor: Colors.grey.withOpacity( 0.3),
                       valueColor: AlwaysStoppedAnimation<Color>(
                         ThemeColors.getGreen(context),
                       ),
@@ -407,10 +407,10 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.red.withValues(alpha: 0.1),
+                                color: Colors.red.withOpacity( 0.1),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                    color: Colors.red.withValues(alpha: 0.3)),
+                                    color: Colors.red.withOpacity( 0.3)),
                               ),
                               child: Row(
                                 children: [

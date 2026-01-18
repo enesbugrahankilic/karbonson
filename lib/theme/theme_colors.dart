@@ -6,13 +6,13 @@ class ThemeColors {
   static Color getText(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
         ? Colors.white
-        : Colors.black87;
+        : Colors.black;
   }
 
   static Color getSecondaryText(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white70
-        : Colors.black54;
+        ? Colors.white.withOpacity( 0.8)
+        : Colors.black.withOpacity( 0.7);
   }
 
   static Color getCardBackground(BuildContext context) {
@@ -54,7 +54,7 @@ class ThemeColors {
   static Color getShadow(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
         ? Colors.black26
-        : Colors.black.withValues(alpha: 0.1);
+        : Colors.black.withOpacity( 0.1);
   }
 
   static List<Color> getGradientColors(BuildContext context) {
@@ -127,13 +127,13 @@ class ThemeColors {
   static Color getAppBarText(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
         ? Colors.white
-        : Colors.black87;
+        : Colors.black;
   }
 
   static Color getAppBarIcon(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
         ? Colors.white
-        : Colors.black87;
+        : Colors.black;
   }
 
   static Color getGreen(BuildContext context) {
@@ -143,7 +143,7 @@ class ThemeColors {
   static Color getGameBoardText(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
         ? Colors.white
-        : Colors.black87;
+        : Colors.black;
   }
 
   static Color getDialogBackground(BuildContext context) {
@@ -161,7 +161,7 @@ class ThemeColors {
   static Color getTitleText(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
         ? Colors.white
-        : Colors.black87;
+        : Colors.black;
   }
 
   static Color getButtonBackground(BuildContext context) {
@@ -173,13 +173,13 @@ class ThemeColors {
   static Color getCardForeground(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
         ? Colors.white
-        : Colors.black87;
+        : Colors.black;
   }
 
   static Color getIconColor(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white70
-        : Colors.black54;
+        ? Colors.white.withOpacity( 0.8)
+        : Colors.black.withOpacity( 0.7);
   }
 
   static Color getInputFieldBackground(BuildContext context) {
@@ -206,19 +206,19 @@ class ThemeColors {
 
   static Color getGameBoardCardBackground(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.grey[800]!.withValues(alpha: 0.95)
-        : Colors.white.withValues(alpha: 0.97);
+        ? Colors.grey[800]!.withOpacity( 0.95)
+        : Colors.white.withOpacity( 0.97);
   }
 
   static Color getGameBoardBackground(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.green.shade800.withValues(alpha: 0.3)
+        ? Colors.green.shade800.withOpacity( 0.3)
         : Colors.green.shade50;
   }
 
   static Color getPlayerInfoCardBackground(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.grey[800]!.withValues(alpha: 0.95)
+        ? Colors.grey[800]!.withOpacity( 0.95)
         : Color.fromRGBO(255, 255, 255, 0.97);
   }
 
@@ -230,26 +230,26 @@ class ThemeColors {
 
   static Color getStatsCardText(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white70
-        : Colors.grey[600]!;
+        ? Colors.white.withOpacity( 0.8)
+        : Colors.black.withOpacity( 0.7);
   }
 
   static Color getHistoryCardBackground(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.grey[800]!.withValues(alpha: 0.9)
-        : Colors.white.withValues(alpha: 0.9);
+        ? Colors.grey[800]!.withOpacity( 0.9)
+        : Colors.white.withOpacity( 0.9);
   }
 
   static Color getEmptyStateText(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white70
-        : Colors.grey;
+        ? Colors.white.withOpacity( 0.8)
+        : Colors.black.withOpacity( 0.6);
   }
 
   static Color getGameTimeText(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
         ? Colors.white
-        : Colors.black87;
+        : Colors.black;
   }
 
   static Color getPlayerStatusText(BuildContext context) {
@@ -339,14 +339,14 @@ class ThemeColors {
   // Modern color utilities for enhanced design
   static Color getOverlayColor(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.black.withValues(alpha: 0.6)
-        : Colors.black.withValues(alpha: 0.4);
+        ? Colors.black.withOpacity( 0.6)
+        : Colors.black.withOpacity( 0.4);
   }
 
   static Color getGlassBackground(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white.withValues(alpha: 0.05)
-        : Colors.white.withValues(alpha: 0.8);
+        ? Colors.white.withOpacity( 0.05)
+        : Colors.white.withOpacity( 0.8);
   }
 
   static Color getNeumorphismLight(BuildContext context) {
@@ -389,14 +389,14 @@ class ThemeColors {
   // Interactive states
   static Color getInteractiveHover(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white.withValues(alpha: 0.08)
-        : Colors.black.withValues(alpha: 0.04);
+        ? Colors.white.withOpacity( 0.08)
+        : Colors.black.withOpacity( 0.04);
   }
 
   static Color getInteractivePressed(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white.withValues(alpha: 0.12)
-        : Colors.black.withValues(alpha: 0.08);
+        ? Colors.white.withOpacity( 0.12)
+        : Colors.black.withOpacity( 0.08);
   }
 
   static Color getFocusRing(BuildContext context) {
@@ -411,7 +411,7 @@ class ThemeColors {
     if (Theme.of(context).brightness == Brightness.dark) {
       return [
         BoxShadow(
-          color: Colors.black.withValues(alpha: 0.3 * elevation),
+          color: Colors.black.withOpacity( 0.3 * elevation),
           blurRadius: 8 * elevation,
           offset: Offset(0, 4 * elevation),
         ),
@@ -419,12 +419,12 @@ class ThemeColors {
     } else {
       return [
         BoxShadow(
-          color: Colors.black.withValues(alpha: 0.1 * elevation),
+          color: Colors.black.withOpacity( 0.1 * elevation),
           blurRadius: 6 * elevation,
           offset: Offset(0, 2 * elevation),
         ),
         BoxShadow(
-          color: Colors.black.withValues(alpha: 0.05 * elevation),
+          color: Colors.black.withOpacity( 0.05 * elevation),
           blurRadius: 12 * elevation,
           offset: Offset(0, 8 * elevation),
         ),

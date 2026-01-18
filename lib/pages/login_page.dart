@@ -859,7 +859,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             padding: const EdgeInsets.all(DesignSystem.spacingM),
             decoration: BoxDecoration(
               color: ThemeColors.getCardBackgroundLight(context)
-                  .withValues(alpha: 0.8),
+                  .withOpacity( 0.8),
               borderRadius: BorderRadius.circular(DesignSystem.radiusS),
               border: Border.all(
                 color: ThemeColors.getBorder(context),
@@ -955,7 +955,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   decoration: BoxDecoration(
                                     color: ThemeColors.getPrimaryButtonColor(
                                             context)
-                                        .withValues(alpha: 0.1),
+                                        .withOpacity( 0.1),
                                     borderRadius: BorderRadius.circular(
                                         DesignSystem.radiusL),
                                   ),
@@ -1373,7 +1373,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 borderRadius: BorderRadius.circular(DesignSystem.radiusM),
               ),
               elevation: DesignSystem.elevationS,
-              shadowColor: color.withValues(alpha: 0.3),
+              shadowColor: color.withOpacity( 0.3),
               minimumSize: const Size.fromHeight(48),
             ),
           ),

@@ -640,7 +640,7 @@ class _DuelPageState extends State<DuelPage> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: player.id == playerIdSnapshot.data!
-                          ? ThemeColors.getGreen(context).withValues(alpha: 0.2)
+                          ? ThemeColors.getGreen(context).withOpacity( 0.2)
                           : ThemeColors.getCardBackgroundLight(context),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(

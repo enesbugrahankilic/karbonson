@@ -92,6 +92,15 @@ class ProfileError extends ProfileState {
   List<Object> get props => [message];
 }
 
+class ProfileUpdateSuccess extends ProfileState {
+  final String message;
+
+  const ProfileUpdateSuccess(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
 // Bloc
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final ProfileService profileService;
@@ -116,8 +125,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         return;
       }
 
-      // Cache current user nickname for later use
-      await profileService.cacheNickname(event.userNickname);
+      // Cache current user nickname for later use (only if not empty)
+      if (event.userNickname.isNotEmpty) {
+        await profileService.cacheNickname(event.userNickname);
+      }
 
       // Load profile data with two-stage loading strategy
       final profileData = await profileService.getProfileData();
@@ -216,10 +227,14 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
             serverData: updatedServerData,
           );
 
+          // First emit the updated loaded state
           emit(ProfileLoaded(
             profileData: updatedProfile,
             currentNickname: event.newNickname,
           ));
+
+          // Then emit success state for UI feedback
+          emit(ProfileUpdateSuccess('Takma ad başarıyla güncellendi'));
         } else {
           emit(ProfileError('Takma ad güncellenirken hata oluştu'));
         }

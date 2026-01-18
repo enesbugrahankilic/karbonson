@@ -79,7 +79,7 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final backgroundColor = widget.backgroundColor ??
-        theme.colorScheme.surface.withValues(alpha: 0.8);
+        theme.colorScheme.surface.withOpacity( 0.8);
     final selectedColor = widget.selectedItemColor ?? theme.colorScheme.primary;
     final unselectedColor =
         widget.unselectedItemColor ?? theme.colorScheme.onSurfaceVariant;
@@ -89,7 +89,7 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar> {
         color: backgroundColor,
         border: Border(
           top: BorderSide(
-            color: theme.colorScheme.outline.withValues(alpha: 0.1),
+            color: theme.colorScheme.outline.withOpacity( 0.1),
             width: 0.5,
           ),
         ),

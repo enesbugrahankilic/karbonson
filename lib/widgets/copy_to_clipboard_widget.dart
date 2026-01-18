@@ -60,7 +60,7 @@ class _CopyToClipboardWidgetState extends State<CopyToClipboardWidget> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           color: _isHovered
-              ? (widget.iconColor ?? Colors.blue).withValues(alpha: 0.1)
+              ? (widget.iconColor ?? Colors.blue).withOpacity( 0.1)
               : Colors.transparent,
         ),
         child: Row(

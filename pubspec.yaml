@@ -38,6 +38,7 @@ dependencies:
   image: ^4.1.7
   http: ^1.2.2
   local_auth: ^3.0.0
+  image_cropper: ^8.0.2
 
 dev_dependencies:
   flutter_test:

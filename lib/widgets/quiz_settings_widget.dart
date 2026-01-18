@@ -250,24 +250,24 @@ class _QuizSettingsWidgetState extends State<QuizSettingsWidget>
                     ? LinearGradient(
                         colors: [
                           category['color'],
-                          category['color'].withValues(alpha: 0.8),
+                          category['color'].withOpacity( 0.8),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       )
                     : null,
-                color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
+                color: isSelected ? null : Colors.white.withOpacity( 0.1),
                 borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                 border: Border.all(
                   color: isSelected
                       ? category['color']
-                      : Colors.white.withValues(alpha: 0.3),
+                      : Colors.white.withOpacity( 0.3),
                   width: 2,
                 ),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: category['color'].withValues(alpha: 0.3),
+                          color: category['color'].withOpacity( 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -298,7 +298,7 @@ class _QuizSettingsWidgetState extends State<QuizSettingsWidget>
                       category['description'],
                       style: DesignSystem.getBodySmall(context).copyWith(
                         color: isSelected
-                            ? Colors.white.withValues(alpha: 0.9)
+                            ? Colors.white.withOpacity( 0.9)
                             : null,
                         fontSize: 12,
                       ),
@@ -343,24 +343,24 @@ class _QuizSettingsWidgetState extends State<QuizSettingsWidget>
                     ? LinearGradient(
                         colors: [
                           difficulty['color'],
-                          difficulty['color'].withValues(alpha: 0.8),
+                          difficulty['color'].withOpacity( 0.8),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       )
                     : null,
-                color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
+                color: isSelected ? null : Colors.white.withOpacity( 0.1),
                 borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                 border: Border.all(
                   color: isSelected
                       ? difficulty['color']
-                      : Colors.white.withValues(alpha: 0.3),
+                      : Colors.white.withOpacity( 0.3),
                   width: 2,
                 ),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: difficulty['color'].withValues(alpha: 0.3),
+                          color: difficulty['color'].withOpacity( 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -389,7 +389,7 @@ class _QuizSettingsWidgetState extends State<QuizSettingsWidget>
                       difficulty['multiplier'],
                       style: DesignSystem.getBodySmall(context).copyWith(
                         color: isSelected
-                            ? Colors.white.withValues(alpha: 0.9)
+                            ? Colors.white.withOpacity( 0.9)
                             : difficulty['color'],
                         fontWeight: FontWeight.bold,
                       ),
@@ -431,13 +431,13 @@ class _QuizSettingsWidgetState extends State<QuizSettingsWidget>
                 duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1)
-                      : Colors.white.withValues(alpha: 0.05),
+                      ? ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.1)
+                      : Colors.white.withOpacity( 0.05),
                   borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                   border: Border.all(
                     color: isSelected
                         ? ThemeColors.getPrimaryButtonColor(context)
-                        : Colors.white.withValues(alpha: 0.3),
+                        : Colors.white.withOpacity( 0.3),
                     width: 2,
                   ),
                 ),
@@ -475,7 +475,7 @@ class _QuizSettingsWidgetState extends State<QuizSettingsWidget>
                               '~${option['time']} dakika • ${option['description']}',
                               style: DesignSystem.getBodySmall(context).copyWith(
                                 color: isSelected
-                                    ? ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.8)
+                                    ? ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.8)
                                     : null,
                               ),
                             ),
@@ -508,7 +508,7 @@ class _QuizSettingsWidgetState extends State<QuizSettingsWidget>
 
     return DesignSystem.card(
       context,
-      backgroundColor: ThemeColors.getSuccessColor(context).withValues(alpha: 0.1),
+      backgroundColor: ThemeColors.getSuccessColor(context).withOpacity( 0.1),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

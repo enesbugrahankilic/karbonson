@@ -674,13 +674,13 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage>
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: _is2FAEnabled
-                    ? Colors.green.withValues(alpha: 0.1)
-                    : Colors.orange.withValues(alpha: 0.1),
+                    ? Colors.green.withOpacity( 0.1)
+                    : Colors.orange.withOpacity( 0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: _is2FAEnabled
-                      ? Colors.green.withValues(alpha: 0.3)
-                      : Colors.orange.withValues(alpha: 0.3),
+                      ? Colors.green.withOpacity( 0.3)
+                      : Colors.orange.withOpacity( 0.3),
                 ),
               ),
               child: Column(
@@ -886,10 +886,10 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage>
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.1),
+                    color: Colors.green.withOpacity( 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border:
-                        Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                        Border.all(color: Colors.green.withOpacity( 0.3)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

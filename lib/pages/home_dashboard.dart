@@ -356,7 +356,7 @@ class _HomeDashboardState extends State<HomeDashboard>
         borderRadius: BorderRadius.circular(isSmallScreen ? 16.0 : 20.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity( 0.05),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -369,7 +369,7 @@ class _HomeDashboardState extends State<HomeDashboard>
             onTap: () => _showEditProfilePictureDialog(context),
             child: CircleAvatar(
               radius: isSmallScreen ? 25.0 : 30.0,
-              backgroundColor: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.2),
+              backgroundColor: ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.2),
               backgroundImage: _userData?.profilePictureUrl != null
                   ? NetworkImage(_userData!.profilePictureUrl!)
                   : null,
@@ -464,7 +464,7 @@ class _HomeDashboardState extends State<HomeDashboard>
             padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
             decoration: BoxDecoration(
               color: ThemeColors.getPrimaryButtonColor(context)
-                  .withValues(alpha: 0.1),
+                  .withOpacity( 0.1),
               borderRadius: BorderRadius.circular(8.0),
             ),
             child: Text(
@@ -506,7 +506,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                 fontWeight: FontWeight.w700,
                 shadows: [
                   Shadow(
-                    color: Colors.black.withValues(alpha: 0.3),
+                    color: Colors.black.withOpacity( 0.3),
                     offset: const Offset(0, 2),
                     blurRadius: 4,
                   ),
@@ -520,7 +520,7 @@ class _HomeDashboardState extends State<HomeDashboard>
               borderRadius: BorderRadius.circular(DesignSystem.radiusL),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withOpacity( 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -608,7 +608,7 @@ class _HomeDashboardState extends State<HomeDashboard>
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
+            color: color.withOpacity( 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -700,7 +700,7 @@ class _HomeDashboardState extends State<HomeDashboard>
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.purple.withValues(alpha: 0.4),
+            color: Colors.purple.withOpacity( 0.4),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -730,10 +730,10 @@ class _HomeDashboardState extends State<HomeDashboard>
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
             decoration: BoxDecoration(
-              color: ThemeColors.getCardBackground(context).withValues(alpha: 0.9),
+              color: ThemeColors.getCardBackground(context).withOpacity( 0.9),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
+                color: Colors.white.withOpacity( 0.3),
                 width: 1,
               ),
             ),
@@ -745,7 +745,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.3),
+                    color: Colors.white.withOpacity( 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -856,7 +856,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                 fontWeight: FontWeight.w700,
                 shadows: [
                   Shadow(
-                    color: Colors.black.withValues(alpha: 0.3),
+                    color: Colors.black.withOpacity( 0.3),
                     offset: const Offset(0, 2),
                     blurRadius: 4,
                   ),
@@ -912,10 +912,10 @@ class _HomeDashboardState extends State<HomeDashboard>
       child: Container(
         padding: EdgeInsets.all(isSmallScreen ? 16.0 : 20.0),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: color.withOpacity( 0.1),
           borderRadius: BorderRadius.circular(DesignSystem.radiusM),
           border: Border.all(
-            color: color.withValues(alpha: 0.3),
+            color: color.withOpacity( 0.3),
             width: 1,
           ),
         ),
@@ -967,7 +967,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                 fontWeight: FontWeight.w700,
                 shadows: [
                   Shadow(
-                    color: Colors.black.withValues(alpha: 0.3),
+                    color: Colors.black.withOpacity( 0.3),
                     offset: const Offset(0, 2),
                     blurRadius: 4,
                   ),
@@ -992,7 +992,7 @@ class _HomeDashboardState extends State<HomeDashboard>
               boxShadow: [
                 BoxShadow(
                   color: ThemeColors.getPrimaryButtonColor(context)
-                      .withValues(alpha: 0.3),
+                      .withOpacity( 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -1022,7 +1022,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                   Text(
                     'Çevre bilincini artır, puan kazan!',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.9),
+                      color: Colors.white.withOpacity( 0.9),
                       fontSize: isSmallScreen ? 14.0 : 16.0,
                     ),
                     textAlign: TextAlign.center,
@@ -1034,7 +1034,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                       vertical: DesignSystem.spacingS,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withOpacity( 0.2),
                       borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                     ),
                     child: Text(
@@ -1079,7 +1079,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                 fontWeight: FontWeight.w700,
                 shadows: [
                   Shadow(
-                    color: Colors.black.withValues(alpha: 0.3),
+                    color: Colors.black.withOpacity( 0.3),
                     offset: const Offset(0, 2),
                     blurRadius: 4,
                   ),
@@ -1093,7 +1093,7 @@ class _HomeDashboardState extends State<HomeDashboard>
               borderRadius: BorderRadius.circular(DesignSystem.radiusL),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withOpacity( 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -1138,7 +1138,7 @@ class _HomeDashboardState extends State<HomeDashboard>
           isSmallScreen ? DesignSystem.spacingS : DesignSystem.spacingM),
       decoration: BoxDecoration(
         color:
-            ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1),
+            ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.1),
         borderRadius: BorderRadius.circular(DesignSystem.radiusM),
       ),
       child: Column(
@@ -1167,7 +1167,7 @@ class _HomeDashboardState extends State<HomeDashboard>
           LinearProgressIndicator(
             value: progressPercentage.clamp(0.0, 1.0),
             backgroundColor:
-                ThemeColors.getCardBackground(context).withValues(alpha: 0.3),
+                ThemeColors.getCardBackground(context).withOpacity( 0.3),
             valueColor: AlwaysStoppedAnimation<Color>(
               ThemeColors.getPrimaryButtonColor(context),
             ),
@@ -1203,7 +1203,7 @@ class _HomeDashboardState extends State<HomeDashboard>
       padding: EdgeInsets.all(
           isSmallScreen ? DesignSystem.spacingS : DesignSystem.spacingM),
       decoration: BoxDecoration(
-        color: ThemeColors.getSuccessColor(context).withValues(alpha: 0.1),
+        color: ThemeColors.getSuccessColor(context).withOpacity( 0.1),
         borderRadius: BorderRadius.circular(DesignSystem.radiusM),
       ),
       child: Column(
@@ -1264,7 +1264,7 @@ class _HomeDashboardState extends State<HomeDashboard>
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
+            color: color.withOpacity( 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -1349,11 +1349,11 @@ class _HomeDashboardState extends State<HomeDashboard>
                 margin: EdgeInsets.only(right: DesignSystem.spacingS),
                 decoration: BoxDecoration(
                   color: ThemeColors.getCardBackground(context)
-                      .withValues(alpha: 0.5),
+                      .withOpacity( 0.5),
                   borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                   border: Border.all(
                     color: _getRarityColor(achievement.rarity.name)
-                        .withValues(alpha: 0.3),
+                        .withOpacity( 0.3),
                     width: 1,
                   ),
                 ),
@@ -1410,7 +1410,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                 fontWeight: FontWeight.w700,
                 shadows: [
                   Shadow(
-                    color: Colors.black.withValues(alpha: 0.3),
+                    color: Colors.black.withOpacity( 0.3),
                     offset: const Offset(0, 2),
                     blurRadius: 4,
                   ),
@@ -1424,7 +1424,7 @@ class _HomeDashboardState extends State<HomeDashboard>
               borderRadius: BorderRadius.circular(DesignSystem.radiusL),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withOpacity( 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -1488,7 +1488,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                     padding: EdgeInsets.all(DesignSystem.spacingM),
                     decoration: BoxDecoration(
                       color: ThemeColors.getPrimaryButtonColor(context)
-                          .withValues(alpha: 0.05),
+                          .withOpacity( 0.05),
                       borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                     ),
                     child: Column(
@@ -1530,10 +1530,10 @@ class _HomeDashboardState extends State<HomeDashboard>
     return Container(
       padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.05),
+        color: color.withOpacity( 0.05),
         borderRadius: BorderRadius.circular(DesignSystem.radiusM),
         border: Border.all(
-          color: color.withValues(alpha: 0.2),
+          color: color.withOpacity( 0.2),
           width: 1,
         ),
       ),
@@ -1602,7 +1602,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                 fontWeight: FontWeight.w800,
                 shadows: [
                   Shadow(
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: Colors.black.withOpacity( 0.5),
                     offset: const Offset(0, 3),
                     blurRadius: 6,
                   ),
@@ -1628,7 +1628,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                     borderRadius: BorderRadius.circular(DesignSystem.radiusL),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.purple.withValues(alpha: 0.3),
+                        color: Colors.purple.withOpacity( 0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -1658,7 +1658,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                         Text(
                           'Arkadaşınla hızlı yarış!',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: Colors.white.withOpacity( 0.9),
                             fontSize: isSmallScreen ? 14.0 : 16.0,
                           ),
                           textAlign: TextAlign.center,
@@ -1670,7 +1670,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                             vertical: DesignSystem.spacingS,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: Colors.white.withOpacity( 0.2),
                             borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                           ),
                           child: Text(
@@ -1704,7 +1704,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                     borderRadius: BorderRadius.circular(DesignSystem.radiusL),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.orange.withValues(alpha: 0.3),
+                        color: Colors.orange.withOpacity( 0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -1734,7 +1734,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                         Text(
                           'Kalıcı düello odası',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: Colors.white.withOpacity( 0.9),
                             fontSize: isSmallScreen ? 14.0 : 16.0,
                           ),
                           textAlign: TextAlign.center,
@@ -1746,7 +1746,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                             vertical: DesignSystem.spacingS,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: Colors.white.withOpacity( 0.2),
                             borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                           ),
                           child: Text(
@@ -1793,7 +1793,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                 fontWeight: FontWeight.w700,
                 shadows: [
                   Shadow(
-                    color: Colors.black.withValues(alpha: 0.3),
+                    color: Colors.black.withOpacity( 0.3),
                     offset: const Offset(0, 2),
                     blurRadius: 4,
                   ),
@@ -1817,7 +1817,7 @@ class _HomeDashboardState extends State<HomeDashboard>
               borderRadius: BorderRadius.circular(DesignSystem.radiusL),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.teal.withValues(alpha: 0.3),
+                  color: Colors.teal.withOpacity( 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -1853,7 +1853,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                             Text(
                               '4 kişiye kadar oyna!',
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.9),
+                                color: Colors.white.withOpacity( 0.9),
                                 fontSize: isSmallScreen ? 14.0 : 16.0,
                               ),
                               textAlign: TextAlign.left,
@@ -1867,7 +1867,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                           vertical: DesignSystem.spacingS,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
+                          color: Colors.white.withOpacity( 0.2),
                           borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                         ),
                         child: Text(
@@ -1885,7 +1885,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                   Container(
                     padding: EdgeInsets.all(DesignSystem.spacingS),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
+                      color: Colors.white.withOpacity( 0.1),
                       borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                     ),
                     child: Row(
@@ -1991,7 +1991,7 @@ class _HomeDashboardState extends State<HomeDashboard>
               Text(
                 'Hangi düello türünü tercih edersiniz?',
                 style: DesignSystem.getBodyLarge(context).copyWith(
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: Colors.white.withOpacity( 0.9),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -2029,7 +2029,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                 child: Text(
                   'İptal',
                   style: DesignSystem.getLabelLarge(context).copyWith(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Colors.white.withOpacity( 0.7),
                   ),
                 ),
               ),
@@ -2055,10 +2055,10 @@ class _HomeDashboardState extends State<HomeDashboard>
         width: double.infinity,
         padding: const EdgeInsets.all(DesignSystem.spacingM),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: Colors.white.withOpacity( 0.1),
           borderRadius: BorderRadius.circular(DesignSystem.radiusM),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.2),
+            color: Colors.white.withOpacity( 0.2),
             width: 1,
           ),
         ),
@@ -2067,7 +2067,7 @@ class _HomeDashboardState extends State<HomeDashboard>
             Container(
               padding: const EdgeInsets.all(DesignSystem.spacingS),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.2),
+                color: color.withOpacity( 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -2092,7 +2092,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                   Text(
                     description,
                     style: DesignSystem.getBodySmall(context).copyWith(
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: Colors.white.withOpacity( 0.7),
                     ),
                   ),
                 ],
@@ -2100,7 +2100,7 @@ class _HomeDashboardState extends State<HomeDashboard>
             ),
             Icon(
               Icons.chevron_right,
-              color: Colors.white.withValues(alpha: 0.5),
+              color: Colors.white.withOpacity( 0.5),
             ),
           ],
         ),
@@ -2210,7 +2210,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                 fontWeight: FontWeight.w700,
                 shadows: [
                   Shadow(
-                    color: Colors.black.withValues(alpha: 0.3),
+                    color: Colors.black.withOpacity( 0.3),
                     offset: const Offset(0, 2),
                     blurRadius: 4,
                   ),
@@ -2224,7 +2224,7 @@ class _HomeDashboardState extends State<HomeDashboard>
               borderRadius: BorderRadius.circular(DesignSystem.radiusL),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withOpacity( 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -2318,10 +2318,10 @@ class _HomeDashboardState extends State<HomeDashboard>
       padding: EdgeInsets.all(
           smallScreen ? DesignSystem.spacingS : DesignSystem.spacingM),
       decoration: BoxDecoration(
-        color: challengeColor.withValues(alpha: 0.05),
+        color: challengeColor.withOpacity( 0.05),
         borderRadius: BorderRadius.circular(DesignSystem.radiusM),
         border: Border.all(
-          color: challengeColor.withValues(alpha: 0.2),
+          color: challengeColor.withOpacity( 0.2),
           width: 1,
         ),
       ),
@@ -2330,7 +2330,7 @@ class _HomeDashboardState extends State<HomeDashboard>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: challengeColor.withValues(alpha: 0.1),
+              color: challengeColor.withOpacity( 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -2367,7 +2367,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                       child: LinearProgressIndicator(
                         value: progressPercentage,
                         backgroundColor: ThemeColors.getCardBackground(context)
-                            .withValues(alpha: 0.3),
+                            .withOpacity( 0.3),
                         valueColor: AlwaysStoppedAnimation<Color>(challengeColor),
                       ),
                     ),
@@ -2456,21 +2456,21 @@ class _HomeDashboardState extends State<HomeDashboard>
               gradient: LinearGradient(
                 colors: [
                   ThemeColors.getPrimaryButtonColor(context)
-                      .withValues(alpha: 0.2),
+                      .withOpacity( 0.2),
                   ThemeColors.getPrimaryButtonColor(context)
-                      .withValues(alpha: 0.1),
+                      .withOpacity( 0.1),
                 ],
               ),
               shape: BoxShape.circle,
               border: Border.all(
                 color: ThemeColors.getPrimaryButtonColor(context)
-                    .withValues(alpha: 0.3),
+                    .withOpacity( 0.3),
                 width: 1,
               ),
               boxShadow: [
                 BoxShadow(
                   color: ThemeColors.getPrimaryButtonColor(context)
-                      .withValues(alpha: 0.2),
+                      .withOpacity( 0.2),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -2619,7 +2619,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                 Text(
                   'Hangi çevre temasında yarışmak istersiniz?',
                   style: DesignSystem.getBodyLarge(context).copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
+                    color: Colors.white.withOpacity( 0.9),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -2634,11 +2634,11 @@ class _HomeDashboardState extends State<HomeDashboard>
                           margin: const EdgeInsets.only(
                               bottom: DesignSystem.spacingM),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.1),
+                            color: Colors.white.withOpacity( 0.1),
                             borderRadius:
                                 BorderRadius.circular(DesignSystem.radiusM),
                             border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.2),
+                              color: Colors.white.withOpacity( 0.2),
                               width: 1,
                             ),
                           ),
@@ -2657,7 +2657,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                                         DesignSystem.spacingS),
                                     decoration: BoxDecoration(
                                       color: (theme['color'] as Color)
-                                          .withValues(alpha: 0.2),
+                                          .withOpacity( 0.2),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(
@@ -2688,7 +2688,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                                               DesignSystem.getBodySmall(context)
                                                   .copyWith(
                                             color: Colors.white
-                                                .withValues(alpha: 0.7),
+                                                .withOpacity( 0.7),
                                           ),
                                         ),
                                       ],
@@ -2696,7 +2696,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                                   ),
                                   Icon(
                                     Icons.chevron_right,
-                                    color: Colors.white.withValues(alpha: 0.5),
+                                    color: Colors.white.withOpacity( 0.5),
                                   ),
                                 ],
                               ),
@@ -2714,7 +2714,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                 Container(
                   padding: const EdgeInsets.all(DesignSystem.spacingM),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
+                    color: Colors.white.withOpacity( 0.1),
                     borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                   ),
                   child: Row(
@@ -2734,7 +2734,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                         child: Text(
                           'Bu temayı hatırla (sonraki quiz\'lerde otomatik seçilsin)',
                           style: DesignSystem.getBodySmall(context).copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: Colors.white.withOpacity( 0.9),
                           ),
                         ),
                       ),
@@ -2750,7 +2750,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                   child: Text(
                     'İptal',
                     style: DesignSystem.getLabelLarge(context).copyWith(
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: Colors.white.withOpacity( 0.7),
                     ),
                   ),
                 ),
@@ -3019,7 +3019,7 @@ class _HomeDashboardState extends State<HomeDashboard>
               Container(
                 padding: const EdgeInsets.all(DesignSystem.spacingM),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: Colors.white.withOpacity( 0.1),
                   borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                 ),
                 child: Column(
@@ -3039,7 +3039,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                               ? 'Güzel! Daha fazla öğrenebilirsiniz.'
                               : 'Çalışmaya devam edin, çevre bilinciniz artacak!',
                       style: DesignSystem.getBodyMedium(context).copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
+                        color: Colors.white.withOpacity( 0.9),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -3053,7 +3053,7 @@ class _HomeDashboardState extends State<HomeDashboard>
               Container(
                 padding: const EdgeInsets.all(DesignSystem.spacingM),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: Colors.white.withOpacity( 0.1),
                   borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                 ),
                 child: Column(
@@ -3080,7 +3080,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                     Text(
                       'Bir sonraki quiz\'de yanlış cevapladığınız konulardan daha fazla soru çıkacak. Bu sayede zayıf olduğunuz alanlarda gelişebilirsiniz!',
                       style: DesignSystem.getBodySmall(context).copyWith(
-                        color: Colors.white.withValues(alpha: 0.8),
+                        color: Colors.white.withOpacity( 0.8),
                       ),
                     ),
                   ],
@@ -3098,7 +3098,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                       child: Text(
                         'Ana Sayfa',
                         style: DesignSystem.getLabelLarge(context).copyWith(
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: Colors.white.withOpacity( 0.7),
                         ),
                       ),
                     ),
@@ -3114,7 +3114,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                         child: Text(
                           'Tema Değiştir',
                           style: DesignSystem.getLabelLarge(context).copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: Colors.white.withOpacity( 0.9),
                           ),
                         ),
                       ),
@@ -3127,7 +3127,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                         _showThemeSelectionDialog(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.2),
+                        backgroundColor: Colors.white.withOpacity( 0.2),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius:

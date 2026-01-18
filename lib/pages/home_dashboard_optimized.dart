@@ -192,7 +192,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
           gradient: LinearGradient(
             colors: [
               ThemeColors.getCardBackground(context),
-              ThemeColors.getCardBackground(context).withValues(alpha: 0.95),
+              ThemeColors.getCardBackground(context).withOpacity( 0.95),
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -315,7 +315,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
         borderRadius: BorderRadius.circular(isSmallScreen ? 12.0 : 16.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity( 0.05),
             blurRadius: 15,
             offset: const Offset(0, 6),
           ),
@@ -434,7 +434,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
             padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
             decoration: BoxDecoration(
               color: ThemeColors.getPrimaryButtonColor(context)
-                  .withValues(alpha: 0.1),
+                  .withOpacity( 0.1),
               borderRadius: BorderRadius.circular(8.0),
             ),
             child: Text(
@@ -461,7 +461,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
         borderRadius: BorderRadius.circular(isSmallScreen ? 12.0 : 16.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity( 0.05),
             blurRadius: 15,
             offset: const Offset(0, 6),
           ),
@@ -551,10 +551,10 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
       child: Container(
         padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: color.withOpacity( 0.1),
           borderRadius: BorderRadius.circular(isSmallScreen ? 8.0 : 12.0),
           border: Border.all(
-            color: color.withValues(alpha: 0.3),
+            color: color.withOpacity( 0.3),
             width: 1,
           ),
         ),
@@ -597,7 +597,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
         borderRadius: BorderRadius.circular(isSmallScreen ? 12.0 : 16.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity( 0.05),
             blurRadius: 15,
             offset: const Offset(0, 6),
           ),
@@ -646,7 +646,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
           SizedBox(height: 8.0),
           LinearProgressIndicator(
             value: progressPercentage,
-            backgroundColor: ThemeColors.getCardBackground(context).withValues(alpha: 0.3),
+            backgroundColor: ThemeColors.getCardBackground(context).withOpacity( 0.3),
             valueColor: AlwaysStoppedAnimation<Color>(
               ThemeColors.getPrimaryButtonColor(context),
             ),
@@ -682,7 +682,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
         borderRadius: BorderRadius.circular(isSmallScreen ? 12.0 : 16.0),
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.3),
+            color: ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -714,7 +714,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
             Text(
               'Çevre bilincini artır, puan kazan!',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.9),
+                color: Colors.white.withOpacity( 0.9),
                 fontSize: bodyTextSize,
               ),
               textAlign: TextAlign.center,
@@ -728,7 +728,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                 vertical: isSmallScreen ? 8.0 : 10.0,
               ),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: Colors.white.withOpacity( 0.2),
                 borderRadius: BorderRadius.circular(isSmallScreen ? 16.0 : 20.0),
               ),
               child: Text(
@@ -762,7 +762,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
         borderRadius: BorderRadius.circular(isSmallScreen ? 12.0 : 16.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity( 0.05),
             blurRadius: 15,
             offset: const Offset(0, 6),
           ),
@@ -793,10 +793,10 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                   width: 70,
                   margin: EdgeInsets.only(right: 12.0),
                   decoration: BoxDecoration(
-                    color: ThemeColors.getCardBackground(context).withValues(alpha: 0.5),
+                    color: ThemeColors.getCardBackground(context).withOpacity( 0.5),
                     borderRadius: BorderRadius.circular(12.0),
                     border: Border.all(
-                      color: _getRarityColor(achievement['rarity'] as String).withValues(alpha: 0.3),
+                      color: _getRarityColor(achievement['rarity'] as String).withOpacity( 0.3),
                       width: 1,
                     ),
                   ),
@@ -857,7 +857,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.4),
+            color: ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.4),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -887,10 +887,10 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
             decoration: BoxDecoration(
-              color: ThemeColors.getCardBackground(context).withValues(alpha: 0.9),
+              color: ThemeColors.getCardBackground(context).withOpacity( 0.9),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
+                color: Colors.white.withOpacity( 0.3),
                 width: 1,
               ),
             ),
@@ -902,7 +902,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.3),
+                    color: Colors.white.withOpacity( 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -1008,18 +1008,18 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.2),
-                  ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1),
+                  ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.2),
+                  ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.1),
                 ],
               ),
               shape: BoxShape.circle,
               border: Border.all(
-                color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.3),
+                color: ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.3),
                 width: 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.2),
+                  color: ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.2),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -1160,7 +1160,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                 Text(
                   'Hangi çevre temasında yarışmak istersiniz?',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.9),
+                    color: Colors.white.withOpacity( 0.9),
                     fontSize: 16,
                   ),
                   textAlign: TextAlign.center,
@@ -1177,10 +1177,10 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.1),
+                            color: Colors.white.withOpacity( 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.2),
+                              color: Colors.white.withOpacity( 0.2),
                               width: 1,
                             ),
                           ),
@@ -1194,7 +1194,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                                   Container(
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color: (theme['color'] as Color).withValues(alpha: 0.2),
+                                      color: (theme['color'] as Color).withOpacity( 0.2),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(
@@ -1222,7 +1222,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                                         Text(
                                           theme['description'] as String,
                                           style: TextStyle(
-                                            color: Colors.white.withValues(alpha: 0.7),
+                                            color: Colors.white.withOpacity( 0.7),
                                             fontSize: 14,
                                           ),
                                           maxLines: 2,
@@ -1233,7 +1233,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                                   ),
                                   Icon(
                                     Icons.chevron_right,
-                                    color: Colors.white.withValues(alpha: 0.5),
+                                    color: Colors.white.withOpacity( 0.5),
                                   ),
                                 ],
                               ),
@@ -1251,7 +1251,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
+                    color: Colors.white.withOpacity( 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -1271,7 +1271,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                         child: Text(
                           'Bu temayı hatırla (sonraki quiz\'lerde otomatik seçilsin)',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: Colors.white.withOpacity( 0.9),
                             fontSize: 14,
                           ),
                           maxLines: 2,
@@ -1290,7 +1290,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                   child: Text(
                     'İptal',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: Colors.white.withOpacity( 0.7),
                     ),
                   ),
                 ),
@@ -1377,7 +1377,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: Colors.white.withOpacity( 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -1398,7 +1398,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                               ? 'Güzel! Daha fazla öğrenebilirsiniz.'
                               : 'Çalışmaya devam edin, çevre bilinciniz artacak!',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
+                        color: Colors.white.withOpacity( 0.9),
                         fontSize: 16,
                       ),
                       textAlign: TextAlign.center,
@@ -1420,7 +1420,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                       child: Text(
                         'Ana Sayfa',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: Colors.white.withOpacity( 0.7),
                         ),
                       ),
                     ),
@@ -1436,7 +1436,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                         child: Text(
                           'Tema Değiştir',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: Colors.white.withOpacity( 0.9),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -1451,7 +1451,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                         _showThemeSelectionDialog(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.2),
+                        backgroundColor: Colors.white.withOpacity( 0.2),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),

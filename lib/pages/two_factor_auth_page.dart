@@ -319,7 +319,7 @@ class _TwoFactorAuthPageState extends State<TwoFactorAuthPage>
                       'Hesabınızı güvence altına almak için SMS ile doğrulama yapın',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.white.withValues(alpha: 0.8),
+                        color: Colors.white.withOpacity( 0.8),
                       ),
                       textAlign: TextAlign.center,
                     ),

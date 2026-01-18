@@ -155,8 +155,8 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1),
-            ThemeColors.getAccentButtonColor(context).withValues(alpha: 0.05),
+            ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.1),
+            ThemeColors.getAccentButtonColor(context).withOpacity( 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -164,7 +164,7 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
         borderRadius: BorderRadius.circular(DesignSystem.radiusL),
         border: Border.all(
           color:
-              ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.2),
+              ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.2),
         ),
       ),
       child: Row(
@@ -214,19 +214,19 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            ThemeColors.getSuccessColor(context).withValues(alpha: 0.1),
-            ThemeColors.getSuccessColor(context).withValues(alpha: 0.05),
+            ThemeColors.getSuccessColor(context).withOpacity( 0.1),
+            ThemeColors.getSuccessColor(context).withOpacity( 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(DesignSystem.radiusL),
         border: Border.all(
-          color: ThemeColors.getSuccessColor(context).withValues(alpha: 0.2),
+          color: ThemeColors.getSuccessColor(context).withOpacity( 0.2),
         ),
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.getSuccessColor(context).withValues(alpha: 0.1),
+            color: ThemeColors.getSuccessColor(context).withOpacity( 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -374,9 +374,9 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
                   ? LinearGradient(
                       colors: [
                         ThemeColors.getPrimaryButtonColor(context)
-                            .withValues(alpha: 0.1),
+                            .withOpacity( 0.1),
                         ThemeColors.getPrimaryButtonColor(context)
-                            .withValues(alpha: 0.05),
+                            .withOpacity( 0.05),
                       ],
                     )
                   : null,
@@ -392,7 +392,7 @@ class _DuelInviteDialogState extends State<DuelInviteDialog>
                   ? [
                       BoxShadow(
                         color: ThemeColors.getPrimaryButtonColor(context)
-                            .withValues(alpha: 0.2),
+                            .withOpacity( 0.2),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),

@@ -729,7 +729,7 @@ class _FriendsPageState extends State<FriendsPage>
                                     ),
                                     filled: true,
                                     fillColor:
-                                        Colors.white.withValues(alpha: 0.9),
+                                        Colors.white.withOpacity( 0.9),
                                   ),
                                   onChanged: _searchUsers,
                                 ),
@@ -771,7 +771,7 @@ class _FriendsPageState extends State<FriendsPage>
                                   child: ListTile(
                                     leading: CircleAvatar(
                                       backgroundColor:
-                                          Colors.green.withValues(alpha: 0.1),
+                                          Colors.green.withOpacity( 0.1),
                                       child: Icon(Icons.person_add,
                                           color: Colors.green),
                                     ),
