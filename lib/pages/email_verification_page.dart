@@ -23,6 +23,10 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
   void initState() {
     super.initState();
     _checkVerificationStatus();
+    // Automatically send verification email when page opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _sendVerificationEmailOnPageOpen();
+    });
   }
 
   Future<void> _checkVerificationStatus() async {
@@ -42,6 +46,33 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
       }
     } catch (e) {
       if (kDebugMode) debugPrint('Error checking verification status: $e');
+    }
+  }
+
+  Future<void> _sendVerificationEmailOnPageOpen() async {
+    // Only send if email is not verified
+    if (_isVerified) return;
+
+    try {
+      final result = await FirebaseAuthService.sendEmailVerification();
+
+      if (mounted) {
+        if (result.isSuccess) {
+          // Show success message but don't make it intrusive since it's automatic
+          if (kDebugMode) {
+            debugPrint('Verification email sent automatically on page open');
+          }
+        } else {
+          // Show error only in debug mode for automatic sending
+          if (kDebugMode) {
+            debugPrint('Failed to send automatic verification email: ${result.message}');
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error sending automatic verification email: $e');
+      }
     }
   }
 

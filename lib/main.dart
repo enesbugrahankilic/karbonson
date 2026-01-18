@@ -302,16 +302,12 @@ class Karbon2App extends StatefulWidget {
 
 class _Karbon2AppState extends State<Karbon2App> {
   bool _loading = true;
-  late GlobalKey<NavigatorState> _navigatorKey;
   String _initialRoute = AppRoutes.login;
   final GlobalKey _appKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    _navigatorKey = GlobalKey<NavigatorState>();
-    // Set the navigator key in NotificationService for notification navigation
-    // NotificationService.navigatorKey = _navigatorKey;
     _initializeApp();
   }
 
@@ -406,7 +402,7 @@ class _Karbon2AppState extends State<Karbon2App> {
             GlobalCupertinoLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
           ],
-          navigatorKey: _navigatorKey,
+          navigatorKey: NavigationService.navigatorKey,
           navigatorObservers: [
             AppNavigatorObserver(),
           ],

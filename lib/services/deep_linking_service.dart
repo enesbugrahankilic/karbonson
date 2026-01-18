@@ -5,8 +5,10 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:app_links/app_links.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../core/navigation/navigation_service.dart';
 
 /// Deep link types that the app can handle
 enum DeepLinkType {
@@ -82,12 +84,23 @@ class DeepLinkingService {
   /// Initialize deep linking service
   Future<void> initialize() async {
     try {
-      // NOTE: Firebase Dynamic Links is deprecated and will shut down on August 25, 2025
-      // Please migrate to alternative solutions like Firebase App Links or custom deep linking
-      // For now, we'll skip initialization to avoid package compatibility issues
-      
+      _appLinks = AppLinks();
+
+      // Listen for deep links when app is in foreground
+      _linkSubscription = _appLinks!.uriLinkStream.listen(_onLinkReceived);
+
+      // Check for initial link (when app was opened via deep link)
+      final initialUri = await _appLinks!.getInitialAppLink();
+      if (initialUri != null) {
+        if (kDebugMode) {
+          debugPrint('Initial deep link detected: $initialUri');
+        }
+        // Handle initial link
+        _onLinkReceived(initialUri);
+      }
+
       if (kDebugMode) {
-        debugPrint('Deep linking service initialized (disabled for compatibility)');
+        debugPrint('Deep linking service initialized successfully');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -168,6 +181,32 @@ class DeepLinkingService {
           }
           return DeepLinkResult.failure(
               'Şifre sıfırlama kodu geçersiz veya süresi dolmuş. Lütfen yeni bir şifre sıfırlama e-postası gönderin.');
+        }
+      }
+
+      // Handle email verification
+      if (linkType == DeepLinkType.emailVerification) {
+        if (oobCode == null || oobCode.isEmpty) {
+          return DeepLinkResult.failure(
+              'Geçersiz e-posta doğrulama bağlantısı. Kod bulunamadı.');
+        }
+
+        try {
+          // Apply the action code to verify the email
+          await FirebaseAuth.instance.applyActionCode(oobCode);
+
+          // Reload the user to get updated emailVerified status
+          await FirebaseAuth.instance.currentUser?.reload();
+
+          if (kDebugMode) {
+            debugPrint('Email verification successful');
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('Email verification failed: $e');
+          }
+          return DeepLinkResult.failure(
+              'E-posta doğrulama başarısız. Kod geçersiz veya süresi dolmuş olabilir.');
         }
       }
 
@@ -269,6 +308,15 @@ class DeepLinkingService {
     if (kDebugMode) {
       debugPrint('Deep link result ready for email verification navigation');
     }
+
+    // Email verification was successful, show success message
+    NavigationService().showSnackBar(
+      'E-posta adresiniz başarıyla doğrulandı! 🎉',
+      backgroundColor: Colors.green,
+    );
+
+    // Navigate to email verification page to show updated status
+    NavigationService().navigateTo('/email-verification');
 
     _storeDeepLinkResult(result);
   }

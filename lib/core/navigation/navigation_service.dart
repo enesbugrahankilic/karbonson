@@ -45,6 +45,9 @@ class NavigationService {
   factory NavigationService() => _instance;
   NavigationService._internal();
 
+  // Global navigator key for programmatic navigation
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
   // Navigation state
   final List<String> _routeStack = [];
   final List<NavigationAnalyticsEvent> _navigationHistory = [];
@@ -300,6 +303,33 @@ class NavigationService {
       'patterns': analyzeNavigationPatterns(),
       'performance': getPerformanceMetrics(),
     };
+  }
+
+  /// Programmatic navigation methods
+  void navigateTo(String routeName, {Object? arguments}) {
+    navigatorKey.currentState?.pushNamed(routeName, arguments: arguments);
+  }
+
+  void navigateToReplacement(String routeName, {Object? arguments}) {
+    navigatorKey.currentState?.pushReplacementNamed(routeName, arguments: arguments);
+  }
+
+  void navigateBack({Object? result}) {
+    navigatorKey.currentState?.pop(result);
+  }
+
+  /// Show snackbar using navigator context
+  void showSnackBar(String message, {Color? backgroundColor, Duration? duration}) {
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: backgroundColor,
+          duration: duration ?? const Duration(seconds: 4),
+        ),
+      );
+    }
   }
 }
 

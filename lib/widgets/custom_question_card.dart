@@ -150,16 +150,19 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
              size: iconSize,
            ),
            SizedBox(height: spacingL),
-           Text(
-             widget.question,
-             style: AppTheme.getGameQuestionStyle(context).copyWith(
-               fontSize: fontSize,
-               fontWeight: FontWeight.w600,
+           SizedBox(
+             height: 120, // Fixed height for scrollable question text
+             child: SingleChildScrollView(
+               child: Text(
+                 widget.question,
+                 style: AppTheme.getGameQuestionStyle(context).copyWith(
+                   fontSize: fontSize,
+                   fontWeight: FontWeight.w600,
+                 ),
+                 textAlign: TextAlign.center,
+                 softWrap: true,
+               ),
              ),
-             textAlign: TextAlign.center,
-             softWrap: true,
-             maxLines: 10,
-             overflow: TextOverflow.ellipsis,
            ),
            SizedBox(height: spacingM),
          ],
@@ -353,13 +356,16 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
 
                 // Option text with enhanced styling
                 Expanded(
-                  child: Text(
-                    option,
-                    style: _getOptionTextStyle(option, context, fontSize),
-                    textAlign: TextAlign.left,
-                    softWrap: true,
-                    maxLines: 5, // Limit lines to prevent overflow
-                    overflow: TextOverflow.ellipsis, // Show ellipsis for long text
+                  child: SizedBox(
+                    height: 60, // Fixed height for scrollable option text
+                    child: SingleChildScrollView(
+                      child: Text(
+                        option,
+                        style: _getOptionTextStyle(option, context, fontSize),
+                        textAlign: TextAlign.left,
+                        softWrap: true,
+                      ),
+                    ),
                   ),
                 ),
 
