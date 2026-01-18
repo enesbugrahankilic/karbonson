@@ -101,6 +101,10 @@ class UserProgressService {
         lastLoginDate: DateTime.now(),
         achievements: [],
         unlockedFeatures: [],
+        bestScore: 0,
+        totalTimeSpent: 0,
+        weeklyActivity: {},
+        totalDuels: 0,
       );
 
       final success = await saveUserProgress(newProgress);
@@ -152,6 +156,8 @@ class UserProgressService {
         completedQuizzes: currentProgress.completedQuizzes + 1,
         totalPoints: currentProgress.totalPoints + score,
         experiencePoints: currentProgress.experiencePoints + score,
+        bestScore: score > currentProgress.bestScore ? score : currentProgress.bestScore,
+        totalTimeSpent: currentProgress.totalTimeSpent + 2, // Assume 2 minutes per quiz
       );
 
       // Check for level up
@@ -163,7 +169,13 @@ class UserProgressService {
         }
       }
 
-      return await saveUserProgress(updatedProgress);
+      final success = await saveUserProgress(updatedProgress);
+      if (success) {
+        // Update weekly activity
+        await updateWeeklyActivity(uid: uid, activityCount: 1);
+      }
+
+      return success;
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 Error completing quiz: $e');
       return false;
@@ -178,6 +190,7 @@ class UserProgressService {
 
       final updatedProgress = currentProgress.copyWith(
         duelWins: currentProgress.duelWins + 1,
+        totalDuels: currentProgress.totalDuels + 1,
         totalPoints: currentProgress.totalPoints + 50, // Bonus points for duel win
       );
 
@@ -413,6 +426,29 @@ class UserProgressService {
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 Error getting user rank: $e');
       return null;
+    }
+  }
+
+  /// Update weekly activity
+  Future<bool> updateWeeklyActivity({String? uid, int activityCount = 1}) async {
+    try {
+      final currentProgress = await getUserProgress(uid: uid);
+      if (currentProgress == null) return false;
+
+      final now = DateTime.now();
+      final todayKey = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+      final updatedWeeklyActivity = Map<String, int>.from(currentProgress.weeklyActivity);
+      updatedWeeklyActivity[todayKey] = (updatedWeeklyActivity[todayKey] ?? 0) + activityCount;
+
+      final updatedProgress = currentProgress.copyWith(
+        weeklyActivity: updatedWeeklyActivity,
+      );
+
+      return await saveUserProgress(updatedProgress);
+    } catch (e) {
+      if (kDebugMode) debugPrint('🚨 Error updating weekly activity: $e');
+      return false;
     }
   }
 

@@ -17,6 +17,10 @@ class UserProgress extends Equatable {
   final DateTime lastLoginDate;
   final List<String> achievements;
   final List<String> unlockedFeatures;
+  final int bestScore;
+  final int totalTimeSpent; // in minutes
+  final Map<String, int> weeklyActivity; // day -> activity count
+  final int totalDuels;
 
   const UserProgress({
     required this.userId,
@@ -31,6 +35,10 @@ class UserProgress extends Equatable {
     required this.lastLoginDate,
     required this.achievements,
     required this.unlockedFeatures,
+    required this.bestScore,
+    required this.totalTimeSpent,
+    required this.weeklyActivity,
+    required this.totalDuels,
   });
 
   /// Create user progress from JSON
@@ -50,6 +58,10 @@ class UserProgress extends Equatable {
       achievements: List<String>.from(json['achievements'] as List? ?? []),
       unlockedFeatures:
           List<String>.from(json['unlockedFeatures'] as List? ?? []),
+      bestScore: json['bestScore'] as int? ?? 0,
+      totalTimeSpent: json['totalTimeSpent'] as int? ?? 0,
+      weeklyActivity: Map<String, int>.from(json['weeklyActivity'] as Map? ?? {}),
+      totalDuels: json['totalDuels'] as int? ?? 0,
     );
   }
 
@@ -68,6 +80,10 @@ class UserProgress extends Equatable {
       'lastLoginDate': lastLoginDate.millisecondsSinceEpoch,
       'achievements': achievements,
       'unlockedFeatures': unlockedFeatures,
+      'bestScore': bestScore,
+      'totalTimeSpent': totalTimeSpent,
+      'weeklyActivity': weeklyActivity,
+      'totalDuels': totalDuels,
     };
   }
 
@@ -105,6 +121,10 @@ class UserProgress extends Equatable {
         lastLoginDate,
         achievements,
         unlockedFeatures,
+        bestScore,
+        totalTimeSpent,
+        weeklyActivity,
+        totalDuels,
       ];
 
   /// Copy with method
@@ -121,6 +141,10 @@ class UserProgress extends Equatable {
     DateTime? lastLoginDate,
     List<String>? achievements,
     List<String>? unlockedFeatures,
+    int? bestScore,
+    int? totalTimeSpent,
+    Map<String, int>? weeklyActivity,
+    int? totalDuels,
   }) {
     return UserProgress(
       userId: userId ?? this.userId,
@@ -135,6 +159,10 @@ class UserProgress extends Equatable {
       lastLoginDate: lastLoginDate ?? this.lastLoginDate,
       achievements: achievements ?? this.achievements,
       unlockedFeatures: unlockedFeatures ?? this.unlockedFeatures,
+      bestScore: bestScore ?? this.bestScore,
+      totalTimeSpent: totalTimeSpent ?? this.totalTimeSpent,
+      weeklyActivity: weeklyActivity ?? this.weeklyActivity,
+      totalDuels: totalDuels ?? this.totalDuels,
     );
   }
 }

@@ -108,86 +108,88 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('Quiz Ayarları'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Kategori Seçin:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            ...categories.map((category) {
-              return ListTile(
-                title: Text(category),
-                leading: Radio<String>(
-                  value: category,
-                  groupValue: _selectedCategory,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCategory = value;
-                    });
-                  },
-                ),
-                onTap: () {
-                  setState(() {
-                    _selectedCategory = category;
-                  });
-                },
-              );
-            }),
-            const Divider(),
-            const Text(
-              'Zorluk Seviyesi Seçin:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            ...difficulties.map((difficulty) {
-              return ListTile(
-                title: Text(difficulty.displayName),
-                leading: Radio<DifficultyLevel>(
-                  value: difficulty,
-                  groupValue: _selectedDifficulty,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedDifficulty = value!;
-                    });
-                  },
-                ),
-                onTap: () {
-                  setState(() {
-                    _selectedDifficulty = difficulty;
-                  });
-                },
-              );
-            }),
-            const Divider(),
-            const Text(
-              'Soru Sayısı Seçin:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<int>(
-              value: _selectedQuestionCount,
-              decoration: const InputDecoration(
-                labelText: 'Soru Sayısı',
-                border: OutlineInputBorder(),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Kategori Seçin:',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
-              items: const [
-                DropdownMenuItem(value: 5, child: Text('5 Soru (2-3 dakika)')),
-                DropdownMenuItem(value: 10, child: Text('10 Soru (~5 dakika)')),
-                DropdownMenuItem(value: 15, child: Text('15 Soru (~7-8 dakika)')),
-                DropdownMenuItem(value: 20, child: Text('20 Soru (~10-12 dakika)')),
-                DropdownMenuItem(value: 25, child: Text('25 Soru (~12-15 dakika)')),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedQuestionCount = value;
-                  });
-                }
-              },
-            ),
-          ],
+              const SizedBox(height: 8),
+              ...categories.map((category) {
+                return ListTile(
+                  title: Text(category),
+                  leading: Radio<String>(
+                    value: category,
+                    groupValue: _selectedCategory,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCategory = value;
+                      });
+                    },
+                  ),
+                  onTap: () {
+                    setState(() {
+                      _selectedCategory = category;
+                    });
+                  },
+                );
+              }).toList(),
+              const Divider(),
+              const Text(
+                'Zorluk Seviyesi Seçin:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              ...difficulties.map((difficulty) {
+                return ListTile(
+                  title: Text(difficulty.displayName),
+                  leading: Radio<DifficultyLevel>(
+                    value: difficulty,
+                    groupValue: _selectedDifficulty,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedDifficulty = value!;
+                      });
+                    },
+                  ),
+                  onTap: () {
+                    setState(() {
+                      _selectedDifficulty = difficulty;
+                    });
+                  },
+                );
+              }),
+              const Divider(),
+              const Text(
+                'Soru Sayısı Seçin:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<int>(
+                value: _selectedQuestionCount,
+                decoration: const InputDecoration(
+                  labelText: 'Soru Sayısı',
+                  border: OutlineInputBorder(),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 5, child: Text('5 Soru (2-3 dakika)')),
+                  DropdownMenuItem(value: 10, child: Text('10 Soru (~5 dakika)')),
+                  DropdownMenuItem(value: 15, child: Text('15 Soru (~7-8 dakika)')),
+                  DropdownMenuItem(value: 20, child: Text('20 Soru (~10-12 dakika)')),
+                  DropdownMenuItem(value: 25, child: Text('25 Soru (~12-15 dakika)')),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      _selectedQuestionCount = value;
+                    });
+                  }
+                },
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(

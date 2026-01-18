@@ -9,14 +9,17 @@ import '../models/achievement.dart';
 import '../models/user_progress.dart';
 import '../models/daily_challenge.dart';
 import '../models/task_reminder.dart';
+import '../models/user_activity.dart';
 import '../services/reward_service.dart';
 import '../services/task_reminder_service.dart';
+import '../services/user_activity_service.dart';
 
 /// Achievement and progress tracking service
 class AchievementService {
   static final AchievementService _instance = AchievementService._internal();
   final RewardService _rewardService = RewardService();
   final TaskReminderService _taskReminderService = TaskReminderService();
+  final UserActivityService _userActivityService = UserActivityService();
   factory AchievementService() => _instance;
   AchievementService._internal();
 
@@ -188,6 +191,10 @@ class AchievementService {
           lastLoginDate: DateTime.now(),
           achievements: [],
           unlockedFeatures: [],
+          bestScore: 0,
+          totalTimeSpent: 0,
+          weeklyActivity: {},
+          totalDuels: 0,
         );
 
         await _firestore
@@ -432,10 +439,20 @@ class AchievementService {
       // Update streams
       _progressController.add(newProgress);
 
+      // Log activity for quiz completion
+      if (completedQuizzes != null && completedQuizzes > 0) {
+        await _userActivityService.logActivity(
+          type: ActivityType.quizCompleted,
+          title: 'Quiz Tamamlandı',
+          description: '$completedQuizzes quiz başarıyla tamamlandı',
+          metadata: {'score': completedQuizzes},
+        );
+      }
+
       // Award new achievements
       if (newAchievements.isNotEmpty) {
         await _awardAchievements(userId, newAchievements);
-        
+
         // Check for unlockable rewards
         await _checkForUnlockableRewards(newProgress);
       }

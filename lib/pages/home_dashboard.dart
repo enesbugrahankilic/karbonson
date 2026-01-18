@@ -12,10 +12,12 @@ import '../services/achievement_service.dart';
 import '../services/profile_service.dart';
 import '../services/user_progress_service.dart';
 import '../services/profile_picture_service.dart';
+import '../services/user_activity_service.dart';
 import '../models/achievement.dart';
 import '../models/user_progress.dart';
 import '../models/daily_challenge.dart';
 import '../models/user_data.dart';
+import '../models/user_activity.dart';
 
 class HomeDashboard extends StatefulWidget {
   const HomeDashboard({super.key});
@@ -37,12 +39,14 @@ class _HomeDashboardState extends State<HomeDashboard>
   UserProgress? _userProgress;
   List<Achievement> _userAchievements = [];
   List<DailyChallenge> _dailyChallenges = [];
+  List<UserActivity> _recentActivities = [];
   bool _isLoadingData = true;
 
   // Services
   final ProfileService _profileService = ProfileService();
   final UserProgressService _userProgressService = UserProgressService();
   final AchievementService _achievementService = AchievementService();
+  final UserActivityService _userActivityService = UserActivityService();
 
   @override
   void initState() {
@@ -161,6 +165,9 @@ class _HomeDashboardState extends State<HomeDashboard>
           });
         }
       });
+
+      // Load recent activities
+      _recentActivities = await _userActivityService.getRecentActivities(limit: 5);
 
       setState(() {
         _isLoadingData = false;
@@ -523,29 +530,69 @@ class _HomeDashboardState extends State<HomeDashboard>
               padding: EdgeInsets.all(isSmallScreen
                   ? DesignSystem.spacingS
                   : DesignSystem.spacingM),
-              child: Column(
-                children: [
-                  _buildActivityItem(
-                    context,
-                    icon: Icons.quiz,
-                    title: 'Quiz tamamlandı',
-                    subtitle: '2 saat önce',
-                    color: ThemeColors.getSuccessColor(context),
-                  ),
-                  SizedBox(height: DesignSystem.spacingM),
-                  _buildActivityItem(
-                    context,
-                    icon: Icons.people,
-                    title: 'Yeni arkadaş eklendi',
-                    subtitle: '1 gün önce',
-                    color: ThemeColors.getInfoColor(context),
-                  ),
-                ],
-              ),
+              child: _recentActivities.isEmpty
+                  ? _buildEmptyActivitiesMessage(context, isSmallScreen)
+                  : Column(
+                      children: _recentActivities
+                          .map((activity) => _buildActivityItemFromActivity(
+                                context,
+                                activity: activity,
+                                isSmallScreen: isSmallScreen,
+                              ))
+                          .toList(),
+                    ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildEmptyActivitiesMessage(BuildContext context, bool isSmallScreen) {
+    return Column(
+      children: [
+        Icon(
+          Icons.history,
+          size: isSmallScreen ? 32.0 : 40.0,
+          color: ThemeColors.getSecondaryText(context),
+        ),
+        SizedBox(height: DesignSystem.spacingS),
+        Text(
+          'Henüz aktivite bulunmuyor',
+          style: TextStyle(
+            color: ThemeColors.getSecondaryText(context),
+            fontSize: isSmallScreen ? 14.0 : 16.0,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: DesignSystem.spacingS),
+        Text(
+          'Quiz çözerek, düello yaparak aktivitelerinizi görün!',
+          style: TextStyle(
+            color: ThemeColors.getSecondaryText(context),
+            fontSize: isSmallScreen ? 12.0 : 14.0,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActivityItemFromActivity(
+    BuildContext context, {
+    required UserActivity activity,
+    required bool isSmallScreen,
+  }) {
+    final color = _getActivityColor(activity.type);
+    final icon = _getActivityIcon(activity.type);
+    final timeAgo = _getTimeAgo(activity.timestamp);
+
+    return _buildActivityItem(
+      context,
+      icon: icon,
+      title: activity.title,
+      subtitle: timeAgo,
+      color: color,
     );
   }
 
@@ -590,6 +637,55 @@ class _HomeDashboardState extends State<HomeDashboard>
         ),
       ],
     );
+  }
+
+  Color _getActivityColor(ActivityType type) {
+    switch (type) {
+      case ActivityType.quizCompleted:
+        return ThemeColors.getSuccessColor(context);
+      case ActivityType.friendAdded:
+        return ThemeColors.getInfoColor(context);
+      case ActivityType.duelWon:
+        return Colors.purple;
+      case ActivityType.achievementUnlocked:
+        return Colors.orange;
+      case ActivityType.levelUp:
+        return Colors.amber;
+      case ActivityType.loginStreak:
+        return Colors.red;
+    }
+  }
+
+  IconData _getActivityIcon(ActivityType type) {
+    switch (type) {
+      case ActivityType.quizCompleted:
+        return Icons.quiz;
+      case ActivityType.friendAdded:
+        return Icons.people;
+      case ActivityType.duelWon:
+        return Icons.security;
+      case ActivityType.achievementUnlocked:
+        return Icons.emoji_events;
+      case ActivityType.levelUp:
+        return Icons.trending_up;
+      case ActivityType.loginStreak:
+        return Icons.local_fire_department;
+    }
+  }
+
+  String _getTimeAgo(DateTime timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays} gün önce';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} saat önce';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} dakika önce';
+    } else {
+      return 'Az önce';
+    }
   }
 
   Widget _buildFloatingActionButton(BuildContext context) {
@@ -1095,10 +1191,13 @@ class _HomeDashboardState extends State<HomeDashboard>
 
     // Get dynamic quiz statistics
     final totalQuizzes = _userProgress?.completedQuizzes ?? 0;
-    // Calculate win rate based on achievements (simplified)
-    final winRate = totalQuizzes > 0 ? ((totalQuizzes * 0.75).round()) : 0; // 75% win rate as example
-    final winRatePercentage = totalQuizzes > 0 ? ((winRate / totalQuizzes) * 100).round() : 0;
-    final averageTime = '2.3dk'; // This would need to be calculated from actual game data
+    // For now, assume win rate is based on duel wins vs total duels (simplified)
+    final totalDuels = _userProgress?.totalDuels ?? 0;
+    final duelWins = _userProgress?.duelWins ?? 0;
+    final winRatePercentage = totalDuels > 0 ? ((duelWins / totalDuels) * 100).round() : 0;
+    final averageTime = _userProgress != null && _userProgress!.totalTimeSpent > 0 && totalQuizzes > 0
+        ? '${(_userProgress!.totalTimeSpent / totalQuizzes).round()}dk'
+        : '2.3dk'; // fallback
 
     return Container(
       padding: EdgeInsets.all(
@@ -1350,32 +1449,34 @@ class _HomeDashboardState extends State<HomeDashboard>
                         context,
                         icon: Icons.timer,
                         title: 'Toplam Süre',
-                        value: '12.5 saat',
-                        subtitle: 'Son 30 gün',
+                        value: '${(_userProgress?.totalTimeSpent ?? 0) ~/ 60}h ${(_userProgress?.totalTimeSpent ?? 0) % 60}dk',
+                        subtitle: 'Oyun süresi',
                         color: ThemeColors.getInfoColor(context),
                       ),
                       _buildStatCard(
                         context,
                         icon: Icons.local_fire_department,
                         title: 'En Uzun Seri',
-                        value: '7 gün',
-                        subtitle: 'Günlük quiz',
+                        value: '${_userProgress?.loginStreak ?? 0} gün',
+                        subtitle: 'Giriş serisi',
                         color: ThemeColors.getSuccessColor(context),
                       ),
                       _buildStatCard(
                         context,
                         icon: Icons.trending_up,
                         title: 'En Yüksek Skor',
-                        value: '14/15',
-                        subtitle: 'Enerji konusu',
+                        value: '${_userProgress?.bestScore ?? 0}/15',
+                        subtitle: 'Quiz skoru',
                         color: ThemeColors.getWarningColor(context),
                       ),
                       _buildStatCard(
                         context,
                         icon: Icons.people,
                         title: 'Düello Kazanma',
-                        value: '%68',
-                        subtitle: '15 düello',
+                        value: _userProgress != null && _userProgress!.totalDuels > 0
+                            ? '%${((_userProgress!.duelWins / _userProgress!.totalDuels) * 100).round()}'
+                            : '%0',
+                        subtitle: '${_userProgress?.totalDuels ?? 0} düello',
                         color: Colors.purple,
                       ),
                     ],
@@ -2010,22 +2111,33 @@ class _HomeDashboardState extends State<HomeDashboard>
   Widget _buildWeeklyChart(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
-    
-    // Sample data for weekly activity
-    final weekData = [
-      {'day': 'Pzt', 'value': 0.8},
-      {'day': 'Sal', 'value': 0.6},
-      {'day': 'Çar', 'value': 0.9},
-      {'day': 'Per', 'value': 0.7},
-      {'day': 'Cum', 'value': 0.5},
-      {'day': 'Cmt', 'value': 0.4},
-      {'day': 'Paz', 'value': 0.3},
-    ];
-    
+
+    // Get weekly activity data from user progress
+    final weeklyActivity = _userProgress?.weeklyActivity ?? {};
+    final now = DateTime.now();
+
+    // Create week data for the last 7 days
+    final weekData = List.generate(7, (index) {
+      final date = now.subtract(Duration(days: 6 - index));
+      final dayKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final dayName = _getDayName(date.weekday);
+      final value = weeklyActivity[dayKey] ?? 0;
+
+      // Normalize value to 0-1 range (assuming max 10 activities per day)
+      final normalizedValue = (value / 10.0).clamp(0.0, 1.0);
+
+      return {
+        'day': dayName,
+        'value': normalizedValue,
+        'actualValue': value,
+      };
+    });
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: weekData.map((data) {
         final value = data['value'] as double;
+        final actualValue = data['actualValue'] as int;
         return Column(
           children: [
             Container(
@@ -2059,6 +2171,19 @@ class _HomeDashboardState extends State<HomeDashboard>
         );
       }).toList(),
     );
+  }
+
+  String _getDayName(int weekday) {
+    switch (weekday) {
+      case 1: return 'Pzt';
+      case 2: return 'Sal';
+      case 3: return 'Çar';
+      case 4: return 'Per';
+      case 5: return 'Cum';
+      case 6: return 'Cmt';
+      case 7: return 'Paz';
+      default: return '';
+    }
   }
 
   Widget _buildDailyChallengesSection(BuildContext context) {
