@@ -218,7 +218,7 @@ class DuelGameLogic extends ChangeNotifier {
     final player = _currentRoom!.players[playerIndex];
 
     // Update player score
-    final updatedPlayers = [..._currentRoom!.players];
+    final updatedPlayers = <DuelPlayer>[..._currentRoom!.players];
     if (isCorrect) {
       // Bonus points for faster answers
       final timeBonus = questionTimeLimit - timeTakenSeconds;
@@ -241,7 +241,7 @@ class DuelGameLogic extends ChangeNotifier {
       timestamp: DateTime.now(),
     );
 
-    final updatedAnswers = [
+    final updatedAnswers = <DuelAnswer>[
       ...(_currentRoom!.questionAnswers ?? []),
       newAnswer
     ];
@@ -249,10 +249,8 @@ class DuelGameLogic extends ChangeNotifier {
     // Update room in Firestore
     await _firestoreService.updateDuelGameState(
       _currentRoom!.id,
-      questionAnswers:
-          updatedAnswers.map((a) => a.toMap()).toList() as List<dynamic>,
-      players:
-          updatedPlayers.map((p) => p.toMap()).toList() as List<dynamic>,
+      questionAnswers: updatedAnswers.map((a) => a.toMap()).toList(),
+      players: updatedPlayers.map((p) => p.toMap()).toList(),
     );
 
     // End question immediately after answer
