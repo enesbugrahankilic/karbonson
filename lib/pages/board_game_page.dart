@@ -297,9 +297,7 @@ class _BoardGamePageState extends State<BoardGamePage>
                         Navigator.of(context).pop();
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
-                              builder: (context) => LeaderboardPage(
-                                  currentPlayerNickname:
-                                      currentPlayer.nickname)),
+                              builder: (context) => LeaderboardPage()),
                           (Route<dynamic> route) => false,
                         );
                       },
@@ -435,9 +433,7 @@ class _BoardGamePageState extends State<BoardGamePage>
                       Navigator.of(context).pop();
                       Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute(
-                            builder: (context) => LeaderboardPage(
-                                currentPlayerNickname:
-                                    gameLogic.player.nickname)),
+                            builder: (context) => const LeaderboardPage()),
                         (Route<dynamic> route) => false,
                       );
                     },

@@ -327,7 +327,6 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
       'maxWidth': params.maxWidth,
       'maxHeight': params.maxHeight,
       'quality': params.quality,
-      'format': params.format.toString(),
     };
   }
 
@@ -602,7 +601,7 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
       final currentState = state as ProfileImageUploading;
       emit(ProfileImageUploading(
         uploadProgress: event.uploadProgress,
-        optimizationParams: event.optimizationParams ?? currentState.optimizationParams,
+        optimizationParams: _currentOptimizationParams,
         performanceMetrics: _performanceMetrics,
       ));
     }
@@ -619,7 +618,7 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
       }
       emit(ProfileImageLoaded(
         currentImage: _currentImage,
-        optimizationParams: event.optimizationParams ?? _currentOptimizationParams,
+        optimizationParams: _currentOptimizationParams,
         performanceMetrics: _performanceMetrics,
         hasExistingImage: true,
       ));

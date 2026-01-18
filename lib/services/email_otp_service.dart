@@ -6,10 +6,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'phone_number_validator.dart';
-import 'sms_provider_config.dart';
 
 /// OTP kod durumu enum
 enum OtpStatus {
@@ -487,8 +484,7 @@ class EmailOtpService {
     }
   }
 
-  /// SMS ile kod gönder (production'da gerçek SMS API kullan)
-  /// SMS ile kod gönder (Twilio entegrasyonu)
+  /// SMS ile kod gönder (Firebase Phone Authentication kullanarak)
   static Future<void> _sendSmsWithCode({
     required String phoneNumber,
     required String code,
@@ -502,10 +498,35 @@ class EmailOtpService {
         debugPrint('SMS OTP: Mesaj içeriği: "Karbonson doğrulama kodu: $code"');
       }
 
-      // Production: Twilio SDK yok ise HTTP API çağrısı kullan
-      if (!kDebugMode && SmsProviderConfig.isConfigured) {
-        await _sendViaTwilio(phoneNumber: phoneNumber, code: code);
-      }
+      // Firebase Phone Authentication kullanarak SMS gönder
+      // Not: Bu sadece SMS göndermek için, giriş yapmayacağız
+      await _auth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        verificationCompleted: (PhoneAuthCredential credential) {
+          // Otomatik doğrulama - 2FA için kullanmıyoruz
+          if (kDebugMode) {
+            debugPrint('SMS OTP: Otomatik doğrulama tamamlandı');
+          }
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          if (kDebugMode) {
+            debugPrint('SMS OTP: Doğrulama hatası: ${e.message}');
+          }
+          throw Exception('SMS gönderilemedi: ${e.message}');
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          // SMS gönderildi - verificationId'ı saklayabiliriz ama 2FA için kullanmıyoruz
+          if (kDebugMode) {
+            debugPrint('SMS OTP: Kod gönderildi, verificationId: $verificationId');
+          }
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          if (kDebugMode) {
+            debugPrint('SMS OTP: Otomatik alım timeout');
+          }
+        },
+        timeout: const Duration(seconds: 60),
+      );
 
       // Firestore'a SMS gönderim logu kaydet
       await _firestore
@@ -517,6 +538,7 @@ class EmailOtpService {
         'purpose': purpose,
         'sentAt': DateTime.now().millisecondsSinceEpoch,
         'status': 'sent',
+        'provider': 'firebase_phone_auth',
       });
     } catch (e) {
       if (kDebugMode) {
@@ -638,58 +660,4 @@ class EmailOtpService {
     }
   }
 
-  /// Twilio HTTP API ile SMS gönder
-  /// Docs: https://www.twilio.com/docs/sms/send-messages
-  static Future<void> _sendViaTwilio({
-    required String phoneNumber,
-    required String code,
-  }) async {
-    try {
-      final accountSid = SmsProviderConfig.twilioAccountSid;
-      final authToken = SmsProviderConfig.twilioAuthToken;
-      final fromNumber = SmsProviderConfig.twilioFromNumber;
-
-      if (accountSid == null || authToken == null || fromNumber == null) {
-        if (kDebugMode) {
-          debugPrint('Twilio credentials not configured');
-        }
-        return;
-      }
-
-      final url = Uri.parse(
-          'https://api.twilio.com/2010-04-01/Accounts/$accountSid/Messages.json');
-
-      final auth = base64Encode(utf8.encode('$accountSid:$authToken'));
-
-      final response = await http.post(
-        url,
-        headers: {
-          'Authorization': 'Basic $auth',
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: {
-          'From': fromNumber,
-          'To': phoneNumber,
-          'Body': 'Karbonson doğrulama kodu: $code',
-        },
-      ).timeout(const Duration(seconds: 30));
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        if (kDebugMode) {
-          debugPrint('✅ Twilio SMS sent successfully to $phoneNumber');
-        }
-      } else {
-        if (kDebugMode) {
-          debugPrint(
-              '❌ Twilio error: ${response.statusCode} - ${response.body}');
-        }
-        throw Exception('Twilio SMS failed: ${response.statusCode}');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Twilio SMS error: $e');
-      }
-      rethrow;
-    }
-  }
 }

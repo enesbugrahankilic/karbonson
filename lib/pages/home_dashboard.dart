@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../core/navigation/app_router.dart';
@@ -10,6 +11,7 @@ import '../widgets/language_selector_button.dart';
 import '../services/achievement_service.dart';
 import '../services/profile_service.dart';
 import '../services/user_progress_service.dart';
+import '../services/profile_picture_service.dart';
 import '../models/achievement.dart';
 import '../models/user_progress.dart';
 import '../models/daily_challenge.dart';
@@ -356,27 +358,24 @@ class _HomeDashboardState extends State<HomeDashboard>
       child: Row(
         children: [
           // Avatar
-          Container(
-            width: isSmallScreen ? 50.0 : 60.0,
-            height: isSmallScreen ? 50.0 : 60.0,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  ThemeColors.getPrimaryButtonColor(context),
-                  ThemeColors.getAccentButtonColor(context),
-                ],
-              ),
-            ),
-            child: Center(
-              child: Text(
-                displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: isSmallScreen ? 18.0 : 22.0,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+          GestureDetector(
+            onTap: () => _showEditProfilePictureDialog(context),
+            child: CircleAvatar(
+              radius: isSmallScreen ? 25.0 : 30.0,
+              backgroundColor: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.2),
+              backgroundImage: _userData?.profilePictureUrl != null
+                  ? NetworkImage(_userData!.profilePictureUrl!)
+                  : null,
+              child: _userData?.profilePictureUrl == null
+                  ? Text(
+                      displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: isSmallScreen ? 18.0 : 22.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    )
+                  : null,
             ),
           ),
 
@@ -2652,6 +2651,183 @@ class _HomeDashboardState extends State<HomeDashboard>
         await _showQuizCompletionSummary(context, result);
       }
     }
+  }
+
+  void _showEditProfilePictureDialog(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    // ProfilePictureService kullanarak avatar seçeneklerini al
+    final profilePictureService = ProfilePictureService();
+    final avatars = profilePictureService.allAvatars;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Profil Resmi Seç',
+            style: TextStyle(
+              fontSize: isSmallScreen ? 18 : 20,
+              fontWeight: FontWeight.w600,
+              color: ThemeColors.getText(context),
+            ),
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: isSmallScreen ? 3 : 4,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemCount: avatars.length,
+              itemBuilder: (context, index) {
+                final avatar = avatars[index];
+                return GestureDetector(
+                  onTap: () async {
+                    // ProfilePictureService kullanarak profil resmini güncelle
+                    final profilePictureService = ProfilePictureService();
+                    final profileService = ProfileService();
+
+                    final success = await profilePictureService.updateProfilePicture(
+                      avatar,
+                      profileService,
+                    );
+
+                    if (success) {
+                      // UI'yi yenile
+                      _loadUserData();
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Profil resmi güncellendi'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Profil resmi güncellenirken hata oluştu'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                    Navigator.of(context).pop();
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: ThemeColors.getBorder(context),
+                        width: 2,
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.asset(
+                        avatar,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: ThemeColors.getCardBackground(context),
+                            child: Icon(
+                              Icons.person,
+                              color: ThemeColors.getSecondaryText(context),
+                              size: isSmallScreen ? 24 : 32,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'İptal',
+                style: TextStyle(
+                  color: ThemeColors.getSecondaryText(context),
+                ),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                final profilePictureService = ProfilePictureService();
+                final profileService = ProfileService();
+
+                // Kullanıcıdan kaynak seçmesini iste
+                final source = await profilePictureService.showImageSourceDialog(context);
+                if (source == null) return;
+
+                // Resmi seç veya çek
+                final imageFile = source == ImageSource.camera
+                    ? await profilePictureService.pickImageFromCamera()
+                    : await profilePictureService.pickImageFromGallery();
+
+                if (imageFile != null) {
+                  // Firebase'e yükle
+                  final imageUrl = await profilePictureService.uploadImageToFirebase(imageFile);
+
+                  if (imageUrl != null) {
+                    // Profil resmini güncelle
+                    final success = await profilePictureService.updateProfilePicture(
+                      imageUrl,
+                      profileService,
+                    );
+
+                    if (success) {
+                      // UI'yi yenile
+                      _loadUserData();
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Profil resmi güncellendi'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Profil resmi güncellenirken hata oluştu'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Resim yüklenirken hata oluştu'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                }
+                Navigator.of(context).pop();
+              },
+              icon: const Icon(Icons.camera_alt),
+              label: const Text('Fotoğraf Çek'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ThemeColors.getPrimaryButtonColor(context),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _showQuizCompletionSummary(
