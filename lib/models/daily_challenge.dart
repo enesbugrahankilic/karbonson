@@ -10,6 +10,10 @@ enum ChallengeType {
   multiplayer,
   social,
   special,
+  weekly,
+  seasonal,
+  friendship,
+  streak,
 }
 
 /// Reward types
@@ -148,6 +152,14 @@ class DailyChallenge extends Equatable {
         return 'Sosyal';
       case ChallengeType.special:
         return 'Özel';
+      case ChallengeType.weekly:
+        return 'Haftalık';
+      case ChallengeType.seasonal:
+        return 'Mevsimlik';
+      case ChallengeType.friendship:
+        return 'Arkadaşlık';
+      case ChallengeType.streak:
+        return 'Seri';
     }
   }
 

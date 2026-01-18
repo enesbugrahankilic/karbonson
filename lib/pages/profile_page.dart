@@ -3,10 +3,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 // import 'package:clipboard/clipboard.dart'; // Using built-in services
 import '../models/profile_data.dart';
 import '../provides/profile_bloc.dart';
 import '../services/profile_service.dart';
+import '../services/profile_picture_service.dart';
 import '../theme/theme_colors.dart';
 import '../core/navigation/app_router.dart';
 import '../widgets/home_button.dart';
@@ -200,7 +202,11 @@ class _ProfileContentState extends State<ProfileContent>
           _buildGameStatistics(context, profileData.localData),
           const SizedBox(height: 24),
 
-          // C. Alt Bölüm: Oyun Geçmişi (Lokal Veri)
+          // C. Orta Bölüm: Başarımlar ve Ödüller (Lokal Veri)
+          _buildAchievementsAndRewards(context, profileData.localData),
+          const SizedBox(height: 24),
+
+          // D. Alt Bölüm: Oyun Geçmişi (Lokal Veri)
           _buildGameHistory(context, profileData.localData),
         ],
       ),
@@ -522,6 +528,246 @@ class _ProfileContentState extends State<ProfileContent>
     );
   }
 
+  Widget _buildAchievementsAndRewards(BuildContext context, LocalStatisticsData localData) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Başarımlar ve Ödüller',
+          style: TextStyle(
+            color: ThemeColors.getText(context),
+            fontSize: isSmallScreen ? 18 : 20,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Seviye ve Puan Kartı
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.8),
+                ThemeColors.getAccentButtonColor(context).withValues(alpha: 0.8),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Oyun Uzmanı',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: isSmallScreen ? 18 : 20,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${localData.totalGamesPlayed} oyun oynandı',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: isSmallScreen ? 12 : 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.games,
+                      color: Colors.white,
+                      size: isSmallScreen ? 24 : 28,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Kazanma oranı ilerleme çubuğu
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Kazanma Oranı',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: isSmallScreen ? 10 : 12,
+                        ),
+                      ),
+                      Text(
+                        '%${(localData.winRate * 100).round()}',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: isSmallScreen ? 10 : 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(
+                    value: localData.winRate,
+                    backgroundColor: Colors.white.withValues(alpha: 0.3),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    minHeight: 6,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // Günlük Görevler ve Başarımlar Grid
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: isSmallScreen ? 1.1 : 1.2,
+          children: [
+            _buildAchievementCard(
+              context,
+              icon: Icons.emoji_events,
+              title: 'En Yüksek Skor',
+              value: '${localData.highestScore}',
+              subtitle: 'Puan',
+              color: Colors.amber,
+            ),
+            _buildAchievementCard(
+              context,
+              icon: Icons.assignment_turned_in,
+              title: 'Toplam Oyun',
+              value: '${localData.totalGamesPlayed}',
+              subtitle: 'Oynandı',
+              color: Colors.green,
+            ),
+            _buildAchievementCard(
+              context,
+              icon: Icons.card_giftcard,
+              title: 'Ortalama',
+              value: '${localData.averageScore}',
+              subtitle: 'Puan',
+              color: Colors.purple,
+            ),
+            _buildAchievementCard(
+              context,
+              icon: Icons.local_fire_department,
+              title: 'Kazanma Oranı',
+              value: '%${(localData.winRate * 100).round()}',
+              subtitle: 'Başarı',
+              color: Colors.orange,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAchievementCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String value,
+    required String subtitle,
+    required Color color,
+  }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    return Container(
+      padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
+      decoration: BoxDecoration(
+        color: ThemeColors.getCardBackground(context),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: color.withValues(alpha: 0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: isSmallScreen ? 20 : 24,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              color: ThemeColors.getText(context),
+              fontSize: isSmallScreen ? 18 : 20,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              color: ThemeColors.getSecondaryText(context),
+              fontSize: isSmallScreen ? 10 : 12,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: TextStyle(
+              color: ThemeColors.getSecondaryText(context),
+              fontSize: isSmallScreen ? 9 : 10,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildGameHistory(BuildContext context, LocalStatisticsData localData) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
@@ -821,16 +1067,9 @@ class _ProfileContentState extends State<ProfileContent>
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
 
-    // Available avatar options
-    final avatars = [
-      'assets/avatars/default_avatar_1.svg',
-      'assets/avatars/default_avatar_2.svg',
-      'assets/avatars/default_avatar_3.svg',
-      'assets/avatars/default_avatar_4.svg',
-      'assets/avatars/default_avatar_5.svg',
-      'assets/avatars/emoji_avatar_1.svg',
-      'assets/avatars/emoji_avatar_2.svg',
-    ];
+    // ProfilePictureService kullanarak avatar seçeneklerini al
+    final profilePictureService = ProfilePictureService();
+    final avatars = profilePictureService.allAvatars;
 
     showDialog(
       context: context,
@@ -861,15 +1100,34 @@ class _ProfileContentState extends State<ProfileContent>
               itemBuilder: (context, index) {
                 final avatar = avatars[index];
                 return GestureDetector(
-                  onTap: () {
-                    // For now, just show a message since we need to implement image upload
-                    // In a real implementation, this would upload the image and get URL
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Profil resmi özelliği yakında eklenecek'),
-                        duration: Duration(seconds: 2),
-                      ),
+                  onTap: () async {
+                    // ProfilePictureService kullanarak profil resmini güncelle
+                    final profilePictureService = ProfilePictureService();
+                    final profileService = ProfileService();
+
+                    final success = await profilePictureService.updateProfilePicture(
+                      avatar,
+                      profileService,
                     );
+
+                    if (success) {
+                      // Bloc'u güncelle
+                      context.read<ProfileBloc>().add(UpdateProfilePicture(avatar));
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Profil resmi güncellendi'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Profil resmi güncellenirken hata oluştu'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
                     Navigator.of(context).pop();
                   },
                   child: Container(
@@ -913,14 +1171,57 @@ class _ProfileContentState extends State<ProfileContent>
               ),
             ),
             ElevatedButton.icon(
-              onPressed: () {
-                // TODO: Implement camera/gallery picker
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Kamera/galeri özelliği yakında eklenecek'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
+              onPressed: () async {
+                final profilePictureService = ProfilePictureService();
+                final profileService = ProfileService();
+
+                // Kullanıcıdan kaynak seçmesini iste
+                final source = await profilePictureService.showImageSourceDialog(context);
+                if (source == null) return;
+
+                // Resmi seç veya çek
+                final imageFile = source == ImageSource.camera
+                    ? await profilePictureService.pickImageFromCamera()
+                    : await profilePictureService.pickImageFromGallery();
+
+                if (imageFile != null) {
+                  // Firebase'e yükle
+                  final imageUrl = await profilePictureService.uploadImageToFirebase(imageFile);
+
+                  if (imageUrl != null) {
+                    // Profil resmini güncelle
+                    final success = await profilePictureService.updateProfilePicture(
+                      imageUrl,
+                      profileService,
+                    );
+
+                    if (success) {
+                      // Bloc'u güncelle
+                      context.read<ProfileBloc>().add(UpdateProfilePicture(imageUrl));
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Profil resmi güncellendi'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Profil resmi güncellenirken hata oluştu'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Resim yüklenirken hata oluştu'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                }
                 Navigator.of(context).pop();
               },
               icon: const Icon(Icons.camera_alt),

@@ -235,23 +235,24 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     final currentState = state;
     if (currentState is ProfileLoaded) {
       try {
-        // Add game result to local statistics
-        await profileService.addGameResult(
+        // Add game result to Firestore
+        final success = await profileService.addGameResult(
           score: event.score,
           isWin: event.isWin,
           gameType: event.gameType,
         );
 
-        // Reload local statistics
-        final updatedLocalData = await profileService.loadLocalStatistics();
-        final updatedProfile = currentState.profileData.copyWith(
-          localData: updatedLocalData,
-        );
+        if (success) {
+          // Reload profile data from Firestore
+          final updatedProfile = await profileService.getProfileData();
 
-        emit(ProfileLoaded(
-          profileData: updatedProfile,
-          currentNickname: currentState.currentNickname,
-        ));
+          emit(ProfileLoaded(
+            profileData: updatedProfile,
+            currentNickname: currentState.currentNickname,
+          ));
+        } else {
+          emit(ProfileError('Oyun sonucu kaydedilirken hata oluştu'));
+        }
       } catch (e) {
         emit(ProfileError(
             'Oyun sonucu kaydedilirken hata oluştu: ${e.toString()}'));

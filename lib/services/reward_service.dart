@@ -77,6 +77,36 @@ class RewardService {
       unlockRequirement: 20, // 20 düello kazan
       assetPath: 'assets/avatars/ocean_avatar.svg',
     ),
+    RewardItem(
+      id: 'friendship_avatar',
+      name: 'Arkadaşlık Yıldızı',
+      description: 'Arkadaşlarınla birlikte parlayan yıldız avatar',
+      icon: '⭐',
+      type: RewardItemType.avatar,
+      rarity: RewardItemRarity.rare,
+      unlockRequirement: 3, // 3 arkadaş ekle (haftalık görev)
+      assetPath: 'assets/avatars/friendship_avatar.svg',
+    ),
+    RewardItem(
+      id: 'seasonal_spring_avatar',
+      name: 'Bahar Çiçeği',
+      description: 'Renkli bahar çiçekleri ile avatar',
+      icon: '🌸',
+      type: RewardItemType.avatar,
+      rarity: RewardItemRarity.epic,
+      unlockRequirement: 1, // Bahar festivali katılımı
+      assetPath: 'assets/avatars/spring_flower_avatar.svg',
+    ),
+    RewardItem(
+      id: 'legendary_summer_avatar',
+      name: 'Yaz Güneşi',
+      description: 'Parlayan yaz güneşi ile efsanevi avatar',
+      icon: '☀️',
+      type: RewardItemType.avatar,
+      rarity: RewardItemRarity.legendary,
+      unlockRequirement: 1, // Yaz yarışması birinciliği
+      assetPath: 'assets/avatars/summer_sun_avatar.svg',
+    ),
 
     // Theme Rewards
     RewardItem(
@@ -129,6 +159,36 @@ class RewardService {
       unlockRequirement: 15, // 15 arkadaş ekle
       assetPath: 'assets/themes/space_theme.json',
     ),
+    RewardItem(
+      id: 'spring_theme',
+      name: 'Bahar Rüzgarı',
+      description: 'Taze bahar renkleri ve doğa teması',
+      icon: '🌼',
+      type: RewardItemType.theme,
+      rarity: RewardItemRarity.epic,
+      unlockRequirement: 1, // Bahar festivali katılımı
+      assetPath: 'assets/themes/spring_theme.json',
+    ),
+    RewardItem(
+      id: 'summer_theme',
+      name: 'Yaz Sıcaklığı',
+      description: 'Sıcak yaz renkleri ve güneş teması',
+      icon: '🏖️',
+      type: RewardItemType.theme,
+      rarity: RewardItemRarity.legendary,
+      unlockRequirement: 1, // Yaz yarışması katılımı
+      assetPath: 'assets/themes/summer_theme.json',
+    ),
+    RewardItem(
+      id: 'winter_theme',
+      name: 'Kış Büyüsü',
+      description: 'Kar ve buz ile kış teması',
+      icon: '❄️',
+      type: RewardItemType.theme,
+      rarity: RewardItemRarity.epic,
+      unlockRequirement: 25, // Kış mevsimi boyunca aktif ol
+      assetPath: 'assets/themes/winter_theme.json',
+    ),
 
     // Feature Rewards
     RewardItem(
@@ -180,6 +240,36 @@ class RewardService {
       rarity: RewardItemRarity.rare,
       unlockRequirement: 10, // 10 düello kazan
       properties: {'queuePriority': 'high'}, // Yüksek öncelik
+    ),
+    RewardItem(
+      id: 'seasonal_bonus',
+      name: 'Mevsimlik Bonus',
+      description: 'Mevsimlik etkinliklerde 2x puan',
+      icon: '🎯',
+      type: RewardItemType.feature,
+      rarity: RewardItemRarity.epic,
+      unlockRequirement: 1, // Mevsimlik etkinlik katılımı
+      properties: {'seasonalMultiplier': 2.0}, // 2x puan mevsimlik
+    ),
+    RewardItem(
+      id: 'streak_protection',
+      name: 'Seri Koruma',
+      description: 'Seri kaybında 1 gün koruma',
+      icon: '🛡️',
+      type: RewardItemType.feature,
+      rarity: RewardItemRarity.rare,
+      unlockRequirement: 7, // 7 gün seri yakala
+      properties: {'streakProtectionDays': 1}, // 1 gün koruma
+    ),
+    RewardItem(
+      id: 'friend_bonus',
+      name: 'Arkadaş Bonusu',
+      description: 'Arkadaşlarla oynarken %50 daha fazla puan',
+      icon: '👥',
+      type: RewardItemType.feature,
+      rarity: RewardItemRarity.legendary,
+      unlockRequirement: 10, // 10 arkadaş ekle
+      properties: {'friendMultiplier': 1.5}, // 1.5x puan arkadaşlarla
     ),
   ];
 

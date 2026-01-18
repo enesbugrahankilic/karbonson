@@ -19,9 +19,23 @@ class ProfileService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirestoreService _firestoreService = FirestoreService();
 
-  /// Load local statistics data from SharedPreferences
+  /// Load statistics data from Firestore (fallback to SharedPreferences for backward compatibility)
   Future<LocalStatisticsData> loadLocalStatistics() async {
     try {
+      // First try to get from Firestore
+      final userData = await loadServerProfile();
+      if (userData != null && userData.totalGamesPlayed > 0) {
+        return LocalStatisticsData(
+          winRate: userData.winRate,
+          totalGamesPlayed: userData.totalGamesPlayed,
+          highestScore: userData.highestScore,
+          averageScore: userData.averageScore,
+          recentGames: userData.recentGames,
+          lastUpdated: userData.updatedAt ?? DateTime.now(),
+        );
+      }
+
+      // Fallback to SharedPreferences for backward compatibility
       final prefs = await SharedPreferences.getInstance();
       final statsJson = prefs.getString(_localStatsKey);
 
@@ -30,7 +44,7 @@ class ProfileService {
         return LocalStatisticsData.fromMap(statsMap);
       }
     } catch (e) {
-      if (kDebugMode) debugPrint('Error loading local statistics: $e');
+      if (kDebugMode) debugPrint('Error loading statistics: $e');
     }
 
     return LocalStatisticsData.empty();

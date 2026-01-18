@@ -8,12 +8,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/achievement.dart';
 import '../models/user_progress.dart';
 import '../models/daily_challenge.dart';
+import '../models/task_reminder.dart';
 import '../services/reward_service.dart';
+import '../services/task_reminder_service.dart';
 
 /// Achievement and progress tracking service
 class AchievementService {
   static final AchievementService _instance = AchievementService._internal();
   final RewardService _rewardService = RewardService();
+  final TaskReminderService _taskReminderService = TaskReminderService();
   factory AchievementService() => _instance;
   AchievementService._internal();
 
@@ -642,6 +645,18 @@ class AchievementService {
             case ChallengeType.special:
               // Special challenges are handled manually
               break;
+            case ChallengeType.weekly:
+              // Weekly challenges are handled separately
+              break;
+            case ChallengeType.seasonal:
+              // Seasonal challenges are handled separately
+              break;
+            case ChallengeType.friendship:
+              // Friendship challenges are handled separately
+              break;
+            case ChallengeType.streak:
+              // Streak challenges are handled separately
+              break;
           }
 
           if (updated) {
@@ -728,6 +743,70 @@ class AchievementService {
       }
     } catch (e) {
       if (kDebugMode) debugPrint('Failed to check unlockable rewards: $e');
+    }
+  }
+
+  /// Create reminders for incomplete daily challenges
+  Future<void> createChallengeReminders(String userId) async {
+    try {
+      final challenges = await _getTodayChallenges(userId);
+      final incompleteChallenges = challenges.where((c) => !c.isCompleted && !c.isExpired).toList();
+
+      for (final challenge in incompleteChallenges) {
+        // Check if reminder already exists
+        final existingReminders = await _taskReminderService.getTasksByCategory('challenge_${challenge.id}');
+        if (existingReminders.isNotEmpty) continue;
+
+        // Create reminder for evening (6 PM)
+        final now = DateTime.now();
+        final reminderTime = DateTime(now.year, now.month, now.day, 18, 0); // 6 PM
+
+        // Only create if it's before reminder time
+        if (now.isBefore(reminderTime)) {
+          final reminder = TaskReminder(
+            id: '',
+            userId: userId,
+            title: 'Görev Hatırlatma: ${challenge.title}',
+            description: '${challenge.description} - ${challenge.currentValue}/${challenge.targetValue} tamamlandı.',
+            category: 'challenge_${challenge.id}',
+            scheduledTime: reminderTime,
+            status: TaskStatus.pending,
+            reminderType: ReminderType.daily,
+            isRecurring: false,
+            streakCount: 0,
+            createdAt: now,
+          );
+
+          await _taskReminderService.createTaskReminder(reminder);
+          if (kDebugMode) {
+            debugPrint('Created reminder for challenge: ${challenge.title}');
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to create challenge reminders: $e');
+    }
+  }
+
+  /// Get today's challenges for a user
+  Future<List<DailyChallenge>> _getTodayChallenges(String userId) async {
+    try {
+      final today = DateTime.now();
+      final todayString = '${today.year}-${today.month}-${today.day}';
+
+      final snapshot = await _firestore
+          .collection('daily_challenges')
+          .doc(userId)
+          .collection('challenges')
+          .where('date', isEqualTo: todayString)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => DailyChallenge.fromJson(doc.data()))
+          .toList();
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to get today challenges: $e');
+      return [];
     }
   }
 

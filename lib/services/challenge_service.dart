@@ -604,6 +604,28 @@ class ChallengeService {
         bonusReward: 'theme_pack',
       );
 
+      // Special weekly challenge - Friendship (3 friends)
+      final friendshipChallenge = WeeklyChallenge(
+        id: '',
+        title: 'Haftalık Arkadaş',
+        description: '3 yeni arkadaş ekle',
+        icon: '👥',
+        type: ChallengeType.friendship,
+        targetValue: 3,
+        currentValue: 0,
+        rewardPoints: 250,
+        rewardType: RewardType.avatar,
+        rewardItem: 'friendship_avatar',
+        weekStart: weekStart,
+        weekEnd: weekEnd,
+        isCompleted: false,
+        difficulty: ChallengeDifficulty.medium,
+        bonusReward: 'social_badge',
+      );
+
+      final friendshipId = await createWeeklyChallenge(friendshipChallenge);
+      if (friendshipId != null) challenges.add(friendshipId);
+
       final bonusId = await createWeeklyChallenge(bonusChallenge);
       if (bonusId != null) challenges.add(bonusId);
 

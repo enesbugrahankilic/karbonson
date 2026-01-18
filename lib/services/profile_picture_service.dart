@@ -22,6 +22,9 @@ class ProfilePictureService {
     final avatars = [
       '${_defaultAvatarsPath}default_avatar_1.svg',
       '${_defaultAvatarsPath}default_avatar_2.svg',
+      '${_defaultAvatarsPath}default_avatar_3.svg',
+      '${_defaultAvatarsPath}default_avatar_4.svg',
+      '${_defaultAvatarsPath}default_avatar_5.svg',
     ];
     if (kDebugMode) {
       debugPrint('ProfilePictureService: Default avatars loaded: $avatars');
