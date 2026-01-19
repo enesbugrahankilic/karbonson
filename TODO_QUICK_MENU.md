@@ -1,43 +1,38 @@
-# Quick Menu İyileştirme Planı
+# Quick Menu Redesign - Geniş Widget ve Scroll Bar
 
-## Görev Listesi
+## Görevler
 
-### 1. Localization Strings Ekleme
-- [x] app_en.arb dosyasına menü item stringleri ekle
-- [x] app_tr.arb dosyasına menü item stringleri ekle
+### 1. Update quick_menu_widget.dart
+- [x] Increase default itemWidth from 140 to 170
+- [x] Add visible Scrollbar to QuickMenuGrid
+- [x] Update QuickMenuGrid with scroll-based layout
+- [x] Add ScrollbarTheme for custom styling
+- [x] Update QuickMenuWidget itemHeight from 160 to 180
 
-### 2. Quick Menu Widget İyileştirme
-- [x] Gelişmiş gradient ve gölge efektleri
-- [x] Animasyonlu butonlar (scale, glow)
-- [x] Kategori bölümleri (Oyun Modları, Sosyal, Araçlar)
-- [x] Dinamik rozetler ve sayaçlar
-- [x] Responsive tasarım
+### 2. Update home_dashboard.dart
+- [x] Change grid columns from 4 to 3 (default value updated in QuickMenuGrid)
+- [x] Update spacing from 12 to 16 (default value updated in QuickMenuGrid)
 
-### 3. Yeni Menü Butonları
-- [x] Quiz (Mevcut)
-- [x] Düello (Mevcut)
-- [x] Masa Oyunu
-- [x] Multiplayer Lobisi
-- [x] Arkadaşlar (Mevcut)
-- [x] Liderlik Tablosu (Mevcut)
-- [x] Günlük Görevler (Mevcut)
-- [x] Başarılar (Mevcut)
-- [x] Ödül Mağazası
-- [x] AI Önerileri
-- [x] Nasıl Oynanır
-- [x] Ayarlar (Mevcut)
-- [x] Profil
+### 3. Test the changes
+- [ ] Run the app and verify the quick menu displays with wider widgets
+- [ ] Verify scrollbar is visible when scrolling
+- [ ] Check responsiveness on different screen sizes
 
-### 4. Home Dashboard Entegrasyonu
-- [x] _showQuickMenu metodunu güncelle - TAMAMLANDI
-- [x] Yeni tasarımı uygula
-- [x] Navigasyon rotalarını kontrol et
+## Yapılan Değişiklikler
 
-## Tamamlananlar
-- [x] Proje yapısını analiz etme
-- [x] Mevcut quick menu widget'ını inceleme
-- [x] Home dashboard entegrasyonunu kontrol etme
-- [x] Localization dosyalarını inceleme
-- [x] Enhanced quick menu widget oluşturma
-- [x] Home dashboard entegrasyonu
+### quick_menu_widget.dart:
+- `QuickMenuWidget`: 
+  - Default `itemWidth` increased from 140 to 170
+  - Default `itemHeight` increased from 160 to 180
+  
+- `QuickMenuGrid`:
+  - Now uses `SingleChildScrollView` with horizontal scrolling and `Scrollbar`
+  - Default `columns` changed from 4 to 3 for better item visibility
+  - Default `spacing` increased from 12 to 16 for cleaner layout
+  - Added `showScrollbar`, `scrollbarThickness`, and `scrollbarRadius` parameters
+  - Scrollbar thickness: 6.0, radius: 4.0 rounded corners
+
+### home_dashboard.dart:
+- No direct changes needed as defaults were updated in QuickMenuGrid
+- The `_showQuickMenu` method uses `QuickMenuGrid` with default values
 

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import '../provides/language_provider.dart';
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../core/navigation/app_router.dart';
@@ -12,9 +14,10 @@ import '../widgets/language_selector_button.dart';
 import '../widgets/quick_menu_widget.dart';
 import '../services/achievement_service.dart';
 import '../services/profile_service.dart';
-import '../services/user_progress_service.dart';
 import '../services/profile_picture_service.dart';
+import '../services/user_progress_service.dart';
 import '../services/user_activity_service.dart';
+import '../services/app_localizations.dart';
 import '../models/achievement.dart';
 import '../models/user_progress.dart';
 import '../models/daily_challenge.dart';
@@ -194,157 +197,161 @@ class _HomeDashboardState extends State<HomeDashboard>
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final screenWidth = screenSize.width;
-    final screenHeight = screenSize.height;
+    return Consumer<LanguageProvider>(
+      builder: (context, languageProvider, child) {
+        final screenSize = MediaQuery.of(context).size;
+        final screenWidth = screenSize.width;
+        final screenHeight = screenSize.height;
 
-    // Responsive values
-    final isSmallScreen = screenWidth < 360;
-    final isMediumScreen = screenWidth < 600;
+        // Responsive values
+        final isSmallScreen = screenWidth < 360;
+        final isMediumScreen = screenWidth < 600;
 
-    final appBarHeight =
-        isSmallScreen ? 80.0 : (isMediumScreen ? 100.0 : 120.0);
-    final titleFontSize = isSmallScreen ? 18.0 : (isMediumScreen ? 20.0 : 22.0);
+        final appBarHeight =
+            isSmallScreen ? 80.0 : (isMediumScreen ? 100.0 : 120.0);
+        final titleFontSize = isSmallScreen ? 18.0 : (isMediumScreen ? 20.0 : 22.0);
 
-    // Show loading indicator while fetching user data
-    if (_isLoadingData) {
-      return Scaffold(
-        backgroundColor: ThemeColors.getCardBackground(context),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text(
-                'Veriler yükleniyor...',
-                style: TextStyle(
-                  color: ThemeColors.getText(context),
-                  fontSize: 16,
-                ),
+        // Show loading indicator while fetching user data
+        if (_isLoadingData) {
+          return Scaffold(
+            backgroundColor: ThemeColors.getCardBackground(context),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text(
+                    AppLocalizations.loadingData,
+                    style: TextStyle(
+                      color: ThemeColors.getText(context),
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-      );
-    }
+            ),
+          );
+        }
 
-    return Scaffold(
-      backgroundColor: ThemeColors.getCardBackground(context),
-      body: Container(
-        height: screenHeight,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              ThemeColors.getCardBackground(context),
-              ThemeColors.getCardBackground(context).withOpacity(0.95),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Minimal App Bar
-              Container(
-                height: appBarHeight,
-                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Row(
-                  children: [
-                    const HomeButton(),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: FadeTransition(
-                        opacity: _fadeController,
-                        child: Text(
-                          'Ana Sayfa',
-                          style: TextStyle(
-                            color: ThemeColors.getText(context),
-                            fontWeight: FontWeight.w600,
-                            fontSize: titleFontSize,
+        return Scaffold(
+          backgroundColor: ThemeColors.getCardBackground(context),
+          body: Container(
+            height: screenHeight,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  ThemeColors.getCardBackground(context),
+                  ThemeColors.getCardBackground(context).withOpacity(0.95),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  // Minimal App Bar
+                  Container(
+                    height: appBarHeight,
+                    padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Row(
+                      children: [
+                        const HomeButton(),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: FadeTransition(
+                            opacity: _fadeController,
+                            child: Text(
+                              AppLocalizations.home,
+                              style: TextStyle(
+                                color: ThemeColors.getText(context),
+                                fontWeight: FontWeight.w600,
+                                fontSize: titleFontSize,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    const LanguageSelectorButton(),
-                  ],
-                ),
-              ),
-
-              // Main Content - Scrollable if needed but fits screen
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: isSmallScreen ? 16.0 : 20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Welcome Section
-                        SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(0, 0.2),
-                            end: Offset.zero,
-                          ).animate(CurvedAnimation(
-                            parent: _slideController,
-                            curve: Curves.easeOut,
-                          )),
-                          child: _buildWelcomeSection(context),
-                        ),
-
-                        SizedBox(height: isSmallScreen ? 20.0 : 24.0),
-
-                        // Duel Mode Section - Ana odak noktası (EN ÜSTTE)
-                        _buildDuelModeSection(context),
-
-                        SizedBox(height: isSmallScreen ? 20.0 : 24.0),
-
-                        // Quick Access Settings Button
-                        _buildQuickAccessSection(context),
-
-                        SizedBox(height: isSmallScreen ? 20.0 : 24.0),
-
-                        // Quick Quiz Start Section
-                        _buildQuickQuizSection(context),
-
-                        SizedBox(height: isSmallScreen ? 20.0 : 24.0),
-
-                        // Progress & Achievements Section
-                        _buildProgressSection(context),
-
-                        SizedBox(height: isSmallScreen ? 20.0 : 24.0),
-
-                        // Multiplayer Section
-                        _buildMultiplayerSection(context),
-
-                        SizedBox(height: isSmallScreen ? 20.0 : 24.0),
-
-                        // Daily Challenges Section
-                        _buildDailyChallengesSection(context),
-
-                        SizedBox(height: isSmallScreen ? 20.0 : 24.0),
-
-                        // Statistics Summary Section
-                        _buildStatisticsSummarySection(context),
-
-                        SizedBox(height: isSmallScreen ? 20.0 : 24.0),
-
-                        // Recent Activity
-                        _buildRecentActivitySection(context),
-
-                        SizedBox(height: 20.0),
+                        const LanguageSelectorButton(),
                       ],
                     ),
                   ),
-                ),
+
+                  // Main Content - Scrollable if needed but fits screen
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: isSmallScreen ? 16.0 : 20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Welcome Section
+                            SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0, 0.2),
+                                end: Offset.zero,
+                              ).animate(CurvedAnimation(
+                                parent: _slideController,
+                                curve: Curves.easeOut,
+                              )),
+                              child: _buildWelcomeSection(context),
+                            ),
+
+                            SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
+                            // Duel Mode Section - Ana odak noktası (EN ÜSTTE)
+                            _buildDuelModeSection(context),
+
+                            SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
+                            // Quick Access Settings Button
+                            _buildQuickAccessSection(context),
+
+                            SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
+                            // Quick Quiz Start Section
+                            _buildQuickQuizSection(context),
+
+                            SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
+                            // Progress & Achievements Section
+                            _buildProgressSection(context),
+
+                            SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
+                            // Multiplayer Section
+                            _buildMultiplayerSection(context),
+
+                            SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
+                            // Daily Challenges Section
+                            _buildDailyChallengesSection(context),
+
+                            SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
+                            // Statistics Summary Section
+                            _buildStatisticsSummarySection(context),
+
+                            SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
+                            // Recent Activity
+                            _buildRecentActivitySection(context),
+
+                            SizedBox(height: 20.0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-      floatingActionButton: _buildFloatingActionButton(context),
+          floatingActionButton: _buildFloatingActionButton(context),
+        );
+      },
     );
   }
 
@@ -406,7 +413,7 @@ class _HomeDashboardState extends State<HomeDashboard>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Merhaba 👋',
+                  AppLocalizations.helloEmoji,
                   style: TextStyle(
                     color: ThemeColors.getText(context),
                     fontSize: isSmallScreen ? 20.0 : 24.0,
@@ -440,7 +447,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                   ),
                   SizedBox(width: 4.0),
                   Text(
-                    '$totalPoints Puan',
+                    '$totalPoints ${AppLocalizations.points}',
                     style: TextStyle(
                       color: ThemeColors.getText(context),
                       fontSize: isSmallScreen ? 12.0 : 14.0,
@@ -459,7 +466,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                   ),
                   SizedBox(width: 4.0),
                   Text(
-                    '$achievementCount Rozet',
+                    '$achievementCount ${AppLocalizations.badgesAbbrev}',
                     style: TextStyle(
                       color: ThemeColors.getText(context),
                       fontSize: isSmallScreen ? 12.0 : 14.0,

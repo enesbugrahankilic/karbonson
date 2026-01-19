@@ -1813,6 +1813,835 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Surface Color'**
   String get surfaceColor;
+
+  // Home Dashboard Strings
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Back'**
+  String get welcomeBack;
+
+  /// No description provided for @helloEmoji.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello 👋'**
+  String get helloEmoji;
+
+  /// No description provided for @loadingData.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading data...'**
+  String get loadingData;
+
+  /// No description provided for @totalPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Points'**
+  String get totalPoints;
+
+  /// No description provided for @achievementCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement Count'**
+  String get achievementCount;
+
+  /// No description provided for @quickAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Access'**
+  String get quickAccess;
+
+  /// No description provided for @progressAndAchievements.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress & Achievements'**
+  String get progressAndAchievements;
+
+  /// No description provided for @startQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Quiz'**
+  String get startQuiz;
+
+  /// No description provided for @duelMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Duel Mode'**
+  String get duelMode;
+
+  /// No description provided for @teamPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Team Play'**
+  String get teamPlay;
+
+  /// No description provided for @dailyChallenges.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Challenges'**
+  String get dailyChallenges;
+
+  /// No description provided for @statisticsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics Summary'**
+  String get statisticsSummary;
+
+  /// No description provided for @recentActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Activities'**
+  String get recentActivity;
+
+  /// No description provided for @play.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get play;
+
+  /// No description provided for @start.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get start;
+
+  /// No description provided for @create.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get create;
+
+  /// No description provided for @join.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get join;
+
+  /// No description provided for @badges.
+  ///
+  /// In en, this message translates to:
+  /// **'Badges'**
+  String get badges;
+
+  /// No description provided for @homePageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get homePageTitle;
+
+  /// No description provided for @quickAccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Access'**
+  String get quickAccessTitle;
+
+  /// No description provided for @quizInfoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Quick Quiz'**
+  String get quizInfoTitle;
+
+  /// No description provided for @ecoQuizTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Eco Knowledge Quiz'**
+  String get ecoQuizTitle;
+
+  /// No description provided for @startQuizAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Now'**
+  String get startQuizAction;
+
+  /// No description provided for @increaseAwareness.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase eco awareness, earn points!'**
+  String get increaseAwareness;
+
+  /// No description provided for @quickAccessSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get quickAccessSettings;
+
+  /// No description provided for @quickAccessProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get quickAccessProfile;
+
+  /// No description provided for @noActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'No activities yet'**
+  String get noActivities;
+
+  /// No description provided for @activityHint.
+  ///
+  /// In en, this message translates to:
+  /// **'See your activities'**
+  String get activityHint;
+
+  /// No description provided for @daysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'days ago'**
+  String get daysAgo;
+
+  /// No description provided for @hoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'hours ago'**
+  String get hoursAgo;
+
+  /// No description provided for @minutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'minutes ago'**
+  String get minutesAgo;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get justNow;
+
+  /// No description provided for @levelProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Level Progress'**
+  String get levelProgress;
+
+  /// No description provided for @quizStatistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz Statistics'**
+  String get quizStatistics;
+
+  /// No description provided for @totalQuizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Quizzes'**
+  String get totalQuizzes;
+
+  /// No description provided for @correctRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct Rate'**
+  String get correctRate;
+
+  /// No description provided for @averageTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg. Time'**
+  String get averageTime;
+
+  /// No description provided for @recentAchievements.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Achievements'**
+  String get recentAchievements;
+
+  /// No description provided for @noAchievements.
+  ///
+  /// In en, this message translates to:
+  /// **'No achievements yet'**
+  String get noAchievements;
+
+  /// No description provided for @achievementsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Earn achievements by taking quizzes!'**
+  String get achievementsHint;
+
+  /// No description provided for @totalTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Time'**
+  String get totalTime;
+
+  /// No description provided for @longestStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest Streak'**
+  String get longestStreak;
+
+  /// No description provided for @loginStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Login Streak'**
+  String get loginStreak;
+
+  /// No description provided for @highestScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest Score'**
+  String get highestScore;
+
+  /// No description provided for @quizScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz score'**
+  String get quizScore;
+
+  /// No description provided for @duelWinRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Duel Win Rate'**
+  String get duelWinRate;
+
+  /// No description provided for @totalDuels.
+  ///
+  /// In en, this message translates to:
+  /// **'duels'**
+  String get totalDuels;
+
+  /// No description provided for @weeklyActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Activity'**
+  String get weeklyActivity;
+
+  /// No description provided for @noDailyChallenges.
+  ///
+  /// In en, this message translates to:
+  /// **'No challenges for today'**
+  String get noDailyChallenges;
+
+  /// No description provided for @newChallengesTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'New challenges tomorrow!'**
+  String get newChallengesTomorrow;
+
+  /// No description provided for @challengeReward.
+  ///
+  /// In en, this message translates to:
+  /// **'Reward:'**
+  String get challengeReward;
+
+  /// No description provided for @challengePoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Points'**
+  String get challengePoints;
+
+  // Quiz Page Strings
+  /// No description provided for @quizSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz Settings'**
+  String get quizSettings;
+
+  /// No description provided for @selectCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Category:'**
+  String get selectCategory;
+
+  /// No description provided for @selectDifficulty.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Difficulty Level:'**
+  String get selectDifficulty;
+
+  /// No description provided for @selectQuestionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Question Count:'**
+  String get selectQuestionCount;
+
+  /// No description provided for @questionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Question Count'**
+  String get questionCount;
+
+  /// No description provided for @fiveQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'5 Questions (2-3 minutes)'**
+  String get fiveQuestions;
+
+  /// No description provided for @tenQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'10 Questions (~5 minutes)'**
+  String get tenQuestions;
+
+  /// No description provided for @fifteenQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'15 Questions (~7-8 minutes)'**
+  String get fifteenQuestions;
+
+  /// No description provided for @twentyQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'20 Questions (~10-12 minutes)'**
+  String get twentyQuestions;
+
+  /// No description provided for @twentyFiveQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'25 Questions (~12-15 minutes)'**
+  String get twentyFiveQuestions;
+
+  /// No description provided for @pleaseSelectCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a category'**
+  String get pleaseSelectCategory;
+
+  /// No description provided for @begin.
+  ///
+  /// In en, this message translates to:
+  /// **'Begin'**
+  String get begin;
+
+  /// No description provided for @quizExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit Quiz'**
+  String get quizExit;
+
+  /// No description provided for @exitWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'If you exit the quiz, your progress will not be saved.'**
+  String get exitWarning;
+
+  /// No description provided for @continueQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to continue?'**
+  String get continueQuestion;
+
+  /// No description provided for @yesExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, Exit'**
+  String get yesExit;
+
+  /// No description provided for @questionNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Question'**
+  String get questionNumber;
+
+  /// No description provided for @quizCompletedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz Completed'**
+  String get quizCompletedTitle;
+
+  /// No description provided for @totalScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Score'**
+  String get totalScore;
+
+  /// No description provided for @backToHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Home'**
+  String get backToHome;
+
+  /// No description provided for @errorLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: '**
+  String get errorLoading;
+
+  /// No description provided for @questionOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {current}/{total}'**
+  String get questionOf;
+
+  // Duel Page Strings
+  /// No description provided for @duelModeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Duel Mode'**
+  String get duelModeTitle;
+
+  /// No description provided for @roomCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Room created! Room Code: '**
+  String get roomCreated;
+
+  /// No description provided for @roomCodeCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Room code copied!'**
+  String get roomCodeCopied;
+
+  /// No description provided for @enterRoomCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Room Code'**
+  String get enterRoomCode;
+
+  /// No description provided for @inviteFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite Friends'**
+  String get inviteFriends;
+
+  /// No description provided for @twoPlayersRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'2 players required'**
+  String get twoPlayersRequired;
+
+  /// No description provided for @fiveQuestionsPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'5 questions will be asked'**
+  String get fiveQuestionsPrompt;
+
+  /// No description provided for @mostCorrectWins.
+  ///
+  /// In en, this message translates to:
+  /// **'Most correct answers win'**
+  String get mostCorrectWins;
+
+  /// No description provided for @speedBonus.
+  ///
+  /// In en, this message translates to:
+  /// **'Earn points with speed bonus'**
+  String get speedBonus;
+
+  /// No description provided for @timeLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'15 second time limit'**
+  String get timeLimit;
+
+  /// No description provided for @duelOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Duel Options'**
+  String get duelOptions;
+
+  /// No description provided for @chooseDuelType.
+  ///
+  /// In en, this message translates to:
+  /// **'Which duel type do you prefer?'**
+  String get chooseDuelType;
+
+  /// No description provided for @quickDuelDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'5 questions, 15 seconds time'**
+  String get quickDuelDesc;
+
+  /// No description provided for @roomDuelDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Play with friend in permanent room'**
+  String get roomDuelDesc;
+
+  /// No description provided for @yourAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Answer'**
+  String get yourAnswer;
+
+  /// No description provided for @send.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get send;
+
+  /// No description provided for @scoreboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Scoreboard'**
+  String get scoreboard;
+
+  /// No description provided for @pointsValue.
+  ///
+  /// In en, this message translates to:
+  /// **'points'**
+  String get pointsValue;
+
+  /// No description provided for @roomJoinFeature.
+  ///
+  /// In en, this message translates to:
+  /// **'Room join feature under development...'**
+  String get roomJoinFeature;
+
+  /// No description provided for @quizLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz is loading...'**
+  String get quizLoading;
+
+  /// No description provided for @roomDuel.
+  ///
+  /// In en, this message translates to:
+  /// **'Room Duel'**
+  String get roomDuel;
+
+  /// No description provided for @permanentRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanent room'**
+  String get permanentRoom;
+
+  /// No description provided for @playWithFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Play with friend'**
+  String get playWithFriend;
+
+  /// No description provided for @secondsTime.
+  ///
+  /// In en, this message translates to:
+  /// **'seconds time'**
+  String get secondsTime;
+
+  /// No description provided for @questions.
+  ///
+  /// In en, this message translates to:
+  /// **'questions'**
+  String get questions;
+
+  // Quick Menu Strings
+  /// No description provided for @featuresCount.
+  ///
+  /// In en, this message translates to:
+  /// **'features to explore'**
+  String get featuresCount;
+
+  /// No description provided for @boardGameSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Strategy based'**
+  String get boardGameSubtitle;
+
+  /// No description provided for @multiplayerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to 4 players'**
+  String get multiplayerSubtitle;
+
+  /// No description provided for @friendsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add and see friends'**
+  String get friendsSubtitle;
+
+  /// No description provided for @leaderboardSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Top players'**
+  String get leaderboardSubtitle;
+
+  /// No description provided for @dailySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today's challenges'**
+  String get dailySubtitle;
+
+  /// No description provided for @achievementsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'See your badges'**
+  String get achievementsSubtitle;
+
+  /// No description provided for @rewardsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Gifts for you'**
+  String get rewardsSubtitle;
+
+  /// No description provided for @aiSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalized'**
+  String get aiSubtitle;
+
+  /// No description provided for @howToPlaySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules and tips'**
+  String get howToPlaySubtitle;
+
+  /// No description provided for @settingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App settings'**
+  String get settingsSubtitle;
+
+  /// No description provided for @profileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'User info'**
+  String get profileSubtitle;
+
+  /// No description provided for @featured.
+  ///
+  /// In en, this message translates to:
+  /// **'FEATURED'**
+  String get featured;
+
+  /// No description provided for @gameModesCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Game Modes'**
+  String get gameModesCategory;
+
+  /// No description provided for @socialCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Social'**
+  String get socialCategory;
+
+  /// No description provided for @toolsCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools'**
+  String get toolsCategory;
+
+  /// No description provided for @statsDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Days'**
+  String get statsDays;
+
+  // Theme descriptions
+  /// No description provided for @allTopics.
+  ///
+  /// In en, this message translates to:
+  /// **'All Topics'**
+  String get allTopics;
+
+  /// No description provided for @allDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Mixed questions from all eco topics'**
+  String get allDescription;
+
+  /// No description provided for @energyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy conservation and sustainable energy'**
+  String get energyDescription;
+
+  /// No description provided for @waterDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Water conservation and water resources management'**
+  String get waterDescription;
+
+  /// No description provided for @forestDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Forest protection and afforestation'**
+  String get forestDescription;
+
+  /// No description provided for @recyclingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Waste management and recycling'**
+  String get recyclingDescription;
+
+  /// No description provided for @transportationDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Eco-friendly transportation'**
+  String get transportationDescription;
+
+  /// No description provided for @consumptionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Sustainable consumption'**
+  String get consumptionDescription;
+
+  /// No description provided for @rememberTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember this theme'**
+  String get rememberTheme;
+
+  /// No description provided for @themeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme Description'**
+  String get themeDescription;
+
+  // Help & Info
+  /// No description provided for @helpInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & Info'**
+  String get helpInfo;
+
+  /// No description provided for @aboutApp.
+  ///
+  /// In en, this message translates to:
+  /// **'About App'**
+  String get aboutApp;
+
+  /// No description provided for @appDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Eco Game is a fun quiz app designed to increase environmental awareness. Test your knowledge on energy, water, forest, recycling and more!'**
+  String get appDescription;
+
+  /// No description provided for @quizMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz Mode'**
+  String get quizMode;
+
+  /// No description provided for @duelModeInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Duel Mode'**
+  String get duelModeInfo;
+
+  /// No description provided for @teamGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Team Game'**
+  String get teamGame;
+
+  /// No description provided for @achievementsBadges.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements & Badges'**
+  String get achievementsBadges;
+
+  /// No description provided for @understood.
+  ///
+  /// In en, this message translates to:
+  /// **'Understood'**
+  String get understood;
+
+  /// No description provided for @supportEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Support:'**
+  String get supportEmail;
+
+  // Additional
+  /// No description provided for @quickQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Quiz'**
+  String get quickQuiz;
+
+  /// No description provided for @user.
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
+  String get user;
 }
 
 class _AppLocalizationsDelegate

@@ -269,4 +269,329 @@ class AppLocalizations extends ChangeNotifier {
       _isTurkish ? 'Zar At...' : 'Roll Dice...';
   static String get quizOpen => _isTurkish ? 'Quiz Açık' : 'Quiz Open';
   static String get skipTurns => _isTurkish ? 'Tur Atla' : 'Skip Turns';
+
+  // ==================== Home Dashboard ====================
+  // Loading & Data
+  static String get loadingData =>
+      _isTurkish ? 'Veriler yükleniyor...' : 'Loading data...';
+  static String get noDataAvailable =>
+      _isTurkish ? 'Veri bulunamadı' : 'No data available';
+
+  // Welcome Section
+  static String get helloEmoji => _isTurkish ? 'Merhaba 👋' : 'Hello 👋';
+  static String get user => _isTurkish ? 'Kullanıcı' : 'User';
+  static String get pointsAbbrev =>
+      _isTurkish ? 'Puan' : 'Points'; // Short for points
+  static String get badgesAbbrev =>
+      _isTurkish ? 'Rozet' : 'Badges'; // Short for badges
+  static String get totalPoints => _isTurkish ? 'Toplam Puan' : 'Total Points';
+  static String get achievementCount =>
+      _isTurkish ? 'Başarı Sayısı' : 'Achievement Count';
+
+  // Section Titles - Dashboard specific
+  static String get dashboardQuickAccess => _isTurkish ? 'Hızlı Erişim' : 'Quick Access';
+  static String get dashboardProgressAchievements =>
+      _isTurkish ? 'İlerleme & Başarılar' : 'Progress & Achievements';
+  static String get quickQuizStart =>
+      _isTurkish ? 'Hızlı Quiz Başlat' : 'Quick Quiz Start';
+  static String get duelModeMain =>
+      _isTurkish ? '⚔️ Düello Modu - Ana Özellik' : '⚔️ Duel Mode - Main Feature';
+  static String get multiplayerPlay =>
+      _isTurkish ? 'Çoklu Oynama' : 'Multiplayer';
+  static String get dailyChallengesSection =>
+      _isTurkish ? 'Günlük Görevler' : 'Daily Challenges';
+  static String get statisticsSummary =>
+      _isTurkish ? 'İstatistik Özeti' : 'Statistics Summary';
+  static String get dashboardRecentActivity =>
+      _isTurkish ? 'Son Aktiviteler' : 'Recent Activity';
+  static String get teamPlay => _isTurkish ? 'Takım Oyunu' : 'Team Play';
+
+  // Quiz Section
+  static String get ecoKnowledgeQuiz =>
+      _isTurkish ? 'Çevre Bilgisi Quiz\'i' : 'Eco Knowledge Quiz';
+  static String get increaseEcoAwareness =>
+      _isTurkish ? 'Çevre bilincini artır, puan kazan!' : 'Increase eco awareness, earn points!';
+  static String get startNow => _isTurkish ? 'Şimdi Başlat' : 'Start Now';
+
+  // Duel Section
+  static String get quickDuelButton =>
+      _isTurkish ? 'Hızlı Düello' : 'Quick Duel';
+  static String get competeWithFriend =>
+      _isTurkish ? 'Arkadaşınla hızlı yarış!' : 'Compete with your friend quickly!';
+  static String get duelStart => _isTurkish ? 'Başlat' : 'Start';
+  static String get createRoom =>
+      _isTurkish ? 'Oda Oluştur' : 'Create Room';
+  static String get permanentRoom =>
+      _isTurkish ? 'Kalıcı düello odası' : 'Permanent duel room';
+  static String get duelCreate => _isTurkish ? 'Oluştur' : 'Create';
+
+  // Multiplayer Section
+  static String get playUpToPlayers =>
+      _isTurkish ? '4 kişiye kadar oyna!' : 'Play with up to 4 players!';
+  static String get multiplayerCreateRoom =>
+      _isTurkish ? 'Oda Oluştur' : 'Create Room';
+  static String get joinWithCode =>
+      _isTurkish ? 'Koda Katıl' : 'Join with Code';
+  static String get activeRooms =>
+      _isTurkish ? 'Aktif Odalar' : 'Active Rooms';
+  static String get multiplayerPlayButton =>
+      _isTurkish ? 'Oyna' : 'Play';
+
+
+
+  // Quiz Statistics
+  static String get quizStatistics =>
+      _isTurkish ? 'Quiz İstatistikleri' : 'Quiz Statistics';
+  static String get totalQuizzes =>
+      _isTurkish ? 'Toplam Quiz' : 'Total Quizzes';
+  static String get correctRate =>
+      _isTurkish ? 'Doğru Oran' : 'Correct Rate';
+  static String get averageTime =>
+      _isTurkish ? 'Ort. Süre' : 'Avg. Time';
+
+  // Recent Achievements - Dashboard specific
+  static String get dashboardRecentAchievements =>
+      _isTurkish ? 'Son Başarılar' : 'Recent Achievements';
+  static String get noAchievementsYet =>
+      _isTurkish ? 'Henüz başarı kazanmadınız' : 'No achievements yet';
+  static String get achievementsHint =>
+      _isTurkish ? 'Quiz çözerek başarı kazanmaya başlayın!' : 'Start earning achievements by taking quizzes!';
+
+  // Statistics Cards
+  static String get totalTime => _isTurkish ? 'Toplam Süre' : 'Total Time';
+  static String get gameTime => _isTurkish ? 'Oyun süresi' : 'Game time';
+  static String get longestStreak =>
+      _isTurkish ? 'En Uzun Seri' : 'Longest Streak';
+  static String get loginStreak =>
+      _isTurkish ? 'Giriş Serisi' : 'Login Streak';
+  static String get highestScore =>
+      _isTurkish ? 'En Yüksek Skor' : 'Highest Score';
+  static String get quizScore =>
+      _isTurkish ? 'Quiz skoru' : 'Quiz score';
+  static String get duelWins =>
+      _isTurkish ? 'Düello Kazanma' : 'Duel Wins';
+  static String get totalDuels =>
+      _isTurkish ? 'düello' : 'duels';
+
+  // Weekly Activity
+  static String get weeklyActivity =>
+      _isTurkish ? 'Haftalık Aktivite' : 'Weekly Activity';
+
+  // Daily Challenges
+  static String get noDailyChallenges =>
+      _isTurkish ? 'Bugün için görev bulunamadı' : 'No challenges for today';
+  static String get newChallengesTomorrow =>
+      _isTurkish ? 'Yarın yeni günlük görevler sizi bekliyor!' : 'New daily challenges await you tomorrow!';
+
+  // Activity
+  static String get noActivities =>
+      _isTurkish ? 'Henüz aktivite bulunmuyor' : 'No activities yet';
+  static String get activitiesHint =>
+      _isTurkish ? 'Quiz çözerek, düello yaparak aktivitelerinizi görün!' : 'See your activities by taking quizzes and duels!';
+
+  // Time Ago - Dashboard specific
+  static String get daysAgo => _isTurkish ? 'gün önce' : 'days ago';
+  static String get hoursAgo => _isTurkish ? 'saat önce' : 'hours ago';
+  static String get minutesAgo => _isTurkish ? 'dakika önce' : 'minutes ago';
+  static String get dashboardJustNow => _isTurkish ? 'Az önce' : 'Just now';
+
+  // Quick Menu
+  static String get quickMenu => _isTurkish ? 'Hızlı Menü' : 'Quick Menu';
+  static String get featuresDiscover =>
+      _isTurkish ? 'özellik keşfet' : 'features to discover';
+
+  // Help Dialog
+  static String get helpInfo => _isTurkish ? 'Yardım & Bilgi' : 'Help & Info';
+  static String get aboutApp =>
+      _isTurkish ? 'Uygulama Hakkında' : 'About App';
+  static String get appDescription =>
+      _isTurkish ? 'Quiz çözerek çevre bilginizi test edin!' : 'Test your environmental knowledge by taking quizzes!';
+  static String get quizModeInfo =>
+      _isTurkish ? 'Quiz Modu' : 'Quiz Mode';
+  static String get quizModeDescription => _isTurkish
+      ? 'Farklı çevre temalarından sorular çözün'
+      : 'Solve questions from different environmental themes';
+  static String get duelModeInfo =>
+      _isTurkish ? 'Düello Modu' : 'Duel Mode';
+  static String get duelModeDescription => _isTurkish
+      ? 'Arkadaşlarınızla yarışın!'
+      : 'Compete with your friends!';
+  static String get teamGameInfo =>
+      _isTurkish ? 'Takım Oyunu' : 'Team Game';
+  static String get teamGameDescription => _isTurkish
+      ? 'Birlikte oynayın!'
+      : 'Play together!';
+  static String get achievementsBadgesInfo =>
+      _isTurkish ? 'Başarılar & Rozetler' : 'Achievements & Badges';
+  static String get achievementsDescription => _isTurkish
+      ? 'Rozetler kazanın!'
+      : 'Earn badges!';
+  static String get understood => _isTurkish ? 'Anladım' : 'Understood';
+  static String get supportEmail =>
+      _isTurkish ? 'Destek için:' : 'Support:';
+  static String get supportAddress =>
+      _isTurkish ? 'support@ecogame.app' : 'support@ecogame.app';
+
+  // Quick Access Buttons
+  static String get settingsBtn =>
+      _isTurkish ? 'Ayarlar' : 'Settings';
+  static String get profileBtn =>
+      _isTurkish ? 'Profil' : 'Profile';
+
+  // Quick Stats
+  static String get statLevel =>
+      _isTurkish ? 'Seviye' : 'Level';
+  static String get statStreak =>
+      _isTurkish ? 'Seri' : 'Streak';
+
+  // Challenge Reward - Dashboard specific
+  static String get dashboardReward => _isTurkish ? 'Ödül:' : 'Reward:';
+  static String get rewardPoints =>
+      _isTurkish ? 'Puan' : 'Points';
+
+  // Multiplayer Features
+  static String get featureCreateRoom =>
+      _isTurkish ? 'Oda Oluştur' : 'Create Room';
+  static String get featureJoinCode =>
+      _isTurkish ? 'Koda Katıl' : 'Join with Code';
+  static String get featureActiveRooms =>
+      _isTurkish ? 'Aktif Odalar' : 'Active Rooms';
+
+  // Profile Picture Dialog
+  static String get selectProfilePicture =>
+      _isTurkish ? 'Profil Resmi Seç' : 'Select Profile Picture';
+  static String get takePhoto =>
+      _isTurkish ? 'Fotoğraf Çek' : 'Take Photo';
+
+  // Theme Selection Dialog
+  static String get selectQuizTheme =>
+      _isTurkish ? 'Quiz Teması Seç' : 'Select Quiz Theme';
+  static String get chooseTheme =>
+      _isTurkish ? 'Hangi çevre temasında yarışmak istersiniz?' : 'Which environmental theme would you like to compete in?';
+  static String get allTopics =>
+      _isTurkish ? 'Tümü' : 'All';
+  static String get allTopicsDescription => _isTurkish
+      ? 'Tüm çevre konularından karışık sorular'
+      : 'Mixed questions from all environmental topics';
+  static String get energyTopic =>
+      _isTurkish ? 'Enerji' : 'Energy';
+  static String get energyDescription => _isTurkish
+      ? 'Enerji tasarrufu ve sürdürülebilir enerji'
+      : 'Energy conservation and sustainable energy';
+  static String get waterTopic =>
+      _isTurkish ? 'Su' : 'Water';
+  static String get waterDescription => _isTurkish
+      ? 'Su tasarrufu ve su kaynakları yönetimi'
+      : 'Water conservation and water resources management';
+  static String get forestTopic =>
+      _isTurkish ? 'Orman' : 'Forest';
+  static String get forestDescription => _isTurkish
+      ? 'Orman koruma ve ağaçlandırma çalışmaları'
+      : 'Forest protection and afforestation';
+  static String get recyclingTopic =>
+      _isTurkish ? 'Geri Dönüşüm' : 'Recycling';
+  static String get recyclingDescription => _isTurkish
+      ? 'Atık yönetimi ve geri dönüşüm'
+      : 'Waste management and recycling';
+  static String get transportationTopic =>
+      _isTurkish ? 'Ulaşım' : 'Transportation';
+  static String get transportationDescription => _isTurkish
+      ? 'Çevre dostu ulaşım alternatifleri'
+      : 'Eco-friendly transportation alternatives';
+  static String get consumptionTopic =>
+      _isTurkish ? 'Tüketim' : 'Consumption';
+  static String get consumptionDescription => _isTurkish
+      ? 'Sürdürülebilir tüketim alışkanlıkları'
+      : 'Sustainable consumption habits';
+  static String get rememberThemeChoice =>
+      _isTurkish ? 'Bu temayı hatırla' : 'Remember this theme';
+  static String get rememberThemeSubtitle => _isTurkish
+      ? '(sonraki quiz\'lerde otomatik seçilsin)'
+      : '(automatically selected in next quizzes)';
+
+  // Duel Options Dialog
+  static String get duelOptions =>
+      _isTurkish ? 'Düello Seçenekleri' : 'Duel Options';
+  static String get duelQuestion =>
+      _isTurkish ? 'Hangi düello türünü tercih edersiniz?' : 'Which duel type do you prefer?';
+  static String get fastDuel =>
+      _isTurkish ? 'Hızlı Düello' : 'Fast Duel';
+  static String get fastDuelDescription =>
+      _isTurkish ? '5 soru, 15 saniye süre' : '5 questions, 15 seconds each';
+  static String get roomDuelOption =>
+      _isTurkish ? 'Oda Düellosu' : 'Room Duel';
+  static String get roomDuelDescription =>
+      _isTurkish ? 'Kalıcı oda ile arkadaşınla oyna' : 'Play with your friend in a permanent room';
+
+  // Quiz Completion Dialog
+  static String get quizCompletedTitle =>
+      _isTurkish ? 'Quiz Tamamlandı!' : 'Quiz Completed!';
+  static String get scoreFormat =>
+      _isTurkish ? '$score/15' : '$score/15';
+  static String get greatPerformance => _isTurkish
+      ? 'Harika! Çevre konusunda çok bilgilisiniz!'
+      : 'Great! You are very knowledgeable about environmental topics!';
+  static String get goodPerformance => _isTurkish
+      ? 'Güzel! Daha fazla öğrenebilirsiniz.'
+      : 'Good! You can learn more.';
+  static String get keepLearning => _isTurkish
+      ? 'Çalışmaya devam edin, çevre bilinciniz artacak!'
+      : 'Keep learning, your environmental awareness will increase!';
+  static String get learningSuggestion =>
+      _isTurkish ? 'Öğrenme Önerisi' : 'Learning Suggestion';
+  static String get learningSuggestionText => _isTurkish
+      ? 'Bir sonraki quiz\'te yanlış cevapladığınız konulardan daha fazla soru çıkacak.'
+      : 'In the next quiz, more questions will appear from the topics you answered incorrectly.';
+  static String get homeBtn =>
+      _isTurkish ? 'Ana Sayfa' : 'Home';
+  static String get changeTheme =>
+      _isTurkish ? 'Tema Değiştir' : 'Change Theme';
+  static String get playAgainBtn =>
+      _isTurkish ? 'Tekrar Oyna' : 'Play Again';
+
+  // Weekly Chart
+  static String get monday => _isTurkish ? 'Pzt' : 'Mon';
+  static String get tuesday => _isTurkish ? 'Sal' : 'Tue';
+  static String get wednesday => _isTurkish ? 'Çar' : 'Wed';
+  static String get thursday => _isTurkish ? 'Per' : 'Thu';
+  static String get friday => _isTurkish ? 'Cum' : 'Fri';
+  static String get saturday => _isTurkish ? 'Cmt' : 'Sat';
+  static String get sunday => _isTurkish ? 'Paz' : 'Sun';
+
+  // Challenge Icons (for display)
+  static String get brainIcon => _isTurkish ? '🧠' : '🧠';
+  static String get swordsIcon => _isTurkish ? '⚔️' : '⚔️';
+  static String get peopleIcon => _isTurkish ? '👥' : '👥';
+  static String get handshakeIcon => _isTurkish ? '🤝' : '🤝';
+  static String get lightningIcon => _isTurkish ? '⚡' : '⚡';
+  static String get diamondIcon => _isTurkish ? '💎' : '💎';
+
+  // Challenge Types
+  static String get quizChallenge =>
+      _isTurkish ? 'Quiz Görevi' : 'Quiz Challenge';
+  static String get duelChallenge =>
+      _isTurkish ? 'Düello Görevi' : 'Duel Challenge';
+  static String get multiplayerChallenge =>
+      _isTurkish ? 'Çoklu Oyun Görevi' : 'Multiplayer Game Challenge';
+  static String get socialChallenge =>
+      _isTurkish ? 'Sosyal Görev' : 'Social Challenge';
+  static String get specialChallenge =>
+      _isTurkish ? 'Özel Görev' : 'Special Challenge';
+
+  // Error Messages
+  static String get errorUpdatingProfile =>
+      _isTurkish ? 'Profil güncellenirken hata oluştu' : 'Error updating profile';
+  static String get errorUploadingImage =>
+      _isTurkish ? 'Resim yüklenirken hata oluştu' : 'Error uploading image';
+  static String get profileUpdated =>
+      _isTurkish ? 'Profil resmi güncellendi' : 'Profile picture updated';
+
+  // Days of week full names
+  static String get mondayFull => _isTurkish ? 'Pazartesi' : 'Monday';
+  static String get tuesdayFull => _isTurkish ? 'Salı' : 'Tuesday';
+  static String get wednesdayFull => _isTurkish ? 'Çarşamba' : 'Wednesday';
+  static String get thursdayFull => _isTurkish ? 'Perşembe' : 'Thursday';
+  static String get fridayFull => _isTurkish ? 'Cuma' : 'Friday';
+  static String get saturdayFull => _isTurkish ? 'Cumartesi' : 'Saturday';
+  static String get sundayFull => _isTurkish ? 'Pazar' : 'Sunday';
 }

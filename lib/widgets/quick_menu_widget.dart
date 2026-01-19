@@ -73,8 +73,8 @@ class QuickMenuWidget extends StatefulWidget {
     super.key,
     required this.items,
     this.categories,
-    this.itemWidth = 140,
-    this.itemHeight = 160,
+    this.itemWidth = 170, // Increased from 140 to 170 for wider widgets
+    this.itemHeight = 180, // Increased from 160 to 180 for better proportions
     this.enableScroll = true,
     this.padding,
     this.title = 'Hızlı Menü',
@@ -698,13 +698,19 @@ class QuickMenuGrid extends StatelessWidget {
   final int columns;
   final double spacing;
   final EdgeInsets? padding;
+  final bool showScrollbar;
+  final double? scrollbarThickness;
+  final Radius? scrollbarRadius;
 
   const QuickMenuGrid({
     super.key,
     required this.items,
-    this.columns = 4,
-    this.spacing = 12,
+    this.columns = 3, // Changed from 4 to 3 for wider widget visibility
+    this.spacing = 16, // Increased from 12 to 16 for cleaner layout
     this.padding,
+    this.showScrollbar = true,
+    this.scrollbarThickness = 6.0,
+    this.scrollbarRadius = const Radius.circular(4),
   });
 
   @override
@@ -712,8 +718,8 @@ class QuickMenuGrid extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final itemWidth = (screenWidth - (padding?.horizontal ?? 40) - (spacing * (columns - 1))) / columns;
 
-    return Padding(
-      padding: padding ?? const EdgeInsets.symmetric(horizontal: 20),
+    final scrollContent = SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
       child: Wrap(
         spacing: spacing,
         runSpacing: spacing,
@@ -724,6 +730,22 @@ class QuickMenuGrid extends StatelessWidget {
           );
         }).toList(),
       ),
+    );
+
+    if (showScrollbar) {
+      return Scrollbar(
+        thickness: scrollbarThickness,
+        radius: scrollbarRadius,
+        child: Padding(
+          padding: padding ?? const EdgeInsets.only(right: 20),
+          child: scrollContent,
+        ),
+      );
+    }
+
+    return Padding(
+      padding: padding ?? const EdgeInsets.symmetric(horizontal: 20),
+      child: scrollContent,
     );
   }
 
