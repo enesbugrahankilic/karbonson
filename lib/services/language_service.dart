@@ -10,16 +10,24 @@ class LanguageService extends ChangeNotifier {
   static const String _languageKey = 'selected_language';
   AppLanguage _currentLanguage = AppLanguage.turkish;
   bool _isInitialized = false;
-  
+
   // Callback for app-level rebuild when language changes
   static LanguageChangeCallback? _onLanguageChanged;
+
+  // Singleton instance
+  static final LanguageService _instance = LanguageService._internal();
+
+  factory LanguageService() => _instance;
+
+  LanguageService._internal() {
+    _loadLanguage();
+  }
 
   AppLanguage get currentLanguage => _currentLanguage;
   bool get isInitialized => _isInitialized;
 
-  LanguageService() {
-    _loadLanguage();
-  }
+  // Static method to get current language
+  static AppLanguage getCurrentLanguage() => _instance.currentLanguage;
 
   /// Set a callback to be called when language changes
   /// This is used by the app root to force MaterialApp rebuild

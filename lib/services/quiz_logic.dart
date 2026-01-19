@@ -410,15 +410,16 @@ class QuizLogic {
     final selectedDifficulty = difficulty ?? _currentDifficulty;
 
     // Zorluk seviyesine göre soru seçimi (optimize edilmiş)
+    // Not: DifficultyLevel enum'unda sadece easy, medium, hard mevcut
+    // mixed için özel bir case yok, varsayılan olarak karışık soru seçimi kullanılır
     switch (selectedDifficulty) {
       case DifficultyLevel.easy:
       case DifficultyLevel.medium:
       case DifficultyLevel.hard:
         _selectRandomQuestionsByDifficulty(questionCount, category: category, difficulty: selectedDifficulty);
         break;
-      case DifficultyLevel.mixed:
       default:
-        // Mixed difficulty - use balanced selection
+        // Varsayılan (mixed gibi) - karışık soru seçimi
         _selectMixedDifficultyQuestions(questionCount, category: category);
         break;
     }
