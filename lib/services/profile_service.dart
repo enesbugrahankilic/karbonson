@@ -1,88 +1,138 @@
 // lib/services/profile_service.dart
-// Updated with UID Centrality and Privacy Settings (Specification I.1-I.4, II.3)
+// PROFIL SAYFASI TAMAMEN DINAMIK - TÜM VERILER FIRESTORE'DAN GELIR
+// SharedPreferences fallback KALDIRILDI
 
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '../models/profile_data.dart';
 import '../models/user_data.dart' as user_model;
-import '../models/email_verification_status.dart' as email_status;
+import '../models/profile_data.dart'; // For GameHistoryItem
 import 'firestore_service.dart';
-import 'firebase_auth_service.dart';
+
+/// Email verification status for UI display
+class EmailVerificationStatus {
+  final String uid;
+  final bool emailVerified;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String message;
+  final bool hasEmail;
+  final String? email;
+
+  EmailVerificationStatus({
+    required this.uid,
+    required this.emailVerified,
+    required this.createdAt,
+    required this.updatedAt,
+    this.message = '',
+    this.hasEmail = false,
+    this.email,
+  });
+
+  bool get isPending => hasEmail && !emailVerified;
+}
+
+/// Game statistics data class - used for UI display
+/// This is a helper class that extracts game statistics from UserData
+class GameStatisticsData {
+  final double winRate;
+  final int totalGamesPlayed;
+  final int highestScore;
+  final int averageScore;
+  final List<GameHistoryItem> recentGames;
+
+  GameStatisticsData({
+    required this.winRate,
+    required this.totalGamesPlayed,
+    required this.highestScore,
+    required this.averageScore,
+    required this.recentGames,
+  });
+
+  /// Create from UserData
+  static GameStatisticsData fromUserData(user_model.UserData userData) {
+    return GameStatisticsData(
+      winRate: userData.winRate,
+      totalGamesPlayed: userData.totalGamesPlayed,
+      highestScore: userData.highestScore,
+      averageScore: userData.averageScore,
+      recentGames: userData.recentGames,
+    );
+  }
+
+  /// Check if user has played any games
+  bool get hasPlayedGames => totalGamesPlayed > 0;
+
+  /// Get formatted win rate as percentage
+  String get formattedWinRate => '${(winRate * 100).round()}%';
+}
 
 class ProfileService {
-  static const String _localStatsKey = 'user_game_statistics';
-  static const String _localUidKey = 'cached_user_uid';
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirestoreService _firestoreService = FirestoreService();
+  final FirestoreService _firestoreService;
 
-  /// Load statistics data from Firestore (fallback to SharedPreferences for backward compatibility)
-  Future<LocalStatisticsData> loadLocalStatistics() async {
-    try {
-      // First try to get from Firestore
-      final userData = await loadServerProfile();
-      if (userData != null && userData.totalGamesPlayed > 0) {
-        return LocalStatisticsData(
-          winRate: userData.winRate,
-          totalGamesPlayed: userData.totalGamesPlayed,
-          highestScore: userData.highestScore,
-          averageScore: userData.averageScore,
-          recentGames: userData.recentGames,
-          lastUpdated: userData.updatedAt ?? DateTime.now(),
-        );
-      }
+  ProfileService({FirestoreService? firestoreService})
+      : _firestoreService = firestoreService ?? FirestoreService();
 
-      // Fallback to SharedPreferences for backward compatibility
-      final prefs = await SharedPreferences.getInstance();
-      final statsJson = prefs.getString(_localStatsKey);
-
-      if (statsJson != null) {
-        final statsMap = json.decode(statsJson);
-        return LocalStatisticsData.fromMap(statsMap);
-      }
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error loading statistics: $e');
-    }
-
-    return LocalStatisticsData.empty();
-  }
-
-  /// Save local statistics data to SharedPreferences
-  Future<bool> saveLocalStatistics(LocalStatisticsData stats) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final statsJson = json.encode(stats.toMap());
-      return await prefs.setString(_localStatsKey, statsJson);
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error saving local statistics: $e');
-      return false;
-    }
-  }
-
-  /// Load server profile data from Firebase with UID Centrality (Specification I.1-I.2)
-  Future<user_model.UserData?> loadServerProfile({String? uid}) async {
+  /// TÜM VERİLERİ FIRESTORE'DAN ÇEK - Artık SharedPreferences yok
+  /// Bu metod sadece Firestore'dan veri çeker
+  Future<user_model.UserData?> getUserProfile() async {
     try {
       final user = _auth.currentUser;
       if (user == null) {
-        if (kDebugMode) debugPrint('No authenticated user found');
+        if (kDebugMode) debugPrint('❌ No authenticated user found');
         return null;
       }
 
-      // Use provided UID if available, otherwise use current user's UID
-      final targetUid = uid ?? user.uid;
-      final userData = await _firestoreService.getUserProfile(targetUid);
+      // Firestore'dan doğrudan veri çek
+      final userData = await _firestoreService.getUserProfile(user.uid);
+      
+      if (userData != null && kDebugMode) {
+        debugPrint('✅ User profile loaded from Firestore: ${userData.nickname}');
+        debugPrint('   - Total Games: ${userData.totalGamesPlayed}');
+        debugPrint('   - Win Rate: ${(userData.winRate * 100).round()}%');
+        debugPrint('   - Highest Score: ${userData.highestScore}');
+        debugPrint('   - Recent Games: ${userData.recentGames.length}');
+      }
+      
       return userData;
     } catch (e) {
-      if (kDebugMode) debugPrint('Error loading server profile: $e');
+      if (kDebugMode) debugPrint('🚨 Error loading user profile from Firestore: $e');
+      return null;
     }
-
-    return null;
   }
 
-  /// Update profile picture URL
+  /// Kullanıcı adını Firestore'dan getir
+  Future<String?> getCurrentNickname() async {
+    try {
+      final userData = await getUserProfile();
+      return userData?.nickname;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error getting nickname: $e');
+      return null;
+    }
+  }
+
+  /// Firestore'dan oyun istatistiklerini getir
+  Future<GameStatisticsData?> getGameStatistics() async {
+    try {
+      final userData = await getUserProfile();
+      if (userData == null) return null;
+
+      return GameStatisticsData(
+        winRate: userData.winRate,
+        totalGamesPlayed: userData.totalGamesPlayed,
+        highestScore: userData.highestScore,
+        averageScore: userData.averageScore,
+        recentGames: userData.recentGames,
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error getting game statistics: $e');
+      return null;
+    }
+  }
+
+  /// Update profile picture URL in Firestore
   Future<bool> updateProfilePicture(String imageUrl) async {
     try {
       final User? user = FirebaseAuth.instance.currentUser;
@@ -95,10 +145,9 @@ class ProfileService {
 
       if (kDebugMode) {
         debugPrint('📸 Updating profile picture for user: ${user.uid}');
-        debugPrint('📸 New image URL: $imageUrl');
       }
 
-      // Get current user profile
+      // Get current user profile from Firestore
       final currentProfile = await _firestoreService.getUserProfile(user.uid);
       if (currentProfile == null) {
         if (kDebugMode) {
@@ -113,21 +162,16 @@ class ProfileService {
         updatedAt: DateTime.now(),
       );
 
-      if (kDebugMode) {
-        debugPrint(
-            '📸 Updated user data prepared: ${updatedUserData.nickname}');
-      }
-
-      // Save updated profile
+      // Save to Firestore
       final success = await _firestoreService.createOrUpdateUserProfile(
         nickname: updatedUserData.nickname,
         profilePictureUrl: updatedUserData.profilePictureUrl,
         privacySettings: updatedUserData.privacySettings,
+        fcmToken: updatedUserData.fcmToken,
       );
 
       if (success != null && kDebugMode) {
-        debugPrint(
-            '✅ Profile picture updated successfully: ${updatedUserData.profilePictureUrl}');
+        debugPrint('✅ Profile picture updated successfully');
       } else if (kDebugMode) {
         debugPrint('❌ Failed to update profile picture');
       }
@@ -139,29 +183,9 @@ class ProfileService {
     }
   }
 
-  /// Update user profile in Firebase with UID Centrality (Specification I.1-I.2)
-  Future<bool> updateServerProfile(user_model.UserData userData) async {
-    try {
-      final user = _auth.currentUser;
-      if (user == null || user.uid != userData.uid) return false;
-
-      final updatedUserData = userData.copyWith(
-        updatedAt: DateTime.now(),
-        lastLogin: DateTime.now(),
-      );
-
-      final success = await _firestoreService.createOrUpdateUserProfile(
-        nickname: updatedUserData.nickname,
-        profilePictureUrl: updatedUserData.profilePictureUrl,
-        privacySettings: updatedUserData.privacySettings,
-        fcmToken: updatedUserData.fcmToken,
-      );
-
-      return success != null;
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error updating server profile: $e');
-      return false;
-    }
+  /// Update nickname with validation in Firestore
+  Future<bool> updateNickname(String newNickname) async {
+    return _firestoreService.updateUserNickname(newNickname);
   }
 
   /// Add a new game result to Firestore statistics
@@ -171,7 +195,7 @@ class ProfileService {
     required String gameType,
   }) async {
     try {
-      return await _firestoreService.addGameResult(
+      return _firestoreService.addGameResult(
         score: score,
         isWin: isWin,
         gameType: gameType,
@@ -182,52 +206,12 @@ class ProfileService {
     }
   }
 
-  /// Convert UserData to ServerProfileData for backward compatibility
-  ServerProfileData? _convertUserDataToServerProfileData(user_model.UserData? userData) {
-    if (userData == null) return null;
-
-    return ServerProfileData(
-      uid: userData.uid,
-      nickname: userData.nickname,
-      profilePictureUrl: userData.profilePictureUrl,
-      lastLogin: userData.lastLogin,
-      createdAt: userData.createdAt,
-    );
-  }
-
-  /// Get combined profile data with prioritized loading strategy (Specification III.1-III.2)
-  Future<ProfileData> getProfileData() async {
-    // First priority: Load local data immediately
-    final localData = await loadLocalStatistics();
-
-    // Second priority: Load server data in background with UID centrality
-    final userData = await loadServerProfile();
-    final serverData = _convertUserDataToServerProfileData(userData);
-
-    return ProfileData(
-      serverData: serverData,
-      localData: localData,
-      isLoading: false,
-    );
-  }
-
-  /// Refresh server data only (for background updates)
-  Future<ProfileData> refreshServerData(ProfileData currentProfile) async {
-    final userData = await loadServerProfile();
-    final serverData = _convertUserDataToServerProfileData(userData);
-    if (serverData != null) {
-      return currentProfile.copyWith(serverData: serverData);
-    }
-    return currentProfile;
-  }
-
-  /// Initialize profile for a new user with UID Centrality (Specification I.1-I.2)
-  /// Now accepts user parameter to avoid race condition
+  /// Initialize profile for a new user in Firestore
   Future<void> initializeProfile({
     required String nickname,
     String? profilePictureUrl,
     user_model.PrivacySettings? privacySettings,
-    User? user, // Accept user parameter to avoid race condition
+    User? user,
   }) async {
     try {
       final currentUser = user ?? _auth.currentUser;
@@ -238,81 +222,26 @@ class ProfileService {
         return;
       }
 
-      // Initialize server profile with UID centrality
+      // Initialize server profile in Firestore with UID centrality
       await _firestoreService.createOrUpdateUserProfile(
         nickname: nickname,
         profilePictureUrl: profilePictureUrl,
         privacySettings: privacySettings,
       );
 
-      // Initialize local statistics
-      await saveLocalStatistics(LocalStatisticsData.empty());
-
-      // Cache UID locally for offline access
-      await cacheUid(currentUser.uid);
+      if (kDebugMode) {
+        debugPrint('✅ Profile initialized in Firestore for: $nickname');
+      }
     } catch (e) {
       if (kDebugMode) debugPrint('Error initializing profile: $e');
     }
   }
 
-  /// Update nickname with validation (Specification I.4)
-  Future<bool> updateNickname(String newNickname) async {
-    return await _firestoreService.updateUserNickname(newNickname);
-  }
-
-  /// Copy UID to clipboard helper method (for UI use)
-  static String getCurrentUserId() {
-    return FirebaseAuth.instance.currentUser?.uid ?? '';
-  }
-
-  /// Check if user is logged in
+  /// Check if user is authenticated
   bool get isUserLoggedIn => _auth.currentUser != null;
 
-  /// Get current user UID with validation (Specification I.1)
-  String? get currentUserUid => _firestoreService.currentUserId;
-
-  /// Get current user nickname from cache or server
-  Future<String?> getCurrentNickname() async {
-    // First try to get from local cache
-    final prefs = await SharedPreferences.getInstance();
-    final cachedNickname = prefs.getString('cached_nickname');
-
-    if (cachedNickname != null) {
-      return cachedNickname;
-    }
-
-    // Fallback to server data
-    final serverData = await loadServerProfile();
-    if (serverData != null) {
-      await prefs.setString('cached_nickname', serverData.nickname);
-      return serverData.nickname;
-    }
-
-    return null;
-  }
-
-  /// Cache nickname locally
-  Future<void> cacheNickname(String nickname) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('cached_nickname', nickname);
-  }
-
-  /// Cache UID locally for offline access (Specification I.1)
-  Future<void> cacheUid(String uid) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_localUidKey, uid);
-  }
-
-  /// Get cached UID for offline access
-  Future<String?> getCachedUid() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_localUidKey);
-  }
-
-  /// Update privacy settings (Specification II.3)
-  Future<bool> updatePrivacySettings(user_model.PrivacySettings privacySettings) async {
-    return await _firestoreService.updatePrivacySettings(privacySettings);
-  }
+  /// Get current user UID
+  String? get currentUserUid => _auth.currentUser?.uid;
 
   /// Check if user is authenticated with UID validation
   bool get isUserAuthenticated => _firestoreService.isUserAuthenticated;
@@ -323,7 +252,6 @@ class ProfileService {
       final user = _auth.currentUser;
       if (user == null) return false;
 
-      // Check if user has email (indicates registration) and is not anonymous
       final isEmailUser = user.email != null && user.email!.isNotEmpty;
       final isAnonymous = user.isAnonymous;
 
@@ -334,23 +262,17 @@ class ProfileService {
     }
   }
 
-  /// Copy UID to clipboard helper method (Specification III.3)
-  static Future<void> copyUidToClipboard(String uid) async {
-    // This would typically use the clipboard package
-    // For now, just return - implementation would depend on the clipboard service
-    if (kDebugMode) debugPrint('Copy to clipboard: $uid');
-  }
+  /// ============================================
+  /// EMAIL VERIFICATION METHODS
+  /// ============================================
 
-  /// Email verification methods
   /// Check if current user's email is verified
   Future<bool> isEmailVerified() async {
     try {
       final user = _auth.currentUser;
       if (user == null) return false;
 
-      // Reload user data to get latest verification status
       await user.reload();
-
       return user.emailVerified;
     } catch (e) {
       if (kDebugMode) {
@@ -366,71 +288,40 @@ class ProfileService {
       final user = _auth.currentUser;
       if (user == null) {
         return EmailVerificationStatus(
-          isVerified: false,
-          hasEmail: false,
-          email: null,
+          uid: '',
+          emailVerified: false,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
           message: 'Kullanıcı oturumu bulunamadı',
         );
       }
 
-      // Reload user to get latest email verification status
       await user.reload();
       final currentUser = _auth.currentUser!;
 
-      final hasEmail =
-          currentUser.email != null && currentUser.email!.isNotEmpty;
+      final hasEmail = currentUser.email != null && currentUser.email!.isNotEmpty;
       final isVerified = currentUser.emailVerified;
 
       return EmailVerificationStatus(
-        isVerified: isVerified,
-        hasEmail: hasEmail,
-        email: currentUser.email,
+        uid: user.uid,
+        emailVerified: isVerified,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
         message: isVerified
             ? 'E-posta adresi doğrulanmış'
             : 'E-posta adresi doğrulanmamış',
+        hasEmail: hasEmail,
+        email: currentUser.email,
       );
     } catch (e) {
       if (kDebugMode) debugPrint('Error getting email verification status: $e');
       return EmailVerificationStatus(
-        isVerified: false,
-        hasEmail: false,
-        email: null,
+        uid: '',
+        emailVerified: false,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
         message: 'Doğrulama durumu kontrol edilemedi',
       );
-    }
-  }
-
-  /// Update user profile with email verification status
-  Future<bool> updateEmailVerificationStatus(bool isVerified) async {
-    try {
-      final user = _auth.currentUser;
-      if (user == null) return false;
-
-      // Get current user profile
-      final userData = await _firestoreService.getUserProfile(user.uid);
-      if (userData == null) return false;
-
-      // Update email verification status
-      final updatedUserData = userData.copyWith(
-        isEmailVerified: isVerified,
-        emailVerifiedAt: isVerified ? DateTime.now() : null,
-        updatedAt: DateTime.now(),
-      );
-
-      // Save updated profile
-      final success = await _firestoreService.createOrUpdateUserProfile(
-        nickname: updatedUserData.nickname,
-        profilePictureUrl: updatedUserData.profilePictureUrl,
-        privacySettings: updatedUserData.privacySettings,
-        fcmToken: updatedUserData.fcmToken,
-      );
-
-      return success != null;
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Error updating email verification status: $e');
-      }
-      return false;
     }
   }
 
@@ -440,12 +331,27 @@ class ProfileService {
       final user = _auth.currentUser;
       if (user == null) return false;
 
-      // Get current verification status from Firebase Auth
       await user.reload();
       final isVerified = user.emailVerified;
 
-      // Update Firestore profile with verification status
-      return await updateEmailVerificationStatus(isVerified);
+      // Update in Firestore
+      final userData = await _firestoreService.getUserProfile(user.uid);
+      if (userData == null) return false;
+
+      final updatedUserData = userData.copyWith(
+        isEmailVerified: isVerified,
+        emailVerifiedAt: isVerified ? DateTime.now() : null,
+        updatedAt: DateTime.now(),
+      );
+
+      final success = await _firestoreService.createOrUpdateUserProfile(
+        nickname: updatedUserData.nickname,
+        profilePictureUrl: updatedUserData.profilePictureUrl,
+        privacySettings: updatedUserData.privacySettings,
+        fcmToken: updatedUserData.fcmToken,
+      );
+
+      return success != null;
     } catch (e) {
       if (kDebugMode) debugPrint('Error syncing email verification status: $e');
       return false;
@@ -453,20 +359,18 @@ class ProfileService {
   }
 
   /// ============================================
-  /// 2FA (Multi-Factor Authentication) Methods
+  /// 2FA (Multi-Factor Authentication) METHODS
   /// ============================================
 
-  /// Update user profile with 2FA status
+  /// Update 2FA status in Firestore
   Future<bool> update2FAStatus(bool is2FAEnabled, String? phoneNumber) async {
     try {
       final user = _auth.currentUser;
       if (user == null) return false;
 
-      // Get current user profile
       final userData = await _firestoreService.getUserProfile(user.uid);
       if (userData == null) return false;
 
-      // Update 2FA status
       final updatedUserData = userData.copyWith(
         is2FAEnabled: is2FAEnabled,
         phoneNumber: phoneNumber,
@@ -474,7 +378,6 @@ class ProfileService {
         updatedAt: DateTime.now(),
       );
 
-      // Save updated profile
       final success = await _firestoreService.createOrUpdateUserProfile(
         nickname: updatedUserData.nickname,
         profilePictureUrl: updatedUserData.profilePictureUrl,
@@ -489,7 +392,7 @@ class ProfileService {
     }
   }
 
-  /// Get 2FA status information for current user
+  /// Get 2FA status information for current user from Firestore
   Future<Map<String, dynamic>> get2FAStatus() async {
     try {
       final user = _auth.currentUser;
@@ -501,7 +404,6 @@ class ProfileService {
         };
       }
 
-      // Get current user profile
       final userData = await _firestoreService.getUserProfile(user.uid);
       if (userData == null) {
         return {
@@ -532,23 +434,62 @@ class ProfileService {
       final user = _auth.currentUser;
       if (user == null) return false;
 
-      // Check if user has phone provider linked (indicates 2FA is enabled)
-      final hasPhoneProvider =
-          user.providerData.any((provider) => provider.providerId == 'phone');
+      final hasPhoneProvider = user.providerData.any((provider) => provider.providerId == 'phone');
 
-      // Get the phone number if available
       String? phoneNumber;
       if (hasPhoneProvider) {
-        final phoneProvider = user.providerData
-            .firstWhere((provider) => provider.providerId == 'phone');
+        final phoneProvider = user.providerData.firstWhere((provider) => provider.providerId == 'phone');
         phoneNumber = phoneProvider.phoneNumber;
       }
 
-      // Update Firestore profile with 2FA status
-      return await update2FAStatus(hasPhoneProvider, phoneNumber);
+      return update2FAStatus(hasPhoneProvider, phoneNumber);
     } catch (e) {
       if (kDebugMode) debugPrint('Error syncing 2FA status: $e');
       return false;
     }
   }
+
+  /// ============================================
+  /// PRIVACY SETTINGS METHODS
+  /// ============================================
+
+  /// Update privacy settings in Firestore
+  Future<bool> updatePrivacySettings(user_model.PrivacySettings privacySettings) async {
+    return _firestoreService.updatePrivacySettings(privacySettings);
+  }
+
+  /// Get privacy settings from Firestore
+  Future<user_model.PrivacySettings?> getPrivacySettings() async {
+    try {
+      final userData = await getUserProfile();
+      return userData?.privacySettings;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error getting privacy settings: $e');
+      return null;
+    }
+  }
+
+  /// ============================================
+  /// FIRESTORE REAL-TIME LISTENERS
+  /// ============================================
+
+  /// Listen to user profile changes in real-time
+  Stream<user_model.UserData?> listenToUserProfile() {
+    final user = _auth.currentUser;
+    if (user == null) {
+      return const Stream.empty();
+    }
+
+    return _firestoreService.listenToUserProfile(user.uid);
+  }
+
+  /// ============================================
+  /// PROFILE REFRESH METHODS
+  /// ============================================
+
+  /// Refresh user profile from Firestore
+  Future<user_model.UserData?> refreshProfile() async {
+    return getUserProfile();
+  }
 }
+

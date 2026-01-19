@@ -1,9 +1,11 @@
 // lib/provides/profile_bloc.dart
+// PROFIL BLOK - TÜM VERILER FIRESTORE'DAN GELİR
+// ProfileData ve SharedPreferences KALDIRILDI - SADECE USERDATA KULLANILIYOR
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../models/profile_data.dart';
+import '../models/user_data.dart';
 import '../services/profile_service.dart';
 
 // Events
@@ -23,7 +25,7 @@ class LoadProfile extends ProfileEvent {
   List<Object> get props => [userNickname];
 }
 
-class RefreshServerData extends ProfileEvent {}
+class RefreshProfile extends ProfileEvent {}
 
 class UpdateNickname extends ProfileEvent {
   final String newNickname;
@@ -71,16 +73,16 @@ class ProfileInitial extends ProfileState {}
 class ProfileLoading extends ProfileState {}
 
 class ProfileLoaded extends ProfileState {
-  final ProfileData profileData;
+  final UserData userData;
   final String currentNickname;
 
   const ProfileLoaded({
-    required this.profileData,
+    required this.userData,
     required this.currentNickname,
   });
 
   @override
-  List<Object> get props => [profileData, currentNickname];
+  List<Object> get props => [userData, currentNickname];
 }
 
 class ProfileError extends ProfileState {
@@ -107,7 +109,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
   ProfileBloc({required this.profileService}) : super(ProfileInitial()) {
     on<LoadProfile>(_onLoadProfile);
-    on<RefreshServerData>(_onRefreshServerData);
+    on<RefreshProfile>(_onRefreshProfile);
     on<UpdateNickname>(_onUpdateNickname);
     on<AddGameResult>(_onAddGameResult);
     on<UpdateProfilePicture>(_onUpdateProfilePicture);
@@ -125,72 +127,50 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         return;
       }
 
-      // Cache current user nickname for later use (only if not empty)
-      if (event.userNickname.isNotEmpty) {
-        await profileService.cacheNickname(event.userNickname);
-      }
+      // Load user profile from Firestore - TÜM VERİLER BURADAN GELİYOR
+      final userData = await profileService.getUserProfile();
 
-      // Load profile data with two-stage loading strategy
-      final profileData = await profileService.getProfileData();
-
-      // If no server data available, create a minimal profile from Auth user
-      if (profileData.serverData == null) {
-        final serverData = profileData.serverData ??
-            ServerProfileData(
-              uid: currentUser.uid,
-              nickname: event.userNickname.isNotEmpty
-                  ? event.userNickname
-                  : (await profileService.getCurrentNickname() ??
-                      currentUser.email?.split('@')[0] ??
-                      'Kullanıcı'),
-              profilePictureUrl: null,
-              lastLogin: DateTime.now(),
-              createdAt: null,
-            );
-
-        final updatedProfile = profileData.copyWith(serverData: serverData);
+      if (userData != null) {
         emit(ProfileLoaded(
-          profileData: updatedProfile,
-          currentNickname: serverData.nickname,
-        ));
-      } else {
-        emit(ProfileLoaded(
-          profileData: profileData,
+          userData: userData,
           currentNickname: event.userNickname.isNotEmpty
               ? event.userNickname
-              : (profileData.serverData?.nickname ?? 'Kullanıcı'),
+              : userData.nickname,
         ));
-      }
-
-      // Refresh server data in background
-      if (profileData.serverData == null) {
-        final updatedProfile =
-            await profileService.refreshServerData(profileData);
-        if (updatedProfile.serverData != null) {
-          emit(ProfileLoaded(
-            profileData: updatedProfile,
-            currentNickname: event.userNickname.isNotEmpty
-                ? event.userNickname
-                : (updatedProfile.serverData?.nickname ?? 'Kullanıcı'),
-          ));
-        }
+      } else {
+        // Create minimal profile from Auth user if no Firestore data exists yet
+        final fallbackNickname = event.userNickname.isNotEmpty
+            ? event.userNickname
+            : (currentUser.email?.split('@')[0] ?? 'Kullanıcı');
+        
+        final minimalUserData = UserData(
+          uid: currentUser.uid,
+          nickname: fallbackNickname,
+          profilePictureUrl: null,
+          lastLogin: DateTime.now(),
+        );
+        
+        emit(ProfileLoaded(
+          userData: minimalUserData,
+          currentNickname: fallbackNickname,
+        ));
       }
     } catch (e) {
       emit(ProfileError('Profil yüklenirken hata oluştu: ${e.toString()}'));
     }
   }
 
-  Future<void> _onRefreshServerData(
-      RefreshServerData event, Emitter<ProfileState> emit) async {
+  Future<void> _onRefreshProfile(
+      RefreshProfile event, Emitter<ProfileState> emit) async {
     final currentState = state;
     if (currentState is ProfileLoaded) {
       try {
-        final updatedProfile =
-            await profileService.refreshServerData(currentState.profileData);
+        // Refresh from Firestore
+        final updatedUserData = await profileService.refreshProfile();
 
-        if (updatedProfile.serverData != currentState.profileData.serverData) {
+        if (updatedUserData != null) {
           emit(ProfileLoaded(
-            profileData: updatedProfile,
+            userData: updatedUserData,
             currentNickname: currentState.currentNickname,
           ));
         }
@@ -214,26 +194,16 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         final success = await profileService.updateNickname(event.newNickname);
 
         if (success) {
-          // Update local cache
-          await profileService.cacheNickname(event.newNickname);
-
-          // Update profile data with new nickname
-          final updatedServerData =
-              currentState.profileData.serverData?.copyWith(
+          // Update user data with new nickname
+          final updatedUserData = currentState.userData.copyWith(
             nickname: event.newNickname,
           );
 
-          final updatedProfile = currentState.profileData.copyWith(
-            serverData: updatedServerData,
-          );
-
-          // First emit the updated loaded state
           emit(ProfileLoaded(
-            profileData: updatedProfile,
+            userData: updatedUserData,
             currentNickname: event.newNickname,
           ));
 
-          // Then emit success state for UI feedback
           emit(ProfileUpdateSuccess('Takma ad başarıyla güncellendi'));
         } else {
           emit(ProfileError('Takma ad güncellenirken hata oluştu'));
@@ -258,13 +228,15 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         );
 
         if (success) {
-          // Reload profile data from Firestore
-          final updatedProfile = await profileService.getProfileData();
+          // Reload user data from Firestore
+          final updatedUserData = await profileService.getUserProfile();
 
-          emit(ProfileLoaded(
-            profileData: updatedProfile,
-            currentNickname: currentState.currentNickname,
-          ));
+          if (updatedUserData != null) {
+            emit(ProfileLoaded(
+              userData: updatedUserData,
+              currentNickname: currentState.currentNickname,
+            ));
+          }
         } else {
           emit(ProfileError('Oyun sonucu kaydedilirken hata oluştu'));
         }
@@ -280,19 +252,24 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     final currentState = state;
     if (currentState is ProfileLoaded) {
       try {
-        // Update profile picture URL in the state
-        final updatedServerData = currentState.profileData.serverData?.copyWith(
-          profilePictureUrl: event.imageUrl,
-        );
+        // Update profile picture in Firestore
+        final success = await profileService.updateProfilePicture(event.imageUrl);
 
-        final updatedProfile = currentState.profileData.copyWith(
-          serverData: updatedServerData,
-        );
+        if (success) {
+          // Update user data with new profile picture
+          final updatedUserData = currentState.userData.copyWith(
+            profilePictureUrl: event.imageUrl,
+          );
 
-        emit(ProfileLoaded(
-          profileData: updatedProfile,
-          currentNickname: currentState.currentNickname,
-        ));
+          emit(ProfileLoaded(
+            userData: updatedUserData,
+            currentNickname: currentState.currentNickname,
+          ));
+
+          emit(ProfileUpdateSuccess('Profil resmi başarıyla güncellendi'));
+        } else {
+          emit(ProfileError('Profil resmi güncellenirken hata oluştu'));
+        }
       } catch (e) {
         emit(ProfileError(
             'Profil resmi güncellenirken hata oluştu: ${e.toString()}'));
@@ -300,3 +277,4 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     }
   }
 }
+

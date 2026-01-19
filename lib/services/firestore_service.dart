@@ -1547,4 +1547,51 @@ class FirestoreService {
       return false;
     }
   }
+
+  // === REAL-TIME USER PROFILE LISTENER ===
+  // Added for completely dynamic profile page
+
+  /// Listen to user profile changes in real-time
+  Stream<UserData?> listenToUserProfile(String uid) {
+    if (uid.isEmpty) {
+      if (kDebugMode) {
+        debugPrint('❌ Empty UID provided to listenToUserProfile');
+      }
+      return const Stream.empty();
+    }
+
+    try {
+      return _db
+          .collection(_usersCollection)
+          .doc(uid)
+          .snapshots()
+          .map((doc) {
+        if (!doc.exists) {
+          if (kDebugMode) debugPrint('❌ User profile document not found: $uid');
+          return null;
+        }
+
+        try {
+          final userData = UserData.fromMap(doc.data()!, doc.id);
+          if (kDebugMode) {
+            debugPrint('✅ User profile updated: ${userData.nickname}');
+          }
+          return userData;
+        } catch (e) {
+          if (kDebugMode) debugPrint('⚠️ Error parsing user profile: $e');
+          return null;
+        }
+      }).handleError((error) {
+        if (kDebugMode) {
+          debugPrint('🚨 Stream error in listenToUserProfile: $error');
+        }
+        return null;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('🚨 Error setting up user profile listener: $e');
+      }
+      return const Stream.empty();
+    }
+  }
 }
