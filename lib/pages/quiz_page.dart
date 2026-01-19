@@ -1,6 +1,5 @@
-
 // lib/pages/quiz_page.dart
-// Updated to use Design System for consistent styling
+// Redesigned with full-width widgets, scroll support, and fixed settings dialog
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../services/quiz_logic.dart';
@@ -103,142 +102,170 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
       DifficultyLevel.hard,
     ];
 
+    // Initialize with first category selected
+    if (_selectedCategory == null) {
+      _selectedCategory = categories[0];
+    }
+
     final selectedValues = await showDialog<Map<String, dynamic>>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(DesignSystem.radiusL),
-        ),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: 500,
-            maxHeight: MediaQuery.of(context).size.height * 0.8,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(DesignSystem.radiusL),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(DesignSystem.spacingL),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Quiz Ayarları',
-                  style: DesignSystem.getHeadlineSmall(context),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: DesignSystem.spacingL),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Kategori Seçin:',
-                          style: DesignSystem.getTitleMedium(context).copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: DesignSystem.spacingS),
-                        Wrap(
-                          spacing: DesignSystem.spacingS,
-                          runSpacing: DesignSystem.spacingS,
-                          children: categories.map((category) {
-                            return SizedBox(
-                              width: (MediaQuery.of(context).size.width - 2 * DesignSystem.spacingL - DesignSystem.spacingS) / 2,
-                              child: RadioListTile<String>(
-                                title: Text(category),
-                                value: category,
-                                groupValue: _selectedCategory,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedCategory = value;
-                                  });
-                                },
-                                dense: true,
-                                contentPadding: EdgeInsets.zero,
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                        const Divider(),
-                        Text(
-                          'Zorluk Seviyesi Seçin:',
-                          style: DesignSystem.getTitleMedium(context).copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: DesignSystem.spacingS),
-                        ...difficulties.map((difficulty) {
-                          return RadioListTile<DifficultyLevel>(
-                            title: Text(difficulty.displayName),
-                            value: difficulty,
-                            groupValue: _selectedDifficulty,
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedDifficulty = value!;
-                              });
-                            },
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                          );
-                        }),
-                        const Divider(),
-                        Text(
-                          'Soru Sayısı Seçin:',
-                          style: DesignSystem.getTitleMedium(context).copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: DesignSystem.spacingS),
-                        DropdownButtonFormField<int>(
-                          value: _selectedQuestionCount,
-                          decoration: InputDecoration(
-                            labelText: 'Soru Sayısı',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.95,
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(DesignSystem.spacingL),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Quiz Ayarları',
+                    style: DesignSystem.getHeadlineSmall(context),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: DesignSystem.spacingL),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Kategori Seçin:',
+                            style: DesignSystem.getTitleMedium(context).copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          items: const [
-                            DropdownMenuItem(value: 5, child: Text('5 Soru (2-3 dakika)')),
-                            DropdownMenuItem(value: 10, child: Text('10 Soru (~5 dakika)')),
-                            DropdownMenuItem(value: 15, child: Text('15 Soru (~7-8 dakika)')),
-                            DropdownMenuItem(value: 20, child: Text('20 Soru (~10-12 dakika)')),
-                            DropdownMenuItem(value: 25, child: Text('25 Soru (~12-15 dakika)')),
-                          ],
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() {
-                                _selectedQuestionCount = value;
-                              });
-                            }
-                          },
-                        ),
-                      ],
+                          const SizedBox(height: DesignSystem.spacingS),
+                          Wrap(
+                            spacing: DesignSystem.spacingS,
+                            runSpacing: DesignSystem.spacingS,
+                            children: categories.map((category) {
+                              return SizedBox(
+                                width: (MediaQuery.of(context).size.width - 
+                                    2 * DesignSystem.spacingL - 
+                                    DesignSystem.spacingS * 2) / 2,
+                                child: RadioListTile<String>(
+                                  title: Text(category),
+                                  value: category,
+                                  groupValue: _selectedCategory,
+                                  onChanged: (value) {
+                                    setDialogState(() {
+                                      _selectedCategory = value;
+                                    });
+                                    setState(() {
+                                      _selectedCategory = value;
+                                    });
+                                  },
+                                  dense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                          const Divider(),
+                          Text(
+                            'Zorluk Seviyesi Seçin:',
+                            style: DesignSystem.getTitleMedium(context).copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: DesignSystem.spacingS),
+                          ...difficulties.map((difficulty) {
+                            return RadioListTile<DifficultyLevel>(
+                              title: Text(difficulty.displayName),
+                              value: difficulty,
+                              groupValue: _selectedDifficulty,
+                              onChanged: (value) {
+                                setDialogState(() {
+                                  _selectedDifficulty = value!;
+                                });
+                                setState(() {
+                                  _selectedDifficulty = value!;
+                                });
+                              },
+                              dense: true,
+                              contentPadding: EdgeInsets.zero,
+                            );
+                          }),
+                          const Divider(),
+                          Text(
+                            'Soru Sayısı Seçin:',
+                            style: DesignSystem.getTitleMedium(context).copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: DesignSystem.spacingS),
+                          DropdownButtonFormField<int>(
+                            value: _selectedQuestionCount,
+                            decoration: InputDecoration(
+                              labelText: 'Soru Sayısı',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                              ),
+                            ),
+                            items: const [
+                              DropdownMenuItem(value: 5, child: Text('5 Soru (2-3 dakika)')),
+                              DropdownMenuItem(value: 10, child: Text('10 Soru (~5 dakika)')),
+                              DropdownMenuItem(value: 15, child: Text('15 Soru (~7-8 dakika)')),
+                              DropdownMenuItem(value: 20, child: Text('20 Soru (~10-12 dakika)')),
+                              DropdownMenuItem(value: 25, child: Text('25 Soru (~12-15 dakika)')),
+                            ],
+                            onChanged: (value) {
+                              if (value != null) {
+                                setDialogState(() {
+                                  _selectedQuestionCount = value;
+                                });
+                                setState(() {
+                                  _selectedQuestionCount = value;
+                                });
+                              }
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: DesignSystem.spacingL),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('İptal'),
-                    ),
-                    const SizedBox(width: DesignSystem.spacingM),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop({
-                          'category': _selectedCategory,
-                          'difficulty': _selectedDifficulty,
-                          'questionCount': _selectedQuestionCount,
-                        });
-                      },
-                      child: const Text('Başla'),
-                    ),
-                  ],
-                ),
-              ],
+                  const SizedBox(height: DesignSystem.spacingL),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('İptal'),
+                      ),
+                      const SizedBox(width: DesignSystem.spacingM),
+                      ElevatedButton(
+                        onPressed: () {
+                          // Validate that category is selected
+                          if (_selectedCategory == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Lütfen bir kategori seçin'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+                          Navigator.of(context).pop({
+                            'category': _selectedCategory,
+                            'difficulty': _selectedDifficulty,
+                            'questionCount': _selectedQuestionCount,
+                          });
+                        },
+                        child: const Text('Başla'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -263,41 +290,26 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
   }
 
   Future<void> _confirmExit(BuildContext context) async {
-    // Capture navigator before awaiting dialog to avoid using BuildContext after await
     final navigator = Navigator.of(context);
 
     final bool? shouldExit = await showDialog<bool>(
       context: context,
-      builder: (context) => DesignSystem.semantic(
-        context,
-        label: 'Quiz çıkış onay dialog',
-        hint:
-            'Quizden çıkmak istediğinizi onaylamanız gerektiğini belirten dialog',
-        child: AlertDialog(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(DesignSystem.radiusL)),
-          title: DesignSystem.semantic(
-            context,
-            label: 'Quizden Çıkış başlığı',
-            child: const Text('Quizden Çıkış'),
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(DesignSystem.radiusL)),
+        title: const Text('Quizden Çıkış'),
+        content: const Text(
+            'Quizden çıkarsanız, ilerlemeniz kaydedilmeyecek. Devam etmek istiyor musunuz?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('İptal'),
           ),
-          content: DesignSystem.semantic(
-            context,
-            label: 'Dialog içeriği',
-            child: const Text(
-                'Quizden çıkarsanız, ilerlemeniz kaydedilmeyecek. Devam etmek istiyor musunuz?'),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Evet, Çık'),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('İptal'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Evet, Çık'),
-            ),
-          ],
-        ),
+        ],
       ),
     );
 
@@ -337,52 +349,79 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
           begin: const Offset(0, 0.3),
           end: Offset.zero,
         ).animate(_slideController),
-        child: DesignSystem.card(
-          context,
-          backgroundColor:
-              ThemeColors.getSuccessColor(context).withOpacity( 0.1),
-          child: Column(
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: DesignSystem.spacingM,
+            vertical: DesignSystem.spacingS,
+          ),
+          decoration: BoxDecoration(
+            color: ThemeColors.getSuccessColor(context).withOpacity(0.15),
+            borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+            border: Border.all(
+              color: ThemeColors.getSuccessColor(context).withOpacity(0.3),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Text(
-                'Puan: $score',
-                style: AppTheme.getGameScoreStyle(context),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: DesignSystem.spacingS),
-              Text(
-                'Soru $currentQuestion/$totalQuestions',
-                style: DesignSystem.getTitleMedium(context).copyWith(
-                  color: ThemeColors.getTitleColor(context),
-                  shadows: [
-                    Shadow(
-                      offset: const Offset(0, 1),
-                      blurRadius: 2,
-                      color: Colors.black12,
+              Column(
+                children: [
+                  Text(
+                    'Puan',
+                    style: DesignSystem.getBodySmall(context).copyWith(
+                      color: ThemeColors.getSecondaryText(context),
                     ),
-                  ],
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    '$score',
+                    style: AppTheme.getGameScoreStyle(context).copyWith(
+                      fontSize: 24,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: DesignSystem.spacingM),
+              Container(
+                width: 1,
+                height: 40,
+                color: ThemeColors.getBorder(context).withOpacity(0.3),
+              ),
+              Column(
+                children: [
+                  Text(
+                    'Soru',
+                    style: DesignSystem.getBodySmall(context).copyWith(
+                      color: ThemeColors.getSecondaryText(context),
+                    ),
+                  ),
+                  Text(
+                    '$currentQuestion / $totalQuestions',
+                    style: DesignSystem.getTitleMedium(context).copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: ThemeColors.getTitleColor(context),
+                    ),
+                  ),
+                ],
+              ),
               if (isCompleted)
-                AnimatedBuilder(
-                  animation: _fadeController,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _fadeController.value,
-                      child: ElevatedButton.icon(
-                        onPressed: () => Navigator.pop(context, score),
-                        icon:
-                            const Icon(Icons.check_circle, color: Colors.white),
-                        label: const Text('Quizi Bitir',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold)),
-                        style: DesignSystem.getPrimaryButtonStyle(context),
-                      ),
-                    );
-                  },
+                Container(
+                  width: 1,
+                  height: 40,
+                  color: ThemeColors.getBorder(context).withOpacity(0.3),
+                ),
+              if (isCompleted)
+                ElevatedButton.icon(
+                  onPressed: () => Navigator.pop(context, score),
+                  icon: const Icon(Icons.check_circle, color: Colors.white),
+                  label: const Text('Bitir',
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ThemeColors.getSuccessColor(context),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: DesignSystem.spacingM,
+                      vertical: DesignSystem.spacingS,
+                    ),
+                  ),
                 ),
             ],
           ),
@@ -393,10 +432,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final screenWidth = screenSize.width;
-    final isSmallScreen = screenWidth < 600;
-    final isMediumScreen = screenWidth >= 600 && screenWidth < 1024;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return BlocBuilder<QuizBloc, QuizState>(
       builder: (context, state) {
@@ -457,15 +493,10 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                     color: Colors.black87,
                     borderRadius: BorderRadius.circular(DesignSystem.radiusS),
                   ),
-                  child: DesignSystem.semantic(
-                    context,
-                    label: 'Çıkış butonu',
-                    hint: 'Quizden çıkmak için kullanılır',
-                    child: IconButton(
-                      icon: const Icon(Icons.exit_to_app, color: Colors.white),
-                      onPressed: () => _confirmExit(context),
-                      tooltip: 'Oyundan Çık',
-                    ),
+                  child: IconButton(
+                    icon: const Icon(Icons.exit_to_app, color: Colors.white),
+                    onPressed: () => _confirmExit(context),
+                    tooltip: 'Oyundan Çık',
                   ),
                 ),
               ],
@@ -479,55 +510,47 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                 ),
               ),
               child: SafeArea(
-                child: Column(
-                  children: [
-                    // Puan alanını üst kısımda sabit tut
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: isSmallScreen ? 16.0 : (isMediumScreen ? 20.0 : 24.0),
-                          vertical: isSmallScreen ? 8.0 : 12.0),
-                      child: _buildScoreArea(state),
-                    ),
-                    // Soru kartını kalan alanda genişlet
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: isSmallScreen ? 16.0 : (isMediumScreen ? 20.0 : 24.0),
-                            vertical: isSmallScreen ? 8.0 : 12.0),
-                        child: FadeTransition(
-                          opacity: _fadeController,
-                          child: SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(0, 0.2),
-                              end: Offset.zero,
-                            ).animate(_slideController),
-                            child: Container(
-                              constraints: const BoxConstraints(maxWidth: 800),
-                              child: DesignSystem.glassCard(
-                                context,
-                                child: CustomQuestionCard(
-                                  question: currentQuestion.text,
-                                  options: currentQuestion.options
-                                      .map((o) => o.text)
-                                      .toList(),
-                                  onOptionSelected: (answer) => _onAnswerSelected(
-                                      answer, state.currentQuestion),
-                                  isAnswered: state
-                                      .answers[state.currentQuestion].isNotEmpty,
-                                  selectedAnswer:
-                                      state.answers[state.currentQuestion],
-                                  correctAnswer: currentQuestion.options
-                                      .firstWhere((o) => o.score > 0)
-                                      .text,
-                                  difficulty: _selectedDifficulty,
-                                ),
-                              ),
-                            ),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(DesignSystem.spacingM),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Score area at top
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: DesignSystem.spacingM),
+                        child: _buildScoreArea(state),
+                      ),
+                      
+                      // Question card with full width
+                      FadeTransition(
+                        opacity: _fadeController,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0, 0.2),
+                            end: Offset.zero,
+                          ).animate(_slideController),
+                          child: CustomQuestionCard(
+                            question: currentQuestion.text,
+                            options: currentQuestion.options
+                                .map((o) => o.text)
+                                .toList(),
+                            onOptionSelected: (answer) =>
+                                _onAnswerSelected(answer, state.currentQuestion),
+                            isAnswered:
+                                state.answers[state.currentQuestion].isNotEmpty,
+                            selectedAnswer:
+                                state.answers[state.currentQuestion],
+                            correctAnswer: currentQuestion.options
+                                .firstWhere((o) => o.score > 0)
+                                .text,
+                            difficulty: _selectedDifficulty,
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                      
+                      const SizedBox(height: DesignSystem.spacingXl),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -548,15 +571,10 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                     color: Colors.black87,
                     borderRadius: BorderRadius.circular(DesignSystem.radiusS),
                   ),
-                  child: DesignSystem.semantic(
-                    context,
-                    label: 'Çıkış butonu',
-                    hint: 'Quizden çıkmak için kullanılır',
-                    child: IconButton(
-                      icon: const Icon(Icons.exit_to_app, color: Colors.white),
-                      onPressed: () => Navigator.pop(context, state.score),
-                      tooltip: 'Ana Sayfaya Dön',
-                    ),
+                  child: IconButton(
+                    icon: const Icon(Icons.exit_to_app, color: Colors.white),
+                    onPressed: () => Navigator.pop(context, state.score),
+                    tooltip: 'Ana Sayfaya Dön',
                   ),
                 ),
               ],
@@ -570,62 +588,82 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                 ),
               ),
               child: SafeArea(
-                child: Column(
-                  children: [
-                    // Puan alanını üst kısımda sabit tut
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: isSmallScreen ? 16.0 : (isMediumScreen ? 20.0 : 24.0),
-                          vertical: isSmallScreen ? 8.0 : 12.0),
-                      child: _buildScoreArea(state),
-                    ),
-                    // Tamamlanma mesajını kalan alanda ortala
-                    Expanded(
-                      child: Center(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: isSmallScreen ? 16.0 : (isMediumScreen ? 20.0 : 24.0)),
-                          child: FadeTransition(
-                            opacity: _fadeController,
-                            child: Container(
-                              constraints: const BoxConstraints(maxWidth: 600),
-                              child: DesignSystem.glassCard(
-                                context,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.celebration,
-                                      size: 80,
-                                      color: ThemeColors.getSuccessColor(context),
-                                    ),
-                                    const SizedBox(height: DesignSystem.spacingL),
-                                    Text(
-                                      'Quiz Tamamlandı!',
-                                      style: AppTheme.getGameQuestionStyle(context).copyWith(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    const SizedBox(height: DesignSystem.spacingM),
-                                    Text(
-                                      'Toplam Puan: ${state.score}/${state.questions.length}',
-                                      style: AppTheme.getGameScoreStyle(context).copyWith(
-                                        fontSize: 20,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    const SizedBox(height: DesignSystem.spacingL),
-                                  ],
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(DesignSystem.spacingM),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Score area at top
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: DesignSystem.spacingM),
+                        child: _buildScoreArea(state),
+                      ),
+                      
+                      // Completion message
+                      FadeTransition(
+                        opacity: _fadeController,
+                        child: Container(
+                          padding: const EdgeInsets.all(DesignSystem.spacingXl),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                ThemeColors.getSuccessColor(context).withOpacity(0.1),
+                                ThemeColors.getSuccessColor(context).withOpacity(0.05),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+                            border: Border.all(
+                              color: ThemeColors.getSuccessColor(context).withOpacity(0.3),
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.celebration,
+                                size: 80,
+                                color: ThemeColors.getSuccessColor(context),
+                              ),
+                              const SizedBox(height: DesignSystem.spacingL),
+                              Text(
+                                'Quiz Tamamlandı!',
+                                style: AppTheme.getGameQuestionStyle(context).copyWith(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: DesignSystem.spacingM),
+                              Text(
+                                'Toplam Puan: ${state.score}/${state.questions.length}',
+                                style: AppTheme.getGameScoreStyle(context).copyWith(
+                                  fontSize: 24,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: DesignSystem.spacingL),
+                              ElevatedButton.icon(
+                                onPressed: () => Navigator.pop(context, state.score),
+                                icon: const Icon(Icons.home, color: Colors.white),
+                                label: const Text('Ana Sayfaya Dön',
+                                    style: TextStyle(
+                                        fontSize: 18, fontWeight: FontWeight.bold)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: ThemeColors.getSuccessColor(context),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: DesignSystem.spacingXl,
+                                    vertical: DesignSystem.spacingM,
+                                  ),
                                 ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -651,6 +689,5 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
       },
     );
   }
-
-
 }
+

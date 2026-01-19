@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -42,6 +43,11 @@ class _HomeDashboardState extends State<HomeDashboard>
   List<DailyChallenge> _dailyChallenges = [];
   List<UserActivity> _recentActivities = [];
   bool _isLoadingData = true;
+
+  // Stream subscriptions for proper disposal (using dynamic type for compatibility)
+  dynamic _achievementsSubscription;
+  dynamic _progressSubscription;
+  dynamic _challengesSubscription;
 
   // Services
   final ProfileService _profileService = ProfileService();
@@ -90,6 +96,11 @@ class _HomeDashboardState extends State<HomeDashboard>
 
   @override
   void dispose() {
+    // Cancel stream subscriptions to prevent memory leaks
+    _achievementsSubscription?.cancel();
+    _progressSubscription?.cancel();
+    _challengesSubscription?.cancel();
+    
     _fadeController.dispose();
     _slideController.dispose();
     for (final controller in _buttonControllers) {
@@ -141,7 +152,7 @@ class _HomeDashboardState extends State<HomeDashboard>
       await _achievementService.initializeForUser();
       
       // Listen to achievements stream
-      _achievementService.achievementsStream.listen((achievements) {
+      _achievementsSubscription = _achievementService.achievementsStream.listen((achievements) {
         if (mounted) {
           setState(() {
             _userAchievements = achievements;
@@ -150,7 +161,7 @@ class _HomeDashboardState extends State<HomeDashboard>
       });
       
       // Listen to progress stream
-      _achievementService.progressStream.listen((progress) {
+      _progressSubscription = _achievementService.progressStream.listen((progress) {
         if (mounted) {
           setState(() {
             _userProgress = progress;
@@ -159,7 +170,7 @@ class _HomeDashboardState extends State<HomeDashboard>
       });
       
       // Listen to daily challenges stream
-      _achievementService.challengesStream.listen((challenges) {
+      _challengesSubscription = _achievementService.challengesStream.listen((challenges) {
         if (mounted) {
           setState(() {
             _dailyChallenges = challenges;

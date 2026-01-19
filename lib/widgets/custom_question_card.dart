@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../theme/app_theme.dart';
-import '../theme/modern_ui_components.dart';
-import '../theme/responsive_design.dart';
 import '../models/question.dart';
 
 class CustomQuestionCard extends StatefulWidget {
@@ -78,17 +76,40 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
           offset: Offset(0, _slideAnimation.value),
           child: Opacity(
             opacity: _fadeAnimation.value,
-            child: ModernUI.animatedCard(
-              context,
-              animation: _fadeAnimation,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    ThemeColors.getGlassBackground(context),
+                    ThemeColors.getGlassBackground(context).withOpacity(0.95),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+                border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.white.withOpacity(0.3),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Enhanced Question section with gradient background
                   _buildQuestionSection(context),
-                  SizedBox(height: ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.xl)),
-
-                  // Modern Answer options with staggered animation
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL),
+                    height: 1,
+                    color: ThemeColors.getBorder(context).withOpacity(0.2),
+                  ),
                   _buildOptionsSection(context),
                 ],
               ),
@@ -100,94 +121,69 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
   }
 
   Widget _buildQuestionSection(BuildContext context) {
-    // Get responsive values
-    final screenType = ResponsiveDesign.getScreenType(context);
-    final padding = ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.xl);
-    final spacingM = ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.m);
-    final spacingL = ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.l);
-    final iconSize = _getResponsiveIconSize(screenType) * 1.2;
-    final fontSize = _getResponsiveQuestionFontSize(screenType);
-
     return Container(
-      padding: EdgeInsets.all(padding),
+      width: double.infinity,
+      padding: const EdgeInsets.all(DesignSystem.spacingXl),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
             ThemeColors.getPrimaryButtonColor(context).withOpacity(0.08),
-            ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.03),
+            ThemeColors.getPrimaryButtonColor(context).withOpacity(0.03),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(DesignSystem.radiusL),
-        border: Border.all(
-          color: ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.15),
-          width: 1.5,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(DesignSystem.radiusL),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (widget.difficulty != null) _buildDifficultyIndicator(context),
+          const SizedBox(height: DesignSystem.spacingL),
+          Icon(
+            Icons.help_outline,
+            color: ThemeColors.getPrimaryButtonColor(context),
+            size: 40,
           ),
-          BoxShadow(
-            color: Colors.white.withOpacity( 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
+          const SizedBox(height: DesignSystem.spacingL),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              horizontal: DesignSystem.spacingM,
+              vertical: DesignSystem.spacingS,
+            ),
+            child: Text(
+              widget.question,
+              style: AppTheme.getGameQuestionStyle(context).copyWith(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
+              softWrap: true,
+            ),
           ),
         ],
       ),
-      child: Column(
-         mainAxisSize: MainAxisSize.min,
-         children: [
-           // Zorluk Seviyesi İndikatörü
-           if (widget.difficulty != null) _buildDifficultyIndicator(context),
-
-           SizedBox(height: spacingM),
-           Icon(
-             Icons.help_outline,
-             color: ThemeColors.getPrimaryButtonColor(context),
-             size: iconSize,
-           ),
-           SizedBox(height: spacingL),
-           SizedBox(
-             height: 120, // Fixed height for scrollable question text
-             child: SingleChildScrollView(
-               child: Text(
-                 widget.question,
-                 style: AppTheme.getGameQuestionStyle(context).copyWith(
-                   fontSize: fontSize,
-                   fontWeight: FontWeight.w600,
-                 ),
-                 textAlign: TextAlign.center,
-                 softWrap: true,
-               ),
-             ),
-           ),
-           SizedBox(height: spacingM),
-         ],
-       ),
     );
   }
 
   Widget _buildDifficultyIndicator(BuildContext context) {
-    final screenType = ResponsiveDesign.getScreenType(context);
-    final indicatorSize = _getResponsiveIndicatorSize(screenType);
-    final fontSize = _getResponsiveOptionFontSize(screenType);
-
     final difficultyConfig = _getDifficultyConfig(widget.difficulty!);
 
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.l),
-        vertical: ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.s),
+      padding: const EdgeInsets.symmetric(
+        horizontal: DesignSystem.spacingM,
+        vertical: DesignSystem.spacingS,
       ),
       decoration: BoxDecoration(
         color: difficultyConfig['color'] as Color,
         borderRadius: BorderRadius.circular(DesignSystem.radiusM),
         boxShadow: [
           BoxShadow(
-            color: difficultyConfig['color'] as Color,
+            color: (difficultyConfig['color'] as Color).withOpacity(0.4),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -199,14 +195,14 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
           Icon(
             difficultyConfig['icon'] as IconData,
             color: Colors.white,
-            size: indicatorSize * 0.7,
+            size: 18,
           ),
-          SizedBox(width: ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.s)),
+          const SizedBox(width: DesignSystem.spacingS),
           Text(
             difficultyConfig['name'] as String,
             style: AppTheme.getGameOptionStyle(context).copyWith(
               color: Colors.white,
-              fontSize: fontSize,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -244,104 +240,56 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
     }
   }
 
-  double _getResponsiveIconSize(ScreenType screenType) {
-    switch (screenType) {
-      case ScreenType.mobile:
-        return 28;
-      case ScreenType.tablet:
-        return 32;
-      case ScreenType.desktop:
-        return 36;
-    }
-  }
-
-  double _getResponsiveQuestionFontSize(ScreenType screenType) {
-    switch (screenType) {
-      case ScreenType.mobile:
-        return 22;
-      case ScreenType.tablet:
-        return 24;
-      case ScreenType.desktop:
-        return 26;
-    }
-  }
-
   Widget _buildOptionsSection(BuildContext context) {
-    // Get responsive values
-    final screenType = ResponsiveDesign.getScreenType(context);
-    final spacingM = ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.m);
-    final spacingL = ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.l);
-    final verticalSpacing = spacingM; // Better spacing between options
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(height: spacingL),
-        ...widget.options.asMap().entries.map((entry) {
+    return Padding(
+      padding: const EdgeInsets.all(DesignSystem.spacingL),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: widget.options.asMap().entries.map((entry) {
           final index = entry.key;
           final option = entry.value;
 
           return TweenAnimationBuilder<double>(
             tween: Tween(begin: 0.0, end: 1.0),
-            duration: Duration(milliseconds: _getAnimationDuration(screenType)),
+            duration: Duration(milliseconds: 300 + (index * 50)),
             curve: Curves.easeOutBack,
             builder: (context, value, child) {
               return Transform.scale(
                 scale: value,
                 child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    vertical: verticalSpacing, // Better vertical spacing
-                  ),
+                  padding: const EdgeInsets.only(bottom: DesignSystem.spacingM),
                   child: _buildOptionButton(option, context, index),
                 ),
               );
             },
           );
         }).toList(),
-        SizedBox(height: spacingL),
-      ],
+      ),
     );
   }
 
-  int _getAnimationDuration(ScreenType screenType) {
-    switch (screenType) {
-      case ScreenType.mobile:
-        return 350;
-      case ScreenType.tablet:
-        return 400;
-      case ScreenType.desktop:
-        return 450;
-    }
-  }
-
   Widget _buildOptionButton(String option, BuildContext context, int index) {
-    // Get responsive values
-    final screenType = ResponsiveDesign.getScreenType(context);
-    final spacingM = ResponsiveDesign.getResponsiveSpacing(context, BaseSpacing.m);
-    final indicatorSize = _getResponsiveIndicatorSize(screenType);
-    final iconSize = _getResponsiveIconSize(screenType);
-    final fontSize = _getResponsiveOptionFontSize(screenType);
-    final padding = _getResponsiveOptionPadding(screenType);
-    
     return AnimatedContainer(
-      duration: Duration(milliseconds: _getButtonAnimationDuration(screenType)),
+      duration: const Duration(milliseconds: 150),
       curve: Curves.easeInOut,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap:
-              widget.isAnswered ? null : () => widget.onOptionSelected(option),
+          onTap: widget.isAnswered ? null : () => widget.onOptionSelected(option),
           borderRadius: BorderRadius.circular(DesignSystem.radiusM),
           child: Container(
-            padding: padding, // Responsive padding for better text display
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              horizontal: DesignSystem.spacingL,
+              vertical: DesignSystem.spacingM,
+            ),
             decoration: _getOptionDecoration(option, context),
             child: Row(
               children: [
-                // Option indicator with modern styling
                 Container(
-                  width: indicatorSize,
-                  height: indicatorSize,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _getIndicatorColor(option, context),
@@ -352,91 +300,27 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
                   ),
                   child: _buildOptionIndicator(option, context),
                 ),
-                SizedBox(width: spacingM),
-
-                // Option text with enhanced styling
+                const SizedBox(width: DesignSystem.spacingM),
                 Expanded(
-                  child: SizedBox(
-                    height: 60, // Fixed height for scrollable option text
-                    child: SingleChildScrollView(
-                      child: Text(
-                        option,
-                        style: _getOptionTextStyle(option, context, fontSize),
-                        textAlign: TextAlign.left,
-                        softWrap: true,
-                      ),
-                    ),
+                  child: Text(
+                    option,
+                    style: _getOptionTextStyle(option, context),
+                    textAlign: TextAlign.left,
+                    softWrap: true,
                   ),
                 ),
-
-                // Modern selection indicator
                 if (widget.isAnswered && option == widget.correctAnswer)
-                  Icon(
-                    Icons.check_circle,
-                    color: Colors.white,
-                    size: iconSize,
-                  )
+                  Icon(Icons.check_circle, color: Colors.white, size: 24)
                 else if (widget.isAnswered &&
                     option == widget.selectedAnswer &&
                     widget.selectedAnswer != widget.correctAnswer)
-                  Icon(
-                    Icons.cancel,
-                    color: Colors.white,
-                    size: iconSize,
-                  ),
+                  Icon(Icons.cancel, color: Colors.white, size: 24),
               ],
             ),
           ),
         ),
       ),
     );
-  }
-
-  double _getResponsiveIndicatorSize(ScreenType screenType) {
-    switch (screenType) {
-      case ScreenType.mobile:
-        return 28;
-      case ScreenType.tablet:
-        return 32;
-      case ScreenType.desktop:
-        return 36;
-    }
-  }
-
-  double _getResponsiveOptionFontSize(ScreenType screenType) {
-    switch (screenType) {
-      case ScreenType.mobile:
-        return 18;
-      case ScreenType.tablet:
-        return 20;
-      case ScreenType.desktop:
-        return 22;
-    }
-  }
-
-  EdgeInsets _getResponsiveOptionPadding(ScreenType screenType) {
-    switch (screenType) {
-      case ScreenType.mobile:
-        return EdgeInsets.all(DesignSystem.spacingL);
-      case ScreenType.tablet:
-        return EdgeInsets.all(DesignSystem.spacingL * 1.2);
-      case ScreenType.desktop:
-        return EdgeInsets.symmetric(
-          horizontal: DesignSystem.spacingL * 1.2,
-          vertical: DesignSystem.spacingM * 1.5,
-        );
-    }
-  }
-
-  int _getButtonAnimationDuration(ScreenType screenType) {
-    switch (screenType) {
-      case ScreenType.mobile:
-        return 150;
-      case ScreenType.tablet:
-        return 200;
-      case ScreenType.desktop:
-        return 250;
-    }
   }
 
   BoxDecoration _getOptionDecoration(String option, BuildContext context) {
@@ -463,7 +347,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         gradient: LinearGradient(
           colors: [
             ThemeColors.getSuccessColor(context),
-            ThemeColors.getSuccessColor(context).withOpacity( 0.8),
+            ThemeColors.getSuccessColor(context).withOpacity(0.8),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -475,7 +359,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         ),
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.getSuccessColor(context).withOpacity( 0.3),
+            color: ThemeColors.getSuccessColor(context).withOpacity(0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -489,7 +373,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         gradient: LinearGradient(
           colors: [
             ThemeColors.getErrorColor(context),
-            ThemeColors.getErrorColor(context).withOpacity( 0.8),
+            ThemeColors.getErrorColor(context).withOpacity(0.8),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -501,7 +385,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         ),
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.getErrorColor(context).withOpacity( 0.3),
+            color: ThemeColors.getErrorColor(context).withOpacity(0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -509,9 +393,8 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
       );
     }
 
-    // Other incorrect options - dimmed state
     return BoxDecoration(
-      color: ThemeColors.getCardBackgroundLight(context).withOpacity( 0.6),
+      color: ThemeColors.getCardBackgroundLight(context).withOpacity(0.6),
       borderRadius: BorderRadius.circular(DesignSystem.radiusM),
       border: Border.all(
         color: ThemeColors.getBorder(context),
@@ -566,20 +449,12 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
     }
 
     if (option == widget.correctAnswer) {
-      return const Icon(
-        Icons.check,
-        color: Colors.white,
-        size: 16,
-      );
+      return const Icon(Icons.check, color: Colors.white, size: 18);
     }
 
     if (option == widget.selectedAnswer &&
         widget.selectedAnswer != widget.correctAnswer) {
-      return const Icon(
-        Icons.close,
-        color: Colors.white,
-        size: 16,
-      );
+      return const Icon(Icons.close, color: Colors.white, size: 18);
     }
 
     return Center(
@@ -588,15 +463,16 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         height: 8,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: ThemeColors.getSecondaryText(context).withOpacity( 0.5),
+          color: ThemeColors.getSecondaryText(context).withOpacity(0.5),
         ),
       ),
     );
   }
 
-  TextStyle _getOptionTextStyle(String option, BuildContext context, double fontSize) {
+  TextStyle _getOptionTextStyle(String option, BuildContext context) {
     final baseStyle = AppTheme.getGameOptionStyle(context).copyWith(
-      fontSize: fontSize,
+      fontSize: 16,
+      height: 1.3,
     );
 
     if (!widget.isAnswered) {
@@ -617,3 +493,4 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
     );
   }
 }
+

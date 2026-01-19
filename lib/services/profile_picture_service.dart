@@ -1,4 +1,5 @@
 // lib/services/profile_picture_service.dart
+// Profil fotoğrafı yükleme servisi - Basit ve doğru mantık
 
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -11,8 +12,15 @@ import 'package:uuid/uuid.dart';
 import 'profile_service.dart';
 
 class ProfilePictureService {
+  // Yapılandırma sabitleri
+  static const String _storagePath = 'profile_images';
+  static const int _maxImageWidth = 1024;
+  static const int _maxImageHeight = 1024;
+  static const int _imageQuality = 85;
+  static const int _maxFileSizeMB = 10;
+
+  // Default avatars path
   static const String _defaultAvatarsPath = 'assets/avatars/';
-  static const String _storagePath = 'profile_images/';
 
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final ImagePicker _picker = ImagePicker();
@@ -48,187 +56,348 @@ class ProfilePictureService {
   // Tum mevcut avatar secenekleri
   List<String> get allAvatars => [...defaultAvatars, ...emojiAvatars];
 
-  /// Galeriden resim sec
+  /// Galeriden resim seç
   Future<File?> pickImageFromGallery() async {
     try {
+      if (kDebugMode) {
+        debugPrint('📷 Galeriden resim seçiliyor...');
+      }
+
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 85,
+        maxWidth: _maxImageWidth.toDouble(),
+        maxHeight: _maxImageHeight.toDouble(),
+        imageQuality: _imageQuality,
       );
-      return image != null ? File(image.path) : null;
+
+      if (image != null) {
+        if (kDebugMode) {
+          debugPrint('✅ Galeriden resim seçildi: ${image.path}');
+        }
+        return File(image.path);
+      }
+
+      if (kDebugMode) {
+        debugPrint('⚠️ Kullanıcı resim seçmedi');
+      }
+      return null;
     } catch (e) {
-      debugPrint('Galeri den resim secme hatasi: $e');
+      if (kDebugMode) {
+        debugPrint('❌ Galeriden resim seçme hatası: $e');
+      }
       return null;
     }
   }
 
-  /// Kamera dan resim cek
+  /// Kamera ile resim çek
   Future<File?> pickImageFromCamera() async {
     try {
+      if (kDebugMode) {
+        debugPrint('📷 Kameradan resim çekiliyor...');
+      }
+
       final XFile? image = await _picker.pickImage(
         source: ImageSource.camera,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 85,
+        maxWidth: _maxImageWidth.toDouble(),
+        maxHeight: _maxImageHeight.toDouble(),
+        imageQuality: _imageQuality,
       );
-      return image != null ? File(image.path) : null;
+
+      if (image != null) {
+        if (kDebugMode) {
+          debugPrint('✅ Kameradan resim çekildi: ${image.path}');
+        }
+        return File(image.path);
+      }
+
+      if (kDebugMode) {
+        debugPrint('⚠️ Kullanıcı resim çekmedi');
+      }
+      return null;
     } catch (e) {
-      debugPrint('Kamera dan resim cekme hatasi: $e');
+      if (kDebugMode) {
+        debugPrint('❌ Kameradan resim çekme hatası: $e');
+      }
       return null;
     }
   }
 
-  /// Firebase Storage a resim yukle
+  /// Resmi Firebase Storage'a yükle
+  /// Basit ve doğru upload mantığı
   Future<String?> uploadImageToFirebase(File imageFile) async {
     try {
+      // Kullanıcı kontrolü
       final User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        debugPrint('Kullanici oturumu bulunamadi');
+        if (kDebugMode) {
+          debugPrint('❌ Kullanıcı oturumu bulunamadı');
+        }
         return null;
       }
 
-      // Benzersiz dosya adi olustur
+      if (kDebugMode) {
+        debugPrint('📤 Firebase Storage\'a yükleniyor...');
+        debugPrint('   Kullanıcı UID: ${user.uid}');
+        debugPrint('   Dosya yolu: ${imageFile.path}');
+      }
+
+      // Benzersiz dosya adı oluştur
       final String fileName = '${_uuid.v4()}.jpg';
-      final String filePath = '$_storagePath${user.uid}/$fileName';
+      final String filePath = '$_storagePath/${user.uid}/$fileName';
 
-      // Resmi yukle
+      // Storage referansı oluştur
       final Reference storageRef = _storage.ref().child(filePath);
-      final UploadTask uploadTask = storageRef.putFile(imageFile);
 
-      // Yukleme durumunu bekle
+      // Metadata ekle - Firebase Storage kuralları için gerekli
+      final SettableMetadata metadata = SettableMetadata(
+        contentType: 'image/jpeg',
+        customMetadata: {
+          'userId': user.uid,
+          'purpose': 'profile_picture',
+          'uploadedAt': DateTime.now().toIso8601String(),
+        },
+        cacheControl: 'public, max-age=31536000',
+      );
+
+      // Dosyayı yükle
+      final UploadTask uploadTask = storageRef.putFile(imageFile, metadata);
+
+      // Yükleme durumunu dinle (opsiyonel)
+      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+        if (kDebugMode) {
+          final progress = (snapshot.bytesTransferred / snapshot.totalBytes * 100).toStringAsFixed(0);
+          debugPrint('📊 Yükleme ilerlemesi: $progress%');
+        }
+      });
+
+      // Yüklemeyi bekle
       final TaskSnapshot snapshot = await uploadTask;
 
       if (snapshot.state == TaskState.success) {
-        // Yuklenen resmin URL ini al
+        // Download URL al
         final String downloadUrl = await storageRef.getDownloadURL();
-        debugPrint('Resim basariyla yuklendi: $downloadUrl');
+        
+        if (kDebugMode) {
+          debugPrint('✅ Resim başarıyla yüklendi');
+          debugPrint('   URL: $downloadUrl');
+        }
+        
         return downloadUrl;
       } else {
-        debugPrint('Resim yukleme basarisiz');
+        if (kDebugMode) {
+          debugPrint('❌ Resim yükleme başarısız: ${snapshot.state}');
+        }
         return null;
       }
     } catch (e) {
-      debugPrint('Firebase Storage yukleme hatasi: $e');
+      if (kDebugMode) {
+        debugPrint('❌ Firebase Storage yükleme hatası: $e');
+      }
       return null;
     }
   }
 
-  /// Profil fotografini guncelle
+  /// Profil fotoğrafını güncelle
   Future<bool> updateProfilePicture(
       String imageUrl, ProfileService profileService) async {
     try {
       final User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        debugPrint('❌ Kullanici oturumu bulunamadi');
+        if (kDebugMode) {
+          debugPrint('❌ Kullanıcı oturumu bulunamadı');
+        }
         return false;
       }
 
-      debugPrint('📸 Profil fotografi guncelleniyor: $imageUrl');
+      if (kDebugMode) {
+        debugPrint('🔄 Profil fotoğrafı güncelleniyor...');
+      }
 
-      // ProfileService uzerinden Firestore'u guncelle
+      // ProfileService üzerinden Firestore'u güncelle
       final success = await profileService.updateProfilePicture(imageUrl);
 
       if (success) {
-        debugPrint('✅ Profil fotografi basariyla guncellendi: $imageUrl');
+        if (kDebugMode) {
+          debugPrint('✅ Profil fotoğrafı başarıyla güncellendi');
+        }
       } else {
-        debugPrint('❌ Profil fotografi guncellenemedi');
+        if (kDebugMode) {
+          debugPrint('❌ Profil fotoğrafı güncellenemedi');
+        }
       }
 
       return success;
     } catch (e) {
-      debugPrint('🚨 Profil fotografi guncelleme hatasi: $e');
+      if (kDebugMode) {
+        debugPrint('❌ Profil fotoğrafı güncelleme hatası: $e');
+      }
       return false;
     }
   }
 
-  /// Storage dan resmi sil (eski fotografi temizlemek icin)
+  /// Firebase Storage'dan eski resmi sil
   Future<bool> deleteImageFromFirebase(String imageUrl) async {
     try {
-      // URL den dosya yolunu cikar
+      if (imageUrl.isEmpty || !imageUrl.contains('firebase')) {
+        if (kDebugMode) {
+          debugPrint('⚠️ Geçersiz resim URL\'i, silme atlandı');
+        }
+        return true; // Silme başarılı say (asset'ler için)
+      }
+
+      // URL'den dosya yolunu çıkar
       final String storagePath = imageUrl
           .split('?')[0]
           .replaceFirst('https://firebasestorage.googleapis.com/v0/b/', '')
           .replaceFirst(
               '${FirebaseStorage.instance.app.options.projectId}.appspot.com/o/',
-              '');
+              '')
+          .replaceAll('%2F', '/'); // URL encoding'i düzelt
 
       final Reference storageRef = _storage.ref().child(storagePath);
       await storageRef.delete();
 
-      debugPrint('🗑️ Eski profil fotografi silindi: $storagePath');
+      if (kDebugMode) {
+        debugPrint('🗑️ Eski profil fotoğrafı silindi');
+      }
       return true;
     } catch (e) {
-      debugPrint('❌ Profil fotografi silme hatasi: $e');
+      if (kDebugMode) {
+        debugPrint('❌ Profil fotoğrafı silme hatası: $e');
+      }
       return false;
     }
   }
 
-  /// Eski profil fotoğrafını temizle ve yenisini yükle
+  /// Eski profil fotoğrafını temizle ve yenisiyle değiştir
   Future<String?> replaceProfilePicture(
       String newImageUrl, ProfileService profileService) async {
     try {
       final User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        debugPrint('❌ Kullanici oturumu bulunamadi');
+        if (kDebugMode) {
+          debugPrint('❌ Kullanıcı oturumu bulunamadı');
+        }
         return null;
       }
 
-      // Mevcut kullanici profilini al
+      // Mevcut kullanıcı profilini al
       final currentProfile = await profileService.loadServerProfile();
       final oldImageUrl = currentProfile?.profilePictureUrl;
 
       // Yeni profili güncelle
       final success = await profileService.updateProfilePicture(newImageUrl);
       if (!success) {
-        debugPrint('❌ Profil fotografi guncellenemedi');
+        if (kDebugMode) {
+          debugPrint('❌ Profil fotoğrafı güncellenemedi');
+        }
         return null;
       }
 
-      // Eski fotografi sil (asset'ler degilse)
+      // Eski fotoğrafı sil (asset değilse ve farklıysa)
       if (oldImageUrl != null &&
+          oldImageUrl.isNotEmpty &&
           !oldImageUrl.contains('assets/') &&
           !oldImageUrl.contains('default_avatar') &&
           oldImageUrl != newImageUrl) {
-        final deleteSuccess = await deleteImageFromFirebase(oldImageUrl);
-        if (!deleteSuccess) {
-          debugPrint(
-              '⚠️ Eski profil fotografi silinirken hata olustu: $oldImageUrl');
-        }
+        await deleteImageFromFirebase(oldImageUrl);
       }
 
-      debugPrint('✅ Profil fotografi basariyla degistirildi: $newImageUrl');
+      if (kDebugMode) {
+        debugPrint('✅ Profil fotoğrafı başarıyla değiştirildi');
+      }
+      
       return newImageUrl;
     } catch (e) {
-      debugPrint('🚨 Profil fotografi degistirme hatasi: $e');
+      if (kDebugMode) {
+        debugPrint('❌ Profil fotoğrafı değiştirme hatası: $e');
+      }
       return null;
     }
   }
 
-  /// Asset ten default avatar URL i olustur
-  String getAssetAvatarUrl(String assetPath) {
-    return assetPath;
+  /// Resmi kırp
+  Future<File?> cropImage(File imageFile, BuildContext context) async {
+    try {
+      if (kDebugMode) {
+        debugPrint('✂️ Resim kırpılıyor...');
+      }
+
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: imageFile.path,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1), // Kare oran
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Profil Fotoğrafı',
+            toolbarColor: Theme.of(context).primaryColor,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: true,
+          ),
+          IOSUiSettings(
+            title: 'Profil Fotoğrafı',
+            aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
+          ),
+        ],
+      );
+
+      if (croppedFile != null) {
+        if (kDebugMode) {
+          debugPrint('✅ Resim kırpıldı');
+        }
+        return File(croppedFile.path);
+      }
+
+      if (kDebugMode) {
+        debugPrint('⚠️ Kullanıcı kırpma işlemini iptal etti');
+      }
+      return null;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Resim kırpma hatası: $e');
+      }
+      return null;
+    }
   }
 
-  /// Resim secme seceneklerini goster
+  /// Resim dosya boyutunu kontrol et
+  Future<bool> validateImageSize(File imageFile) async {
+    try {
+      final bytes = await imageFile.length();
+      final sizeInMB = bytes / (1024 * 1024);
+      
+      if (kDebugMode) {
+        debugPrint('📏 Resim boyutu: ${sizeInMB.toStringAsFixed(2)} MB');
+      }
+      
+      return sizeInMB <= _maxFileSizeMB;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Resim boyutu kontrol hatası: $e');
+      }
+      return false;
+    }
+  }
+
+  /// Resim kaynak seçim dialogunu göster
   Future<ImageSource?> showImageSourceDialog(BuildContext context) async {
     return showDialog<ImageSource>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Profil Fotografi Sec'),
+          title: const Text('Profil Fotoğrafı Seç'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
                 leading: const Icon(Icons.photo_library),
-                title: const Text('Galeriden Sec'),
+                title: const Text('Galeriden Seç'),
                 onTap: () => Navigator.of(context).pop(ImageSource.gallery),
               ),
               ListTile(
                 leading: const Icon(Icons.camera_alt),
-                title: const Text('Kamera ile Cek'),
+                title: const Text('Kamera ile Çek'),
                 onTap: () => Navigator.of(context).pop(ImageSource.camera),
               ),
             ],
@@ -238,31 +407,72 @@ class ProfilePictureService {
     );
   }
 
-  /// Resmi kirp
-  Future<File?> cropImage(File imageFile, BuildContext context) async {
+  /// Tam profil fotoğrafı yükleme akışı
+  /// Bu metod tüm süreci tek seferde yönetir
+  Future<String?> uploadProfilePicture({
+    required BuildContext context,
+    required ImageSource source,
+    required ProfileService profileService,
+    bool shouldCrop = true,
+  }) async {
     try {
-      final croppedFile = await ImageCropper().cropImage(
-        sourcePath: imageFile.path,
-        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1), // Kare oran
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Resmi Kırp',
-            toolbarColor: Theme.of(context).primaryColor,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.square,
-            lockAspectRatio: true,
-          ),
-          IOSUiSettings(
-            title: 'Resmi Kırp',
-            aspectRatioLockEnabled: true,
-            resetAspectRatioEnabled: false,
-          ),
-        ],
-      );
-      return croppedFile != null ? File(croppedFile.path) : null;
+      // 1. Resim seç
+      File? imageFile;
+      if (source == ImageSource.gallery) {
+        imageFile = await pickImageFromGallery();
+      } else {
+        imageFile = await pickImageFromCamera();
+      }
+
+      if (imageFile == null) {
+        if (kDebugMode) {
+          debugPrint('⚠️ Resim seçilmedi');
+        }
+        return null;
+      }
+
+      // 2. Boyut kontrolü
+      final isValidSize = await validateImageSize(imageFile);
+      if (!isValidSize) {
+        if (kDebugMode) {
+          debugPrint('❌ Resim boyutu çok büyük (max $_maxFileSizeMB MB)');
+        }
+        return null;
+      }
+
+      // 3. Opsiyonel: Kırp
+      if (shouldCrop) {
+        final croppedFile = await cropImage(imageFile, context);
+        if (croppedFile != null) {
+          imageFile = croppedFile;
+        }
+      }
+
+      // 4. Firebase Storage'a yükle
+      final imageUrl = await uploadImageToFirebase(imageFile);
+      if (imageUrl == null) {
+        if (kDebugMode) {
+          debugPrint('❌ Firebase Storage yüklemesi başarısız');
+        }
+        return null;
+      }
+
+      // 5. Firestore profilini güncelle
+      final result = await replaceProfilePicture(imageUrl, profileService);
+      
+      if (result != null) {
+        if (kDebugMode) {
+          debugPrint('✅ Profil fotoğrafı başarıyla yüklendi ve güncellendi');
+        }
+      }
+      
+      return result;
     } catch (e) {
-      debugPrint('Resim kirpma hatasi: $e');
+      if (kDebugMode) {
+        debugPrint('❌ Profil fotoğrafı yükleme akışı hatası: $e');
+      }
       return null;
     }
   }
 }
+

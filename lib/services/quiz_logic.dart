@@ -21,6 +21,7 @@ class QuizLogic {
   AppLanguage _currentLanguage = AppLanguage.turkish;
   final Map<String, int> _wrongAnswerCategories =
       {}; // Track wrong answers by category
+  bool _highScoreLoaded = false; // Track if high score has been loaded
 
   List<Question> questions = [];
   final Random _random = Random();
@@ -28,8 +29,13 @@ class QuizLogic {
   // YENİ ZORLUK SEVİYESİ PROPERTIES
   DifficultyLevel _currentDifficulty = DifficultyLevel.easy;
 
-  QuizLogic() {
-    _loadHighScore();
+  QuizLogic();
+
+  Future<void> _ensureHighScoreLoaded() async {
+    // Only load once to avoid repeated async calls
+    if (_highScoreLoaded) return;
+    await _loadHighScore();
+    _highScoreLoaded = true;
   }
 
   Future<void> _loadHighScore() async {
@@ -203,10 +209,13 @@ class QuizLogic {
       {AppLanguage? language, String? category, DifficultyLevel? difficulty}) {
     // Use provided language or default to current language
     final selectedLanguage = language ?? _currentLanguage;
+    
+    // Use provided difficulty or default to current difficulty
+    final selectedDifficulty = difficulty ?? _currentDifficulty;
 
     // Get questions by difficulty from database
     var allAvailableQuestions =
-        QuestionsDatabase.getQuestionsByDifficulty(selectedLanguage, _currentDifficulty);
+        QuestionsDatabase.getQuestionsByDifficulty(selectedLanguage, selectedDifficulty);
 
     // Filter by category if specified
     if (category != null && category != 'Tümü') {
@@ -393,6 +402,9 @@ class QuizLogic {
   Future<void> startNewQuiz(
       {String? category, DifficultyLevel? difficulty, int questionCount = 15}) async {
     resetScore();
+
+    // Ensure high score is loaded before starting quiz
+    await _ensureHighScoreLoaded();
 
     // Use provided difficulty or current difficulty
     final selectedDifficulty = difficulty ?? _currentDifficulty;

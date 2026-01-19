@@ -22,8 +22,10 @@ class FirestoreService {
   /// Yeni bir kullanıcının skorunu Firestore'a kaydeder.
   /// Updated: Uses UID centrality for proper user score management
   Future<String> saveUserScore(String nickname, int score) async {
-    if (score < 10) {
-      return 'Skorunuz düşük olduğu için kaydedilmeyecek.';
+    // Allow all non-negative scores to be saved (quiz scores range 0-15)
+    // This ensures all user scores are recorded for leaderboard
+    if (score < 0) {
+      return 'Skor geçersiz.';
     }
     
     try {
