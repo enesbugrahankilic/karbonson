@@ -22,7 +22,7 @@ class QuizPage extends StatefulWidget {
 class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
   bool _didLoadQuiz = false;
   String? _selectedCategory;
-  DifficultyLevel _selectedDifficulty = DifficultyLevel.easy;
+  DifficultyLevel _selectedDifficulty = DifficultyLevel.medium; // quiz_settings_page ile tutarlı
   int _selectedQuestionCount = 15;
 
   // Animation controllers
@@ -342,6 +342,8 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
       isCompleted = true;
     }
 
+    final progress = totalQuestions > 0 ? currentQuestion / totalQuestions : 0.0;
+
     return FadeTransition(
       opacity: _fadeController,
       child: SlideTransition(
@@ -349,82 +351,127 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
           begin: const Offset(0, 0.3),
           end: Offset.zero,
         ).animate(_slideController),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: DesignSystem.spacingM,
-            vertical: DesignSystem.spacingS,
-          ),
-          decoration: BoxDecoration(
-            color: ThemeColors.getSuccessColor(context).withOpacity(0.15),
-            borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-            border: Border.all(
-              color: ThemeColors.getSuccessColor(context).withOpacity(0.3),
+        child: Column(
+          children: [
+            // Progress bar
+            Container(
+              margin: const EdgeInsets.only(bottom: DesignSystem.spacingM),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'İlerleme',
+                        style: DesignSystem.getBodySmall(context).copyWith(
+                          color: ThemeColors.getSecondaryText(context),
+                        ),
+                      ),
+                      Text(
+                        '$currentQuestion / $totalQuestions',
+                        style: DesignSystem.getBodySmall(context).copyWith(
+                          color: ThemeColors.getPrimaryButtonColor(context),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: DesignSystem.spacingXs),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusS),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 8,
+                      backgroundColor: ThemeColors.getCardBackground(context),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        ThemeColors.getPrimaryButtonColor(context),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Column(
+            
+            // Score row
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: DesignSystem.spacingM,
+                vertical: DesignSystem.spacingS,
+              ),
+              decoration: BoxDecoration(
+                color: ThemeColors.getSuccessColor(context).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                border: Border.all(
+                  color: ThemeColors.getSuccessColor(context).withOpacity(0.3),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Text(
-                    'Puan',
-                    style: DesignSystem.getBodySmall(context).copyWith(
-                      color: ThemeColors.getSecondaryText(context),
-                    ),
+                  Column(
+                    children: [
+                      Text(
+                        'Puan',
+                        style: DesignSystem.getBodySmall(context).copyWith(
+                          color: ThemeColors.getSecondaryText(context),
+                        ),
+                      ),
+                      Text(
+                        '$score',
+                        style: AppTheme.getGameScoreStyle(context).copyWith(
+                          fontSize: 24,
+                        ),
+                      ),
+                    ],
                   ),
-                  Text(
-                    '$score',
-                    style: AppTheme.getGameScoreStyle(context).copyWith(
-                      fontSize: 24,
-                    ),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: ThemeColors.getBorder(context).withOpacity(0.3),
                   ),
+                  Column(
+                    children: [
+                      Text(
+                        'Soru',
+                        style: DesignSystem.getBodySmall(context).copyWith(
+                          color: ThemeColors.getSecondaryText(context),
+                        ),
+                      ),
+                      Text(
+                        '$currentQuestion / $totalQuestions',
+                        style: DesignSystem.getTitleMedium(context).copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: ThemeColors.getTitleColor(context),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (isCompleted)
+                    Container(
+                      width: 1,
+                      height: 40,
+                      color: ThemeColors.getBorder(context).withOpacity(0.3),
+                    ),
+                  if (isCompleted)
+                    ElevatedButton.icon(
+                      onPressed: () => Navigator.pop(context, score),
+                      icon: const Icon(Icons.check_circle, color: Colors.white),
+                      label: const Text('Bitir',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ThemeColors.getSuccessColor(context),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: DesignSystem.spacingM,
+                          vertical: DesignSystem.spacingS,
+                        ),
+                      ),
+                    ),
                 ],
               ),
-              Container(
-                width: 1,
-                height: 40,
-                color: ThemeColors.getBorder(context).withOpacity(0.3),
-              ),
-              Column(
-                children: [
-                  Text(
-                    'Soru',
-                    style: DesignSystem.getBodySmall(context).copyWith(
-                      color: ThemeColors.getSecondaryText(context),
-                    ),
-                  ),
-                  Text(
-                    '$currentQuestion / $totalQuestions',
-                    style: DesignSystem.getTitleMedium(context).copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: ThemeColors.getTitleColor(context),
-                    ),
-                  ),
-                ],
-              ),
-              if (isCompleted)
-                Container(
-                  width: 1,
-                  height: 40,
-                  color: ThemeColors.getBorder(context).withOpacity(0.3),
-                ),
-              if (isCompleted)
-                ElevatedButton.icon(
-                  onPressed: () => Navigator.pop(context, score),
-                  icon: const Icon(Icons.check_circle, color: Colors.white),
-                  label: const Text('Bitir',
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ThemeColors.getSuccessColor(context),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: DesignSystem.spacingM,
-                      vertical: DesignSystem.spacingS,
-                    ),
-                  ),
-                ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -486,12 +533,20 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
               backgroundColor: Colors.transparent,
               elevation: 0,
               centerTitle: true,
+              title: Text(
+                'Soru ${state.currentQuestion + 1}/${state.questions.length}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
               actions: [
                 Container(
                   margin: const EdgeInsets.only(right: DesignSystem.spacingS),
                   decoration: BoxDecoration(
-                    color: Colors.black87,
-                    borderRadius: BorderRadius.circular(DesignSystem.radiusS),
+                    color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                   ),
                   child: IconButton(
                     icon: const Icon(Icons.exit_to_app, color: Colors.white),
@@ -564,15 +619,23 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
               backgroundColor: Colors.transparent,
               elevation: 0,
               centerTitle: true,
+              title: const Text(
+                'Quiz Tamamlandı',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
               actions: [
                 Container(
                   margin: const EdgeInsets.only(right: DesignSystem.spacingS),
                   decoration: BoxDecoration(
-                    color: Colors.black87,
-                    borderRadius: BorderRadius.circular(DesignSystem.radiusS),
+                    color: ThemeColors.getSuccessColor(context).withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.exit_to_app, color: Colors.white),
+                    icon: const Icon(Icons.home, color: Colors.white),
                     onPressed: () => Navigator.pop(context, state.score),
                     tooltip: 'Ana Sayfaya Dön',
                   ),

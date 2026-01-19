@@ -201,15 +201,38 @@ class _QuizSettingsWidgetState extends State<QuizSettingsWidget>
   }
 
   Widget _buildSectionHeader(String title) {
+    IconData getIconForSection(String title) {
+      switch (title) {
+        case 'Kategori Seçin':
+          return Icons.category;
+        case 'Zorluk Seviyesi':
+          return Icons.trending_up;
+        case 'Soru Sayısı':
+          return Icons.format_list_numbered;
+        default:
+          return Icons.settings;
+      }
+    }
+
     return DesignSystem.semantic(
       context,
       label: '$title bölümü',
-      child: Text(
-        title,
-        style: DesignSystem.getTitleLarge(context).copyWith(
-          color: ThemeColors.getTitleColor(context),
-          fontWeight: FontWeight.bold,
-        ),
+      child: Row(
+        children: [
+          Icon(
+            getIconForSection(title),
+            color: ThemeColors.getTitleColor(context),
+            size: 24,
+          ),
+          const SizedBox(width: DesignSystem.spacingM),
+          Text(
+            title,
+            style: DesignSystem.getTitleLarge(context).copyWith(
+              color: ThemeColors.getTitleColor(context),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -499,29 +522,68 @@ class _QuizSettingsWidgetState extends State<QuizSettingsWidget>
   }
 
   Widget _buildSummaryCard() {
+    // Null safety için orElse ile fallback değeri ekle
     final selectedCategoryData = _categories.firstWhere(
-      (cat) => cat['name'] == _selectedCategory,
+      (cat) => cat['name'] == (_selectedCategory ?? 'Tümü'),
+      orElse: () => _categories.first,
     );
     final selectedDifficultyData = _difficulties.firstWhere(
       (diff) => diff['level'] == _selectedDifficulty,
+      orElse: () => _difficulties[1], // Medium varsayılan
     );
 
-    return DesignSystem.card(
-      context,
-      backgroundColor: ThemeColors.getSuccessColor(context).withOpacity( 0.1),
+    return Container(
+      padding: const EdgeInsets.all(DesignSystem.spacingL),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            ThemeColors.getSuccessColor(context).withOpacity(0.15),
+            ThemeColors.getSuccessColor(context).withOpacity(0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+        border: Border.all(
+          color: ThemeColors.getSuccessColor(context).withOpacity(0.3),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: ThemeColors.getSuccessColor(context).withOpacity(0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.white.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          DesignSystem.semantic(
-            context,
-            label: 'Quiz özeti',
-            child: Text(
-              'Quiz Özeti',
-              style: DesignSystem.getTitleMedium(context).copyWith(
+          Row(
+            children: [
+              Icon(
+                Icons.summarize,
                 color: ThemeColors.getSuccessColor(context),
-                fontWeight: FontWeight.bold,
+                size: 24,
               ),
-            ),
+              const SizedBox(width: DesignSystem.spacingM),
+              DesignSystem.semantic(
+                context,
+                label: 'Quiz özeti',
+                child: Text(
+                  'Quiz Özeti',
+                  style: DesignSystem.getTitleMedium(context).copyWith(
+                    color: ThemeColors.getSuccessColor(context),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: DesignSystem.spacingM),
           _buildSummaryRow(
@@ -543,6 +605,36 @@ class _QuizSettingsWidgetState extends State<QuizSettingsWidget>
             '$_selectedQuestionCount Soru (~${_questionCounts.firstWhere((opt) => opt['count'] == _selectedQuestionCount)['time']} dakika)',
             Icons.quiz,
             ThemeColors.getPrimaryButtonColor(context),
+          ),
+          const SizedBox(height: DesignSystem.spacingM),
+          Container(
+            padding: const EdgeInsets.all(DesignSystem.spacingM),
+            decoration: BoxDecoration(
+              color: ThemeColors.getSuccessColor(context).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+              border: Border.all(
+                color: ThemeColors.getSuccessColor(context).withOpacity(0.2),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.play_circle_fill,
+                  color: ThemeColors.getSuccessColor(context),
+                  size: 20,
+                ),
+                const SizedBox(width: DesignSystem.spacingM),
+                Expanded(
+                  child: Text(
+                    'Hazır! Quiz\'i başlatabilirsiniz.',
+                    style: DesignSystem.getBodyMedium(context).copyWith(
+                      color: ThemeColors.getSuccessColor(context),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

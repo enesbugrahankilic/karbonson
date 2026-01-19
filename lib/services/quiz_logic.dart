@@ -409,16 +409,18 @@ class QuizLogic {
     // Use provided difficulty or current difficulty
     final selectedDifficulty = difficulty ?? _currentDifficulty;
 
-    // Zorluk seviyesine göre soru seçimi
-    if (selectedDifficulty == DifficultyLevel.easy) {
-      _selectRandomQuestionsByDifficulty(questionCount, category: category, difficulty: selectedDifficulty);
-    } else if (selectedDifficulty == DifficultyLevel.medium) {
-      _selectRandomQuestionsByDifficulty(questionCount, category: category, difficulty: selectedDifficulty);
-    } else if (selectedDifficulty == DifficultyLevel.hard) {
-      _selectRandomQuestionsByDifficulty(questionCount, category: category, difficulty: selectedDifficulty);
-    } else {
-      // Mixed difficulty - use balanced selection
-      _selectMixedDifficultyQuestions(questionCount, category: category);
+    // Zorluk seviyesine göre soru seçimi (optimize edilmiş)
+    switch (selectedDifficulty) {
+      case DifficultyLevel.easy:
+      case DifficultyLevel.medium:
+      case DifficultyLevel.hard:
+        _selectRandomQuestionsByDifficulty(questionCount, category: category, difficulty: selectedDifficulty);
+        break;
+      case DifficultyLevel.mixed:
+      default:
+        // Mixed difficulty - use balanced selection
+        _selectMixedDifficultyQuestions(questionCount, category: category);
+        break;
     }
 
     await _loadHighScore();

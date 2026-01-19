@@ -175,8 +175,8 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: DesignSystem.spacingM,
-        vertical: DesignSystem.spacingS,
+        horizontal: DesignSystem.spacingL,
+        vertical: DesignSystem.spacingM,
       ),
       decoration: BoxDecoration(
         color: difficultyConfig['color'] as Color,
@@ -195,14 +195,14 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
           Icon(
             difficultyConfig['icon'] as IconData,
             color: Colors.white,
-            size: 18,
+            size: 24,
           ),
-          const SizedBox(width: DesignSystem.spacingS),
+          const SizedBox(width: DesignSystem.spacingM),
           Text(
             difficultyConfig['name'] as String,
             style: AppTheme.getGameOptionStyle(context).copyWith(
               color: Colors.white,
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -258,7 +258,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
               return Transform.scale(
                 scale: value,
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: DesignSystem.spacingM),
+                  padding: const EdgeInsets.only(bottom: DesignSystem.spacingL),
                   child: _buildOptionButton(option, context, index),
                 ),
               );
@@ -281,8 +281,8 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(
-              horizontal: DesignSystem.spacingL,
-              vertical: DesignSystem.spacingM,
+              horizontal: DesignSystem.spacingXl,
+              vertical: DesignSystem.spacingL,
             ),
             decoration: _getOptionDecoration(option, context),
             child: Row(

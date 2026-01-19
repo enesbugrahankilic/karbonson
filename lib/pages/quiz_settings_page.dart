@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../models/question.dart';
 import '../theme/theme_colors.dart';
 import '../enums/app_language.dart';
+import '../services/language_service.dart';
 
 class QuizSettingsPage extends StatefulWidget {
   final Function({
@@ -26,6 +27,7 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
   String _selectedCategory = 'Tümü';
   DifficultyLevel _selectedDifficulty = DifficultyLevel.medium;
   int _selectedQuestionCount = 15;
+  AppLanguage _currentLanguage = AppLanguage.turkish;
 
   // Kategori verileri
   final List<Map<String, dynamic>> _categories = [
@@ -463,19 +465,36 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
       ),
       child: Column(
         children: [
-          // Slider
-          Slider(
-            value: _selectedQuestionCount.toDouble(),
-            min: 5,
-            max: 25,
-            divisions: 4,
-            activeColor: ThemeColors.getPrimaryButtonColor(context),
-            inactiveColor: Colors.white.withOpacity(0.3),
-            onChanged: (value) {
+          // Slider with larger touch target
+          GestureDetector(
+            onHorizontalDragUpdate: (details) {
+              final box = context.findRenderObject() as RenderBox;
+              final position = box.globalToLocal(details.globalPosition);
+              final width = box.size.width;
+              final percentage = (position.dx / width).clamp(0.0, 1.0);
+              final newValue = ((percentage * 20) + 5).round().clamp(5, 25);
               setState(() {
-                _selectedQuestionCount = value.toInt();
+                _selectedQuestionCount = newValue;
               });
             },
+            child: Container(
+              width: double.infinity,
+              height: 48,
+              alignment: Alignment.center,
+              child: Slider(
+                value: _selectedQuestionCount.toDouble(),
+                min: 5,
+                max: 25,
+                divisions: 4,
+                activeColor: ThemeColors.getPrimaryButtonColor(context),
+                inactiveColor: Colors.white.withOpacity(0.3),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedQuestionCount = value.toInt();
+                  });
+                },
+              ),
+            ),
           ),
 
           // Seçenekler
@@ -725,11 +744,13 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
   }
 
   void _startQuiz() {
+    // LanguageService'den mevcut dili al
+    final currentLanguage = LanguageService.getCurrentLanguage();
     widget.onStartQuiz(
       category: _selectedCategory,
       difficulty: _selectedDifficulty,
       questionCount: _selectedQuestionCount,
-      language: AppLanguage.turkish,
+      language: currentLanguage,
     );
   }
 }
