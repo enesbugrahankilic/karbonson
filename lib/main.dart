@@ -23,6 +23,8 @@ import 'services/deep_linking_service.dart';
 import 'services/achievement_service.dart';
 import 'services/music_service.dart';
 import 'services/sound_effects_service.dart';
+import 'services/language_service.dart';
+import 'enums/app_language.dart';
 // Removed unused imports
 import 'theme/app_theme.dart';
 import 'core/navigation/app_router.dart';
@@ -303,12 +305,28 @@ class Karbon2App extends StatefulWidget {
 class _Karbon2AppState extends State<Karbon2App> {
   bool _loading = true;
   String _initialRoute = AppRoutes.login;
-  final GlobalKey _appKey = GlobalKey();
+  // State key to force rebuild when language changes
+  Locale? _previousLocale;
 
   @override
   void initState() {
     super.initState();
     _initializeApp();
+    // Set up language change callback for instant translation
+    LanguageService.setLanguageChangeCallback(_onLanguageChanged);
+  }
+
+  void _onLanguageChanged(AppLanguage newLanguage) {
+    // Force rebuild by calling setState with a different locale
+    // This will cause the MaterialApp to rebuild with the new locale
+    if (mounted) {
+      setState(() {
+        _previousLocale = Locale(newLanguage.code);
+      });
+      if (kDebugMode) {
+        debugPrint('Language changed to: ${newLanguage.code} - forcing app rebuild');
+      }
+    }
   }
 
   @override

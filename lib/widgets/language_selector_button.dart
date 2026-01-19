@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import '../theme/theme_colors.dart';
 import '../provides/language_provider.dart';
 import '../enums/app_language.dart';
@@ -98,10 +99,15 @@ class LanguageSelectorButton extends StatelessWidget {
                 trailing: isTurkishCurrent 
                     ? const Icon(Icons.check, color: Colors.green)
                     : null,
-                onTap: () {
-                  Navigator.pop(context);
-                  languageProvider.setLanguage(AppLanguage.turkish);
-                },
+                onTap: isTurkishCurrent
+                    ? null
+                    : () async {
+                        Navigator.pop(context);
+                        await languageProvider.setLanguage(AppLanguage.turkish);
+                        if (kDebugMode) {
+                          debugPrint('Language changed to Turkish');
+                        }
+                      },
               ),
               ListTile(
                 leading: const Text('🇺🇸', style: TextStyle(fontSize: 24)),
@@ -110,10 +116,15 @@ class LanguageSelectorButton extends StatelessWidget {
                 trailing: !isTurkishCurrent 
                     ? const Icon(Icons.check, color: Colors.green)
                     : null,
-                onTap: () {
-                  Navigator.pop(context);
-                  languageProvider.setLanguage(AppLanguage.english);
-                },
+                onTap: !isTurkishCurrent
+                    ? null
+                    : () async {
+                        Navigator.pop(context);
+                        await languageProvider.setLanguage(AppLanguage.english);
+                        if (kDebugMode) {
+                          debugPrint('Language changed to English');
+                        }
+                      },
               ),
               const SizedBox(height: 10),
               TextButton(

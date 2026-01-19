@@ -9,6 +9,66 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
+  String get quickMenu => 'Hızlı Menü';
+
+  @override
+  String get quickMenuDescription => 'Tüm özelliklere hızlı erişim';
+
+  @override
+  String get gameModes => 'Oyun Modları';
+
+  @override
+  String get social => 'Sosyal';
+
+  @override
+  String get tools => 'Araçlar';
+
+  @override
+  String get boardGame => 'Masa Oyunu';
+
+  @override
+  String get multiplayerLobby => 'Çoklu Oyuncu';
+
+  @override
+  String get rewardsShop => 'Ödül Mağazası';
+
+  @override
+  String get aiRecommendations => 'AI Önerileri';
+
+  @override
+  String get howToPlay => 'Nasıl Oynanır';
+
+  @override
+  String get profile => 'Profil';
+
+  @override
+  String get statistics => 'İstatistik';
+
+  @override
+  String get quickDuel => 'Hızlı Düello';
+
+  @override
+  String get createRoom => 'Oda oluştur';
+
+  @override
+  String get joinRoom => 'Odaya katıl';
+
+  @override
+  String get activeRooms => 'Aktif Odalar';
+
+  @override
+  String get points => 'Puan';
+
+  @override
+  String get level => 'Seviye';
+
+  @override
+  String get streak => 'Seri';
+
+  @override
+  String get newFeature => 'YENİ';
+
+  @override
   String get appName => 'Eco Oyun';
 
   @override
@@ -79,9 +139,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get home => 'Ana Sayfa';
-
-  @override
-  String get profile => 'Profil';
 
   @override
   String get settings => 'Ayarlar';
@@ -286,12 +343,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get score => 'Skor';
-
-  @override
-  String get points => 'Puan';
-
-  @override
-  String get level => 'Seviye';
 
   @override
   String get progress => 'İlerleme';
@@ -603,12 +654,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get roomCode => 'Oda kodu';
-
-  @override
-  String get createRoom => 'Oda oluştur';
-
-  @override
-  String get joinRoom => 'Odaya katıl';
 
   @override
   String get leaveRoom => 'Odadan ayrıl';

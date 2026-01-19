@@ -9,6 +9,66 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get quickMenu => 'Quick Menu';
+
+  @override
+  String get quickMenuDescription => 'Access all features quickly';
+
+  @override
+  String get gameModes => 'Game Modes';
+
+  @override
+  String get social => 'Social';
+
+  @override
+  String get tools => 'Tools';
+
+  @override
+  String get boardGame => 'Board Game';
+
+  @override
+  String get multiplayerLobby => 'Multiplayer';
+
+  @override
+  String get rewardsShop => 'Rewards Shop';
+
+  @override
+  String get aiRecommendations => 'AI Recommendations';
+
+  @override
+  String get howToPlay => 'How to Play';
+
+  @override
+  String get profile => 'Profile';
+
+  @override
+  String get statistics => 'Statistics';
+
+  @override
+  String get quickDuel => 'Quick Duel';
+
+  @override
+  String get createRoom => 'Create room';
+
+  @override
+  String get joinRoom => 'Join room';
+
+  @override
+  String get activeRooms => 'Active Rooms';
+
+  @override
+  String get points => 'Points';
+
+  @override
+  String get level => 'Level';
+
+  @override
+  String get streak => 'Streak';
+
+  @override
+  String get newFeature => 'NEW';
+
+  @override
   String get appName => 'Eco Game';
 
   @override
@@ -80,9 +140,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get home => 'Home';
-
-  @override
-  String get profile => 'Profile';
 
   @override
   String get settings => 'Settings';
@@ -287,12 +344,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get score => 'Score';
-
-  @override
-  String get points => 'Points';
-
-  @override
-  String get level => 'Level';
 
   @override
   String get progress => 'Progress';
@@ -602,12 +653,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get roomCode => 'Room code';
-
-  @override
-  String get createRoom => 'Create room';
-
-  @override
-  String get joinRoom => 'Join room';
 
   @override
   String get leaveRoom => 'Leave room';

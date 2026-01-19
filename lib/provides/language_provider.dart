@@ -13,11 +13,13 @@ class LanguageProvider extends ChangeNotifier {
   Locale get locale => _languageService.locale;
   String get currentLanguageName => _languageService.currentLanguageName;
   String get currentLanguageFlag => _languageService.currentLanguageFlag;
+  bool get isInitialized => _languageService.isInitialized;
 
   Future<void> setLanguage(AppLanguage language) async {
     if (_languageService.currentLanguage == language) return;
     await _languageService.setLanguage(language);
-    notifyListeners();
+    // notifyListeners() is called by LanguageService internally
+    // and the app rebuild callback will be triggered
   }
 
 }

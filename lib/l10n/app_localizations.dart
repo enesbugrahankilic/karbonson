@@ -98,6 +98,126 @@ abstract class AppLocalizations {
     Locale('en')
   ];
 
+  /// No description provided for @quickMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Menu'**
+  String get quickMenu;
+
+  /// No description provided for @quickMenuDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Access all features quickly'**
+  String get quickMenuDescription;
+
+  /// No description provided for @gameModes.
+  ///
+  /// In en, this message translates to:
+  /// **'Game Modes'**
+  String get gameModes;
+
+  /// No description provided for @social.
+  ///
+  /// In en, this message translates to:
+  /// **'Social'**
+  String get social;
+
+  /// No description provided for @tools.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools'**
+  String get tools;
+
+  /// No description provided for @boardGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Board Game'**
+  String get boardGame;
+
+  /// No description provided for @multiplayerLobby.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiplayer'**
+  String get multiplayerLobby;
+
+  /// No description provided for @rewardsShop.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewards Shop'**
+  String get rewardsShop;
+
+  /// No description provided for @aiRecommendations.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Recommendations'**
+  String get aiRecommendations;
+
+  /// No description provided for @howToPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'How to Play'**
+  String get howToPlay;
+
+  /// No description provided for @profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
+  /// No description provided for @statistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get statistics;
+
+  /// No description provided for @quickDuel.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Duel'**
+  String get quickDuel;
+
+  /// No description provided for @createRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Create room'**
+  String get createRoom;
+
+  /// No description provided for @joinRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Join room'**
+  String get joinRoom;
+
+  /// No description provided for @activeRooms.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Rooms'**
+  String get activeRooms;
+
+  /// No description provided for @points.
+  ///
+  /// In en, this message translates to:
+  /// **'Points'**
+  String get points;
+
+  /// No description provided for @level.
+  ///
+  /// In en, this message translates to:
+  /// **'Level'**
+  String get level;
+
+  /// No description provided for @streak.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak'**
+  String get streak;
+
+  /// No description provided for @newFeature.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW'**
+  String get newFeature;
+
   /// No description provided for @appName.
   ///
   /// In en, this message translates to:
@@ -241,12 +361,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Home'**
   String get home;
-
-  /// No description provided for @profile.
-  ///
-  /// In en, this message translates to:
-  /// **'Profile'**
-  String get profile;
 
   /// No description provided for @settings.
   ///
@@ -655,18 +769,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Score'**
   String get score;
-
-  /// No description provided for @points.
-  ///
-  /// In en, this message translates to:
-  /// **'Points'**
-  String get points;
-
-  /// No description provided for @level.
-  ///
-  /// In en, this message translates to:
-  /// **'Level'**
-  String get level;
 
   /// No description provided for @progress.
   ///
@@ -1285,18 +1387,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Room code'**
   String get roomCode;
-
-  /// No description provided for @createRoom.
-  ///
-  /// In en, this message translates to:
-  /// **'Create room'**
-  String get createRoom;
-
-  /// No description provided for @joinRoom.
-  ///
-  /// In en, this message translates to:
-  /// **'Join room'**
-  String get joinRoom;
 
   /// No description provided for @leaveRoom.
   ///

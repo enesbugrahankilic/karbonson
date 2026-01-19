@@ -3,16 +3,28 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../enums/app_language.dart';
 
+/// Callback typedef for language change events
+typedef LanguageChangeCallback = void Function(AppLanguage newLanguage);
+
 class LanguageService extends ChangeNotifier {
   static const String _languageKey = 'selected_language';
   AppLanguage _currentLanguage = AppLanguage.turkish;
   bool _isInitialized = false;
+  
+  // Callback for app-level rebuild when language changes
+  static LanguageChangeCallback? _onLanguageChanged;
 
   AppLanguage get currentLanguage => _currentLanguage;
   bool get isInitialized => _isInitialized;
 
   LanguageService() {
     _loadLanguage();
+  }
+
+  /// Set a callback to be called when language changes
+  /// This is used by the app root to force MaterialApp rebuild
+  static void setLanguageChangeCallback(LanguageChangeCallback callback) {
+    _onLanguageChanged = callback;
   }
 
   Future<void> _loadLanguage() async {
@@ -41,20 +53,16 @@ class LanguageService extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_languageKey, language.code);
       _currentLanguage = language;
+      
+      // Notify all listeners first
       notifyListeners();
       
-      // Force MaterialApp rebuild by clearing the app key
-      // This will trigger a complete rebuild with the new locale
-      _forceAppRebuild();
+      // Call the app-level callback to force complete app rebuild
+      // This ensures all pages instantly reflect the new language
+      _onLanguageChanged?.call(language);
     } catch (e) {
       debugPrint('Error saving language: $e');
     }
-  }
-
-  void _forceAppRebuild() {
-    // This will be called to force MaterialApp rebuild
-    // The actual implementation will be in the widget that uses this service
-    notifyListeners();
   }
 
   Locale get locale => Locale(_currentLanguage.code);

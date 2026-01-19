@@ -457,21 +457,19 @@ class SettingsPage extends StatelessWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: AppLanguage.values.map((language) {
-            return RadioListTile<AppLanguage>(
-              title: Text('${language.flag} ${language.displayName}'),
-              value: language,
-              groupValue: languageProvider.currentLanguage,
-              onChanged: languageProvider.currentLanguage == language
-                  ? null
-                  : (AppLanguage? value) async {
-                      if (value != null) {
-                        await languageProvider.setLanguage(value);
-                        if (context.mounted) {
-                          Navigator.of(context).pop();
-                        }
-                      }
-                    },
-            );
+                return RadioListTile<AppLanguage>(
+                  title: Text('${language.flag} ${language.displayName}'),
+                  value: language,
+                  groupValue: languageProvider.currentLanguage,
+                  onChanged: languageProvider.currentLanguage == language
+                      ? null
+                      : (AppLanguage? value) async {
+                          if (value != null) {
+                            Navigator.of(context).pop();
+                            await languageProvider.setLanguage(value);
+                          }
+                        },
+                );
           }).toList(),
         ),
         actions: [
