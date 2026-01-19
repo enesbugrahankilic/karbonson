@@ -8,6 +8,7 @@ import '../theme/design_system.dart';
 import '../core/navigation/app_router.dart';
 import '../widgets/home_button.dart';
 import '../widgets/language_selector_button.dart';
+import '../widgets/quick_menu_widget.dart';
 import '../services/achievement_service.dart';
 import '../services/profile_service.dart';
 import '../services/user_progress_service.dart';
@@ -720,209 +721,262 @@ class _HomeDashboardState extends State<HomeDashboard>
   }
 
   void _showQuickMenu(BuildContext context) {
-    showModalBottomSheet(
+    final menuItems = QuickMenuBuilder.buildCompleteMenu(
+      onQuizTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.quiz);
+      },
+      onDuelTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.duel);
+      },
+      onBoardGameTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.boardGame);
+      },
+      onMultiplayerTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.multiplayerLobby);
+      },
+      onFriendsTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.friends);
+      },
+      onLeaderboardTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.leaderboard);
+      },
+      onDailyChallengeTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.dailyChallenge);
+      },
+      onAchievementsTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.achievement);
+      },
+      onRewardsTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed('/rewards-shop');
+      },
+      onAIRecommendationsTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.aiRecommendations);
+      },
+      onHowToPlayTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.howToPlay);
+      },
+      onSettingsTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.settings);
+      },
+      onProfileTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.profile);
+      },
+      friendRequestCount: 3, // Bu değer dinamik olarak güncellenmeli
+      dailyChallengeCount: _dailyChallenges.length,
+      achievementCount: _userAchievements.length,
+    );
+
+    showGeneralDialog(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            decoration: BoxDecoration(
-              color: ThemeColors.getCardBackground(context).withOpacity( 0.9),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-              border: Border.all(
-                color: Colors.white.withOpacity( 0.3),
-                width: 1,
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 400),
+      pageBuilder: (context, anim1, anim2) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              child: Container(
+                margin: const EdgeInsets.all(20),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(28),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: ThemeColors.getCardBackground(context).withOpacity(0.95),
+                        borderRadius: BorderRadius.circular(28),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 30,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Header with drag handle
+                          Container(
+                            margin: const EdgeInsets.only(top: 16),
+                            width: 50,
+                            height: 5,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                          
+                          // Title
+                          Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        ThemeColors.getPrimaryButtonColor(context),
+                                        ThemeColors.getAccentButtonColor(context),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: const Icon(
+                                    Icons.grid_view,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Hızlı Menü',
+                                        style: DesignSystem.getHeadlineSmall(context).copyWith(
+                                          color: ThemeColors.getText(context),
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${menuItems.length} özellik keşfet',
+                                        style: TextStyle(
+                                          color: ThemeColors.getSecondaryText(context),
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  icon: Icon(
+                                    Icons.close,
+                                    color: ThemeColors.getSecondaryText(context),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          
+                          // Stats Bar
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  ThemeColors.getPrimaryButtonColor(context).withOpacity(0.15),
+                                  ThemeColors.getAccentButtonColor(context).withOpacity(0.1),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.2),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildQuickStat(
+                                  context,
+                                  icon: Icons.star,
+                                  value: '${_userProgress?.totalPoints ?? 0}',
+                                  color: Colors.amber,
+                                ),
+                                Container(width: 1, height: 24, color: Colors.white.withOpacity(0.2)),
+                                _buildQuickStat(
+                                  context,
+                                  icon: Icons.emoji_events,
+                                  value: '${_userProgress?.level ?? 1}',
+                                  color: Colors.purple,
+                                ),
+                                Container(width: 1, height: 24, color: Colors.white.withOpacity(0.2)),
+                                _buildQuickStat(
+                                  context,
+                                  icon: Icons.local_fire_department,
+                                  value: '${_userProgress?.loginStreak ?? 0}',
+                                  color: Colors.orange,
+                                ),
+                              ],
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 20),
+                          
+                          // Quick Menu Grid
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: QuickMenuGrid(
+                              items: menuItems,
+                              columns: 4,
+                              spacing: 12,
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildQuickStat(
+    BuildContext context, {
+    required IconData icon,
+    required String value,
+    required Color color,
+  }) {
+    return Column(
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 16),
+            const SizedBox(width: 4),
+            Text(
+              value,
+              style: TextStyle(
+                color: ThemeColors.getText(context),
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            padding: const EdgeInsets.all(DesignSystem.spacingXl),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity( 0.3),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: DesignSystem.spacingL),
-                Text(
-                  'Hızlı Menü',
-                  style: DesignSystem.getTitleLarge(context).copyWith(
-                    color: ThemeColors.getText(context),
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: DesignSystem.spacingL),
-                
-                // Game Modes Row
-                Text(
-                  'Oyun Modları',
-                  style: TextStyle(
-                    color: ThemeColors.getSecondaryText(context),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: DesignSystem.spacingS),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildSimpleMenuButton(
-                      context,
-                      icon: Icons.quiz,
-                      label: 'Quiz',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed(AppRoutes.quiz);
-                      },
-                    ),
-                    _buildSimpleMenuButton(
-                      context,
-                      icon: Icons.sports_esports,
-                      label: 'Düello',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed(AppRoutes.duel);
-                      },
-                    ),
-                    _buildSimpleMenuButton(
-                      context,
-                      icon: Icons.casino,
-                      label: 'Masa Oyunu',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed(AppRoutes.boardGame);
-                      },
-                    ),
-                    _buildSimpleMenuButton(
-                      context,
-                      icon: Icons.group,
-                      label: 'Takım',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed(AppRoutes.multiplayerLobby);
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: DesignSystem.spacingM),
-                
-                // Social Row
-                Text(
-                  'Sosyal',
-                  style: TextStyle(
-                    color: ThemeColors.getSecondaryText(context),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: DesignSystem.spacingS),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildSimpleMenuButton(
-                      context,
-                      icon: Icons.people,
-                      label: 'Arkadaşlar',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed(AppRoutes.friends);
-                      },
-                    ),
-                    _buildSimpleMenuButton(
-                      context,
-                      icon: Icons.leaderboard,
-                      label: 'Sıralama',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed(AppRoutes.leaderboard);
-                      },
-                    ),
-                    _buildSimpleMenuButton(
-                      context,
-                      icon: Icons.task_alt,
-                      label: 'Görevler',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed(AppRoutes.dailyChallenge);
-                      },
-                    ),
-                    _buildSimpleMenuButton(
-                      context,
-                      icon: Icons.emoji_events,
-                      label: 'Başarılar',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed(AppRoutes.achievement);
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: DesignSystem.spacingM),
-                
-                // Other Features Row
-                Text(
-                  'Diğer',
-                  style: TextStyle(
-                    color: ThemeColors.getSecondaryText(context),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: DesignSystem.spacingS),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildSimpleMenuButton(
-                      context,
-                      icon: Icons.card_giftcard,
-                      label: 'Ödül Mağazası',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed('/rewards-shop');
-                      },
-                    ),
-                    _buildSimpleMenuButton(
-                      context,
-                      icon: Icons.lightbulb,
-                      label: 'AI Önerileri',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed(AppRoutes.aiRecommendations);
-                      },
-                    ),
-                    _buildSimpleMenuButton(
-                      context,
-                      icon: Icons.help,
-                      label: 'Nasıl Oynanır',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed(AppRoutes.howToPlay);
-                      },
-                    ),
-                    _buildSimpleMenuButton(
-                      context,
-                      icon: Icons.settings,
-                      label: 'Ayarlar',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed(AppRoutes.settings);
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: DesignSystem.spacingM),
-              ],
-            ),
-          ),
+          ],
         ),
-      ),
+      ],
     );
   }
 
