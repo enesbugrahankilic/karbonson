@@ -481,7 +481,7 @@ class _RewardsShopPageState extends State<RewardsShopPage>
       userProgress: _userProgress,
       showHeader: true,
       compactMode: false,
-      onRewardTap: (reward) {},
+      onRewardTap: () {},
       onRewardUse: (reward) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${reward.name} kullanıldı!')),
