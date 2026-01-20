@@ -333,8 +333,8 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
   Widget _buildScrollableMenu() {
     return ListView.builder(
       controller: _scrollController,
-      scrollDirection: Axis.horizontal,
-      padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 20),
+      scrollDirection: Axis.vertical, // Changed from horizontal to vertical
+      padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       itemCount: widget.items.length,
       clipBehavior: Clip.none,
       itemBuilder: (context, index) {
@@ -345,8 +345,8 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
         
         return Padding(
           padding: EdgeInsets.only(
-            left: isFirst ? 0 : 12,
-            right: isLast ? 0 : 12,
+            top: isFirst ? 0 : 12,
+            bottom: isLast ? 0 : 12,
           ),
           child: _buildMenuItem(item, context, isSelected: isSelected),
         );
@@ -719,7 +719,7 @@ class QuickMenuGrid extends StatelessWidget {
     final itemWidth = (screenWidth - (padding?.horizontal ?? 40) - (spacing * (columns - 1))) / columns;
 
     final scrollContent = SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
+      scrollDirection: Axis.vertical, // Changed from horizontal to vertical
       child: Wrap(
         spacing: spacing,
         runSpacing: spacing,
