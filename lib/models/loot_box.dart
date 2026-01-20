@@ -347,20 +347,68 @@ class UserLootBox extends Equatable {
   }
 
 /// Nadirlik ismi
-  String get rarityName {
-    switch (rarity) {
-      case LootBoxRarity.common:
-        return 'Sıradan';
-      case LootBoxRarity.rare:
-        return 'Nadir';
-      case LootBoxRarity.epic:
-        return 'Destansı';
-      case LootBoxRarity.legendary:
-        return 'Efsanevi';
-      case LootBoxRarity.mythic:
-        return 'Mitolojik';
-    }
+String get rarityName {
+  switch (rarity) {
+    case LootBoxRarity.common:
+      return 'Sıradan';
+    case LootBoxRarity.rare:
+      return 'Nadir';
+    case LootBoxRarity.epic:
+      return 'Destansı';
+    case LootBoxRarity.legendary:
+      return 'Efsanevi';
+    case LootBoxRarity.mythic:
+      return 'Mitolojik';
   }
+}
+
+/// Tip ismi (Türkçe) - LootBox ile aynı
+String get typeName {
+  switch (boxType) {
+    case LootBoxType.quiz:
+      return 'Quiz Kutusu';
+    case LootBoxType.daily:
+      return 'Günlük Kutusu';
+    case LootBoxType.achievement:
+      return 'Başarı Kutusu';
+    case LootBoxType.challenge:
+      return 'Görev Kutusu';
+    case LootBoxType.returnReward:
+      return 'Geri Dönüş Kutusu';
+    case LootBoxType.seasonal:
+      return 'Mevsimlik Kutusu';
+    case LootBoxType.login:
+      return 'Giriş Kutusu';
+    case LootBoxType.special:
+      return 'Özel Kutusu';
+    case LootBoxType.premium:
+      return 'Premium Kutusu';
+  }
+}
+
+/// Kutu tip ismi (kısaltılmış) - widget'lar için
+String get boxTypeName {
+  switch (boxType) {
+    case LootBoxType.quiz:
+      return 'Quiz';
+    case LootBoxType.daily:
+      return 'Günlük';
+    case LootBoxType.achievement:
+      return 'Başarı';
+    case LootBoxType.challenge:
+      return 'Görev';
+    case LootBoxType.returnReward:
+      return 'Geri Dönüş';
+    case LootBoxType.seasonal:
+      return 'Mevsimlik';
+    case LootBoxType.login:
+      return 'Giriş';
+    case LootBoxType.special:
+      return 'Özel';
+    case LootBoxType.premium:
+      return 'Premium';
+  }
+}
 
   /// Kopya
   UserLootBox copyWith({

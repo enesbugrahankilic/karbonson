@@ -31,6 +31,36 @@ class HomeDashboard extends StatefulWidget {
   State<HomeDashboard> createState() => _HomeDashboardState();
 }
 
+class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+
+  _StickyHeaderDelegate({
+    required this.minHeight,
+    required this.maxHeight,
+    required this.child,
+  });
+
+  @override
+  double get minExtent => minHeight;
+
+  @override
+  double get maxExtent => maxHeight;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(child: child);
+  }
+
+  @override
+  bool shouldRebuild(_StickyHeaderDelegate oldDelegate) {
+    return maxHeight != oldDelegate.maxHeight ||
+           minHeight != oldDelegate.minHeight ||
+           child != oldDelegate.child;
+  }
+}
+
 class _HomeDashboardState extends State<HomeDashboard>
     with TickerProviderStateMixin {
   late AnimationController _fadeController;
@@ -277,72 +307,116 @@ class _HomeDashboardState extends State<HomeDashboard>
                     ),
                   ),
 
-                  // Main Content - Scrollable if needed but fits screen
+                  // Main Content - Scrollable with CustomScrollView and Sticky Headers
                   Expanded(
-                    child: SingleChildScrollView(
+                    child: CustomScrollView(
                       physics: const BouncingScrollPhysics(),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: isSmallScreen ? 16.0 : 20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Welcome Section
-                            SlideTransition(
-                              position: Tween<Offset>(
-                                begin: const Offset(0, 0.2),
-                                end: Offset.zero,
-                              ).animate(CurvedAnimation(
-                                parent: _slideController,
-                                curve: Curves.easeOut,
-                              )),
-                              child: _buildWelcomeSection(context),
+                      slivers: [
+                        // Sticky Welcome Section Header
+                        SliverPersistentHeader(
+                          pinned: true,
+                          floating: false,
+                          delegate: _StickyHeaderDelegate(
+                            minHeight: 120.0,
+                            maxHeight: 160.0,
+                            child: Container(
+                              color: ThemeColors.getCardBackground(context).withOpacity(0.95),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: isSmallScreen ? 16.0 : 20.0,
+                                  vertical: 8.0),
+                              child: SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: const Offset(0, 0.2),
+                                  end: Offset.zero,
+                                ).animate(CurvedAnimation(
+                                  parent: _slideController,
+                                  curve: Curves.easeOut,
+                                )),
+                                child: _buildWelcomeSection(context),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Main Content Sections
+                        SliverList(
+                          delegate: SliverChildListDelegate([
+                            SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
+                            // Duel Mode Section - Ana odak noktası (EN ÜSTTE)
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: isSmallScreen ? 16.0 : 20.0),
+                              child: _buildDuelModeSection(context),
                             ),
 
                             SizedBox(height: isSmallScreen ? 20.0 : 24.0),
 
-                            // Duel Mode Section - Ana odak noktası (EN ÜSTTE)
-                            _buildDuelModeSection(context),
-
-                            SizedBox(height: isSmallScreen ? 20.0 : 24.0),
-
                             // Quick Access Settings Button
-                            _buildQuickAccessSection(context),
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: isSmallScreen ? 16.0 : 20.0),
+                              child: _buildQuickAccessSection(context),
+                            ),
 
                             SizedBox(height: isSmallScreen ? 20.0 : 24.0),
 
                             // Quick Quiz Start Section
-                            _buildQuickQuizSection(context),
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: isSmallScreen ? 16.0 : 20.0),
+                              child: _buildQuickQuizSection(context),
+                            ),
 
                             SizedBox(height: isSmallScreen ? 20.0 : 24.0),
 
                             // Progress & Achievements Section
-                            _buildProgressSection(context),
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: isSmallScreen ? 16.0 : 20.0),
+                              child: _buildProgressSection(context),
+                            ),
 
                             SizedBox(height: isSmallScreen ? 20.0 : 24.0),
 
                             // Multiplayer Section
-                            _buildMultiplayerSection(context),
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: isSmallScreen ? 16.0 : 20.0),
+                              child: _buildMultiplayerSection(context),
+                            ),
 
                             SizedBox(height: isSmallScreen ? 20.0 : 24.0),
 
                             // Daily Challenges Section
-                            _buildDailyChallengesSection(context),
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: isSmallScreen ? 16.0 : 20.0),
+                              child: _buildDailyChallengesSection(context),
+                            ),
 
                             SizedBox(height: isSmallScreen ? 20.0 : 24.0),
 
                             // Statistics Summary Section
-                            _buildStatisticsSummarySection(context),
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: isSmallScreen ? 16.0 : 20.0),
+                              child: _buildStatisticsSummarySection(context),
+                            ),
 
                             SizedBox(height: isSmallScreen ? 20.0 : 24.0),
 
                             // Recent Activity
-                            _buildRecentActivitySection(context),
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: isSmallScreen ? 16.0 : 20.0),
+                              child: _buildRecentActivitySection(context),
+                            ),
 
                             SizedBox(height: 20.0),
-                          ],
+                          ]),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ],
@@ -361,141 +435,147 @@ class _HomeDashboardState extends State<HomeDashboard>
     final isSmallScreen = screenWidth < 360;
 
     // Get dynamic user data
-    final displayName = _userData?.nickname ?? 
-                       user?.displayName ?? 
-                       user?.email?.split('@')[0] ?? 
-                       'Kullanıcı';
+    final displayName = _userData?.nickname ??
+                        user?.displayName ??
+                        user?.email?.split('@')[0] ??
+                        'Kullanıcı';
     final totalPoints = _userProgress?.totalPoints ?? 0;
     final achievementCount = _userAchievements.length;
 
-    return Container(
-      padding: EdgeInsets.all(isSmallScreen ? 20.0 : 24.0),
-      decoration: BoxDecoration(
-        color: ThemeColors.getCardBackground(context),
-        borderRadius: BorderRadius.circular(isSmallScreen ? 16.0 : 20.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity( 0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Avatar
-          GestureDetector(
-            onTap: () => _showEditProfilePictureDialog(context),
-            child: CircleAvatar(
-              radius: isSmallScreen ? 25.0 : 30.0,
-              backgroundColor: ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.2),
-              backgroundImage: _userData?.profilePictureUrl != null
-                  ? NetworkImage(_userData!.profilePictureUrl!)
-                  : null,
-              child: _userData?.profilePictureUrl == null
-                  ? Text(
-                      displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: isSmallScreen ? 18.0 : 22.0,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    )
-                  : null,
+    return Semantics(
+      label: 'Kullanıcı hoş geldin bölümü, $displayName, $totalPoints puan, $achievementCount başarı',
+      child: Container(
+        padding: EdgeInsets.all(isSmallScreen ? 20.0 : 24.0),
+        decoration: BoxDecoration(
+          color: ThemeColors.getCardBackground(context),
+          borderRadius: BorderRadius.circular(isSmallScreen ? 16.0 : 20.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity( 0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
             ),
-          ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Avatar
+            GestureDetector(
+              onTap: () => _showEditProfilePictureDialog(context),
+              child: Semantics(
+                label: 'Profil resmi, dokunarak değiştir',
+                child: CircleAvatar(
+                  radius: isSmallScreen ? 25.0 : 30.0,
+                  backgroundColor: ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.2),
+                  backgroundImage: _userData?.profilePictureUrl != null
+                      ? NetworkImage(_userData!.profilePictureUrl!)
+                      : null,
+                  child: _userData?.profilePictureUrl == null
+                      ? Text(
+                          displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: isSmallScreen ? 18.0 : 22.0,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        )
+                      : null,
+                ),
+              ),
+            ),
 
-          SizedBox(width: isSmallScreen ? 16.0 : 20.0),
+            SizedBox(width: isSmallScreen ? 16.0 : 20.0),
 
-          // Welcome Text
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppLocalizations.helloEmoji,
-                  style: TextStyle(
-                    color: ThemeColors.getText(context),
-                    fontSize: isSmallScreen ? 20.0 : 24.0,
-                    fontWeight: FontWeight.w600,
+            // Welcome Text
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.helloEmoji,
+                    style: TextStyle(
+                      color: ThemeColors.getText(context),
+                      fontSize: isSmallScreen ? 20.0 : 24.0,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
+                  SizedBox(height: 4.0),
+                  Text(
+                    displayName,
+                    style: TextStyle(
+                      color: ThemeColors.getSecondaryText(context),
+                      fontSize: isSmallScreen ? 14.0 : 16.0,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+
+            // Stats
+            Column(
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.star,
+                      color: Colors.amber,
+                      size: isSmallScreen ? 16.0 : 18.0,
+                    ),
+                    SizedBox(width: 4.0),
+                    Text(
+                      '$totalPoints ${AppLocalizations.points}',
+                      style: TextStyle(
+                        color: ThemeColors.getText(context),
+                        fontSize: isSmallScreen ? 12.0 : 14.0,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 4.0),
-                Text(
-                  displayName,
-                  style: TextStyle(
-                    color: ThemeColors.getSecondaryText(context),
-                    fontSize: isSmallScreen ? 14.0 : 16.0,
-                    fontWeight: FontWeight.w400,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  children: [
+                    Icon(
+                      Icons.emoji_events,
+                      color: Colors.orange,
+                      size: isSmallScreen ? 16.0 : 18.0,
+                    ),
+                    SizedBox(width: 4.0),
+                    Text(
+                      '$achievementCount ${AppLocalizations.badgesAbbrev}',
+                      style: TextStyle(
+                        color: ThemeColors.getText(context),
+                        fontSize: isSmallScreen ? 12.0 : 14.0,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
 
-          // Stats
-          Column(
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.star,
-                    color: Colors.amber,
-                    size: isSmallScreen ? 16.0 : 18.0,
-                  ),
-                  SizedBox(width: 4.0),
-                  Text(
-                    '$totalPoints ${AppLocalizations.points}',
-                    style: TextStyle(
-                      color: ThemeColors.getText(context),
-                      fontSize: isSmallScreen ? 12.0 : 14.0,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+            // Time display
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              decoration: BoxDecoration(
+                color: ThemeColors.getPrimaryButtonColor(context)
+                    .withOpacity( 0.1),
+                borderRadius: BorderRadius.circular(8.0),
               ),
-              SizedBox(height: 4.0),
-              Row(
-                children: [
-                  Icon(
-                    Icons.emoji_events,
-                    color: Colors.orange,
-                    size: isSmallScreen ? 16.0 : 18.0,
-                  ),
-                  SizedBox(width: 4.0),
-                  Text(
-                    '$achievementCount ${AppLocalizations.badgesAbbrev}',
-                    style: TextStyle(
-                      color: ThemeColors.getText(context),
-                      fontSize: isSmallScreen ? 12.0 : 14.0,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          // Time display
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            decoration: BoxDecoration(
-              color: ThemeColors.getPrimaryButtonColor(context)
-                  .withOpacity( 0.1),
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: Text(
-              '${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}',
-              style: TextStyle(
-                color: ThemeColors.getSuccessColor(context),
-                fontSize: isSmallScreen ? 12.0 : 14.0,
-                fontWeight: FontWeight.w500,
+              child: Text(
+                '${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}',
+                style: TextStyle(
+                  color: ThemeColors.getSuccessColor(context),
+                  fontSize: isSmallScreen ? 12.0 : 14.0,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -2731,6 +2811,8 @@ class _HomeDashboardState extends State<HomeDashboard>
                     fontSize: smallScreen ? 14.0 : 16.0,
                     fontWeight: FontWeight.w600,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: 2),
                 Text(
@@ -2739,6 +2821,8 @@ class _HomeDashboardState extends State<HomeDashboard>
                     color: ThemeColors.getSecondaryText(context),
                     fontSize: smallScreen ? 12.0 : 14.0,
                   ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: DesignSystem.spacingS),
                 Row(

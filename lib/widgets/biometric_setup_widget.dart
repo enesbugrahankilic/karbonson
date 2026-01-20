@@ -62,6 +62,9 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
       _isLoading = true;
     });
 
+    // Show overlay
+    _showBiometricOverlay();
+
     try {
       // Biyometrik kimlik doğrulama iste
       final success = await BiometricService.authenticate(
@@ -69,6 +72,11 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
             'Biyometrik kimlik doğrulama kurulumu için $_biometricType kullanımına izin verin',
         useErrorDialogs: true,
       );
+
+      // Hide overlay
+      if (mounted) {
+        Navigator.of(context).pop(); // Close overlay
+      }
 
       if (success) {
         // Biyometri kurulum bilgilerini Firestore'a kaydet
@@ -103,6 +111,11 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
             'Biyometrik kimlik doğrulama iptal edildi.', Colors.orange);
       }
     } catch (e) {
+      // Hide overlay
+      if (mounted) {
+        Navigator.of(context).pop(); // Close overlay
+      }
+
       // Daha spesifik hata mesajları için hata türünü kontrol et
       if (mounted) {
         if (e.toString().contains('user-not-found') ||
@@ -165,6 +178,52 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
         });
       }
     }
+  }
+
+  void _showBiometricOverlay() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.black.withOpacity(0.7),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _biometricType.toLowerCase().contains('face')
+                    ? Icons.face
+                    : Icons.fingerprint,
+                size: 64,
+                color: Colors.white,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '$_biometricType Doğrulama',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Lütfen kimliğinizi doğrulayın...',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 24),
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _skipSetup() {
