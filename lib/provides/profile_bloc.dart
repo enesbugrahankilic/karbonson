@@ -1,7 +1,9 @@
 // lib/provides/profile_bloc.dart
-// PROFIL BLOK - TÜM VERILER FIRESTORE'DAN GELİR
+// PROFIL BLOK - TÜM VERİLER FIRESTORE'DAN GELİR
 // ProfileData ve SharedPreferences KALDIRILDI - SADECE USERDATA KULLANILIYOR
 
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -25,7 +27,12 @@ class LoadProfile extends ProfileEvent {
   List<Object> get props => [userNickname];
 }
 
+/// Event to start listening to profile changes in real-time
+class ListenToProfile extends ProfileEvent {}
+
 class RefreshProfile extends ProfileEvent {}
+
+class RefreshServerData extends ProfileEvent {}
 
 class UpdateNickname extends ProfileEvent {
   final String newNickname;
@@ -58,6 +65,18 @@ class UpdateProfilePicture extends ProfileEvent {
 
   @override
   List<Object> get props => [imageUrl];
+}
+
+class SyncProfileData extends ProfileEvent {}
+
+/// Event for real-time profile updates
+class ProfileDataUpdated extends ProfileEvent {
+  final UserData userData;
+
+  const ProfileDataUpdated(this.userData);
+
+  @override
+  List<Object> get props => [userData];
 }
 
 // States
@@ -106,13 +125,24 @@ class ProfileUpdateSuccess extends ProfileState {
 // Bloc
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final ProfileService profileService;
+  StreamSubscription? _profileSubscription;
 
   ProfileBloc({required this.profileService}) : super(ProfileInitial()) {
     on<LoadProfile>(_onLoadProfile);
+    on<ListenToProfile>(_onListenToProfile);
     on<RefreshProfile>(_onRefreshProfile);
+    on<RefreshServerData>(_onRefreshServerData);
     on<UpdateNickname>(_onUpdateNickname);
     on<AddGameResult>(_onAddGameResult);
     on<UpdateProfilePicture>(_onUpdateProfilePicture);
+    on<SyncProfileData>(_onSyncProfileData);
+    on<ProfileDataUpdated>(_onProfileDataUpdated);
+  }
+
+  @override
+  Future<void> close() {
+    _profileSubscription?.cancel();
+    return super.close();
   }
 
   Future<void> _onLoadProfile(
@@ -160,6 +190,50 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     }
   }
 
+  /// Start listening to profile changes in real-time
+  Future<void> _onListenToProfile(
+      ListenToProfile event, Emitter<ProfileState> emit) async {
+    // Cancel any existing subscription
+    _profileSubscription?.cancel();
+
+    final currentState = state;
+    if (currentState is! ProfileLoaded) {
+      return;
+    }
+
+    try {
+      // Start listening to profile changes
+      _profileSubscription = profileService.listenToUserProfile().listen(
+        (userData) {
+          if (userData != null) {
+            add(ProfileDataUpdated(userData));
+          }
+        },
+        onError: (error) {
+          if (kDebugMode) {
+            debugPrint('Profile stream error: $error');
+          }
+        },
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error setting up profile listener: $e');
+      }
+    }
+  }
+
+  /// Handle real-time profile data updates
+  void _onProfileDataUpdated(
+      ProfileDataUpdated event, Emitter<ProfileState> emit) {
+    final currentState = state;
+    if (currentState is ProfileLoaded) {
+      emit(ProfileLoaded(
+        userData: event.userData,
+        currentNickname: currentState.currentNickname,
+      ));
+    }
+  }
+
   Future<void> _onRefreshProfile(
       RefreshProfile event, Emitter<ProfileState> emit) async {
     final currentState = state;
@@ -184,6 +258,12 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         }
       }
     }
+  }
+
+  Future<void> _onRefreshServerData(
+      RefreshServerData event, Emitter<ProfileState> emit) async {
+    // RefreshServerData aynı işi yapar, _onRefreshProfile'ı çağır
+    await _onRefreshProfile(RefreshProfile(), emit);
   }
 
   Future<void> _onUpdateNickname(
@@ -273,6 +353,31 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       } catch (e) {
         emit(ProfileError(
             'Profil resmi güncellenirken hata oluştu: ${e.toString()}'));
+      }
+    }
+  }
+
+  Future<void> _onSyncProfileData(
+      SyncProfileData event, Emitter<ProfileState> emit) async {
+    final currentState = state;
+    if (currentState is ProfileLoaded) {
+      try {
+        final success = await profileService.syncAllProfileData();
+        if (success) {
+          // Reload user data after sync
+          final updatedUserData = await profileService.getUserProfile();
+          if (updatedUserData != null) {
+            emit(ProfileLoaded(
+              userData: updatedUserData,
+              currentNickname: currentState.currentNickname,
+            ));
+          }
+          emit(ProfileUpdateSuccess('Profil verileri senkronize edildi'));
+        } else {
+          emit(ProfileError('Profil verileri senkronize edilirken hata oluştu'));
+        }
+      } catch (e) {
+        emit(ProfileError('Senkronizasyon hatası: ${e.toString()}'));
       }
     }
   }

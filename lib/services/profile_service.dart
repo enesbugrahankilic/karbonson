@@ -474,6 +474,8 @@ class ProfileService {
   /// ============================================
 
   /// Listen to user profile changes in real-time
+  /// Returns a stream that emits whenever the user profile is updated in Firestore
+  /// This is essential for a fully dynamic profile page
   Stream<user_model.UserData?> listenToUserProfile() {
     final user = _auth.currentUser;
     if (user == null) {
@@ -490,6 +492,166 @@ class ProfileService {
   /// Refresh user profile from Firestore
   Future<user_model.UserData?> refreshProfile() async {
     return getUserProfile();
+  }
+
+  /// Load server profile - alias for getUserProfile for compatibility
+  Future<user_model.UserData?> loadServerProfile() async {
+    return getUserProfile();
+  }
+
+  /// Cache nickname to local storage (for fallback purposes)
+  Future<void> cacheNickname(String nickname) async {
+    // This is a stub for compatibility - in a fully dynamic system,
+    // nickname is always loaded from Firestore
+    if (kDebugMode) {
+      debugPrint('Note: cacheNickname called, but system uses Firestore as source of truth');
+    }
+  }
+
+  /// Get current user ID
+  String? get currentUserId => _auth.currentUser?.uid;
+
+  /// Sync all profile data between Firebase Auth and Firestore
+  /// This ensures consistency between Auth state and Firestore data
+  Future<bool> syncAllProfileData() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        if (kDebugMode) debugPrint('❌ No user available for sync');
+        return false;
+      }
+
+      // Sync email verification status
+      await syncEmailVerificationStatus();
+
+      // Sync 2FA status
+      await sync2FAStatus();
+
+      if (kDebugMode) {
+        debugPrint('✅ All profile data synced for user: ${user.uid}');
+      }
+
+      return true;
+    } catch (e) {
+      if (kDebugMode) debugPrint('🚨 Error syncing profile data: $e');
+      return false;
+    }
+  }
+
+  /// Get formatted account creation date
+  Future<String?> getFormattedCreatedAt() async {
+    try {
+      final userData = await getUserProfile();
+      if (userData == null || userData.createdAt == null) {
+        return null;
+      }
+
+      final createdAt = userData.createdAt!;
+      final now = DateTime.now();
+      final difference = now.difference(createdAt);
+
+      if (difference.inDays < 1) {
+        return 'Bugün';
+      } else if (difference.inDays < 7) {
+        return '${difference.inDays} gün önce';
+      } else if (difference.inDays < 30) {
+        return '${(difference.inDays / 7).floor()} hafta önce';
+      } else if (difference.inDays < 365) {
+        return '${(difference.inDays / 30).floor()} ay önce';
+      } else {
+        return '${(difference.inDays / 365).floor()} yıl önce';
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error getting formatted createdAt: $e');
+      return null;
+    }
+  }
+
+  /// Get last profile update formatted string
+  Future<String?> getFormattedLastUpdated() async {
+    try {
+      final userData = await getUserProfile();
+      if (userData == null || userData.updatedAt == null) {
+        return null;
+      }
+
+      final updatedAt = userData.updatedAt!;
+      final now = DateTime.now();
+      final difference = now.difference(updatedAt);
+
+      if (difference.inMinutes < 1) {
+        return 'Az önce';
+      } else if (difference.inMinutes < 60) {
+        return '${difference.inMinutes} dakika önce';
+      } else if (difference.inHours < 24) {
+        return '${difference.inHours} saat önce';
+      } else if (difference.inDays < 7) {
+        return '${difference.inDays} gün önce';
+      } else {
+        return '${updatedAt.day}/${updatedAt.month}/${updatedAt.year}';
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error getting formatted updatedAt: $e');
+      return null;
+    }
+  }
+
+  /// Get account age in days
+  Future<int?> getAccountAgeInDays() async {
+    try {
+      final userData = await getUserProfile();
+      if (userData == null || userData.createdAt == null) {
+        return null;
+      }
+
+      final now = DateTime.now();
+      return now.difference(userData.createdAt!).inDays;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error getting account age: $e');
+      return null;
+    }
+  }
+
+  /// Check if account is new (less than 7 days old)
+  Future<bool> isNewAccount() async {
+    final age = await getAccountAgeInDays();
+    return age != null && age < 7;
+  }
+
+  /// Get account summary statistics
+  Future<Map<String, dynamic>> getAccountSummary() async {
+    try {
+      final userData = await getUserProfile();
+      if (userData == null) {
+        return {
+          'accountAge': null,
+          'isNewAccount': true,
+          'formattedCreatedAt': null,
+          'formattedLastUpdated': null,
+        };
+      }
+
+      final accountAge = await getAccountAgeInDays();
+      final formattedCreatedAt = await getFormattedCreatedAt();
+      final formattedLastUpdated = await getFormattedLastUpdated();
+
+      return {
+        'accountAge': accountAge,
+        'isNewAccount': accountAge != null && accountAge < 7,
+        'formattedCreatedAt': formattedCreatedAt,
+        'formattedLastUpdated': formattedLastUpdated,
+        'createdAt': userData.createdAt,
+        'updatedAt': userData.updatedAt,
+      };
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error getting account summary: $e');
+      return {
+        'accountAge': null,
+        'isNewAccount': true,
+        'formattedCreatedAt': null,
+        'formattedLastUpdated': null,
+      };
+    }
   }
 }
 

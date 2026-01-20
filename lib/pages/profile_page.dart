@@ -4,9 +4,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-// import 'package:clipboard/clipboard.dart'; // Using built-in services
-import '../models/profile_data.dart';
 import '../models/user_data.dart';
+import '../models/profile_data.dart'; // LocalStatisticsData ve GameHistoryItem için
 import '../provides/profile_bloc.dart';
 import '../services/profile_service.dart';
 import '../services/profile_picture_service.dart';
@@ -54,6 +53,11 @@ class _ProfileContentState extends State<ProfileContent>
 
     _fadeController.forward();
     _slideController.forward();
+
+    // Start real-time profile listener after initial load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProfileBloc>().add(const ListenToProfile());
+    });
   }
 
   @override
@@ -127,7 +131,7 @@ class _ProfileContentState extends State<ProfileContent>
                 if (state is ProfileLoading) {
                   return _buildLoadingState();
                 } else if (state is ProfileLoaded) {
-                  return _buildProfileContent(context, state.profileData, state.currentNickname);
+                  return _buildProfileContent(context, state.userData, state.currentNickname);
                 } else if (state is ProfileError) {
                   return _buildErrorState(context, state.message);
                 } else {
@@ -207,7 +211,7 @@ class _ProfileContentState extends State<ProfileContent>
     );
   }
 
-  Widget _buildProfileContent(BuildContext context, ProfileData profileData, String currentNickname) {
+  Widget _buildProfileContent(BuildContext context, UserData userData, String currentNickname) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
 
@@ -216,26 +220,26 @@ class _ProfileContentState extends State<ProfileContent>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // A. Üst Bölüm: Kimlik Kartı (Sunucu Verisi)
-          _buildIdentityCard(context, profileData.serverData, currentNickname),
+          // A. Üst Bölüm: Kimlik Kartı (UserData'dan)
+          _buildIdentityCard(context, userData, currentNickname),
           const SizedBox(height: 24),
 
-          // B. Orta Bölüm: Oyun İstatistikleri (Lokal Veri)
-          _buildGameStatistics(context, profileData.localData),
+          // B. Orta Bölüm: Oyun İstatistikleri (UserData'dan)
+          _buildGameStatistics(context, userData),
           const SizedBox(height: 24),
 
-          // C. Orta Bölüm: Başarımlar ve Ödüller (Lokal Veri)
-          _buildAchievementsAndRewards(context, profileData.localData),
+          // C. Orta Bölüm: Başarımlar ve Ödüller (UserData'dan)
+          _buildAchievementsAndRewards(context, userData),
           const SizedBox(height: 24),
 
-          // D. Alt Bölüm: Oyun Geçmişi (Lokal Veri)
-          _buildGameHistory(context, profileData.localData),
+          // D. Alt Bölüm: Oyun Geçmişi (UserData'dan)
+          _buildGameHistory(context, userData),
         ],
       ),
     );
   }
 
-  Widget _buildIdentityCard(BuildContext context, ServerProfileData? serverData, String currentNickname) {
+  Widget _buildIdentityCard(BuildContext context, UserData userData, String currentNickname) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
 
@@ -284,12 +288,12 @@ class _ProfileContentState extends State<ProfileContent>
                 CircleAvatar(
                   radius: isSmallScreen ? 40 : 48,
                   backgroundColor: Colors.white.withOpacity( 0.2),
-                  backgroundImage: serverData?.profilePictureUrl != null
-                      ? (serverData!.profilePictureUrl!.startsWith('assets/')
-                          ? AssetImage(serverData.profilePictureUrl!) as ImageProvider
-                          : NetworkImage(serverData.profilePictureUrl!) as ImageProvider)
+                  backgroundImage: userData.profilePictureUrl != null
+                      ? (userData.profilePictureUrl!.startsWith('assets/')
+                          ? AssetImage(userData.profilePictureUrl!) as ImageProvider
+                          : NetworkImage(userData.profilePictureUrl!) as ImageProvider)
                       : null,
-                  child: serverData?.profilePictureUrl == null
+                  child: userData.profilePictureUrl == null
                       ? Text(
                           currentNickname.isNotEmpty
                               ? currentNickname[0].toUpperCase()
@@ -366,7 +370,7 @@ class _ProfileContentState extends State<ProfileContent>
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'UID: ${serverData?.uid.substring(0, 8) ?? "Bilinmiyor"}...',
+                  'UID: ${userData.uid.substring(0, 8)}...',
                   style: TextStyle(
                     color: Colors.white.withOpacity( 0.8),
                     fontSize: isSmallScreen ? 12 : 14,
@@ -380,10 +384,9 @@ class _ProfileContentState extends State<ProfileContent>
               const SizedBox(width: 8),
               GestureDetector(
                 onTap: () {
-                  if (serverData?.uid != null) {
-                    // Copy to clipboard functionality
-                    // FlutterClipboard.copy(serverData!.uid);
-                    debugPrint('UID kopyalanacak: ${serverData!.uid}');
+                  // Copy to clipboard functionality
+                  // FlutterClipboard.copy(userData.uid);
+                  debugPrint('UID kopyalanacak: ${userData.uid}');
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('UID kopyalandı (debug modunda)'),
@@ -414,7 +417,7 @@ class _ProfileContentState extends State<ProfileContent>
 
           // Son Giriş
           Text(
-            _formatLastLogin(serverData?.lastLogin),
+            _formatLastLogin(userData.lastLogin),
             style: TextStyle(
               color: Colors.white.withOpacity( 0.7),
               fontSize: isSmallScreen ? 11 : 12,
@@ -426,7 +429,7 @@ class _ProfileContentState extends State<ProfileContent>
     );
   }
 
-  Widget _buildGameStatistics(BuildContext context, LocalStatisticsData localData) {
+  Widget _buildGameStatistics(BuildContext context, UserData userData) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
 
@@ -456,28 +459,28 @@ class _ProfileContentState extends State<ProfileContent>
               context,
               icon: Icons.trending_up,
               title: 'Kazanma Oranı',
-              value: '${(localData.winRate * 100).round()}%',
+              value: '${(userData.winRate * 100).round()}%',
               color: ThemeColors.getSuccessColor(context),
             ),
             _buildStatCard(
               context,
               icon: Icons.games,
               title: 'Toplam Oyun',
-              value: localData.totalGamesPlayed.toString(),
+              value: userData.totalGamesPlayed.toString(),
               color: ThemeColors.getInfoColor(context),
             ),
             _buildStatCard(
               context,
               icon: Icons.emoji_events,
               title: 'En Yüksek Skor',
-              value: localData.highestScore.toString(),
+              value: userData.highestScore.toString(),
               color: ThemeColors.getWarningColor(context),
             ),
             _buildStatCard(
               context,
               icon: Icons.analytics,
               title: 'Ortalama Puan',
-              value: localData.averageScore.toString(),
+              value: userData.averageScore.toString(),
               color: Colors.purple,
             ),
           ],
@@ -552,7 +555,7 @@ class _ProfileContentState extends State<ProfileContent>
     );
   }
 
-  Widget _buildAchievementsAndRewards(BuildContext context, LocalStatisticsData localData) {
+  Widget _buildAchievementsAndRewards(BuildContext context, UserData userData) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
 
@@ -576,8 +579,8 @@ class _ProfileContentState extends State<ProfileContent>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.8),
-                ThemeColors.getAccentButtonColor(context).withOpacity( 0.8),
+                ThemeColors.getPrimaryButtonColor(context).withOpacity(0.8),
+                ThemeColors.getAccentButtonColor(context).withOpacity(0.8),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -585,7 +588,7 @@ class _ProfileContentState extends State<ProfileContent>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.3),
+                color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               ),
@@ -609,9 +612,9 @@ class _ProfileContentState extends State<ProfileContent>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${localData.totalGamesPlayed} oyun oynandı',
+                        '${userData.totalGamesPlayed} oyun oynandı',
                         style: TextStyle(
-                          color: Colors.white.withOpacity( 0.8),
+                          color: Colors.white.withOpacity(0.8),
                           fontSize: isSmallScreen ? 12 : 14,
                         ),
                       ),
@@ -620,7 +623,7 @@ class _ProfileContentState extends State<ProfileContent>
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity( 0.2),
+                      color: Colors.white.withOpacity(0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -642,12 +645,12 @@ class _ProfileContentState extends State<ProfileContent>
                       Text(
                         'Kazanma Oranı',
                         style: TextStyle(
-                          color: Colors.white.withOpacity( 0.8),
+                          color: Colors.white.withOpacity(0.8),
                           fontSize: isSmallScreen ? 10 : 12,
                         ),
                       ),
                       Text(
-                        '%${(localData.winRate * 100).round()}',
+                        '%${(userData.winRate * 100).round()}',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: isSmallScreen ? 10 : 12,
@@ -658,8 +661,8 @@ class _ProfileContentState extends State<ProfileContent>
                   ),
                   const SizedBox(height: 8),
                   LinearProgressIndicator(
-                    value: localData.winRate,
-                    backgroundColor: Colors.white.withOpacity( 0.3),
+                    value: userData.winRate,
+                    backgroundColor: Colors.white.withOpacity(0.3),
                     valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                     minHeight: 6,
                   ),
@@ -683,7 +686,7 @@ class _ProfileContentState extends State<ProfileContent>
               context,
               icon: Icons.emoji_events,
               title: 'En Yüksek Skor',
-              value: '${localData.highestScore}',
+              value: '${userData.highestScore}',
               subtitle: 'Puan',
               color: Colors.amber,
             ),
@@ -691,7 +694,7 @@ class _ProfileContentState extends State<ProfileContent>
               context,
               icon: Icons.assignment_turned_in,
               title: 'Toplam Oyun',
-              value: '${localData.totalGamesPlayed}',
+              value: '${userData.totalGamesPlayed}',
               subtitle: 'Oynandı',
               color: Colors.green,
             ),
@@ -699,7 +702,7 @@ class _ProfileContentState extends State<ProfileContent>
               context,
               icon: Icons.card_giftcard,
               title: 'Ortalama',
-              value: '${localData.averageScore}',
+              value: '${userData.averageScore}',
               subtitle: 'Puan',
               color: Colors.purple,
             ),
@@ -707,7 +710,7 @@ class _ProfileContentState extends State<ProfileContent>
               context,
               icon: Icons.local_fire_department,
               title: 'Kazanma Oranı',
-              value: '%${(localData.winRate * 100).round()}',
+              value: '%${(userData.winRate * 100).round()}',
               subtitle: 'Başarı',
               color: Colors.orange,
             ),
@@ -792,7 +795,224 @@ class _ProfileContentState extends State<ProfileContent>
     );
   }
 
-  Widget _buildGameHistory(BuildContext context, LocalStatisticsData localData) {
+  Widget _buildAccountInfo(BuildContext context, UserData userData) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Hesap Bilgileri',
+          style: TextStyle(
+            color: ThemeColors.getText(context),
+            fontSize: isSmallScreen ? 18 : 20,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Email Doğrulama Durumu
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
+          decoration: BoxDecoration(
+            color: ThemeColors.getCardBackground(context),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: userData.isEmailVerified
+                  ? ThemeColors.getSuccessColor(context).withOpacity(0.3)
+                  : ThemeColors.getWarningColor(context).withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: userData.isEmailVerified
+                      ? ThemeColors.getSuccessColor(context).withOpacity(0.1)
+                      : ThemeColors.getWarningColor(context).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  userData.isEmailVerified ? Icons.check_circle : Icons.warning,
+                  color: userData.isEmailVerified
+                      ? ThemeColors.getSuccessColor(context)
+                      : ThemeColors.getWarningColor(context),
+                  size: isSmallScreen ? 20 : 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Email Doğrulama',
+                      style: TextStyle(
+                        color: ThemeColors.getText(context),
+                        fontSize: isSmallScreen ? 14 : 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      userData.isEmailVerified
+                          ? 'Email adresiniz doğrulanmış'
+                          : 'Email adresinizi doğrulamadınız',
+                      style: TextStyle(
+                        color: ThemeColors.getSecondaryText(context),
+                        fontSize: isSmallScreen ? 12 : 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // 2FA Durumu
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
+          decoration: BoxDecoration(
+            color: ThemeColors.getCardBackground(context),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: userData.is2FAEnabled
+                  ? ThemeColors.getSuccessColor(context).withOpacity(0.3)
+                  : ThemeColors.getInfoColor(context).withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: userData.is2FAEnabled
+                      ? ThemeColors.getSuccessColor(context).withOpacity(0.1)
+                      : ThemeColors.getInfoColor(context).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  userData.is2FAEnabled ? Icons.security : Icons.security_outlined,
+                  color: userData.is2FAEnabled
+                      ? ThemeColors.getSuccessColor(context)
+                      : ThemeColors.getInfoColor(context),
+                  size: isSmallScreen ? 20 : 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'İki Faktörlü Doğrulama',
+                      style: TextStyle(
+                        color: ThemeColors.getText(context),
+                        fontSize: isSmallScreen ? 14 : 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      userData.is2FAEnabled
+                          ? 'Hesabınız 2FA ile korunuyor'
+                          : '2FA etkinleştirilmemiş',
+                      style: TextStyle(
+                        color: ThemeColors.getSecondaryText(context),
+                        fontSize: isSmallScreen ? 12 : 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Hesap Oluşturma Tarihi
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
+          decoration: BoxDecoration(
+            color: ThemeColors.getCardBackground(context),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: ThemeColors.getBorder(context),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.calendar_today,
+                  color: ThemeColors.getPrimaryButtonColor(context),
+                  size: isSmallScreen ? 20 : 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Hesap Oluşturulma',
+                      style: TextStyle(
+                        color: ThemeColors.getText(context),
+                        fontSize: isSmallScreen ? 14 : 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      userData.createdAt != null
+                          ? _formatAccountCreationDate(userData.createdAt!)
+                          : 'Tarih bilinmiyor',
+                      style: TextStyle(
+                        color: ThemeColors.getSecondaryText(context),
+                        fontSize: isSmallScreen ? 12 : 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatAccountCreationDate(DateTime createdAt) {
+    final now = DateTime.now();
+    final difference = now.difference(createdAt);
+
+    if (difference.inDays < 1) {
+      return 'Bugün oluşturuldu';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} gün önce oluşturuldu';
+    } else if (difference.inDays < 30) {
+      return '${(difference.inDays / 7).floor()} hafta önce oluşturuldu';
+    } else if (difference.inDays < 365) {
+      return '${(difference.inDays / 30).floor()} ay önce oluşturuldu';
+    } else {
+      return '${(difference.inDays / 365).floor()} yıl önce oluşturuldu';
+    }
+  }
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
 
@@ -809,7 +1029,7 @@ class _ProfileContentState extends State<ProfileContent>
         ),
         const SizedBox(height: 16),
 
-        if (localData.recentGames.isEmpty)
+        if (userData.recentGames.isEmpty)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(32),
@@ -875,7 +1095,7 @@ class _ProfileContentState extends State<ProfileContent>
               ),
             ),
             child: Column(
-              children: localData.recentGames
+              children: userData.recentGames
                   .take(10)
                   .map((game) => _buildGameHistoryItem(context, game))
                   .toList(),
