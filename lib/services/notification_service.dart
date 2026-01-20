@@ -242,7 +242,24 @@ class NotificationService {
     }
   }
 
+  /// Show high score notification
+  Future<void> showHighScoreNotification(int newHighScore) async {
+    if (!_isInitialized) return;
+    
+    try {
+      if (kDebugMode) {
+        debugPrint('🎉 New High Score: $newHighScore points!');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Failed to show high score notification: $e');
+    }
+  }
+
   /// Static helper methods for easier usage
+  static Future<void> showHighScoreNotificationStatic(int newHighScore) async {
+    await NotificationService().showHighScoreNotification(newHighScore);
+  }
+
   static Future<void> showFriendRequestNotificationStatic(String fromUserId, String fromNickname) async {
     await NotificationService().showFriendRequestNotification(fromUserId, fromNickname);
   }

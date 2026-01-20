@@ -21,6 +21,7 @@ import 'services/authentication_state_service.dart';
 import 'services/firebase_auth_service.dart';
 import 'services/deep_linking_service.dart';
 import 'services/achievement_service.dart';
+import 'services/presence_service.dart';
 import 'services/music_service.dart';
 import 'services/sound_effects_service.dart';
 import 'services/language_service.dart';
@@ -203,6 +204,18 @@ class _AppRootState extends State<AppRoot> {
       } catch (e, st) {
         if (kDebugMode) {
           debugPrint('AppRoot: AchievementService init failed: $e');
+        }
+        if (kDebugMode) debugPrint('$st');
+      }
+
+      // Initialize presence service for real-time online status tracking
+      try {
+        if (kDebugMode) debugPrint('AppRoot: initializing PresenceService');
+        await PresenceService().initialize();
+        if (kDebugMode) debugPrint('AppRoot: PresenceService initialized');
+      } catch (e, st) {
+        if (kDebugMode) {
+          debugPrint('AppRoot: PresenceService init failed: $e');
         }
         if (kDebugMode) debugPrint('$st');
       }

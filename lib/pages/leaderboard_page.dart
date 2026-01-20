@@ -1,6 +1,6 @@
 // lib/pages/leaderboard_page.dart
 // Leaderboard Page - Sosyal karşılaştırma ve lider tabloları
-// Updated: Uses Firestore for real-time data
+// Updated: Uses Firestore for real-time data with dynamic category sorting
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -23,9 +23,18 @@ class _LeaderboardPageState extends State<LeaderboardPage>
   final firebase_auth.FirebaseAuth _auth = firebase_auth.FirebaseAuth.instance;
   late TabController _tabController;
 
+  // Global leaderboard data
   List<Map<String, dynamic>> _globalLeaderboard = [];
+  
+  // Friends leaderboard data  
   List<Map<String, dynamic>> _friendsLeaderboard = [];
+  
+  // Loading states
   bool _isLoading = true;
+  
+  // Category data - dynamically loaded
+  Map<String, List<Map<String, dynamic>>> _categoryData = {};
+  bool _isLoadingCategories = true;
 
   @override
   void initState() {
@@ -50,6 +59,9 @@ class _LeaderboardPageState extends State<LeaderboardPage>
       // Load friends leaderboard from Firestore
       _friendsLeaderboard = await _loadFriendsLeaderboard();
 
+      // Load category-specific leaderboards
+      await _loadCategoryData();
+
       setState(() => _isLoading = false);
     } catch (e) {
       setState(() => _isLoading = false);
@@ -61,15 +73,77 @@ class _LeaderboardPageState extends State<LeaderboardPage>
     }
   }
 
+  /// Load category-specific leaderboard data from Firestore
+  Future<void> _loadCategoryData() async {
+    setState(() => _isLoadingCategories = true);
+    
+    try {
+      // Load all categories in parallel
+      final results = await Future.wait([
+        _firestoreService.getQuizMastersLeaderboard(),
+        _firestoreService.getDuelChampionsLeaderboard(),
+        _firestoreService.getSocialButterfliesLeaderboard(),
+        _firestoreService.getStreakKingsLeaderboard(),
+      ]);
+
+      _categoryData = {
+        'quiz_masters': _formatCategoryLeaderboard(results[0], 'quizCount'),
+        'duel_champions': _formatCategoryLeaderboard(results[1], 'duelWins'),
+        'social_butterflies': _formatCategoryLeaderboard(results[2], 'friendCount'),
+        'streak_kings': _formatCategoryLeaderboard(results[3], 'longestStreak'),
+      };
+      
+      if (kDebugMode) {
+        debugPrint('✅ Category data loaded: ${_categoryData.keys.join(', ')}');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('🚨 Error loading category data: $e');
+    } finally {
+      setState(() => _isLoadingCategories = false);
+    }
+  }
+
+  /// Format category leaderboard with rank and metadata
+  List<Map<String, dynamic>> _formatCategoryLeaderboard(
+    List<Map<String, dynamic>> data,
+    String sortField,
+  ) {
+    final currentUserUid = _auth.currentUser?.uid;
+    
+    return data.asMap().entries.map((entry) {
+      final index = entry.key;
+      final user = entry.value;
+      final sortValue = user[sortField] as int? ?? 0;
+      
+      return {
+        'rank': index + 1,
+        'userId': user['uid'] ?? '',
+        'displayName': user['nickname'] ?? 'Anonim',
+        'avatar': user['avatarUrl'] ?? '🎯',
+        'score': user['score'] as int? ?? 0,
+        'sortValue': sortValue, // The value used for sorting this category
+        'isCurrentUser': user['uid'] == currentUserUid,
+        // Include all category-specific fields
+        'friendCount': user['friendCount'] as int? ?? 0,
+        'duelWins': user['duelWins'] as int? ?? 0,
+        'quizCount': user['quizCount'] as int? ?? 0,
+        'longestStreak': user['longestStreak'] as int? ?? 0,
+        'winRate': (user['winRate'] as num?)?.toDouble() ?? 0.0,
+        'averageScore': user['averageScore'] as int? ?? 0,
+      };
+    }).toList();
+  }
+
   Future<List<Map<String, dynamic>>> _loadGlobalLeaderboard() async {
     try {
       // Get leaderboard data from Firestore
       final leaderboardData = await _firestoreService.getLeaderboard();
 
       if (leaderboardData.isEmpty) {
-        // Return empty list if no data in database
         return [];
       }
+
+      final currentUserUid = _auth.currentUser?.uid;
 
       // Add rank and format data for display
       return leaderboardData.asMap().entries.map((entry) {
@@ -89,6 +163,7 @@ class _LeaderboardPageState extends State<LeaderboardPage>
           'level': level,
           'achievements': user['achievements'] as int? ?? 0,
           'winRate': user['winRate'] as double? ?? 0.0,
+          'isCurrentUser': user['uid'] == currentUserUid || user['userId'] == currentUserUid,
         };
       }).toList();
     } catch (e) {
@@ -232,7 +307,11 @@ class _LeaderboardPageState extends State<LeaderboardPage>
   }
 
   Widget _buildCategoriesLeaderboard() {
-    // Show different categories like Quiz Masters, Duel Champions, etc.
+    if (_isLoadingCategories) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // Show different categories with dynamic data from Firestore
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -241,7 +320,9 @@ class _LeaderboardPageState extends State<LeaderboardPage>
           'En çok quiz tamamlayanlar',
           Icons.quiz,
           Colors.blue,
-          _globalLeaderboard,
+          _categoryData['quiz_masters'] ?? [],
+          'quizCount',
+          'quiz',
         ),
         const SizedBox(height: 16),
         _buildCategoryCard(
@@ -249,7 +330,9 @@ class _LeaderboardPageState extends State<LeaderboardPage>
           'En çok düello kazananlar',
           Icons.sports_esports,
           Colors.red,
-          _globalLeaderboard,
+          _categoryData['duel_champions'] ?? [],
+          'duelWins',
+          'duel',
         ),
         const SizedBox(height: 16),
         _buildCategoryCard(
@@ -257,7 +340,9 @@ class _LeaderboardPageState extends State<LeaderboardPage>
           'En çok arkadaş edinenler',
           Icons.people,
           Colors.green,
-          _globalLeaderboard,
+          _categoryData['social_butterflies'] ?? [],
+          'friendCount',
+          'social',
         ),
         const SizedBox(height: 16),
         _buildCategoryCard(
@@ -265,7 +350,9 @@ class _LeaderboardPageState extends State<LeaderboardPage>
           'En uzun seri yakalayanlar',
           Icons.local_fire_department,
           Colors.orange,
-          _globalLeaderboard,
+          _categoryData['streak_kings'] ?? [],
+          'longestStreak',
+          'streak',
         ),
       ],
     );
@@ -309,7 +396,7 @@ class _LeaderboardPageState extends State<LeaderboardPage>
           child: LeaderboardItem(
             username: player['displayName'],
             score: player['score'],
-            avatarUrl: null, // Using emoji avatars, so null for now
+            avatarUrl: null,
             rank: player['rank'],
             isCurrentPlayerInTop10: isCurrentUser,
           ),
@@ -318,15 +405,24 @@ class _LeaderboardPageState extends State<LeaderboardPage>
     );
   }
 
-  Widget _buildCategoryCard(String title, String subtitle, IconData icon,
-      Color color, List<Map<String, dynamic>> data) {
+  Widget _buildCategoryCard(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+    List<Map<String, dynamic>> data,
+    String sortField,
+    String categoryType,
+  ) {
+    final isEmpty = data.isEmpty;
+    
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       child: InkWell(
-        onTap: () => _showCategoryLeaderboard(context, title, data),
+        onTap: () => _showCategoryLeaderboard(context, title, data, categoryType),
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -365,9 +461,33 @@ class _LeaderboardPageState extends State<LeaderboardPage>
                         color: Colors.grey[600],
                       ),
                     ),
+                    if (!isEmpty && data.length >= 3) ...[
+                      const SizedBox(height: 8),
+                      _buildTopThreeAvatars(data),
+                    ],
                   ],
                 ),
               ),
+              Column(
+                children: [
+                  Text(
+                    isEmpty ? '0' : '${data[0][sortField] ?? 0}',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
+                  Text(
+                    isEmpty ? '' : _getSortFieldLabel(sortField),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 8),
               Icon(
                 Icons.arrow_forward_ios,
                 color: Colors.grey[400],
@@ -380,13 +500,59 @@ class _LeaderboardPageState extends State<LeaderboardPage>
     );
   }
 
-  void _showCategoryLeaderboard(BuildContext context, String category,
-      List<Map<String, dynamic>> data) {
+  Widget _buildTopThreeAvatars(List<Map<String, dynamic>> data) {
+    final topThree = data.take(3).toList();
+    
+    return Row(
+      children: topThree.asMap().entries.map((entry) {
+        final index = entry.key;
+        final player = entry.value;
+        final avatar = player['avatar'] ?? '👤';
+        final displayName = player['displayName'] ?? '';
+        
+        return Container(
+          margin: EdgeInsets.only(right: index < 2 ? 4 : 0),
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: index == 0 ? Colors.amber.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Text(
+            avatar,
+            style: const TextStyle(fontSize: 16),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  String _getSortFieldLabel(String sortField) {
+    switch (sortField) {
+      case 'friendCount':
+        return 'Arkadaş';
+      case 'duelWins':
+        return 'Galibiyet';
+      case 'quizCount':
+        return 'Quiz';
+      case 'longestStreak':
+        return 'Seri';
+      default:
+        return '';
+    }
+  }
+
+  void _showCategoryLeaderboard(
+    BuildContext context,
+    String category,
+    List<Map<String, dynamic>> data,
+    String categoryType,
+  ) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => CategoryLeaderboardPage(
           categoryName: category,
           leaderboard: data,
+          categoryType: categoryType,
         ),
       ),
     );
@@ -575,11 +741,13 @@ class PlayerProfileSheet extends StatelessWidget {
 class CategoryLeaderboardPage extends StatelessWidget {
   final String categoryName;
   final List<Map<String, dynamic>> leaderboard;
+  final String categoryType;
 
   const CategoryLeaderboardPage({
     super.key,
     required this.categoryName,
     required this.leaderboard,
+    required this.categoryType,
   });
 
   @override
@@ -590,22 +758,189 @@ class CategoryLeaderboardPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: leaderboard.length,
-        itemBuilder: (context, index) {
-          final player = leaderboard[index];
-          return Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            child: LeaderboardItem(
-              username: player['displayName'] ?? 'Oyuncu',
-              score: player['score'] ?? 0,
-              avatarUrl: null,
-              rank: index + 1,
-              isCurrentPlayerInTop10: player['isCurrentUser'] == true,
+      body: leaderboard.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.leaderboard,
+                    size: 80,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Bu kategoride henüz veri yok',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: leaderboard.length,
+              itemBuilder: (context, index) {
+                final player = leaderboard[index];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: _buildCategoryPlayerCard(context, player, index),
+                );
+              },
             ),
+    );
+  }
+
+  Widget _buildCategoryPlayerCard(
+    BuildContext context,
+    Map<String, dynamic> player,
+    int index,
+  ) {
+    final isCurrentUser = player['isCurrentUser'] == true;
+    final avatar = player['avatar'] ?? '👤';
+    final displayName = player['displayName'] ?? 'Oyuncu';
+    final sortValue = player['sortValue'] ?? 0;
+    
+    // Get category-specific value to display
+    String categoryValue = '';
+    switch (categoryType) {
+      case 'quiz':
+        categoryValue = '${player['quizCount'] ?? 0} quiz';
+        break;
+      case 'duel':
+        categoryValue = '${player['duelWins'] ?? 0} galibiyet';
+        break;
+      case 'social':
+        categoryValue = '${player['friendCount'] ?? 0} arkadaş';
+        break;
+      case 'streak':
+        categoryValue = '${player['longestStreak'] ?? 0} gün';
+        break;
+    }
+
+    return Card(
+      elevation: index < 3 ? 4 : 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: InkWell(
+        onTap: () {
+          // Show player profile bottom sheet
+          showModalBottomSheet(
+            context: context,
+            builder: (context) => PlayerProfileSheet(player: player),
+            backgroundColor: Colors.transparent,
           );
         },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              // Rank
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: index == 0
+                      ? Colors.amber
+                      : index == 1
+                          ? Colors.grey[300]
+                          : index == 2
+                              ? Colors.brown[300]
+                              : Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    '#${index + 1}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: index < 3 ? Colors.white : Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Avatar
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    avatar,
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Name and score
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          displayName,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: isCurrentUser
+                                ? Theme.of(context).primaryColor
+                                : Colors.black,
+                          ),
+                        ),
+                        if (isCurrentUser) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'Sen',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '$categoryValue • ${player['score'] ?? 0} puan',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Category value
+              Text(
+                '$sortValue',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

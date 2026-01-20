@@ -109,6 +109,163 @@ class FirestoreService {
     }
   }
 
+
+
+  // === LEADERBOARD CATEGORY METHODS ===
+  // Dynamic leaderboard categories with different sorting criteria
+
+  /// Get Quiz Masters leaderboard - sorted by quizCount and averageScore
+  Future<List<Map<String, dynamic>>> getQuizMastersLeaderboard({int limit = 50}) async {
+    try {
+      final querySnapshot = await _db
+          .collection(_usersCollection)
+          .orderBy('quizCount', descending: true)
+          .limit(limit)
+          .get();
+
+      return querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'nickname': data['nickname'] as String? ?? 'Anonim',
+          'score': data['score'] as int? ?? 0,
+          'avatarUrl': data['avatarUrl'] as String?,
+          'uid': data['uid'] as String? ?? doc.id,
+          'quizCount': data['quizCount'] as int? ?? 0,
+          'averageScore': data['averageScore'] as int? ?? 0,
+          'friendCount': data['friendCount'] as int? ?? 0,
+          'duelWins': data['duelWins'] as int? ?? 0,
+          'longestStreak': data['longestStreak'] as int? ?? 0,
+        };
+      }).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('🚨 ERROR: Failed to fetch quiz masters leaderboard: $e');
+      }
+      return [];
+    }
+  }
+
+  /// Get Duel Champions leaderboard - sorted by duelWins and winRate
+  Future<List<Map<String, dynamic>>> getDuelChampionsLeaderboard({int limit = 50}) async {
+    try {
+      final querySnapshot = await _db
+          .collection(_usersCollection)
+          .orderBy('duelWins', descending: true)
+          .limit(limit)
+          .get();
+
+      return querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'nickname': data['nickname'] as String? ?? 'Anonim',
+          'score': data['score'] as int? ?? 0,
+          'avatarUrl': data['avatarUrl'] as String?,
+          'uid': data['uid'] as String? ?? doc.id,
+          'duelWins': data['duelWins'] as int? ?? 0,
+          'winRate': (data['winRate'] as num?)?.toDouble() ?? 0.0,
+          'quizCount': data['quizCount'] as int? ?? 0,
+          'friendCount': data['friendCount'] as int? ?? 0,
+          'longestStreak': data['longestStreak'] as int? ?? 0,
+        };
+      }).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('🚨 ERROR: Failed to fetch duel champions leaderboard: $e');
+      }
+      return [];
+    }
+  }
+
+  /// Get Social Butterflies leaderboard - sorted by friendCount
+  Future<List<Map<String, dynamic>>> getSocialButterfliesLeaderboard({int limit = 50}) async {
+    try {
+      final querySnapshot = await _db
+          .collection(_usersCollection)
+          .orderBy('friendCount', descending: true)
+          .limit(limit)
+          .get();
+
+      return querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'nickname': data['nickname'] as String? ?? 'Anonim',
+          'score': data['score'] as int? ?? 0,
+          'avatarUrl': data['avatarUrl'] as String?,
+          'uid': data['uid'] as String? ?? doc.id,
+          'friendCount': data['friendCount'] as int? ?? 0,
+          'duelWins': data['duelWins'] as int? ?? 0,
+          'quizCount': data['quizCount'] as int? ?? 0,
+          'longestStreak': data['longestStreak'] as int? ?? 0,
+        };
+      }).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('🚨 ERROR: Failed to fetch social butterflies leaderboard: $e');
+      }
+      return [];
+    }
+  }
+
+  /// Get Streak Kings leaderboard - sorted by longestStreak
+  Future<List<Map<String, dynamic>>> getStreakKingsLeaderboard({int limit = 50}) async {
+    try {
+      final querySnapshot = await _db
+          .collection(_usersCollection)
+          .orderBy('longestStreak', descending: true)
+          .limit(limit)
+          .get();
+
+      return querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'nickname': data['nickname'] as String? ?? 'Anonim',
+          'score': data['score'] as int? ?? 0,
+          'avatarUrl': data['avatarUrl'] as String?,
+          'uid': data['uid'] as String? ?? doc.id,
+          'longestStreak': data['longestStreak'] as int? ?? 0,
+          'friendCount': data['friendCount'] as int? ?? 0,
+          'duelWins': data['duelWins'] as int? ?? 0,
+          'quizCount': data['quizCount'] as int? ?? 0,
+        };
+      }).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('🚨 ERROR: Failed to fetch streak kings leaderboard: $e');
+      }
+      return [];
+    }
+  }
+
+  /// Update user statistics for leaderboard categories
+  Future<bool> updateUserStats({
+    required String uid,
+    int? friendCount,
+    int? duelWins,
+    int? longestStreak,
+    int? quizCount,
+  }) async {
+    try {
+      final updates = <String, dynamic>{};
+      
+      if (friendCount != null) updates['friendCount'] = friendCount;
+      if (duelWins != null) updates['duelWins'] = duelWins;
+      if (longestStreak != null) updates['longestStreak'] = longestStreak;
+      if (quizCount != null) updates['quizCount'] = quizCount;
+      
+      updates['updatedAt'] = FieldValue.serverTimestamp();
+
+      await _db.collection(_usersCollection).doc(uid).update(updates);
+      
+      if (kDebugMode) {
+        debugPrint('✅ User stats updated for UID: $uid');
+      }
+      return true;
+    } catch (e) {
+      if (kDebugMode) debugPrint('🚨 Error updating user stats: $e');
+      return false;
+    }
+  }
+
   // Multiplayer Methods
 
   /// Yeni bir oyun odası oluşturur

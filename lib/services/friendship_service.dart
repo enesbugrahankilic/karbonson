@@ -281,6 +281,17 @@ class FriendshipService {
     }
   }
 
+  /// Get user's friends count with cache
+  Future<int> getFriendsCount(String userId) async {
+    try {
+      final friends = await _firestoreService.getFriends(userId);
+      return friends.length;
+    } catch (e) {
+      if (kDebugMode) debugPrint('🚨 Error getting friends count: $e');
+      return 0;
+    }
+  }
+
   /// Get simplified friend statistics
   Future<Map<String, int>> getFriendStatistics() async {
     try {

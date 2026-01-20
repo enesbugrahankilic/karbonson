@@ -41,6 +41,12 @@ class UserData {
   final int averageScore;
   final List<GameHistoryItem> recentGames;
 
+  // Leaderboard Category Fields
+  final int friendCount;           // For "Social Butterflies" category
+  final int duelWins;              // For "Duel Champions" category
+  final int longestStreak;         // For "Streak Kings" category
+  final int quizCount;             // For "Quiz Masters" category
+
   const UserData({
     required this.uid,
     required this.nickname,
@@ -61,6 +67,10 @@ class UserData {
     this.highestScore = 0,
     this.averageScore = 0,
     this.recentGames = const [],
+    this.friendCount = 0,
+    this.duelWins = 0,
+    this.longestStreak = 0,
+    this.quizCount = 0,
   });
 
   factory UserData.fromMap(Map<String, dynamic> map, String documentId) {
@@ -96,6 +106,11 @@ class UserData {
               ?.map((item) => GameHistoryItem.fromMap(item as Map<String, dynamic>))
               .toList() ??
           [],
+      // Leaderboard category fields
+      friendCount: map['friendCount'] ?? 0,
+      duelWins: map['duelWins'] ?? 0,
+      longestStreak: map['longestStreak'] ?? 0,
+      quizCount: map['quizCount'] ?? 0,
     );
   }
 
@@ -120,6 +135,11 @@ class UserData {
       'highestScore': highestScore,
       'averageScore': averageScore,
       'recentGames': recentGames.map((item) => item.toMap()).toList(),
+      // Leaderboard category fields
+      'friendCount': friendCount,
+      'duelWins': duelWins,
+      'longestStreak': longestStreak,
+      'quizCount': quizCount,
     };
   }
 
@@ -143,6 +163,10 @@ class UserData {
     int? highestScore,
     int? averageScore,
     List<GameHistoryItem>? recentGames,
+    int? friendCount,
+    int? duelWins,
+    int? longestStreak,
+    int? quizCount,
   }) {
     return UserData(
       uid: uid ?? this.uid,
@@ -164,6 +188,10 @@ class UserData {
       highestScore: highestScore ?? this.highestScore,
       averageScore: averageScore ?? this.averageScore,
       recentGames: recentGames ?? this.recentGames,
+      friendCount: friendCount ?? this.friendCount,
+      duelWins: duelWins ?? this.duelWins,
+      longestStreak: longestStreak ?? this.longestStreak,
+      quizCount: quizCount ?? this.quizCount,
     );
   }
 }

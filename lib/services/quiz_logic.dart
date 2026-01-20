@@ -2,6 +2,7 @@
 import '../models/question.dart';
 import '../data/questions_database.dart';
 import '../services/language_service.dart';
+import '../services/notification_service.dart';
 import '../enums/app_language.dart';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -22,6 +23,7 @@ class QuizLogic {
   final Map<String, int> _wrongAnswerCategories =
       {}; // Track wrong answers by category
   bool _highScoreLoaded = false; // Track if high score has been loaded
+  bool _localDataMigrated = false; // Track if local data has been migrated to Firestore
 
   List<Question> questions = [];
   final Random _random = Random();
@@ -40,18 +42,51 @@ class QuizLogic {
 
   Future<void> _loadHighScore() async {
     try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      
+      // First, try to load from Firestore (primary source)
+      if (userId != null) {
+        try {
+          final userDoc = await _firestore.collection('users').doc(userId).get();
+          
+          if (userDoc.exists) {
+            final data = userDoc.data() as Map<String, dynamic>;
+            _highScore = data['highestScore'] as int? ?? 0;
+            if (kDebugMode) {
+              debugPrint('✅ High score loaded from Firestore: $_highScore');
+            }
+          }
+        } catch (firestoreError) {
+          if (kDebugMode) {
+            debugPrint('⚠️ Firestore error, falling back to local storage: $firestoreError');
+          }
+          // Fall back to SharedPreferences if Firestore fails
+          await _loadFromLocalStorage();
+        }
+      } else {
+        // No user logged in, use local storage
+        await _loadFromLocalStorage();
+      }
+      
+      // Load last play time from local storage (personal preference)
+      await _loadLastPlayTime();
+      
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error loading high score: $e');
+      // Final fallback to local storage
+      await _loadFromLocalStorage();
+    }
+  }
+
+  Future<void> _loadFromLocalStorage() async {
+    try {
       final prefs = await SharedPreferences.getInstance();
       _highScore = prefs.getInt('highScore') ?? 0;
-      final lastPlayTimeMillis = prefs.getInt('lastPlayTime');
-      if (lastPlayTimeMillis != null) {
-        _lastPlayTime = DateTime.fromMillisecondsSinceEpoch(lastPlayTimeMillis);
-      }
-
-      // Load wrong answer categories
+      
+      // Load wrong answer categories from local storage
       final wrongCategoriesJson = prefs.getString('wrongAnswerCategories');
       if (wrongCategoriesJson != null) {
-        final Map<String, dynamic> wrongCategoriesMap = {};
-        // Parse JSON string back to map
+        _wrongAnswerCategories.clear();
         wrongCategoriesJson.split(',').forEach((entry) {
           final parts = entry.split(':');
           if (parts.length == 2) {
@@ -59,13 +94,30 @@ class QuizLogic {
           }
         });
       }
+      
+      if (kDebugMode) {
+        debugPrint('✅ High score loaded from SharedPreferences: $_highScore');
+      }
     } catch (e) {
-      if (kDebugMode) debugPrint('Error loading high score: $e');
+      if (kDebugMode) debugPrint('Error loading from local storage: $e');
+    }
+  }
+
+  Future<void> _loadLastPlayTime() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final lastPlayTimeMillis = prefs.getInt('lastPlayTime');
+      if (lastPlayTimeMillis != null) {
+        _lastPlayTime = DateTime.fromMillisecondsSinceEpoch(lastPlayTimeMillis);
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error loading last play time: $e');
     }
   }
 
   Future<void> _saveHighScore() async {
     try {
+      // Save to local storage first (for offline access)
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('highScore', _highScore);
       if (_lastPlayTime != null) {
@@ -79,12 +131,17 @@ class QuizLogic {
           .join(',');
       await prefs.setString('wrongAnswerCategories', wrongCategoriesString);
 
+      // Save to Firestore (primary source for cross-device sync)
       final userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
-        await _firestore.collection('scores').doc(userId).set({
-          'highScore': _highScore,
-          'lastUpdated': FieldValue.serverTimestamp(),
+        await _firestore.collection('users').doc(userId).set({
+          'highestScore': _highScore,
+          'lastScoreUpdate': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
+        
+        if (kDebugMode) {
+          debugPrint('✅ High score saved to Firestore: $_highScore');
+        }
       }
     } catch (e) {
       if (kDebugMode) debugPrint('Error saving high score: $e');
@@ -382,7 +439,7 @@ class QuizLogic {
       await _saveHighScore();
       // Send notification for new high score
       try {
-        // await NotificationService.scheduleHighScoreNotification();
+        await NotificationService.showHighScoreNotificationStatic(_highScore);
       } catch (e) {
         if (kDebugMode) debugPrint('Error sending high score notification: $e');
       }
