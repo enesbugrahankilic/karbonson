@@ -1705,6 +1705,160 @@ class FirestoreService {
     }
   }
 
+  /// Create a new duel room with the host as the first player
+  /// Returns the created DuelRoom or null if failed
+  Future<DuelRoom?> createDuelRoom(
+      String hostId, String hostNickname) async {
+    try {
+      if (kDebugMode) {
+        debugPrint('Creating duel room for host: $hostNickname ($hostId)');
+      }
+
+      final roomId = _db.collection(_duelRoomsCollection).doc().id;
+
+      // Create host player
+      final hostPlayer = DuelPlayer(
+        id: hostId,
+        nickname: hostNickname,
+        duelScore: 0,
+        isReady: true,
+      );
+
+      final room = DuelRoom(
+        id: roomId,
+        hostId: hostId,
+        hostNickname: hostNickname,
+        players: [hostPlayer],
+        status: DuelGameStatus.waiting,
+        currentQuestionIndex: 0,
+        timeElapsedInSeconds: 0,
+        currentQuestion: null,
+        questionStartTime: null,
+        questionAnswers: [],
+        createdAt: DateTime.now(),
+        winnerName: null,
+        winnerScore: null,
+      );
+
+      final roomData = room.toMap();
+      if (kDebugMode) {
+        debugPrint('Duel room data to save: ${roomData.toString()}');
+      }
+
+      await _db.collection(_duelRoomsCollection).doc(roomId).set(roomData);
+
+      if (kDebugMode) {
+        debugPrint('✅ Duel room created successfully: $roomId');
+      }
+      return room;
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('🚨 ERROR: Failed to create duel room: $e');
+        debugPrint('Stack trace: $stackTrace');
+      }
+      return null;
+    }
+  }
+
+  /// Join an existing duel room by room code
+  /// Returns the updated DuelRoom or null if failed
+  Future<DuelRoom?> joinDuelRoomByCode(
+      String roomCode, String playerId, String playerNickname) async {
+    try {
+      if (kDebugMode) {
+        debugPrint(
+            'Attempting to join duel room with code: $roomCode for player: $playerNickname');
+      }
+
+      // First, try to get the room directly by document ID
+      // This is the most efficient way when the code IS the document ID
+      final roomDocRef = _db.collection(_duelRoomsCollection).doc(roomCode);
+      final roomDoc = await roomDocRef.get();
+
+      DuelRoom? room;
+
+      if (roomDoc.exists) {
+        // Found by document ID
+        if (kDebugMode) debugPrint('✅ Room found by document ID');
+        room = DuelRoom.fromMap(roomDoc.data()!);
+      } else {
+        // If not found by ID, try to find by roomCode field
+        if (kDebugMode) debugPrint('🔍 Room not found by ID, searching by roomCode field...');
+        
+        final querySnapshot = await _db
+            .collection(_duelRoomsCollection)
+            .where('roomCode', isEqualTo: roomCode)
+            .limit(1)
+            .get();
+
+        if (querySnapshot.docs.isEmpty) {
+          if (kDebugMode) debugPrint('❌ No room found with code: $roomCode');
+          return null;
+        }
+
+        room = DuelRoom.fromMap(querySnapshot.docs.first.data());
+      }
+
+      if (room == null) return null;
+
+      // Check if player already in room
+      if (room.players.any((p) => p.id == playerId)) {
+        if (kDebugMode) debugPrint('✅ Player already in room');
+        return room;
+      }
+
+      // Check if room is full (max 2 players for duel)
+      if (room.players.length >= 2) {
+        if (kDebugMode) debugPrint('❌ Room is full');
+        return null;
+      }
+
+      // Add new player to the list
+      final newPlayer = DuelPlayer(
+        id: playerId,
+        nickname: playerNickname,
+        duelScore: 0,
+        isReady: true,
+      );
+      final updatedPlayers = [...room.players, newPlayer];
+
+      // Update the room in Firestore
+      await _db.collection(_duelRoomsCollection).doc(room.id).update({
+        'players': updatedPlayers.map((p) => p.toMap()).toList(),
+        'status': DuelGameStatus.playing.toString().split('.').last,
+      });
+
+      // Return updated room
+      final updatedRoom = DuelRoom(
+        id: room.id,
+        hostId: room.hostId,
+        hostNickname: room.hostNickname,
+        players: updatedPlayers,
+        status: DuelGameStatus.playing,
+        currentQuestionIndex: room.currentQuestionIndex,
+        timeElapsedInSeconds: room.timeElapsedInSeconds,
+        currentQuestion: room.currentQuestion,
+        questionStartTime: room.questionStartTime,
+        questionAnswers: room.questionAnswers,
+        createdAt: room.createdAt,
+        winnerName: room.winnerName,
+        winnerScore: room.winnerScore,
+      );
+
+      if (kDebugMode) {
+        debugPrint('✅ Player $playerNickname joined duel room ${room.id}');
+      }
+
+      return updatedRoom;
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('🚨 ERROR: Failed to join duel room: $e');
+        debugPrint('Stack trace: $stackTrace');
+      }
+      return null;
+    }
+  }
+
   // === REAL-TIME USER PROFILE LISTENER ===
   // Added for completely dynamic profile page
 

@@ -307,7 +307,7 @@ class _LootBoxWidgetState extends State<LootBoxWidget>
       case LootBoxType.returnReward:
         return Icons.replay;
       case LootBoxType.seasonal:
-        Icons.ac_unit; // Seasonal icon
+        return Icons.ac_unit; // Seasonal icon
       case LootBoxType.login:
         return Icons.login;
       case LootBoxType.special:
@@ -315,7 +315,6 @@ class _LootBoxWidgetState extends State<LootBoxWidget>
       case LootBoxType.premium:
         return Icons.diamond;
     }
-    return Icons.inbox;
   }
 }
 
@@ -543,7 +542,6 @@ class _LootBoxOpenButtonState extends State<LootBoxOpenButton>
                                 ),
                               ],
                             ),
-                  ),
                 ),
 
                 // Particles during opening

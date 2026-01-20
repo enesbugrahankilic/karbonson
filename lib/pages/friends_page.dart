@@ -1,4 +1,4 @@
-// lib/pages/friends_page.dart
+ // lib/pages/friends_page.dart
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
@@ -20,7 +20,8 @@ import '../widgets/home_button.dart';
 import '../services/app_localizations.dart';
 import '../provides/language_provider.dart';
 import '../widgets/qr_code_scanner_widget.dart';
-import '../core/navigation/deep_link_service.dart';
+import '../widgets/add_friend_bottom_sheet.dart';
+import '../widgets/block_user_dialog.dart';
 
 class FriendsPage extends StatefulWidget {
   final String userNickname;
@@ -1054,13 +1055,36 @@ class _FriendsPageState extends State<FriendsPage>
                                                                 : Colors.grey,
                                                           ),
                                                         ),
-                                                        trailing:
-                                                            ElevatedButton(
-                                                          onPressed: () =>
-                                                              _inviteFriendToGame(
-                                                                  friend),
-                                                          child: const Text(
-                                                              'Davet Et'),
+                                                        trailing: PopupMenuButton<String>(
+                                                          onSelected: (value) {
+                                                            if (value == 'invite') {
+                                                              _inviteFriendToGame(friend);
+                                                            } else if (value == 'block') {
+                                                              _showBlockDialog(friend);
+                                                            }
+                                                          },
+                                                          itemBuilder: (context) => [
+                                                            const PopupMenuItem(
+                                                              value: 'invite',
+                                                              child: Row(
+                                                                children: [
+                                                                  Icon(Icons.videogame_asset, size: 18),
+                                                                  SizedBox(width: 8),
+                                                                  Text('Davet Et'),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                            const PopupMenuItem(
+                                                              value: 'block',
+                                                              child: Row(
+                                                                children: [
+                                                                  Icon(Icons.block, size: 18, color: Colors.red),
+                                                                  SizedBox(width: 8),
+                                                                  Text('Engelle'),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
                                                       ),
                                                     );
@@ -1444,6 +1468,35 @@ class _FriendsPageState extends State<FriendsPage>
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showAddFriendBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => AddFriendBottomSheet(
+        onUserSelected: (userId, nickname) {
+          return true;
+        },
+      ),
+    );
+  }
+
+  void _showBlockDialog(Friend friend) {
+    showDialog(
+      context: context,
+      builder: (context) => BlockUserDialog(
+        userId: friend.id,
+        nickname: friend.nickname,
+        onBlockComplete: () {
+          _refreshData();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${friend.nickname} engellendi')),
+          );
+        },
       ),
     );
   }

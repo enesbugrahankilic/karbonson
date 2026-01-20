@@ -15,6 +15,63 @@ class AppLocalizationsEn extends AppLocalizations {
   String get world => 'World';
 
   @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get noNotifications => 'No notifications yet';
+
+  @override
+  String get notificationSettings => 'Notification Settings';
+
+  @override
+  String get markAllAsRead => 'Mark All as Read';
+
+  @override
+  String get unreadNotifications => 'Unread Notifications';
+
+  @override
+  String get allNotifications => 'All Notifications';
+
+  @override
+  String get friendRequest => 'Friend Request';
+
+  @override
+  String get friendRequestAccepted => 'Friend Request Accepted';
+
+  @override
+  String get friendRequestRejected => 'Friend Request Rejected';
+
+  @override
+  String get gameInvitation => 'Game Invitation';
+
+  @override
+  String get duelInvitation => 'Duel Invitation';
+
+  @override
+  String get viewNotifications => 'View Notifications';
+
+  @override
+  String notificationDescription(Object count) {
+    return 'You have $count unread notifications';
+  }
+
+  @override
+  String get noNotificationsDescription =>
+      'Your notifications will appear here when you receive them';
+
+  @override
+  String get justNow => 'Just now';
+
+  @override
+  String get minutesAgo => 'minutes ago';
+
+  @override
+  String get hoursAgo => 'hours ago';
+
+  @override
+  String get daysAgo => 'days ago';
+
+  @override
   String get welcomeBack => 'Welcome Back';
 
   @override
@@ -97,18 +154,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get activityHint => 'See your activities';
-
-  @override
-  String get daysAgo => 'days ago';
-
-  @override
-  String get hoursAgo => 'hours ago';
-
-  @override
-  String get minutesAgo => 'minutes ago';
-
-  @override
-  String get justNow => 'Just now';
 
   @override
   String get levelProgress => 'Level Progress';
@@ -209,9 +254,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get version => 'Version';
-
-  @override
-  String get notifications => 'Notifications';
 
   @override
   String get twoFactorAuth => 'Two-Factor Authentication';

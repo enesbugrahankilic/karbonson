@@ -110,6 +110,114 @@ abstract class AppLocalizations {
   /// **'World'**
   String get world;
 
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @noNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get noNotifications;
+
+  /// No description provided for @notificationSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Settings'**
+  String get notificationSettings;
+
+  /// No description provided for @markAllAsRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark All as Read'**
+  String get markAllAsRead;
+
+  /// No description provided for @unreadNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread Notifications'**
+  String get unreadNotifications;
+
+  /// No description provided for @allNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'All Notifications'**
+  String get allNotifications;
+
+  /// No description provided for @friendRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Friend Request'**
+  String get friendRequest;
+
+  /// No description provided for @friendRequestAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Friend Request Accepted'**
+  String get friendRequestAccepted;
+
+  /// No description provided for @friendRequestRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Friend Request Rejected'**
+  String get friendRequestRejected;
+
+  /// No description provided for @gameInvitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Game Invitation'**
+  String get gameInvitation;
+
+  /// No description provided for @duelInvitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Duel Invitation'**
+  String get duelInvitation;
+
+  /// No description provided for @viewNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'View Notifications'**
+  String get viewNotifications;
+
+  /// No description provided for @notificationDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'You have {count} unread notifications'**
+  String notificationDescription(Object count);
+
+  /// No description provided for @noNotificationsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your notifications will appear here when you receive them'**
+  String get noNotificationsDescription;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get justNow;
+
+  /// No description provided for @minutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'minutes ago'**
+  String get minutesAgo;
+
+  /// No description provided for @hoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'hours ago'**
+  String get hoursAgo;
+
+  /// No description provided for @daysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'days ago'**
+  String get daysAgo;
+
   /// No description provided for @welcomeBack.
   ///
   /// In en, this message translates to:
@@ -277,30 +385,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'See your activities'**
   String get activityHint;
-
-  /// No description provided for @daysAgo.
-  ///
-  /// In en, this message translates to:
-  /// **'days ago'**
-  String get daysAgo;
-
-  /// No description provided for @hoursAgo.
-  ///
-  /// In en, this message translates to:
-  /// **'hours ago'**
-  String get hoursAgo;
-
-  /// No description provided for @minutesAgo.
-  ///
-  /// In en, this message translates to:
-  /// **'minutes ago'**
-  String get minutesAgo;
-
-  /// No description provided for @justNow.
-  ///
-  /// In en, this message translates to:
-  /// **'Just now'**
-  String get justNow;
 
   /// No description provided for @levelProgress.
   ///
@@ -499,12 +583,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Version'**
   String get version;
-
-  /// No description provided for @notifications.
-  ///
-  /// In en, this message translates to:
-  /// **'Notifications'**
-  String get notifications;
 
   /// No description provided for @twoFactorAuth.
   ///

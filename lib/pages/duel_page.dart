@@ -675,4 +675,57 @@ class _DuelPageState extends State<DuelPage> {
       },
     );
   }
+
+  Widget _buildPlayersList() {
+    if (_currentRoom == null || _currentRoom!.players.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: ThemeColors.getCardBackground(context),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Oyuncular',
+            style: TextStyle(
+              color: ThemeColors.getText(context),
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ..._currentRoom!.players.map((player) => Container(
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: ThemeColors.getCardBackgroundLight(context),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.person,
+                      color: ThemeColors.getGreen(context),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      player.nickname,
+                      style: TextStyle(
+                        color: ThemeColors.getText(context),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+        ],
+      ),
+    );
+  }
 }

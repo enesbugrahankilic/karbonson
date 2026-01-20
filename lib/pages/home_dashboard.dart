@@ -877,170 +877,209 @@ class _HomeDashboardState extends State<HomeDashboard>
       achievementCount: _userAchievements.length,
     );
 
+    // Full screen overlay dialog
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      barrierColor: Colors.black54,
-      transitionDuration: const Duration(milliseconds: 400),
+      barrierColor: Colors.black87,
+      transitionDuration: const Duration(milliseconds: 350),
       pageBuilder: (context, anim1, anim2) {
         return StatefulBuilder(
           builder: (context, setState) {
-            return Dialog(
-              backgroundColor: Colors.transparent,
+            final screenSize = MediaQuery.of(context).size;
+            final screenWidth = screenSize.width;
+            final isSmallScreen = screenWidth < 360;
+            final isTablet = screenWidth > 800;
+            
+            // Calculate optimal columns based on screen width
+            final columns = isTablet ? 5 : (isSmallScreen ? 3 : 4);
+            final horizontalPadding = isTablet ? 40.0 : 20.0;
+            
+            return Material(
+              color: Colors.transparent,
               child: Container(
-                margin: const EdgeInsets.all(20),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(28),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: ThemeColors.getCardBackground(context).withOpacity(0.95),
-                        borderRadius: BorderRadius.circular(28),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.3),
-                          width: 1,
+                width: double.infinity,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      ThemeColors.getCardBackground(context),
+                      ThemeColors.getCardBackground(context).withOpacity(0.98),
+                      ThemeColors.getCardBackground(context).withOpacity(0.95),
+                    ],
+                  ),
+                ),
+                child: SafeArea(
+                  child: Column(
+                    children: [
+                      // Close button at top right
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: IconButton(
+                            onPressed: () => Navigator.pop(context),
+                            icon: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.close,
+                                color: ThemeColors.getText(context),
+                                size: 24,
+                              ),
+                            ),
+                          ),
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: 30,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
                       ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Header with drag handle
-                          Container(
-                            margin: const EdgeInsets.only(top: 16),
-                            width: 50,
-                            height: 5,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.3),
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                          ),
-                          
-                          // Title
-                          Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        ThemeColors.getPrimaryButtonColor(context),
-                                        ThemeColors.getAccentButtonColor(context),
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: const Icon(
-                                    Icons.grid_view,
-                                    color: Colors.white,
-                                    size: 24,
-                                  ),
+                      
+                      // Header Section
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: horizontalPadding,
+                          vertical: isSmallScreen ? 8 : 16,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    ThemeColors.getPrimaryButtonColor(context),
+                                    ThemeColors.getAccentButtonColor(context),
+                                  ],
                                 ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Hızlı Menü',
-                                        style: DesignSystem.getHeadlineSmall(context).copyWith(
-                                          color: ThemeColors.getText(context),
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                      Text(
-                                        '${menuItems.length} özellik keşfet',
-                                        style: TextStyle(
-                                          color: ThemeColors.getSecondaryText(context),
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ],
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: ThemeColors.getPrimaryButtonColor(context)
+                                        .withOpacity(0.3),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
                                   ),
-                                ),
-                                IconButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  icon: Icon(
-                                    Icons.close,
-                                    color: ThemeColors.getSecondaryText(context),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          
-                          // Stats Bar
-                          Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 20),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  ThemeColors.getPrimaryButtonColor(context).withOpacity(0.15),
-                                  ThemeColors.getAccentButtonColor(context).withOpacity(0.1),
                                 ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
                               ),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.2),
-                                width: 1,
+                              child: const Icon(
+                                Icons.grid_view,
+                                color: Colors.white,
+                                size: 28,
                               ),
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                _buildQuickStat(
-                                  context,
-                                  icon: Icons.star,
-                                  value: '${_userProgress?.totalPoints ?? 0}',
-                                  color: Colors.amber,
-                                ),
-                                Container(width: 1, height: 24, color: Colors.white.withOpacity(0.2)),
-                                _buildQuickStat(
-                                  context,
-                                  icon: Icons.emoji_events,
-                                  value: '${_userProgress?.level ?? 1}',
-                                  color: Colors.purple,
-                                ),
-                                Container(width: 1, height: 24, color: Colors.white.withOpacity(0.2)),
-                                _buildQuickStat(
-                                  context,
-                                  icon: Icons.local_fire_department,
-                                  value: '${_userProgress?.loginStreak ?? 0}',
-                                  color: Colors.orange,
-                                ),
-                              ],
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Hızlı Menü',
+                                    style: DesignSystem.getHeadlineSmall(context).copyWith(
+                                      color: ThemeColors.getText(context),
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: isSmallScreen ? 20 : 24,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${menuItems.length} özellik keşfet',
+                                    style: TextStyle(
+                                      color: ThemeColors.getSecondaryText(context),
+                                      fontSize: isSmallScreen ? 12 : 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          
-                          const SizedBox(height: 20),
-                          
-                          // Quick Menu Grid
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: QuickMenuGrid(
-                              items: menuItems,
-                              columns: 4,
-                              spacing: 12,
-                            ),
-                          ),
-                          
-                          const SizedBox(height: 24),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
+                      
+                      // Stats Bar
+                      Container(
+                        margin: EdgeInsets.symmetric(
+                          horizontal: horizontalPadding,
+                          vertical: isSmallScreen ? 8 : 12,
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              ThemeColors.getPrimaryButtonColor(context).withOpacity(0.2),
+                              ThemeColors.getAccentButtonColor(context).withOpacity(0.15),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.3),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildQuickStat(
+                              context,
+                              icon: Icons.star,
+                              value: '${_userProgress?.totalPoints ?? 0}',
+                              color: Colors.amber,
+                              label: 'Puan',
+                            ),
+                            Container(width: 1, height: 30, color: Colors.white.withOpacity(0.2)),
+                            _buildQuickStat(
+                              context,
+                              icon: Icons.emoji_events,
+                              value: '${_userProgress?.level ?? 1}',
+                              color: Colors.purple,
+                              label: 'Seviye',
+                            ),
+                            Container(width: 1, height: 30, color: Colors.white.withOpacity(0.2)),
+                            _buildQuickStat(
+                              context,
+                              icon: Icons.local_fire_department,
+                              value: '${_userProgress?.loginStreak ?? 0}',
+                              color: Colors.orange,
+                              label: 'Gün',
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Quick Menu Grid - Full width
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: horizontalPadding,
+                            vertical: 8,
+                          ),
+                          child: QuickMenuGrid(
+                            items: menuItems,
+                            columns: columns,
+                            spacing: isSmallScreen ? 10 : 14,
+                            showScrollbar: true,
+                            scrollbarThickness: 6,
+                            scrollbarRadius: const Radius.circular(4),
+                          ),
+                        ),
+                      ),
+                      
+                      // Bottom padding
+                      SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
+                    ],
                   ),
                 ),
               ),
@@ -1056,6 +1095,7 @@ class _HomeDashboardState extends State<HomeDashboard>
     required IconData icon,
     required String value,
     required Color color,
+    String? label,
   }) {
     return Column(
       children: [
@@ -1074,6 +1114,14 @@ class _HomeDashboardState extends State<HomeDashboard>
             ),
           ],
         ),
+        if (label != null)
+          Text(
+            label,
+            style: TextStyle(
+              color: ThemeColors.getSecondaryText(context),
+              fontSize: 10,
+            ),
+          ),
       ],
     );
   }

@@ -336,9 +336,7 @@ class _LootBoxOpeningDialogState extends State<LootBoxOpeningDialog>
         return Icons.title;
       case LootBoxContentType.item:
         return Icons.inventory;
-      default:
-        return Icons.help;
-      }
+    }
   }
 }
 

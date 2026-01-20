@@ -36,6 +36,7 @@ import '../../pages/email_otp_verification_page.dart';
 import '../../pages/email_verification_redirect_page.dart';
 import '../../pages/how_to_play_page.dart';
 import '../../pages/rewards_shop_page.dart';
+import '../../pages/notifications_page.dart';
 import '../../pages/two_factor_auth_page.dart';
 import '../../pages/spectator_mode_page.dart';
 import '../../services/authentication_state_service.dart';
@@ -87,6 +88,7 @@ class AppRoutes {
   static const String achievementsGallery = '/achievements-gallery';
   static const String dailyChallenge = '/daily-challenge';
   static const String rewardsShop = '/rewards-shop';
+  static const String notifications = '/notifications';
   static const String howToPlay = '/how-to-play';
   static const String tutorialPage = '/tutorial-page';
   static const String spectatorMode = '/spectator-mode';
@@ -201,6 +203,8 @@ class AppRouter {
         return _createRoute(const AchievementsGalleryPage());
       case AppRoutes.rewardsShop:
         return _createRoute(const RewardsShopPage());
+      case AppRoutes.notifications:
+        return _createProtectedRoute(const NotificationsPage(), settings);
       case AppRoutes.howToPlay:
         return _createRoute(const HowToPlayPage());
       case AppRoutes.emailOtpVerification:
