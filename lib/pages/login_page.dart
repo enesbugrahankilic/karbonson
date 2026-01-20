@@ -671,7 +671,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         await _checkRegistrationStatus();
 
         // If email is not verified, show verification dialog first
-        if (verificationStatus.hasEmail && !verificationStatus.isVerified) {
+        if (verificationStatus.hasEmail && !verificationStatus.emailVerified) {
           if (!mounted) return;
           final shouldVerify = await showDialog<bool>(
             context: context,

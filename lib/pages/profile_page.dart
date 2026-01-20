@@ -5,10 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/user_data.dart';
-import '../models/profile_data.dart'; // LocalStatisticsData ve GameHistoryItem için
+import '../models/profile_data.dart';
 import '../provides/profile_bloc.dart';
 import '../services/profile_service.dart';
 import '../services/profile_picture_service.dart';
+import '../services/nickname_service.dart';
 import '../theme/theme_colors.dart';
 import '../core/navigation/app_router.dart';
 import '../widgets/home_button.dart';
@@ -54,9 +55,8 @@ class _ProfileContentState extends State<ProfileContent>
     _fadeController.forward();
     _slideController.forward();
 
-    // Start real-time profile listener after initial load
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProfileBloc>().add(const ListenToProfile());
+      context.read<ProfileBloc>().add(ListenToProfile());
     });
   }
 
@@ -220,19 +220,12 @@ class _ProfileContentState extends State<ProfileContent>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // A. Üst Bölüm: Kimlik Kartı (UserData'dan)
           _buildIdentityCard(context, userData, currentNickname),
           const SizedBox(height: 24),
-
-          // B. Orta Bölüm: Oyun İstatistikleri (UserData'dan)
           _buildGameStatistics(context, userData),
           const SizedBox(height: 24),
-
-          // C. Orta Bölüm: Başarımlar ve Ödüller (UserData'dan)
           _buildAchievementsAndRewards(context, userData),
           const SizedBox(height: 24),
-
-          // D. Alt Bölüm: Oyun Geçmişi (UserData'dan)
           _buildGameHistory(context, userData),
         ],
       ),
@@ -258,7 +251,7 @@ class _ProfileContentState extends State<ProfileContent>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.3),
+            color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -266,28 +259,25 @@ class _ProfileContentState extends State<ProfileContent>
       ),
       child: Column(
         children: [
-          // Profil Resmi ve Seviye Halkası
           GestureDetector(
             onTap: () => _showEditProfilePictureDialog(context),
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Seviye Halkası
                 Container(
                   width: isSmallScreen ? 100 : 120,
                   height: isSmallScreen ? 100 : 120,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withOpacity( 0.3),
+                      color: Colors.white.withOpacity(0.3),
                       width: 4,
                     ),
                   ),
                 ),
-                // Profil Avatarı
                 CircleAvatar(
                   radius: isSmallScreen ? 40 : 48,
-                  backgroundColor: Colors.white.withOpacity( 0.2),
+                  backgroundColor: Colors.white.withOpacity(0.2),
                   backgroundImage: userData.profilePictureUrl != null
                       ? (userData.profilePictureUrl!.startsWith('assets/')
                           ? AssetImage(userData.profilePictureUrl!) as ImageProvider
@@ -306,7 +296,6 @@ class _ProfileContentState extends State<ProfileContent>
                         )
                       : null,
                 ),
-                // Edit Icon Overlay
                 Positioned(
                   bottom: 0,
                   right: 0,
@@ -315,10 +304,7 @@ class _ProfileContentState extends State<ProfileContent>
                     decoration: BoxDecoration(
                       color: ThemeColors.getPrimaryButtonColor(context),
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 2,
-                      ),
+                      border: Border.all(color: Colors.white, width: 2),
                     ),
                     child: Icon(
                       Icons.camera_alt,
@@ -331,8 +317,6 @@ class _ProfileContentState extends State<ProfileContent>
             ),
           ),
           const SizedBox(height: 16),
-
-          // Nickname
           GestureDetector(
             onTap: () => _showEditNicknameDialog(context, currentNickname),
             child: Row(
@@ -350,29 +334,23 @@ class _ProfileContentState extends State<ProfileContent>
                 const SizedBox(width: 8),
                 Icon(
                   Icons.edit,
-                  color: Colors.white.withOpacity( 0.7),
+                  color: Colors.white.withOpacity(0.7),
                   size: isSmallScreen ? 16 : 18,
                 ),
               ],
             ),
           ),
           const SizedBox(height: 8),
-
-          // UID
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.copy,
-                size: 16,
-                color: Colors.white.withOpacity( 0.8),
-              ),
+              Icon(Icons.copy, size: 16, color: Colors.white.withOpacity(0.8)),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'UID: ${userData.uid.substring(0, 8)}...',
                   style: TextStyle(
-                    color: Colors.white.withOpacity( 0.8),
+                    color: Colors.white.withOpacity(0.8),
                     fontSize: isSmallScreen ? 12 : 14,
                     fontFamily: 'monospace',
                   ),
@@ -384,21 +362,17 @@ class _ProfileContentState extends State<ProfileContent>
               const SizedBox(width: 8),
               GestureDetector(
                 onTap: () {
-                  // Copy to clipboard functionality
-                  // FlutterClipboard.copy(userData.uid);
-                  debugPrint('UID kopyalanacak: ${userData.uid}');
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('UID kopyalandı (debug modunda)'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  }
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('UID kopyalandı (debug modunda)'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity( 0.2),
+                    color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -414,12 +388,10 @@ class _ProfileContentState extends State<ProfileContent>
             ],
           ),
           const SizedBox(height: 8),
-
-          // Son Giriş
           Text(
             _formatLastLogin(userData.lastLogin),
             style: TextStyle(
-              color: Colors.white.withOpacity( 0.7),
+              color: Colors.white.withOpacity(0.7),
               fontSize: isSmallScreen ? 11 : 12,
             ),
             textAlign: TextAlign.center,
@@ -445,8 +417,6 @@ class _ProfileContentState extends State<ProfileContent>
           ),
         ),
         const SizedBox(height: 16),
-        
-        // 2x2 Grid Layout
         GridView.count(
           crossAxisCount: 2,
           shrinkWrap: true,
@@ -489,7 +459,8 @@ class _ProfileContentState extends State<ProfileContent>
     );
   }
 
-  Widget _buildStatCard(BuildContext context, {
+  Widget _buildStatCard(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required String value,
@@ -503,13 +474,10 @@ class _ProfileContentState extends State<ProfileContent>
       decoration: BoxDecoration(
         color: ThemeColors.getCardBackground(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withOpacity( 0.2),
-          width: 1,
-        ),
+        border: Border.all(color: color.withOpacity(0.2), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity( 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -521,14 +489,10 @@ class _ProfileContentState extends State<ProfileContent>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity( 0.1),
+              color: color.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: isSmallScreen ? 20 : 24,
-            ),
+            child: Icon(icon, color: color, size: isSmallScreen ? 20 : 24),
           ),
           const SizedBox(height: 8),
           Text(
@@ -571,8 +535,6 @@ class _ProfileContentState extends State<ProfileContent>
           ),
         ),
         const SizedBox(height: 16),
-
-        // Seviye ve Puan Kartı
         Container(
           width: double.infinity,
           padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
@@ -626,16 +588,11 @@ class _ProfileContentState extends State<ProfileContent>
                       color: Colors.white.withOpacity(0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      Icons.games,
-                      color: Colors.white,
-                      size: isSmallScreen ? 24 : 28,
-                    ),
+                    child: Icon(Icons.games, color: Colors.white, size: isSmallScreen ? 24 : 28),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-              // Kazanma oranı ilerleme çubuğu
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -672,8 +629,6 @@ class _ProfileContentState extends State<ProfileContent>
           ),
         ),
         const SizedBox(height: 20),
-
-        // Günlük Görevler ve Başarımlar Grid
         GridView.count(
           crossAxisCount: 2,
           shrinkWrap: true,
@@ -736,13 +691,10 @@ class _ProfileContentState extends State<ProfileContent>
       decoration: BoxDecoration(
         color: ThemeColors.getCardBackground(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withOpacity( 0.2),
-          width: 1,
-        ),
+        border: Border.all(color: color.withOpacity(0.2), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity( 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -754,14 +706,10 @@ class _ProfileContentState extends State<ProfileContent>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity( 0.1),
+              color: color.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: isSmallScreen ? 20 : 24,
-            ),
+            child: Icon(icon, color: color, size: isSmallScreen ? 20 : 24),
           ),
           const SizedBox(height: 8),
           Text(
@@ -795,224 +743,7 @@ class _ProfileContentState extends State<ProfileContent>
     );
   }
 
-  Widget _buildAccountInfo(BuildContext context, UserData userData) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 360;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Hesap Bilgileri',
-          style: TextStyle(
-            color: ThemeColors.getText(context),
-            fontSize: isSmallScreen ? 18 : 20,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Email Doğrulama Durumu
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
-          decoration: BoxDecoration(
-            color: ThemeColors.getCardBackground(context),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: userData.isEmailVerified
-                  ? ThemeColors.getSuccessColor(context).withOpacity(0.3)
-                  : ThemeColors.getWarningColor(context).withOpacity(0.3),
-              width: 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: userData.isEmailVerified
-                      ? ThemeColors.getSuccessColor(context).withOpacity(0.1)
-                      : ThemeColors.getWarningColor(context).withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  userData.isEmailVerified ? Icons.check_circle : Icons.warning,
-                  color: userData.isEmailVerified
-                      ? ThemeColors.getSuccessColor(context)
-                      : ThemeColors.getWarningColor(context),
-                  size: isSmallScreen ? 20 : 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Email Doğrulama',
-                      style: TextStyle(
-                        color: ThemeColors.getText(context),
-                        fontSize: isSmallScreen ? 14 : 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      userData.isEmailVerified
-                          ? 'Email adresiniz doğrulanmış'
-                          : 'Email adresinizi doğrulamadınız',
-                      style: TextStyle(
-                        color: ThemeColors.getSecondaryText(context),
-                        fontSize: isSmallScreen ? 12 : 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-
-        // 2FA Durumu
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
-          decoration: BoxDecoration(
-            color: ThemeColors.getCardBackground(context),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: userData.is2FAEnabled
-                  ? ThemeColors.getSuccessColor(context).withOpacity(0.3)
-                  : ThemeColors.getInfoColor(context).withOpacity(0.3),
-              width: 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: userData.is2FAEnabled
-                      ? ThemeColors.getSuccessColor(context).withOpacity(0.1)
-                      : ThemeColors.getInfoColor(context).withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  userData.is2FAEnabled ? Icons.security : Icons.security_outlined,
-                  color: userData.is2FAEnabled
-                      ? ThemeColors.getSuccessColor(context)
-                      : ThemeColors.getInfoColor(context),
-                  size: isSmallScreen ? 20 : 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'İki Faktörlü Doğrulama',
-                      style: TextStyle(
-                        color: ThemeColors.getText(context),
-                        fontSize: isSmallScreen ? 14 : 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      userData.is2FAEnabled
-                          ? 'Hesabınız 2FA ile korunuyor'
-                          : '2FA etkinleştirilmemiş',
-                      style: TextStyle(
-                        color: ThemeColors.getSecondaryText(context),
-                        fontSize: isSmallScreen ? 12 : 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-
-        // Hesap Oluşturma Tarihi
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
-          decoration: BoxDecoration(
-            color: ThemeColors.getCardBackground(context),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: ThemeColors.getBorder(context),
-              width: 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.calendar_today,
-                  color: ThemeColors.getPrimaryButtonColor(context),
-                  size: isSmallScreen ? 20 : 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Hesap Oluşturulma',
-                      style: TextStyle(
-                        color: ThemeColors.getText(context),
-                        fontSize: isSmallScreen ? 14 : 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      userData.createdAt != null
-                          ? _formatAccountCreationDate(userData.createdAt!)
-                          : 'Tarih bilinmiyor',
-                      style: TextStyle(
-                        color: ThemeColors.getSecondaryText(context),
-                        fontSize: isSmallScreen ? 12 : 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _formatAccountCreationDate(DateTime createdAt) {
-    final now = DateTime.now();
-    final difference = now.difference(createdAt);
-
-    if (difference.inDays < 1) {
-      return 'Bugün oluşturuldu';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} gün önce oluşturuldu';
-    } else if (difference.inDays < 30) {
-      return '${(difference.inDays / 7).floor()} hafta önce oluşturuldu';
-    } else if (difference.inDays < 365) {
-      return '${(difference.inDays / 30).floor()} ay önce oluşturuldu';
-    } else {
-      return '${(difference.inDays / 365).floor()} yıl önce oluşturuldu';
-    }
-  }
+  Widget _buildGameHistory(BuildContext context, UserData userData) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
 
@@ -1028,7 +759,6 @@ class _ProfileContentState extends State<ProfileContent>
           ),
         ),
         const SizedBox(height: 16),
-
         if (userData.recentGames.isEmpty)
           Container(
             width: double.infinity,
@@ -1036,10 +766,7 @@ class _ProfileContentState extends State<ProfileContent>
             decoration: BoxDecoration(
               color: ThemeColors.getCardBackground(context),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: ThemeColors.getBorder(context),
-                width: 1,
-              ),
+              border: Border.all(color: ThemeColors.getBorder(context), width: 1),
             ),
             child: Column(
               children: [
@@ -1089,16 +816,10 @@ class _ProfileContentState extends State<ProfileContent>
             decoration: BoxDecoration(
               color: ThemeColors.getCardBackground(context),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: ThemeColors.getBorder(context),
-                width: 1,
-              ),
+              border: Border.all(color: ThemeColors.getBorder(context), width: 1),
             ),
             child: Column(
-              children: userData.recentGames
-                  .take(10)
-                  .map((game) => _buildGameHistoryItem(context, game))
-                  .toList(),
+              children: userData.recentGames.take(10).map((game) => _buildGameHistoryItem(context, game)).toList(),
             ),
           ),
       ],
@@ -1110,21 +831,17 @@ class _ProfileContentState extends State<ProfileContent>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(
-            color: ThemeColors.getBorder(context),
-            width: 1,
-          ),
+          bottom: BorderSide(color: ThemeColors.getBorder(context), width: 1),
         ),
       ),
       child: Row(
         children: [
-          // Sonuç İkonu
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: game.isWin
-                  ? ThemeColors.getSuccessColor(context).withOpacity( 0.1)
-                  : ThemeColors.getErrorColor(context).withOpacity( 0.1),
+                  ? ThemeColors.getSuccessColor(context).withOpacity(0.1)
+                  : ThemeColors.getErrorColor(context).withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -1136,8 +853,6 @@ class _ProfileContentState extends State<ProfileContent>
             ),
           ),
           const SizedBox(width: 16),
-
-          // Oyun Bilgileri
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1193,38 +908,23 @@ class _ProfileContentState extends State<ProfileContent>
 
   String _formatLastLogin(DateTime? lastLogin) {
     if (lastLogin == null) return 'Son giriş: Bilinmiyor';
-
     final now = DateTime.now();
     final difference = now.difference(lastLogin);
-
-    if (difference.inMinutes < 1) {
-      return 'Son giriş: Az önce';
-    } else if (difference.inHours < 1) {
-      return 'Son giriş: ${difference.inMinutes} dakika önce';
-    } else if (difference.inDays < 1) {
-      return 'Son giriş: ${difference.inHours} saat önce';
-    } else if (difference.inDays < 7) {
-      return 'Son giriş: ${difference.inDays} gün önce';
-    } else {
-      return 'Son giriş: ${lastLogin.day}/${lastLogin.month}/${lastLogin.year}';
-    }
+    if (difference.inMinutes < 1) return 'Son giriş: Az önce';
+    if (difference.inHours < 1) return 'Son giriş: ${difference.inMinutes} dakika önce';
+    if (difference.inDays < 1) return 'Son giriş: ${difference.inHours} saat önce';
+    if (difference.inDays < 7) return 'Son giriş: ${difference.inDays} gün önce';
+    return 'Son giriş: ${lastLogin.day}/${lastLogin.month}/${lastLogin.year}';
   }
 
   String _formatGameDate(DateTime playedAt) {
     final now = DateTime.now();
     final difference = now.difference(playedAt);
-
-    if (difference.inMinutes < 1) {
-      return 'Az önce';
-    } else if (difference.inHours < 1) {
-      return '${difference.inMinutes}dk';
-    } else if (difference.inDays < 1) {
-      return '${difference.inHours}sa';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}g';
-    } else {
-      return '${playedAt.day}/${playedAt.month}';
-    }
+    if (difference.inMinutes < 1) return 'Az önce';
+    if (difference.inHours < 1) return '${difference.inMinutes}dk';
+    if (difference.inDays < 1) return '${difference.inHours}sa';
+    if (difference.inDays < 7) return '${difference.inDays}g';
+    return '${playedAt.day}/${playedAt.month}';
   }
 
   void _showEditNicknameDialog(BuildContext context, String currentNickname) {
@@ -1239,9 +939,7 @@ class _ProfileContentState extends State<ProfileContent>
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               title: Text(
                 'Takma Adı Düzenle',
                 style: TextStyle(
@@ -1259,9 +957,7 @@ class _ProfileContentState extends State<ProfileContent>
                       labelText: 'Yeni Takma Ad',
                       hintText: 'Takma adınızı girin',
                       errorText: validationError,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
@@ -1273,10 +969,7 @@ class _ProfileContentState extends State<ProfileContent>
                     maxLength: 20,
                     autofocus: true,
                     onChanged: (value) {
-                      // Clear validation error when user starts typing
-                      if (validationError != null) {
-                        setState(() => validationError = null);
-                      }
+                      if (validationError != null) setState(() => validationError = null);
                     },
                   ),
                 ],
@@ -1284,32 +977,21 @@ class _ProfileContentState extends State<ProfileContent>
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: Text(
-                    'İptal',
-                    style: TextStyle(
-                      color: ThemeColors.getSecondaryText(context),
-                    ),
-                  ),
+                  child: Text('İptal', style: TextStyle(color: ThemeColors.getSecondaryText(context))),
                 ),
                 ElevatedButton(
                   onPressed: () async {
                     final newNickname = controller.text.trim();
-
-                    // Import NicknameValidator
                     final validation = NicknameValidator.validate(newNickname);
                     if (!validation.isValid) {
                       setState(() => validationError = validation.error);
                       return;
                     }
-
                     if (newNickname != currentNickname) {
                       context.read<ProfileBloc>().add(UpdateNickname(newNickname));
                       Navigator.of(context).pop();
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Takma ad güncelleniyor...'),
-                          duration: Duration(seconds: 1),
-                        ),
+                        const SnackBar(content: Text('Takma ad güncelleniyor...'), duration: Duration(seconds: 1)),
                       );
                     } else {
                       Navigator.of(context).pop();
@@ -1318,9 +1000,7 @@ class _ProfileContentState extends State<ProfileContent>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ThemeColors.getPrimaryButtonColor(context),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: const Text('Kaydet'),
                 ),
@@ -1335,8 +1015,6 @@ class _ProfileContentState extends State<ProfileContent>
   void _showEditProfilePictureDialog(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
-
-    // ProfilePictureService kullanarak avatar seçeneklerini al
     final profilePictureService = ProfilePictureService();
     final avatars = profilePictureService.allAvatars;
 
@@ -1344,9 +1022,7 @@ class _ProfileContentState extends State<ProfileContent>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Text(
             'Profil Resmi Seç',
             style: TextStyle(
@@ -1360,7 +1036,6 @@ class _ProfileContentState extends State<ProfileContent>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Avatarlar Bölümü
                 Text(
                   'Hazır Avatarlar',
                   style: TextStyle(
@@ -1383,42 +1058,24 @@ class _ProfileContentState extends State<ProfileContent>
                     final avatar = avatars[index];
                     return GestureDetector(
                       onTap: () async {
-                        // ProfilePictureService kullanarak profil resmini güncelle
-                        final profilePictureService = ProfilePictureService();
                         final profileService = ProfileService();
-
-                        final success = await profilePictureService.updateProfilePicture(
-                          avatar,
-                          profileService,
-                        );
-
+                        final success = await profilePictureService.updateProfilePicture(avatar, profileService);
                         if (success) {
-                          // Bloc'u güncelle
                           context.read<ProfileBloc>().add(UpdateProfilePicture(avatar));
-
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Profil resmi güncellendi'),
-                              duration: Duration(seconds: 2),
-                            ),
+                            const SnackBar(content: Text('Profil resmi güncellendi'), duration: Duration(seconds: 2)),
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Profil resmi güncellenirken hata oluştu'),
-                              duration: Duration(seconds: 2),
-                            ),
+                            const SnackBar(content: Text('Profil resmi güncellenirken hata oluştu'), duration: Duration(seconds: 2)),
                           );
                         }
-                        Navigator.of(context).pop();
+                        if (mounted) Navigator.of(context).pop();
                       },
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: ThemeColors.getBorder(context),
-                            width: 2,
-                          ),
+                          border: Border.all(color: ThemeColors.getBorder(context), width: 2),
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(10),
@@ -1442,74 +1099,37 @@ class _ProfileContentState extends State<ProfileContent>
                   },
                 ),
                 const SizedBox(height: 20),
-                // Fotoğraf Yükleme Bölümü
                 ElevatedButton.icon(
                   onPressed: () async {
-                    final profilePictureService = ProfilePictureService();
                     final profileService = ProfileService();
-
-                    // Kullanıcıdan kaynak seçmesini iste
                     final source = await profilePictureService.showImageSourceDialog(context);
                     if (source == null) return;
-
-                    // Resmi seç veya çek
                     final imageFile = source == ImageSource.camera
                         ? await profilePictureService.pickImageFromCamera()
                         : await profilePictureService.pickImageFromGallery();
-
                     if (imageFile != null) {
-                      // Önizleme ve kırpma
                       final croppedFile = await profilePictureService.cropImage(imageFile, context);
-
                       if (croppedFile != null) {
-                        // Firebase'e yükle
                         final imageUrl = await profilePictureService.uploadImageToFirebase(croppedFile);
-
                         if (imageUrl != null) {
-                          // Profil resmini güncelle
-                          final success = await profilePictureService.updateProfilePicture(
-                            imageUrl,
-                            profileService,
-                          );
-
+                          final success = await profilePictureService.updateProfilePicture(imageUrl, profileService);
                           if (success) {
-                            // Bloc'u güncelle
                             context.read<ProfileBloc>().add(UpdateProfilePicture(imageUrl));
-
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Profil resmi güncellendi'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Profil resmi güncellenirken hata oluştu'),
-                                duration: Duration(seconds: 2),
-                              ),
+                              const SnackBar(content: Text('Profil resmi güncellendi'), duration: Duration(seconds: 2)),
                             );
                           }
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Resim yüklenirken hata oluştu'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
                         }
                       }
                     }
-                    Navigator.of(context).pop();
+                    if (mounted) Navigator.of(context).pop();
                   },
                   icon: const Icon(Icons.photo_camera),
                   label: const Text('Fotoğraf Yükle'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ThemeColors.getAccentButtonColor(context),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ],
@@ -1518,12 +1138,7 @@ class _ProfileContentState extends State<ProfileContent>
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'İptal',
-                style: TextStyle(
-                  color: ThemeColors.getSecondaryText(context),
-                ),
-              ),
+              child: Text('İptal', style: TextStyle(color: ThemeColors.getSecondaryText(context))),
             ),
           ],
         );

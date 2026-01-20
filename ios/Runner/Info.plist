@@ -60,6 +60,14 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>Güvenli giriş yapmak için Face ID kullanmak istiyoruz.</string>
 	
+	<!-- Image Cropper Configuration for profile_picture_service -->
+	<key>SWIFT_VERSION</key>
+	<string>5.0</string>
+	<key>FLTImagePickerMediaOutputPath</key>
+	<string>${NSCachesDirectory}/media</string>
+	<key>FLTImagePickerTempFilePathSuffix</key>
+	<string>.tmp</string>
+	
 	<!-- URL Schemes for Deep Linking (uni_links) -->
 	<key>CFBundleURLTypes</key>
 	<array>

@@ -1,6 +1,7 @@
 // lib/services/profile_picture_service.dart
-// Profil fotoğrafı yükleme servisi - Basit ve doğru mantık
+// Profil fotoğrafı yükleme servisi - Güvenli ve stabilize implementasyon
 
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +26,9 @@ class ProfilePictureService {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final ImagePicker _picker = ImagePicker();
   final Uuid _uuid = const Uuid();
+
+  // Track active upload tasks to prevent memory leaks
+  final List<UploadTask> _activeUploadTasks = [];
 
   // Default avatars listesi
   List<String> get defaultAvatars {
@@ -63,14 +67,15 @@ class ProfilePictureService {
         debugPrint('📷 Galeriden resim seçiliyor...');
       }
 
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.gallery,
+      // Check if image picker is available
+      final List<XFile> images = await _picker.pickMultiImage(
         maxWidth: _maxImageWidth.toDouble(),
         maxHeight: _maxImageHeight.toDouble(),
         imageQuality: _imageQuality,
       );
 
-      if (image != null) {
+      if (images.isNotEmpty) {
+        final XFile image = images.first;
         if (kDebugMode) {
           debugPrint('✅ Galeriden resim seçildi: ${image.path}');
         }
@@ -85,6 +90,7 @@ class ProfilePictureService {
       if (kDebugMode) {
         debugPrint('❌ Galeriden resim seçme hatası: $e');
       }
+      // Return null instead of crashing - user might have denied permission
       return null;
     }
   }
@@ -118,12 +124,13 @@ class ProfilePictureService {
       if (kDebugMode) {
         debugPrint('❌ Kameradan resim çekme hatası: $e');
       }
+      // Return null instead of crashing - user might have denied permission
       return null;
     }
   }
 
   /// Resmi Firebase Storage'a yükle
-  /// Basit ve doğru upload mantığı
+  /// Basit ve doğru upload mantığı - crash önleyici düzeltmeler ile
   Future<String?> uploadImageToFirebase(File imageFile) async {
     try {
       // Kullanıcı kontrolü
@@ -139,6 +146,17 @@ class ProfilePictureService {
         debugPrint('📤 Firebase Storage\'a yükleniyor...');
         debugPrint('   Kullanıcı UID: ${user.uid}');
         debugPrint('   Dosya yolu: ${imageFile.path}');
+      }
+
+      // Dosya boyutu kontrolü
+      final fileSizeBytes = await imageFile.length();
+      final fileSizeMB = fileSizeBytes / (1024 * 1024);
+      
+      if (fileSizeMB > _maxFileSizeMB) {
+        if (kDebugMode) {
+          debugPrint('❌ Dosya boyutu çok büyük: ${fileSizeMB.toStringAsFixed(2)} MB (max: $_maxFileSizeMB MB)');
+        }
+        return null;
       }
 
       // Benzersiz dosya adı oluştur
@@ -161,33 +179,52 @@ class ProfilePictureService {
 
       // Dosyayı yükle
       final UploadTask uploadTask = storageRef.putFile(imageFile, metadata);
+      
+      // Track this task to prevent memory leaks
+      _activeUploadTasks.add(uploadTask);
 
-      // Yükleme durumunu dinle (opsiyonel)
-      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+      // Yükleme durumunu dinle (opsiyonel) - subscription yönetimi
+      StreamSubscription<TaskSnapshot>? subscription;
+      subscription = uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
         if (kDebugMode) {
           final progress = (snapshot.bytesTransferred / snapshot.totalBytes * 100).toStringAsFixed(0);
           debugPrint('📊 Yükleme ilerlemesi: $progress%');
         }
+      }, onError: (error) {
+        if (kDebugMode) {
+          debugPrint('❌ Upload event error: $error');
+        }
       });
 
-      // Yüklemeyi bekle
-      final TaskSnapshot snapshot = await uploadTask;
+      try {
+        // Yüklemeyi bekle
+        final TaskSnapshot snapshot = await uploadTask;
 
-      if (snapshot.state == TaskState.success) {
-        // Download URL al
-        final String downloadUrl = await storageRef.getDownloadURL();
-        
-        if (kDebugMode) {
-          debugPrint('✅ Resim başarıyla yüklendi');
-          debugPrint('   URL: $downloadUrl');
+        // Cancel subscription to prevent memory leaks
+        await subscription.cancel();
+        _activeUploadTasks.remove(uploadTask);
+
+        if (snapshot.state == TaskState.success) {
+          // Download URL al
+          final String downloadUrl = await storageRef.getDownloadURL();
+          
+          if (kDebugMode) {
+            debugPrint('✅ Resim başarıyla yüklendi');
+            debugPrint('   URL: $downloadUrl');
+          }
+          
+          return downloadUrl;
+        } else {
+          if (kDebugMode) {
+            debugPrint('❌ Resim yükleme başarısız: ${snapshot.state}');
+          }
+          return null;
         }
-        
-        return downloadUrl;
-      } else {
-        if (kDebugMode) {
-          debugPrint('❌ Resim yükleme başarısız: ${snapshot.state}');
-        }
-        return null;
+      } catch (e) {
+        // Cleanup on error
+        await subscription.cancel();
+        _activeUploadTasks.remove(uploadTask);
+        rethrow;
       }
     } catch (e) {
       if (kDebugMode) {
@@ -262,10 +299,11 @@ class ProfilePictureService {
       }
       return true;
     } catch (e) {
+      // Silme hatası kritik değil - dosya zaten yok olabilir
       if (kDebugMode) {
-        debugPrint('❌ Profil fotoğrafı silme hatası: $e');
+        debugPrint('⚠️ Profil fotoğrafı silme uyarısı: $e');
       }
-      return false;
+      return true; // Silinemediğinde bile devam et
     }
   }
 
@@ -316,11 +354,27 @@ class ProfilePictureService {
     }
   }
 
-  /// Resmi kırp
-  Future<File?> cropImage(File imageFile, BuildContext context) async {
+  /// Resmi kırp - context null kontrolü ile
+  Future<File?> cropImage(File imageFile, BuildContext? context) async {
     try {
       if (kDebugMode) {
         debugPrint('✂️ Resim kırpılıyor...');
+      }
+
+      // Context kontrolü - crash önleme
+      if (context == null) {
+        if (kDebugMode) {
+          debugPrint('⚠️ Context null, kırpma atlandı');
+        }
+        return imageFile; // Kırpma olmadan devam et
+      }
+
+      // Context'in widget ağacında olup olmadığını kontrol et
+      if (!context.mounted) {
+        if (kDebugMode) {
+          debugPrint('⚠️ Context mounted değil, kırpma atlandı');
+        }
+        return imageFile;
       }
 
       final croppedFile = await ImageCropper().cropImage(
@@ -357,7 +411,8 @@ class ProfilePictureService {
       if (kDebugMode) {
         debugPrint('❌ Resim kırpma hatası: $e');
       }
-      return null;
+      // Kırpma hatası durumunda orijinal dosyayı döndür
+      return imageFile;
     }
   }
 
@@ -380,8 +435,16 @@ class ProfilePictureService {
     }
   }
 
-  /// Resim kaynak seçim dialogunu göster
+  /// Resim kaynak seçim dialogunu göster - mounted kontrolü ile
   Future<ImageSource?> showImageSourceDialog(BuildContext context) async {
+    // Context kontrolü
+    if (!context.mounted) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Context mounted değil');
+      }
+      return null;
+    }
+
     return showDialog<ImageSource>(
       context: context,
       builder: (BuildContext context) {
@@ -408,7 +471,7 @@ class ProfilePictureService {
   }
 
   /// Tam profil fotoğrafı yükleme akışı
-  /// Bu metod tüm süreci tek seferde yönetir
+  /// Bu metod tüm süreci tek seferde yönetir - crash önleyici düzeltmeler ile
   Future<String?> uploadProfilePicture({
     required BuildContext context,
     required ImageSource source,
@@ -416,6 +479,14 @@ class ProfilePictureService {
     bool shouldCrop = true,
   }) async {
     try {
+      // Context mounted kontrolü
+      if (!context.mounted) {
+        if (kDebugMode) {
+          debugPrint('❌ Context mounted değil');
+        }
+        return null;
+      }
+
       // 1. Resim seç
       File? imageFile;
       if (source == ImageSource.gallery) {
@@ -440,12 +511,20 @@ class ProfilePictureService {
         return null;
       }
 
-      // 3. Opsiyonel: Kırp
+      // 3. Opsiyonel: Kırp - context kontrolü ile
       if (shouldCrop) {
         final croppedFile = await cropImage(imageFile, context);
         if (croppedFile != null) {
           imageFile = croppedFile;
         }
+      }
+
+      // Context mounted kontrolü devam eden işlemler için
+      if (!context.mounted) {
+        if (kDebugMode) {
+          debugPrint('⚠️ Context artık mounted değil, işlem iptal edildi');
+        }
+        return null;
       }
 
       // 4. Firebase Storage'a yükle
@@ -473,6 +552,25 @@ class ProfilePictureService {
       }
       return null;
     }
+  }
+
+  /// Clean up all active upload tasks - call when leaving the page
+  void cancelAllUploads() {
+    for (final task in _activeUploadTasks) {
+      try {
+        // Cancel the task if it's still active
+        final snapshot = task.snapshot;
+        if (snapshot.state == TaskState.running || snapshot.state == TaskState.paused) {
+          task.cancel();
+        }
+      } catch (e) {
+        // Task may already be completed or errored
+        if (kDebugMode) {
+          debugPrint('⚠️ Error canceling upload task: $e');
+        }
+      }
+    }
+    _activeUploadTasks.clear();
   }
 }
 

@@ -621,6 +621,8 @@ class _ProfilePictureChangeDialogState
 
   /// Galeriden resim seç
   Future<void> _pickImageFromGallery() async {
+    if (!mounted) return;
+    
     setState(() {
       _currentStep = UploadStep.selecting;
       _statusMessage = 'Galeri açılıyor...';
@@ -630,21 +632,29 @@ class _ProfilePictureChangeDialogState
     try {
       final File? imageFile = await _profilePictureService.pickImageFromGallery();
       
+      if (!mounted) return;
+      
       if (imageFile != null) {
         await _uploadAndUpdateImage(imageFile);
       } else {
         // Kullanıcı iptal etti
-        setState(() {
-          _currentStep = UploadStep.idle;
-        });
+        if (mounted) {
+          setState(() {
+            _currentStep = UploadStep.idle;
+          });
+        }
       }
     } catch (e) {
-      _handleError(UploadError.selectionFailed, e.toString());
+      if (mounted) {
+        _handleError(UploadError.selectionFailed, e.toString());
+      }
     }
   }
 
   /// Kamera ile resim çek
   Future<void> _pickImageFromCamera() async {
+    if (!mounted) return;
+    
     setState(() {
       _currentStep = UploadStep.selecting;
       _statusMessage = 'Kamera açılıyor...';
@@ -654,16 +664,22 @@ class _ProfilePictureChangeDialogState
     try {
       final File? imageFile = await _profilePictureService.pickImageFromCamera();
       
+      if (!mounted) return;
+      
       if (imageFile != null) {
         await _uploadAndUpdateImage(imageFile);
       } else {
         // Kullanıcı iptal etti
-        setState(() {
-          _currentStep = UploadStep.idle;
-        });
+        if (mounted) {
+          setState(() {
+            _currentStep = UploadStep.idle;
+          });
+        }
       }
     } catch (e) {
-      _handleError(UploadError.selectionFailed, e.toString());
+      if (mounted) {
+        _handleError(UploadError.selectionFailed, e.toString());
+      }
     }
   }
 

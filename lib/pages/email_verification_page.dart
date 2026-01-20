@@ -3,7 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import '../services/firebase_auth_service.dart';
+import '../services/firebase_auth_service.dart' as auth_service;
 import '../services/profile_service.dart';
 
 class EmailVerificationPage extends StatefulWidget {
@@ -34,11 +34,11 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
       final status = await _profileService.getEmailVerificationStatus();
       setState(() {
         _verificationStatus = status;
-        _isVerified = status.isVerified;
+        _isVerified = status.emailVerified;
       });
 
       // If email is verified, sync with Firestore and navigate back
-      if (status.isVerified) {
+      if (status.emailVerified) {
         await _profileService.syncEmailVerificationStatus();
         if (mounted) {
           Navigator.of(context).pop(true); // Return true to indicate verified
@@ -54,7 +54,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
     if (_isVerified) return;
 
     try {
-      final result = await FirebaseAuthService.sendEmailVerification();
+      final result = await auth_service.FirebaseAuthService.sendEmailVerification();
 
       if (mounted) {
         if (result.isSuccess) {
@@ -82,7 +82,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
     });
 
     try {
-      final result = await FirebaseAuthService.sendEmailVerification();
+      final result = await auth_service.FirebaseAuthService.sendEmailVerification();
 
       if (mounted) {
         if (result.isSuccess) {
