@@ -73,8 +73,8 @@ class QuickMenuWidget extends StatefulWidget {
     super.key,
     required this.items,
     this.categories,
-    this.itemWidth = 170, // Increased from 140 to 170 for wider widgets
-    this.itemHeight = 180, // Increased from 160 to 180 for better proportions
+    this.itemWidth = 220, // Increased from 170 to 220 for wider widgets (full screen)
+    this.itemHeight = 200, // Increased from 180 to 200 for better proportions
     this.enableScroll = true,
     this.padding,
     this.title = 'Hızlı Menü',
@@ -705,8 +705,8 @@ class QuickMenuGrid extends StatelessWidget {
   const QuickMenuGrid({
     super.key,
     required this.items,
-    this.columns = 3, // Changed from 4 to 3 for wider widget visibility
-    this.spacing = 16, // Increased from 12 to 16 for cleaner layout
+    this.columns = 4, // Changed from 3 to 4 for more items visible
+    this.spacing = 12, // Decreased from 16 to 12 for tighter layout
     this.padding,
     this.showScrollbar = true,
     this.scrollbarThickness = 6.0,

@@ -2273,8 +2273,20 @@ class _HomeDashboardState extends State<HomeDashboard>
                         ),
                         _buildMultiplayerFeature(
                           context,
+                          icon: Icons.login,
+                          text: 'Koda Katıl',
+                          color: Colors.white,
+                        ),
+                        _buildMultiplayerFeature(
+                          context,
                           icon: Icons.people,
                           text: 'Aktif Odalar',
+                          color: Colors.white,
+                        ),
+                        _buildMultiplayerFeature(
+                          context,
+                          icon: Icons.visibility,
+                          text: 'İzleyici Modu',
                           color: Colors.white,
                         ),
                       ],

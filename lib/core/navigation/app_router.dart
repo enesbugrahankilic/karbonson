@@ -37,6 +37,7 @@ import '../../pages/email_verification_redirect_page.dart';
 import '../../pages/how_to_play_page.dart';
 import '../../pages/rewards_shop_page.dart';
 import '../../pages/two_factor_auth_page.dart';
+import '../../pages/spectator_mode_page.dart';
 import '../../services/authentication_state_service.dart';
 import '../../services/quiz_logic.dart';
 
@@ -88,6 +89,7 @@ class AppRoutes {
   static const String rewardsShop = '/rewards-shop';
   static const String howToPlay = '/how-to-play';
   static const String tutorialPage = '/tutorial-page';
+  static const String spectatorMode = '/spectator-mode';
 
   // Debug routes (only in debug mode)
   static const String uidDebug = '/uid-debug';
@@ -225,6 +227,10 @@ class AppRouter {
         ));
       case AppRoutes.tutorialPage:
         return _createRoute(const TutorialPage());
+
+      // Spectator Mode
+      case AppRoutes.spectatorMode:
+        return _createRoute(const SpectatorModePage());
 
       // Debug routes (only in debug mode)
       case AppRoutes.uidDebug:

@@ -4,7 +4,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/game_board.dart';
+import 'firestore_service.dart';
 
+/// Enhanced SpectatorService with game discovery and real-time watching
 class SpectatorService {
   static SpectatorService? _instance;
   static SpectatorService get instance => _instance ??= SpectatorService._();
@@ -12,22 +14,48 @@ class SpectatorService {
   SpectatorService._();
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirestoreService _firestoreService = FirestoreService();
+
   final StreamController<List<Spectator>> _spectatorsController =
       StreamController<List<Spectator>>.broadcast();
 
   final StreamController<List<GameReplay>> _replaysController =
       StreamController<List<GameReplay>>.broadcast();
 
+  final StreamController<List<LiveGameInfo>> _activeGamesController =
+      StreamController<List<LiveGameInfo>>.broadcast();
+
+  final StreamController<LiveGameState?> _gameStateController =
+      StreamController<LiveGameState?>.broadcast();
+
+  final StreamController<List<SpectatorChatMessage>> _chatMessagesController =
+      StreamController<List<SpectatorChatMessage>>.broadcast();
+
+  final StreamController<List<EmojiReaction>> _reactionsController =
+      StreamController<List<EmojiReaction>>.broadcast();
+
   Stream<List<Spectator>> get spectatorsStream => _spectatorsController.stream;
   Stream<List<GameReplay>> get replaysStream => _replaysController.stream;
+  Stream<List<LiveGameInfo>> get activeGamesStream => _activeGamesController.stream;
+  Stream<LiveGameState?> get gameStateStream => _gameStateController.stream;
+  Stream<List<SpectatorChatMessage>> get chatMessagesStream => _chatMessagesController.stream;
+  Stream<List<EmojiReaction>> get reactionsStream => _reactionsController.stream;
+
+  // Active games listener
+  StreamSubscription<List<LiveGameInfo>>? _activeGamesSubscription;
+  StreamSubscription<LiveGameState?>? _gameStateSubscription;
+  StreamSubscription<List<SpectatorChatMessage>>? _chatSubscription;
+  StreamSubscription<List<EmojiReaction>>? _reactionsSubscription;
 
   // Spectator Management
   Future<String> joinAsSpectator(
-      String gameId, String spectatorId, String spectatorName) async {
+      String gameId, String spectatorId, String spectatorName,
+      {String? avatarUrl}) async {
     try {
       final spectator = Spectator(
         id: spectatorId,
         name: spectatorName,
+        avatarUrl: avatarUrl,
         joinedAt: DateTime.now(),
         isActive: true,
       );
@@ -38,6 +66,11 @@ class SpectatorService {
           .collection('spectators')
           .doc(spectatorId)
           .set(spectator.toMap());
+
+      // Increment spectator count in game room
+      await _firestore.collection('game_rooms').doc(gameId).update({
+        'spectatorCount': FieldValue.increment(1),
+      });
 
       return gameId;
     } catch (e) {
@@ -53,6 +86,11 @@ class SpectatorService {
           .collection('spectators')
           .doc(spectatorId)
           .delete();
+
+      // Decrement spectator count
+      await _firestore.collection('game_rooms').doc(gameId).update({
+        'spectatorCount': FieldValue.increment(-1),
+      });
     } catch (e) {
       throw Exception('İzleyici modundan ayrılma hatası: $e');
     }
@@ -81,6 +119,229 @@ class SpectatorService {
   void stopListeningToSpectators() {
     _spectatorSubscription?.cancel();
     _spectatorSubscription = null;
+  }
+
+  /// Get list of active games that can be watched
+  Future<List<LiveGameInfo>> getActiveGames({int limit = 20}) async {
+    try {
+      final snapshot = await _firestore
+          .collection('game_rooms')
+          .where('status', isEqualTo: 'playing')
+          .where('isActive', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return LiveGameInfo(
+          id: doc.id,
+          hostNickname: data['hostNickname'] ?? 'Bilinmeyen',
+          playerCount: data['players'] != null ? (data['players'] as List).length : 1,
+          spectatorCount: data['spectatorCount'] ?? 0,
+          timeElapsedInSeconds: data['timeElapsedInSeconds'] ?? 0,
+          status: 'playing',
+          createdAt: data['createdAt'] != null
+              ? (data['createdAt'] as Timestamp).toDate()
+              : DateTime.now(),
+        );
+      }).toList();
+    } catch (e) {
+      throw Exception('Aktif oyunları yükleme hatası: $e');
+    }
+  }
+
+  /// Start listening to active games list
+  void startListeningToActiveGames() {
+    _activeGamesSubscription?.cancel();
+
+    _activeGamesSubscription = _firestore
+        .collection('game_rooms')
+        .where('status', isEqualTo: 'playing')
+        .where('isActive', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return LiveGameInfo(
+          id: doc.id,
+          hostNickname: data['hostNickname'] ?? 'Bilinmeyen',
+          playerCount: data['players'] != null ? (data['players'] as List).length : 1,
+          spectatorCount: data['spectatorCount'] ?? 0,
+          timeElapsedInSeconds: data['timeElapsedInSeconds'] ?? 0,
+          status: 'playing',
+          createdAt: data['createdAt'] != null
+              ? (data['createdAt'] as Timestamp).toDate()
+              : DateTime.now(),
+        );
+      }).toList();
+    }).listen((games) {
+      _activeGamesController.add(games);
+    });
+  }
+
+  void stopListeningToActiveGames() {
+    _activeGamesSubscription?.cancel();
+    _activeGamesSubscription = null;
+  }
+
+  /// Watch a specific game's state in real-time
+  Future<void> watchGameState(String gameId) async {
+    try {
+      // Get initial game state
+      final roomDoc = await _firestore.collection('game_rooms').doc(gameId).get();
+      if (!roomDoc.exists) {
+        throw Exception('Oyun bulunamadı');
+      }
+
+      final roomData = roomDoc.data()!;
+      
+      // Create initial game state
+      final initialState = LiveGameState(
+        gameId: gameId,
+        hostNickname: roomData['hostNickname'] ?? 'Bilinmeyen',
+        players: _parsePlayers(roomData['players']),
+        currentPlayerIndex: roomData['currentPlayerIndex'] ?? 0,
+        timeElapsedInSeconds: roomData['timeElapsedInSeconds'] ?? 0,
+        status: roomData['status'] ?? 'waiting',
+        lastAction: roomData['lastAction'] ?? '',
+        lastActionTimestamp: roomData['lastActionTimestamp'] != null
+            ? (roomData['lastActionTimestamp'] as Timestamp).toDate()
+            : null,
+      );
+
+      _gameStateController.add(initialState);
+
+      // Start listening to changes
+      _gameStateSubscription = _firestore
+          .collection('game_rooms')
+          .doc(gameId)
+          .snapshots()
+          .listen((snapshot) {
+        if (snapshot.exists) {
+          final data = snapshot.data()!;
+          final gameState = LiveGameState(
+            gameId: gameId,
+            hostNickname: data['hostNickname'] ?? 'Bilinmeyen',
+            players: _parsePlayers(data['players']),
+            currentPlayerIndex: data['currentPlayerIndex'] ?? 0,
+            timeElapsedInSeconds: data['timeElapsedInSeconds'] ?? 0,
+            status: data['status'] ?? 'waiting',
+            lastAction: data['lastAction'] ?? '',
+            lastActionTimestamp: data['lastActionTimestamp'] != null
+                ? (data['lastActionTimestamp'] as Timestamp).toDate()
+                : null,
+          );
+          _gameStateController.add(gameState);
+        }
+      }) as StreamSubscription<LiveGameState?>?;
+    } catch (e) {
+      throw Exception('Oyun durumu izleme hatası: $e');
+    }
+  }
+
+  List<LivePlayerState> _parsePlayers(List<dynamic>? playersData) {
+    if (playersData == null) return [];
+    
+    return playersData.map((player) {
+      return LivePlayerState(
+        id: player['id'] ?? '',
+        nickname: player['nickname'] ?? 'Bilinmeyen',
+        position: player['position'] ?? 0,
+        quizScore: player['quizScore'] ?? 0,
+        isOnline: player['isOnline'] ?? true,
+      );
+    }).toList();
+  }
+
+  void stopWatchingGameState() {
+    _gameStateSubscription?.cancel();
+    _gameStateSubscription = null;
+    _gameStateController.add(null);
+  }
+
+  /// Send emoji reaction during game
+  Future<void> sendEmojiReaction(
+      String gameId, String spectatorId, String emoji) async {
+    try {
+      final reaction = EmojiReaction(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        spectatorId: spectatorId,
+        emoji: emoji,
+        timestamp: DateTime.now(),
+      );
+
+      await _firestore
+          .collection('game_rooms')
+          .doc(gameId)
+          .collection('emoji_reactions')
+          .doc(reaction.id)
+          .set(reaction.toMap());
+    } catch (e) {
+      throw Exception('Emoji gönderme hatası: $e');
+    }
+  }
+
+  /// Listen to emoji reactions
+  void startListeningToEmojiReactions(String gameId) {
+    _reactionsSubscription?.cancel();
+
+    _reactionsSubscription = _firestore
+        .collection('game_rooms')
+        .doc(gameId)
+        .collection('emoji_reactions')
+        .orderBy('timestamp', descending: true)
+        .limit(50)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => EmojiReaction.fromMap(doc.data()))
+          .toList();
+    }).listen((reactions) {
+      _reactionsController.add(reactions);
+    });
+  }
+
+  void stopListeningToEmojiReactions() {
+    _reactionsSubscription?.cancel();
+    _reactionsSubscription = null;
+  }
+
+  /// Get available game replays
+  Future<List<GameReplay>> getAvailableReplays({int limit = 10}) async {
+    try {
+      final snapshot = await _firestore
+          .collection('game_replays')
+          .where('isPublic', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+
+      final List<GameReplay> replays = [];
+
+      for (final doc in snapshot.docs) {
+        try {
+          final movesSnapshot = await _firestore
+              .collection('game_replays')
+              .doc(doc.id)
+              .collection('moves')
+              .orderBy('moveNumber')
+              .get();
+
+          final moves = movesSnapshot.docs
+              .map((moveDoc) => GameMoveRecord.fromMap(moveDoc.data()))
+              .toList();
+
+          replays.add(GameReplay.fromMap(doc.data(), doc.id, moves));
+        } catch (e) {
+          debugPrint('Replay moves yüklenirken hata: $e');
+        }
+      }
+
+      return replays;
+    } catch (e) {
+      throw Exception('Oyun tekrarlarını yükleme hatası: $e');
+    }
   }
 
   // Game Replay System
@@ -226,8 +487,6 @@ class SpectatorService {
     }
   }
 
-  StreamSubscription<List<SpectatorChatMessage>>? _chatSubscription;
-
   void listenToSpectatorChat(String gameId) {
     _chatSubscription?.cancel();
 
@@ -243,9 +502,8 @@ class SpectatorService {
           .map((doc) => SpectatorChatMessage.fromMap(doc.data()))
           .toList();
     }).listen((messages) {
-      // In a real implementation, you'd have a controller for chat messages
-      // For now, we'll just log them
-      debugPrint('Spectator chat update: ${messages.length} messages');
+      // Emit to the chat messages controller
+      _chatMessagesController.add(messages);
     });
   }
 
@@ -257,8 +515,15 @@ class SpectatorService {
   void dispose() {
     _spectatorsController.close();
     _replaysController.close();
+    _activeGamesController.close();
+    _gameStateController.close();
+    _chatMessagesController.close();
+    _reactionsController.close();
     _spectatorSubscription?.cancel();
     _chatSubscription?.cancel();
+    _activeGamesSubscription?.cancel();
+    _gameStateSubscription?.cancel();
+    _reactionsSubscription?.cancel();
   }
 }
 
@@ -267,6 +532,7 @@ class SpectatorService {
 class Spectator {
   final String id;
   final String name;
+  final String? avatarUrl;
   final DateTime joinedAt;
   final bool isActive;
   final DateTime? lastActivity;
@@ -274,6 +540,7 @@ class Spectator {
   Spectator({
     required this.id,
     required this.name,
+    this.avatarUrl,
     required this.joinedAt,
     this.isActive = true,
     this.lastActivity,
@@ -283,6 +550,7 @@ class Spectator {
     return Spectator(
       id: id,
       name: map['name'] ?? '',
+      avatarUrl: map['avatarUrl'],
       joinedAt: (map['joinedAt'] as Timestamp).toDate(),
       isActive: map['isActive'] ?? true,
       lastActivity: map['lastActivity'] != null
@@ -479,4 +747,121 @@ enum ChatMessageType {
   text,
   emoji,
   system,
+}
+
+// New Models for Enhanced Spectator Mode
+
+/// Information about an active game that can be watched
+class LiveGameInfo {
+  final String id;
+  final String hostNickname;
+  final int playerCount;
+  final int spectatorCount;
+  final int timeElapsedInSeconds;
+  final String status;
+  final DateTime createdAt;
+
+  LiveGameInfo({
+    required this.id,
+    required this.hostNickname,
+    required this.playerCount,
+    required this.spectatorCount,
+    required this.timeElapsedInSeconds,
+    required this.status,
+    required this.createdAt,
+  });
+
+  String get timeElapsedFormatted {
+    final minutes = (timeElapsedInSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (timeElapsedInSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+}
+
+/// Real-time game state for spectators
+class LiveGameState {
+  final String gameId;
+  final String hostNickname;
+  final List<LivePlayerState> players;
+  final int currentPlayerIndex;
+  final int timeElapsedInSeconds;
+  final String status;
+  final String lastAction;
+  final DateTime? lastActionTimestamp;
+
+  LiveGameState({
+    required this.gameId,
+    required this.hostNickname,
+    required this.players,
+    required this.currentPlayerIndex,
+    required this.timeElapsedInSeconds,
+    required this.status,
+    this.lastAction = '',
+    this.lastActionTimestamp,
+  });
+
+  String get timeElapsedFormatted {
+    final minutes = (timeElapsedInSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (timeElapsedInSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
+  LivePlayerState? get currentPlayer {
+    if (currentPlayerIndex >= 0 && currentPlayerIndex < players.length) {
+      return players[currentPlayerIndex];
+    }
+    return null;
+  }
+}
+
+/// Player state in a live game
+class LivePlayerState {
+  final String id;
+  final String nickname;
+  final int position;
+  final int quizScore;
+  final bool isOnline;
+
+  LivePlayerState({
+    required this.id,
+    required this.nickname,
+    required this.position,
+    required this.quizScore,
+    required this.isOnline,
+  });
+}
+
+/// Emoji reaction from spectators
+class EmojiReaction {
+  final String id;
+  final String spectatorId;
+  final String emoji;
+  final DateTime timestamp;
+
+  EmojiReaction({
+    required this.id,
+    required this.spectatorId,
+    required this.emoji,
+    required this.timestamp,
+  });
+
+  factory EmojiReaction.fromMap(Map<String, dynamic> map) {
+    return EmojiReaction(
+      id: map['id'] ?? '',
+      spectatorId: map['spectatorId'] ?? '',
+      emoji: map['emoji'] ?? '👍',
+      timestamp: map['timestamp'] != null
+          ? (map['timestamp'] as Timestamp).toDate()
+          : DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'spectatorId': spectatorId,
+      'emoji': emoji,
+      'timestamp': Timestamp.fromDate(timestamp),
+    };
+  }
 }
