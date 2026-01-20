@@ -13,10 +13,14 @@ import '../services/game_invitation_service.dart';
 import '../services/presence_service.dart';
 import '../services/notification_service.dart';
 import '../services/achievement_service.dart';
+import '../services/friend_suggestion_service.dart';
+import '../models/friend_suggestion.dart';
 import '../widgets/game_invitation_dialog.dart';
 import '../widgets/home_button.dart';
 import '../services/app_localizations.dart';
 import '../provides/language_provider.dart';
+import '../widgets/qr_code_scanner_widget.dart';
+import '../core/navigation/deep_link_service.dart';
 
 class FriendsPage extends StatefulWidget {
   final String userNickname;
@@ -32,6 +36,8 @@ class _FriendsPageState extends State<FriendsPage>
   final FirestoreService _firestoreService = FirestoreService();
   final GameInvitationService _invitationService = GameInvitationService();
   final PresenceService _presenceService = PresenceService();
+  final FriendSuggestionService _friendSuggestionService =
+      FriendSuggestionService();
   final TextEditingController _searchController = TextEditingController();
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
@@ -42,12 +48,19 @@ class _FriendsPageState extends State<FriendsPage>
   List<GameInvitation> _gameInvitations = [];
   List<Map<String, dynamic>> _searchResults = [];
   List<UserData> _allRegisteredUsers = [];
+  List<FriendSuggestion> _friendSuggestions = [];
+  Map<String, PresenceStatus> _presenceMap = {};
   bool _isLoading = false;
+  bool _isLoadingSuggestions = false;
   StreamSubscription<List<GameInvitation>>? _invitationSubscription;
   StreamSubscription<List<FriendRequest>>? _friendRequestSubscription;
+  StreamSubscription<Map<String, PresenceStatus>>? _presenceSubscription;
 
   // Button protection against double-clicks and race conditions
   final Set<String> _processingRequests = {};
+
+  // Pending friend request from deep link
+  String? _pendingAddFriendId;
 
   @override
   void initState() {
@@ -56,6 +69,8 @@ class _FriendsPageState extends State<FriendsPage>
     _initializePresence();
     _startListeningToInvitations();
     _startListeningToFriendRequests();
+    _startListeningToPresence();
+    _loadFriendSuggestions();
 
     // Listen to language changes
     context.read<LanguageProvider>().addListener(() {
@@ -68,11 +83,107 @@ class _FriendsPageState extends State<FriendsPage>
     _searchController.dispose();
     _invitationSubscription?.cancel();
     _friendRequestSubscription?.cancel();
+    _presenceSubscription?.cancel();
     super.dispose();
+  }
+
+  void _startListeningToPresence() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    final friendIds = _friends.map((f) => f.id).toList();
+    if (friendIds.isEmpty) return;
+
+    _presenceSubscription =
+        _presenceService.listenToFriendsPresence(friendIds).listen((presenceMap) {
+      if (mounted) {
+        setState(() {
+          _presenceMap = presenceMap;
+        });
+      }
+    });
   }
 
   Future<void> _initializePresence() async {
     await _presenceService.initialize();
+  }
+
+  /// Load friend suggestions
+  Future<void> _loadFriendSuggestions() async {
+    setState(() => _isLoadingSuggestions = true);
+
+    try {
+      final suggestions = await _friendSuggestionService.getSuggestions();
+      if (mounted) {
+        setState(() {
+          _friendSuggestions = suggestions;
+          _isLoadingSuggestions = false;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('🚨 Error loading friend suggestions: $e');
+      if (mounted) {
+        setState(() => _isLoadingSuggestions = false);
+      }
+    }
+  }
+
+  /// Send friend request from suggestion
+  Future<void> _sendRequestFromSuggestion(FriendSuggestion suggestion) async {
+    try {
+      final success =
+          await _friendSuggestionService.sendRequestFromSuggestion(suggestion);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: success
+                ? Text('${suggestion.nickname} kullanıcısına istek gönderildi!')
+                : const Text('İstek gönderilemedi'),
+            backgroundColor: success ? Colors.green : Colors.red,
+          ),
+        );
+
+        if (success) {
+          // Remove from suggestions after successful request
+          setState(() {
+            _friendSuggestions.remove(suggestion);
+          });
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('🚨 Error sending request from suggestion: $e');
+    }
+  }
+
+  /// Open QR scanner
+  void _openQRScanner() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const QRCodeScannerWidget(),
+      ),
+    );
+  }
+
+  /// Get human-readable text for suggestion reason
+  String _getSuggestionReasonText(SuggestionReason reason) {
+    switch (reason) {
+      case SuggestionReason.commonFriends:
+        return 'Ortak arkadaşlarınız var';
+      case SuggestionReason.recentlyPlayed:
+        return 'Son oynadığınız oyuncular';
+      case SuggestionReason.leaderboard:
+        return 'Sizinle benzer seviyede';
+      case SuggestionReason.popular:
+        return 'Popüler oyuncular';
+      case SuggestionReason.nearby:
+        return 'Yakınınızdaki oyuncular';
+      case SuggestionReason.suggested:
+        return 'Sizin için önerilen';
+      case SuggestionReason.other:
+        return 'Önerilen';
+    }
   }
 
   void _startListeningToInvitations() {
@@ -618,6 +729,12 @@ class _FriendsPageState extends State<FriendsPage>
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
+          // QR Scanner button
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner),
+            onPressed: _openQRScanner,
+            tooltip: 'QR Kod Tara',
+          ),
           // Friend request counter
           if (_receivedRequests.isNotEmpty)
             Stack(
@@ -799,7 +916,7 @@ class _FriendsPageState extends State<FriendsPage>
                             height: MediaQuery.of(context).size.height * 0.75,
                             child: Scrollbar(
                               child: DefaultTabController(
-                                length: 4,
+                                length: 5,
                                 child: Column(
                                   children: [
                                     TabBar(
@@ -854,7 +971,11 @@ class _FriendsPageState extends State<FriendsPage>
                                           icon: Icon(Icons.send),
                                         ),
                                         Tab(
-                                          text: 'Kayıtlı Kullanıcılar',
+                                          text: 'Öneriler',
+                                          icon: Icon(Icons.auto_awesome),
+                                        ),
+                                        Tab(
+                                          text: 'Kullanıcılar',
                                           icon: Icon(Icons.people),
                                         ),
                                       ],
@@ -865,7 +986,7 @@ class _FriendsPageState extends State<FriendsPage>
                                     Expanded(
                                       child: TabBarView(
                                         children: [
-                                          // Friends Tab
+                                          // Friends Tab with Online Status
                                           _friends.isEmpty
                                               ? const Center(
                                                   child: Text(
@@ -876,18 +997,63 @@ class _FriendsPageState extends State<FriendsPage>
                                                       (context, index) {
                                                     final friend =
                                                         _friends[index];
+                                                    final presence =
+                                                        _presenceMap[
+                                                            friend.id];
+                                                    final isOnline =
+                                                        presence?.isOnline ??
+                                                            false;
+
                                                     return Card(
                                                       margin: const EdgeInsets
                                                           .symmetric(
                                                           horizontal: 16,
                                                           vertical: 4),
                                                       child: ListTile(
-                                                        leading: const Icon(
-                                                            Icons.person),
+                                                        leading: Stack(
+                                                          children: [
+                                                            const Icon(
+                                                                Icons.person),
+                                                            // Online status indicator
+                                                            Positioned(
+                                                              right: 0,
+                                                              bottom: 0,
+                                                              child:
+                                                                  Container(
+                                                                width: 12,
+                                                                height: 12,
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: isOnline
+                                                                      ? Colors
+                                                                          .green
+                                                                      : Colors
+                                                                          .grey,
+                                                                  shape: BoxShape
+                                                                      .circle,
+                                                                  border:
+                                                                      Border.all(
+                                                                    color: Colors
+                                                                        .white,
+                                                                    width: 2,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
                                                         title: Text(
                                                             friend.nickname),
                                                         subtitle: Text(
-                                                            'Arkadaşlık: ${friend.addedAt.day}/${friend.addedAt.month}/${friend.addedAt.year}'),
+                                                          isOnline
+                                                              ? 'Çevrimiçi'
+                                                              : 'Çevrimdışı',
+                                                          style: TextStyle(
+                                                            color: isOnline
+                                                                ? Colors.green
+                                                                : Colors.grey,
+                                                          ),
+                                                        ),
                                                         trailing:
                                                             ElevatedButton(
                                                           onPressed: () =>
@@ -1076,7 +1242,7 @@ class _FriendsPageState extends State<FriendsPage>
                                                     );
                                                   },
                                                 ),
-                                          // Sent Requests Tab
+                                              // Sent Requests Tab
                                           _sentRequests.isEmpty
                                               ? const Center(
                                                   child: Text(
@@ -1104,6 +1270,129 @@ class _FriendsPageState extends State<FriendsPage>
                                                     );
                                                   },
                                                 ),
+
+                                          // Friend Suggestions Tab
+                                          _isLoadingSuggestions
+                                              ? const Center(
+                                                  child:
+                                                      CircularProgressIndicator())
+                                              : _friendSuggestions.isEmpty
+                                                  ? const Center(
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Icon(
+                                                            Icons
+                                                                .auto_awesome,
+                                                            size: 64,
+                                                            color: Colors.grey,
+                                                          ),
+                                                          SizedBox(height: 16),
+                                                          Text(
+                                                            'Öneri yok',
+                                                            style: TextStyle(
+                                                              fontSize: 16,
+                                                              color:
+                                                                  Colors.grey,
+                                                            ),
+                                                          ),
+                                                          SizedBox(height: 8),
+                                                          Text(
+                                                            'Şu anda öneri bulunmuyor',
+                                                            style: TextStyle(
+                                                              fontSize: 12,
+                                                              color:
+                                                                  Colors.grey,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    )
+                                                  : ListView.builder(
+                                                      itemCount:
+                                                          _friendSuggestions
+                                                              .length,
+                                                      itemBuilder:
+                                                          (context, index) {
+                                                        final suggestion =
+                                                            _friendSuggestions[
+                                                                index];
+                                                        return Card(
+                                                          margin:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  horizontal:
+                                                                      16,
+                                                                  vertical: 4),
+                                                          child: ListTile(
+                                                            leading:
+                                                                CircleAvatar(
+                                                              backgroundColor:
+                                                                  Colors.purple
+                                                                      .withValues(
+                                                                          alpha:
+                                                                              0.1),
+                                                              child: Icon(
+                                                                Icons
+                                                                    .auto_awesome,
+                                                                color: Colors
+                                                                    .purple,
+                                                              ),
+                                                            ),
+                                                            title: Text(suggestion
+                                                                .nickname),
+                                                            subtitle: Column(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Text(
+                                                                  _getSuggestionReasonText(
+                                                                      suggestion
+                                                                          .reason),
+                                                                  style:
+                                                                      TextStyle(
+                                                                    color: Colors
+                                                                        .purple,
+                                                                    fontSize: 12,
+                                                                  ),
+                                                                ),
+                                                                if (suggestion
+                                                                        .commonFriendsCount !=
+                                                                    null)
+                                                                  Text(
+                                                                    '${suggestion.commonFriendsCount} ortak arkadaş',
+                                                                    style:
+                                                                        TextStyle(
+                                                                      fontSize:
+                                                                          11,
+                                                                      color: Colors
+                                                                          .grey[600],
+                                                                    ),
+                                                                  ),
+                                                              ],
+                                                            ),
+                                                            trailing: ElevatedButton(
+                                                              onPressed: () =>
+                                                                  _sendRequestFromSuggestion(
+                                                                      suggestion),
+                                                              style: ElevatedButton
+                                                                  .styleFrom(
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .purple,
+                                                                foregroundColor:
+                                                                    Colors.white,
+                                                              ),
+                                                              child: const Text(
+                                                                  'İstek Gönder'),
+                                                            ),
+                                                          ),
+                                                        );
+                                                      },
+                                                    ),
 
                                           // All Registered Users Tab
                                           _allRegisteredUsers.isEmpty

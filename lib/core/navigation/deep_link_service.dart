@@ -168,6 +168,18 @@ class DeepLinkService {
         );
         return true;
 
+      case 'addfriend':
+        final userId = params['userId'];
+        if (userId != null) {
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            AppRoutes.friends,
+            (route) => false,
+            arguments: {'addFriendId': userId},
+          );
+          return true;
+        }
+        break;
+
       // 2FA routes
       case '2fa-setup':
         Navigator.of(context).pushNamedAndRemoveUntil(
@@ -306,6 +318,7 @@ class DeepLinkPatterns {
   // Settings
   static const String settings = 'settings';
   static const String tutorial = 'tutorial';
+  static const String addFriend = 'addfriend';
 }
 
 /// Deep link utility class with common deep links
@@ -372,6 +385,13 @@ class DeepLinkUtils {
   static String emailVerification(String token) {
     return DeepLinkService().generateDeepLink(DeepLinkPatterns.verifyEmail, {
       'token': token,
+    });
+  }
+
+  /// Generate add friend deep link
+  static String addFriend(String userId) {
+    return DeepLinkService().generateDeepLink(DeepLinkPatterns.addFriend, {
+      'userId': userId,
     });
   }
 }
