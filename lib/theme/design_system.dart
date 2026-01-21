@@ -2,6 +2,7 @@
 // Comprehensive design system with consistent styling utilities
 
 import 'package:flutter/material.dart';
+import '../widgets/global_error_states.dart';
 import 'theme_colors.dart';
 
 /// Comprehensive design system for consistent UI across the app
@@ -806,6 +807,245 @@ class DesignSystem {
         color: ThemeColors.getBorder(context),
         height: thickness,
       ),
+    );
+  }
+
+  // ===========================================================================
+  // GLOBAL ERROR AND EMPTY STATE SCREENS
+  // ===========================================================================
+
+  /// Global error screen with consistent design
+  static Widget globalErrorScreen(
+    BuildContext context, {
+    required String title,
+    required String message,
+    VoidCallback? onRetry,
+    String? retryText,
+    IconData? icon,
+    Color? iconColor,
+  }) {
+    return GlobalErrorStates.errorScreen(
+      context: context,
+      title: title,
+      message: message,
+      onRetry: onRetry,
+      retryText: retryText,
+      icon: icon,
+      iconColor: iconColor,
+    );
+  }
+
+  /// Global network error screen
+  static Widget globalNetworkErrorScreen(
+    BuildContext context, {
+    VoidCallback? onRetry,
+    String? customMessage,
+  }) {
+    return GlobalErrorStates.networkErrorScreen(
+      context: context,
+      onRetry: onRetry,
+      customMessage: customMessage,
+    );
+  }
+
+  /// Global server error screen
+  static Widget globalServerErrorScreen(
+    BuildContext context, {
+    VoidCallback? onRetry,
+    String? customMessage,
+  }) {
+    return GlobalErrorStates.serverErrorScreen(
+      context: context,
+      onRetry: onRetry,
+      customMessage: customMessage,
+    );
+  }
+
+  /// Global authentication error screen
+  static Widget globalAuthErrorScreen(
+    BuildContext context, {
+    VoidCallback? onRetry,
+    VoidCallback? onLogin,
+    String? customMessage,
+  }) {
+    return GlobalErrorStates.authErrorScreen(
+      context: context,
+      onRetry: onRetry,
+      onLogin: onLogin,
+      customMessage: customMessage,
+    );
+  }
+
+  /// Global permission error screen
+  static Widget globalPermissionErrorScreen(
+    BuildContext context, {
+    VoidCallback? onRequestPermission,
+    String? customMessage,
+  }) {
+    return GlobalErrorStates.permissionErrorScreen(
+      context: context,
+      onRequestPermission: onRequestPermission,
+      customMessage: customMessage,
+    );
+  }
+
+  /// Global data error screen
+  static Widget globalDataErrorScreen(
+    BuildContext context, {
+    VoidCallback? onRetry,
+    String? customMessage,
+  }) {
+    return GlobalErrorStates.dataErrorScreen(
+      context: context,
+      onRetry: onRetry,
+      customMessage: customMessage,
+    );
+  }
+
+  /// Global empty state screen
+  static Widget globalEmptyStateScreen(
+    BuildContext context, {
+    required String title,
+    required String message,
+    Widget? action,
+    IconData? icon,
+    Color? iconColor,
+    bool showActionButton = true,
+  }) {
+    return GlobalErrorStates.emptyStateScreen(
+      context: context,
+      title: title,
+      message: message,
+      action: action,
+      icon: icon,
+      iconColor: iconColor,
+      showActionButton: showActionButton,
+    );
+  }
+
+  /// Global no data screen
+  static Widget globalNoDataScreen(
+    BuildContext context, {
+    String? customTitle,
+    String? customMessage,
+    Widget? action,
+  }) {
+    return GlobalErrorStates.noDataScreen(
+      context: context,
+      customTitle: customTitle,
+      customMessage: customMessage,
+      action: action,
+    );
+  }
+
+  /// Global no results screen
+  static Widget globalNoResultsScreen(
+    BuildContext context, {
+    String? searchQuery,
+    Widget? action,
+  }) {
+    return GlobalErrorStates.noResultsScreen(
+      context: context,
+      searchQuery: searchQuery,
+      action: action,
+    );
+  }
+
+  /// Global no friends screen
+  static Widget globalNoFriendsScreen(
+    BuildContext context, {
+    Widget? action,
+  }) {
+    return GlobalErrorStates.noFriendsScreen(
+      context: context,
+      action: action,
+    );
+  }
+
+  /// Global no achievements screen
+  static Widget globalNoAchievementsScreen(
+    BuildContext context, {
+    Widget? action,
+  }) {
+    return GlobalErrorStates.noAchievementsScreen(
+      context: context,
+      action: action,
+    );
+  }
+
+  /// Global no notifications screen
+  static Widget globalNoNotificationsScreen(
+    BuildContext context, {
+    Widget? action,
+  }) {
+    return GlobalErrorStates.noNotificationsScreen(
+      context: context,
+      action: action,
+    );
+  }
+
+  /// Global no quiz history screen
+  static Widget globalNoQuizHistoryScreen(
+    BuildContext context, {
+    Widget? action,
+  }) {
+    return GlobalErrorStates.noQuizHistoryScreen(
+      context: context,
+      action: action,
+    );
+  }
+
+  /// Global offline screen
+  static Widget globalOfflineScreen(
+    BuildContext context, {
+    VoidCallback? onRetry,
+    String? customMessage,
+  }) {
+    return GlobalErrorStates.offlineScreen(
+      context: context,
+      onRetry: onRetry,
+      customMessage: customMessage,
+    );
+  }
+
+  /// Global offline with cache screen
+  static Widget globalOfflineWithCacheScreen(
+    BuildContext context, {
+    String? cachedDataInfo,
+    VoidCallback? onRetry,
+  }) {
+    return GlobalErrorStates.offlineWithCacheScreen(
+      context: context,
+      cachedDataInfo: cachedDataInfo,
+      onRetry: onRetry,
+    );
+  }
+
+  /// Global loading screen
+  static Widget globalLoadingScreen(
+    BuildContext context, {
+    String? message,
+    bool showMessage = true,
+  }) {
+    return GlobalErrorStates.loadingScreen(
+      context: context,
+      message: message,
+      showMessage: showMessage,
+    );
+  }
+
+  /// Global loading overlay
+  static Widget globalLoadingOverlay(
+    BuildContext context, {
+    required Widget child,
+    bool isLoading = true,
+    String? loadingMessage,
+  }) {
+    return GlobalErrorStates.loadingOverlay(
+      context: context,
+      child: child,
+      isLoading: isLoading,
+      loadingMessage: loadingMessage,
     );
   }
 }

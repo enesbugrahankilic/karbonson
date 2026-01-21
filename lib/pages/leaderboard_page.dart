@@ -379,6 +379,14 @@ class _LeaderboardPageState extends State<LeaderboardPage>
                 color: Colors.grey[600],
               ),
             ),
+            const SizedBox(height: 8),
+            Text(
+              'İlk quizinizi çözerek başlayın!',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
+            ),
           ],
         ),
       );

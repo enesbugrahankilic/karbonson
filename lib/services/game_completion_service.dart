@@ -104,7 +104,7 @@ class GameCompletionService {
         }
         
         // Trigger state refresh after successful completion
-        _triggerRefreshAfterCompletion('quiz', score: score, category: category);
+        _triggerRefreshAfterCompletion('quiz');
         
         // Update daily task challenge progress (event-driven)
         await _dailyTaskService.onQuizCompleted(
@@ -339,32 +339,14 @@ class GameCompletionService {
 
   /// Trigger state refresh after successful completion
   /// This method calls StateRefreshService to update all related UI
-  void _triggerRefreshAfterCompletion(
-    String completionType, {
-    int? score,
-    dynamic category,
-    String? gameType,
-    int? position,
-  }) {
+  void _triggerRefreshAfterCompletion(String completionType) {
     try {
       if (completionType == 'quiz') {
-        StateRefreshService().triggerQuizCompletionRefresh(
-          score: score,
-          category: category?.toString(),
-        );
+        StateRefreshService().triggerQuizCompletionRefresh();
       } else if (completionType == 'game') {
-        StateRefreshService().triggerGameCompletionRefresh(
-          gameType: gameType,
-          position: position,
-        );
+        StateRefreshService().triggerGameCompletionRefresh();
       } else {
-        StateRefreshService().triggerComprehensiveRefresh(
-          metadata: {
-            'completionType': completionType,
-            'score': score,
-            'gameType': gameType,
-          },
-        );
+        StateRefreshService().triggerComprehensiveRefresh();
       }
       
       if (kDebugMode) {

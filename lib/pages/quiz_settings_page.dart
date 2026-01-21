@@ -5,7 +5,6 @@ import '../models/question.dart';
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../enums/app_language.dart';
-import '../services/language_service.dart';
 
 class QuizSettingsPage extends StatefulWidget {
   final Function({
@@ -28,7 +27,7 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
   String _selectedCategory = 'Tümü';
   DifficultyLevel _selectedDifficulty = DifficultyLevel.medium;
   int _selectedQuestionCount = 15;
-  AppLanguage _currentLanguage = AppLanguage.turkish;
+  AppLanguage _selectedLanguage = AppLanguage.turkish;
 
   // Kategori verileri
   final List<Map<String, dynamic>> _categories = [
@@ -123,6 +122,24 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
     {'count': 25, 'label': 'Tam', 'time': '12-15 dk', 'color': Colors.pink},
   ];
 
+  // Dil seçenekleri
+  final List<Map<String, dynamic>> _languages = [
+    {
+      'language': AppLanguage.turkish,
+      'name': 'Türkçe',
+      'flag': '🇹🇷',
+      'description': 'Türkçe sorular',
+      'color': Colors.red,
+    },
+    {
+      'language': AppLanguage.english,
+      'name': 'English',
+      'flag': '🇺🇸',
+      'description': 'English questions',
+      'color': Colors.blue,
+    },
+  ];
+
   int get _estimatedTime {
     final count = _questionCounts.firstWhere(
       (c) => c['count'] == _selectedQuestionCount,
@@ -166,6 +183,12 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
                       _buildSectionTitle(context, 'Soru Sayısı', Icons.numbers),
                       const SizedBox(height: DesignSystem.spacingM),
                       _buildQuestionCountSelection(context),
+                      const SizedBox(height: DesignSystem.spacingXl),
+
+                      // Dil Seçimi - Wide Cards
+                      _buildSectionTitle(context, 'Dil Seçimi', Icons.language),
+                      const SizedBox(height: DesignSystem.spacingM),
+                      _buildLanguageSelection(context),
                       const SizedBox(height: DesignSystem.spacingXl),
 
                       // Özet Kartı - Full Width
@@ -656,12 +679,134 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
     );
   }
 
+  Widget _buildLanguageSelection(BuildContext context) {
+    return Column(
+      children: _languages.asMap().entries.map((entry) {
+        final index = entry.key;
+        final language = entry.value;
+        final isSelected = _selectedLanguage == language['language'];
+        final color = language['color'] as Color;
+        final isFirst = index == 0;
+
+        return DesignSystem.semantic(
+          context,
+          label: '${language['name']} dil seçimi',
+          hint: language['description'] as String,
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedLanguage = language['language'] as AppLanguage;
+              });
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: isFirst
+                  ? EdgeInsets.zero
+                  : const EdgeInsets.only(top: DesignSystem.spacingM),
+              decoration: BoxDecoration(
+                gradient: isSelected
+                    ? LinearGradient(
+                        colors: [
+                          color.withOpacity(0.9),
+                          color.withOpacity(0.7),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
+                color: isSelected ? null : Colors.white.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+                border: Border.all(
+                  color: isSelected ? color : Colors.white.withOpacity(0.15),
+                  width: isSelected ? 2.5 : 1,
+                ),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: color.withOpacity(0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(DesignSystem.spacingL),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? Colors.white.withOpacity(0.25)
+                            : color.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        language['flag'] as String,
+                        style: const TextStyle(fontSize: 24),
+                      ),
+                    ),
+                    const SizedBox(width: DesignSystem.spacingL),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            language['name'] as String,
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : null,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            language['description'] as String,
+                            style: TextStyle(
+                              color: isSelected
+                                  ? Colors.white.withOpacity(0.9)
+                                  : Colors.white70,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Radio<AppLanguage>(
+                      value: language['language'] as AppLanguage,
+                      groupValue: _selectedLanguage,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedLanguage = value!;
+                        });
+                      },
+                      activeColor: Colors.white,
+                      fillColor: WidgetStateProperty.resolveWith<Color>(
+                        (states) {
+                          return isSelected ? Colors.white : color;
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   Widget _buildSummaryCard(BuildContext context) {
     final selectedCategoryData = _categories.firstWhere(
       (cat) => cat['name'] == _selectedCategory,
     );
     final selectedDifficultyData = _difficulties.firstWhere(
       (diff) => diff['level'] == _selectedDifficulty,
+    );
+    final selectedLanguageData = _languages.firstWhere(
+      (lang) => lang['language'] == _selectedLanguage,
     );
 
     return DesignSystem.glassCard(
@@ -717,6 +862,14 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
             '$_selectedQuestionCount soru (~$_estimatedTime dk)',
             Icons.quiz,
             ThemeColors.getPrimaryButtonColor(context),
+          ),
+          const SizedBox(height: DesignSystem.spacingM),
+          _buildSummaryRow(
+            context,
+            'Dil',
+            '${selectedLanguageData['flag']} ${selectedLanguageData['name']}',
+            Icons.language,
+            selectedLanguageData['color'] as Color,
           ),
           const SizedBox(height: DesignSystem.spacingL),
           Container(
@@ -827,13 +980,11 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
   }
 
   void _startQuiz() {
-    // LanguageService'den mevcut dili al
-    final currentLanguage = LanguageService.getCurrentLanguage();
     widget.onStartQuiz(
       category: _selectedCategory,
       difficulty: _selectedDifficulty,
       questionCount: _selectedQuestionCount,
-      language: currentLanguage,
+      language: _selectedLanguage,
     );
   }
 }

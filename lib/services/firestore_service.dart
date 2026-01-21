@@ -10,6 +10,7 @@ import '../models/user_data.dart';
 import '../models/profile_data.dart'; // For GameHistoryItem
 import '../utils/room_code_generator.dart';
 import 'duel_game_logic.dart';
+import '../utils/firebase_logger.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -83,12 +84,18 @@ class FirestoreService {
   /// Tüm skorları puana göre azalan sırada (en yüksekten en düşüğe) çeker.
   /// Updated: Filters out users with score <= 0 for better leaderboard display
   Future<List<Map<String, dynamic>>> getLeaderboard() async {
+    FirebaseLogger.log('LEADERBOARD', 'Fetching leaderboard data from Firestore');
     try {
       final querySnapshot = await _db
           .collection(_usersCollection)
           .where('score', isGreaterThan: 0) // Only users with actual scores
           .orderBy('score', descending: true) // Sort by score descending
           .get();
+
+      FirebaseLogger.log('LEADERBOARD', 'Fetched ${querySnapshot.docs.length} leaderboard entries');
+      if (querySnapshot.docs.isEmpty) {
+        FirebaseLogger.log('LEADERBOARD', 'No leaderboard data found - users collection may be empty or score field missing');
+      }
 
       // Map documents to data with proper error handling
       return querySnapshot.docs.map((doc) {
@@ -102,6 +109,7 @@ class FirestoreService {
         };
       }).toList();
     } catch (e) {
+      FirebaseLogger.log('LEADERBOARD', 'Error fetching leaderboard: $e');
       if (kDebugMode) {
         debugPrint('🚨 ERROR: Failed to fetch leaderboard: $e');
       }
@@ -1767,7 +1775,7 @@ class FirestoreService {
     try {
       if (kDebugMode) {
         debugPrint(
-            'Attempting to join duel room with code: $roomCode for player: $playerNickname');
+            '🔄 [DUEL_JOIN] Attempting to join duel room with code: $roomCode for player: $playerNickname ($playerId)');
       }
 
       // First, try to get the room directly by document ID
@@ -1779,12 +1787,12 @@ class FirestoreService {
 
       if (roomDoc.exists) {
         // Found by document ID
-        if (kDebugMode) debugPrint('✅ Room found by document ID');
+        if (kDebugMode) debugPrint('✅ [DUEL_JOIN] Room found by document ID');
         room = DuelRoom.fromMap(roomDoc.data()!);
       } else {
         // If not found by ID, try to find by roomCode field
-        if (kDebugMode) debugPrint('🔍 Room not found by ID, searching by roomCode field...');
-        
+        if (kDebugMode) debugPrint('🔍 [DUEL_JOIN] Room not found by ID, searching by roomCode field...');
+
         final querySnapshot = await _db
             .collection(_duelRoomsCollection)
             .where('roomCode', isEqualTo: roomCode)
@@ -1792,24 +1800,33 @@ class FirestoreService {
             .get();
 
         if (querySnapshot.docs.isEmpty) {
-          if (kDebugMode) debugPrint('❌ No room found with code: $roomCode');
+          if (kDebugMode) debugPrint('❌ [DUEL_JOIN] No room found with code: $roomCode');
           return null;
         }
 
         room = DuelRoom.fromMap(querySnapshot.docs.first.data());
       }
 
-      if (room == null) return null;
+      if (room == null) {
+        if (kDebugMode) debugPrint('❌ [DUEL_JOIN] Room parsing failed');
+        return null;
+      }
+
+      if (kDebugMode) {
+        debugPrint('📋 [DUEL_JOIN] Room details - ID: ${room.id}, Host: ${room.hostNickname}, Players: ${room.players.length}, Status: ${room.status}');
+      }
 
       // Check if player already in room
       if (room.players.any((p) => p.id == playerId)) {
-        if (kDebugMode) debugPrint('✅ Player already in room');
+        if (kDebugMode) {
+          debugPrint('✅ [DUEL_JOIN] Player $playerNickname already in room participants list');
+        }
         return room;
       }
 
       // Check if room is full (max 2 players for duel)
       if (room.players.length >= 2) {
-        if (kDebugMode) debugPrint('❌ Room is full');
+        if (kDebugMode) debugPrint('❌ [DUEL_JOIN] Room is full (${room.players.length}/2 players)');
         return null;
       }
 
@@ -1822,11 +1839,39 @@ class FirestoreService {
       );
       final updatedPlayers = [...room.players, newPlayer];
 
+      if (kDebugMode) {
+        debugPrint('👥 [DUEL_JOIN] Adding player to room. Previous players: ${room.players.length}, New count: ${updatedPlayers.length}');
+      }
+
       // Update the room in Firestore
       await _db.collection(_duelRoomsCollection).doc(room.id).update({
         'players': updatedPlayers.map((p) => p.toMap()).toList(),
         'status': DuelGameStatus.playing.toString().split('.').last,
       });
+
+      if (kDebugMode) {
+        debugPrint('🔄 [DUEL_JOIN] Firestore update sent, waiting for confirmation...');
+      }
+
+      // Verify the update was successful by re-reading the document
+      final verificationDoc = await roomDocRef.get();
+      if (verificationDoc.exists) {
+        final verificationRoom = DuelRoom.fromMap(verificationDoc.data()!);
+        final isPlayerAdded = verificationRoom.players.any((p) => p.id == playerId);
+
+        if (kDebugMode) {
+          debugPrint('✅ [DUEL_JOIN] Backend verification - Player added to participants: $isPlayerAdded');
+          debugPrint('📊 [DUEL_JOIN] Room participants after join: ${verificationRoom.players.map((p) => '${p.nickname}(${p.id})').join(', ')}');
+        }
+
+        if (!isPlayerAdded) {
+          if (kDebugMode) debugPrint('⚠️ [DUEL_JOIN] WARNING: Player not found in backend participants list after update');
+          return null;
+        }
+      } else {
+        if (kDebugMode) debugPrint('❌ [DUEL_JOIN] Room document not found after update');
+        return null;
+      }
 
       // Return updated room
       final updatedRoom = DuelRoom(
@@ -1846,14 +1891,15 @@ class FirestoreService {
       );
 
       if (kDebugMode) {
-        debugPrint('✅ Player $playerNickname joined duel room ${room.id}');
+        debugPrint('🎉 [DUEL_JOIN] SUCCESS: Player $playerNickname successfully joined duel room ${room.id}');
+        debugPrint('📈 [DUEL_JOIN] Final room state - Players: ${updatedPlayers.length}, Status: ${updatedRoom.status}');
       }
 
       return updatedRoom;
     } catch (e, stackTrace) {
       if (kDebugMode) {
-        debugPrint('🚨 ERROR: Failed to join duel room: $e');
-        debugPrint('Stack trace: $stackTrace');
+        debugPrint('🚨 [DUEL_JOIN] ERROR: Failed to join duel room: $e');
+        debugPrint('📋 [DUEL_JOIN] Stack trace: $stackTrace');
       }
       return null;
     }

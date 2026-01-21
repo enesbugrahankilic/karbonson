@@ -12,6 +12,10 @@ class LoadRecommendations extends AIEvent {
   LoadRecommendations(this.userId);
 }
 
+class SetNotAuthenticated extends AIEvent {
+  SetNotAuthenticated();
+}
+
 class AIInitial extends AIState {
   AIInitial();
 }
@@ -32,11 +36,16 @@ class AIError extends AIState {
   AIError(this.message);
 }
 
+class AINotAuthenticated extends AIState {
+  AINotAuthenticated();
+}
+
 class AIBloc extends Bloc<AIEvent, AIState> {
   final AIService aiService;
 
   AIBloc(this.aiService) : super(AIInitial()) {
     on<LoadRecommendations>(_onLoadRecommendations);
+    on<SetNotAuthenticated>(_onSetNotAuthenticated);
   }
 
   Future<void> _onLoadRecommendations(
@@ -56,6 +65,13 @@ class AIBloc extends Bloc<AIEvent, AIState> {
     } catch (e) {
       emit(AIError(e.toString()));
     }
+  }
+
+  Future<void> _onSetNotAuthenticated(
+    SetNotAuthenticated event,
+    Emitter<AIState> emit,
+  ) async {
+    emit(AINotAuthenticated());
   }
 }
 

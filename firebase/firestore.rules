@@ -77,6 +77,25 @@ service cloud.firestore {
       allow delete: if request.auth != null && resource.data.hostId == request.auth.uid;
     }
 
+    // === DUEL ROOMS COLLECTION (Duel Game Mode) ===
+    match /duel_rooms/{roomId} {
+      // Allow read access to active duel rooms
+      allow read: if true;
+      
+      // Allow authenticated users to create duel rooms
+      allow create: if request.auth != null;
+      
+      // Allow authenticated users to update duel rooms
+      // Host can update room status, players can update their ready state
+      allow update: if request.auth != null && (
+        request.resource.data.hostId == request.auth.uid ||
+        (request.auth.uid in request.resource.data.players.*.id)
+      );
+      
+      // Allow authenticated users to delete their own duel rooms
+      allow delete: if request.auth != null && resource.data.hostId == request.auth.uid;
+    }
+
     // === EMAIL OTP CODES COLLECTION (Temporary verification codes) ===
     match /email_otp_codes/{otpCodeId} {
       // Allow public read access for code verification (no auth required for security)

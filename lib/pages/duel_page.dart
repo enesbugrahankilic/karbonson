@@ -1,5 +1,6 @@
 // lib/pages/duel_page.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import '../services/duel_game_logic.dart';
 import '../services/firestore_service.dart';
 import '../services/authentication_state_service.dart';
@@ -7,9 +8,12 @@ import '../theme/theme_colors.dart';
 import '../widgets/duel_invite_dialog.dart';
 import '../widgets/copy_to_clipboard_widget.dart';
 import '../widgets/home_button.dart';
+import '../utils/firebase_logger.dart';
 
 class DuelPage extends StatefulWidget {
-  const DuelPage({super.key});
+  final DuelRoom? initialRoom;
+
+  const DuelPage({super.key, this.initialRoom});
 
   @override
   State<DuelPage> createState() => _DuelPageState();
@@ -40,6 +44,9 @@ class _DuelPageState extends State<DuelPage> {
   void initState() {
     super.initState();
     _duelLogic.addListener(_onGameStateChanged);
+    if (widget.initialRoom != null) {
+      _duelLogic.setRoom(widget.initialRoom!);
+    }
   }
 
   @override
@@ -118,7 +125,11 @@ class _DuelPageState extends State<DuelPage> {
     }
   }
 
-  Future<void> _joinDuelRoom(String roomId) async {
+  Future<void> _joinDuelRoom(String roomCode) async {
+    if (kDebugMode) {
+      debugPrint('🎯 [DUEL_UI] Starting room join process for code: $roomCode');
+    }
+
     setState(() => _isJoiningRoom = true);
 
     try {
@@ -126,44 +137,91 @@ class _DuelPageState extends State<DuelPage> {
       final playerId = await _getPlayerId();
       final playerNickname = await _getPlayerNickname();
 
-      // Create player object for duel
-      _createPlayerForDuel(playerId, playerNickname);
+      if (kDebugMode) {
+        debugPrint('🔄 [DUEL_UI] Attempting to join duel room with code: $roomCode for player: $playerNickname ($playerId)');
+      }
 
-      // Note: This would need to be adapted to work with existing room structure
-      // For now, we'll show a simplified message
-      if (mounted) {
+      // Call the backend service with timeout
+      final room = await _firestoreService.joinDuelRoomByCode(
+        roomCode,
+        playerId,
+        playerNickname,
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          if (kDebugMode) debugPrint('⏰ [DUEL_UI] Timeout: Room join request timed out after 10 seconds');
+          throw Exception('Bağlantı zaman aşımına uğradı. Lütfen tekrar deneyin.');
+        },
+      );
+
+      if (room != null && mounted) {
+        if (kDebugMode) {
+          debugPrint('✅ [DUEL_UI] Successfully joined duel room: ${room.id}');
+          debugPrint('📊 [DUEL_UI] Room details - Host: ${room.hostNickname}, Players: ${room.players.length}, Status: ${room.status}');
+        }
+
+        // Log the successful join
+        FirebaseLogger.logPlayerAction(
+          roomId: room.id,
+          playerId: playerId,
+          nickname: playerNickname,
+          action: 'JOIN_ROOM',
+          success: true,
+        );
+
+        // Update the duel logic with the joined room
+        _duelLogic.setRoom(room);
+
+        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Oda katılma özelliği geliştiriliyor...'),
-            backgroundColor: Colors.orange,
+            content: Text('Odaya başarıyla katıldınız!'),
+            backgroundColor: Colors.green,
           ),
         );
+      } else {
+        if (kDebugMode) debugPrint('❌ [DUEL_UI] Failed to join room: Room is null');
+        throw Exception('Oda katılımı başarısız oldu.');
       }
     } catch (e) {
+      if (kDebugMode) {
+        debugPrint('🚨 [DUEL_UI] Error joining duel room: $e');
+        debugPrint('📋 [DUEL_UI] Error type: ${e.runtimeType}');
+      }
+
+      String errorMessage = 'Odaya katılırken hata oluştu';
+
+      if (e.toString().contains('not found') || e.toString().contains('null')) {
+        errorMessage = 'Oda bulunamadı. Lütfen oda kodunu kontrol edin.';
+      } else if (e.toString().contains('full')) {
+        errorMessage = 'Oda dolu. Başka bir odaya katılmayı deneyin.';
+      } else if (e.toString().contains('timeout') || e.toString().contains('zaman aşımı')) {
+        errorMessage = 'Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.';
+      } else if (e.toString().contains('already in room')) {
+        errorMessage = 'Zaten bu odadasınız.';
+      }
+
+      if (kDebugMode) {
+        debugPrint('💬 [DUEL_UI] Showing error message: $errorMessage');
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Odaya katılırken hata: $e'),
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
           ),
         );
       }
     } finally {
-      setState(() => _isJoiningRoom = false);
+      if (mounted) {
+        setState(() => _isJoiningRoom = false);
+        if (kDebugMode) {
+          debugPrint('🔄 [DUEL_UI] Room join loading state cleared');
+        }
+      }
     }
   }
-
-  void _createPlayerForDuel(String playerId, String playerNickname) {
-    // Create DuelPlayer for use in duel operations
-    DuelPlayer(
-      id: playerId,
-      nickname: playerNickname,
-      duelScore: 0,
-      isReady: true,
-    );
-    // Player initialized for duel operations
-  }
-  
 
   void _showJoinRoomDialog() {
     final roomIdController = TextEditingController();
@@ -339,50 +397,6 @@ class _DuelPageState extends State<DuelPage> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  // Invite Friends Button
-                  if (_currentRoom != null && _currentRoom!.players.length == 1)
-                    FutureBuilder<String>(
-                      future: _getPlayerId(),
-                      builder: (context, playerIdSnapshot) {
-                        return FutureBuilder<String>(
-                          future: _getPlayerNickname(),
-                          builder: (context, playerNicknameSnapshot) {
-                            if (playerIdSnapshot.hasData &&
-                                playerNicknameSnapshot.hasData) {
-                              return SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => DuelInviteDialog(
-                                        roomId: _currentRoom!.id,
-                                        hostId: playerIdSnapshot.data!,
-                                        hostNickname:
-                                            playerNicknameSnapshot.data!,
-                                      ),
-                                    );
-                                  },
-                                  icon: const Icon(Icons.person_add),
-                                  label: const Text('Arkadaşlarını Davet Et'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFFF9800),
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 16),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }
-                            return const SizedBox.shrink();
-                          },
-                        );
-                      },
-                    ),
-                  const SizedBox(height: 16),
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -640,7 +654,7 @@ class _DuelPageState extends State<DuelPage> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: player.id == playerIdSnapshot.data!
-                          ? ThemeColors.getGreen(context).withOpacity( 0.2)
+                          ? ThemeColors.getGreen(context).withOpacity(0.2)
                           : ThemeColors.getCardBackgroundLight(context),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
@@ -675,57 +689,5 @@ class _DuelPageState extends State<DuelPage> {
       },
     );
   }
-
-  Widget _buildPlayersList() {
-    if (_currentRoom == null || _currentRoom!.players.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: ThemeColors.getCardBackground(context),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Oyuncular',
-            style: TextStyle(
-              color: ThemeColors.getText(context),
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          ..._currentRoom!.players.map((player) => Container(
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: ThemeColors.getCardBackgroundLight(context),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.person,
-                      color: ThemeColors.getGreen(context),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      player.nickname,
-                      style: TextStyle(
-                        color: ThemeColors.getText(context),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              )),
-        ],
-      ),
-    );
-  }
 }
+

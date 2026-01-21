@@ -629,36 +629,24 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         }
 
         if (state is QuizCompleted) {
-          // Completion screen - backend was successful
+          // Navigate to quiz results page instead of showing completion screen here
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              Navigator.of(context).pushReplacementNamed(
+                '/quiz-results',
+                arguments: {
+                  'score': state.score,
+                  'totalQuestions': state.questions.length,
+                  'category': _selectedCategory ?? 'Tümü',
+                  'difficulty': _selectedDifficulty.displayName,
+                  'correctAnswers': state.score, // Assuming score equals correct answers
+                },
+              );
+            }
+          });
+
+          // Show loading screen while navigating
           return Scaffold(
-            extendBodyBehindAppBar: true,
-            appBar: AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              centerTitle: true,
-              title: const Text(
-                'Quiz Tamamlandı',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-              actions: [
-                Container(
-                  margin: const EdgeInsets.only(right: DesignSystem.spacingS),
-                  decoration: BoxDecoration(
-                    color: ThemeColors.getSuccessColor(context).withOpacity(0.8),
-                    borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.home, color: Colors.white),
-                    onPressed: () => Navigator.pop(context, state.score),
-                    tooltip: 'Ana Sayfaya Dön',
-                  ),
-                ),
-              ],
-            ),
             body: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -667,85 +655,8 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                   end: Alignment.bottomRight,
                 ),
               ),
-              child: SafeArea(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(DesignSystem.spacingM),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Score area at top
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: DesignSystem.spacingM),
-                        child: _buildScoreArea(state),
-                      ),
-                      
-                      // Completion message
-                      FadeTransition(
-                        opacity: _fadeController,
-                        child: Container(
-                          padding: const EdgeInsets.all(DesignSystem.spacingXl),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                ThemeColors.getSuccessColor(context).withOpacity(0.1),
-                                ThemeColors.getSuccessColor(context).withOpacity(0.05),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(DesignSystem.radiusL),
-                            border: Border.all(
-                              color: ThemeColors.getSuccessColor(context).withOpacity(0.3),
-                            ),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.celebration,
-                                size: 80,
-                                color: ThemeColors.getSuccessColor(context),
-                              ),
-                              const SizedBox(height: DesignSystem.spacingL),
-                              Text(
-                                'Quiz Tamamlandı!',
-                                style: AppTheme.getGameQuestionStyle(context).copyWith(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: DesignSystem.spacingM),
-                              Text(
-                                'Toplam Puan: ${state.score}/${state.questions.length}',
-                                style: AppTheme.getGameScoreStyle(context).copyWith(
-                                  fontSize: 24,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: DesignSystem.spacingL),
-                              ElevatedButton.icon(
-                                onPressed: () => Navigator.pop(context, state.score),
-                                icon: const Icon(Icons.home, color: Colors.white),
-                                label: const Text('Ana Sayfaya Dön',
-                                    style: TextStyle(
-                                        fontSize: 18, fontWeight: FontWeight.bold)),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: ThemeColors.getSuccessColor(context),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: DesignSystem.spacingXl,
-                                    vertical: DesignSystem.spacingM,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              child: DesignSystem.loadingIndicator(context,
+                  message: 'Sonuçlar hazırlanıyor...'),
             ),
           );
         }

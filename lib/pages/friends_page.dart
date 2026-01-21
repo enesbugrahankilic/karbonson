@@ -22,6 +22,8 @@ import '../provides/language_provider.dart';
 import '../widgets/qr_code_scanner_widget.dart';
 import '../widgets/add_friend_bottom_sheet.dart';
 import '../widgets/block_user_dialog.dart';
+import '../widgets/user_qr_code_widget.dart';
+import '../theme/design_system.dart';
 
 class FriendsPage extends StatefulWidget {
   final String userNickname;
@@ -917,8 +919,8 @@ class _FriendsPageState extends State<FriendsPage>
                             height: MediaQuery.of(context).size.height * 0.75,
                             child: Scrollbar(
                               child: DefaultTabController(
-                                length: 5,
-                                child: Column(
+                                  length: 6,
+                                  child: Column(
                                   children: [
                                     TabBar(
                                       tabs: [
@@ -979,6 +981,10 @@ class _FriendsPageState extends State<FriendsPage>
                                           text: 'Kullanıcılar',
                                           icon: Icon(Icons.people),
                                         ),
+                                        Tab(
+                                          text: 'QR Kodum',
+                                          icon: Icon(Icons.qr_code),
+                                        ),
                                       ],
                                       indicatorColor: Colors.blue,
                                       labelColor: Colors.blue,
@@ -989,9 +995,7 @@ class _FriendsPageState extends State<FriendsPage>
                                         children: [
                                           // Friends Tab with Online Status
                                           _friends.isEmpty
-                                              ? const Center(
-                                                  child: Text(
-                                                      'Henüz arkadaşın yok'))
+                                              ? DesignSystem.globalNoFriendsScreen(context)
                                               : ListView.builder(
                                                   itemCount: _friends.length,
                                                   itemBuilder:
@@ -1092,35 +1096,11 @@ class _FriendsPageState extends State<FriendsPage>
                                                 ),
                                           // Received Requests Tab
                                           _receivedRequests.isEmpty
-                                              ? const Center(
-                                                  child: Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Icon(
-                                                        Icons.person_add_alt,
-                                                        size: 64,
-                                                        color: Colors.grey,
-                                                      ),
-                                                      SizedBox(height: 16),
-                                                      Text(
-                                                        'Yeni arkadaşlık isteği yok',
-                                                        style: TextStyle(
-                                                          fontSize: 16,
-                                                          color: Colors.grey,
-                                                        ),
-                                                      ),
-                                                      SizedBox(height: 8),
-                                                      Text(
-                                                        'Yeni istekler burada görünecek',
-                                                        style: TextStyle(
-                                                          fontSize: 12,
-                                                          color: Colors.grey,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
+                                              ? DesignSystem.globalEmptyStateScreen(
+                                                  context,
+                                                  title: 'Yeni Arkadaşlık İsteği Yok',
+                                                  message: 'Yeni istekler burada görünecek',
+                                                  icon: Icons.person_add_alt,
                                                 )
                                               : ListView.builder(
                                                   itemCount:
@@ -1267,11 +1247,14 @@ class _FriendsPageState extends State<FriendsPage>
                                                   },
                                                 ),
                                               // Sent Requests Tab
-                                          _sentRequests.isEmpty
-                                              ? const Center(
-                                                  child: Text(
-                                                      'Gönderilmiş arkadaşlık isteği yok'))
-                                              : ListView.builder(
+                                              _sentRequests.isEmpty
+                                                  ? DesignSystem.globalEmptyStateScreen(
+                                                      context,
+                                                      title: 'Gönderilmiş İstek Yok',
+                                                      message: 'Gönderdiğiniz arkadaşlık istekleri burada görünecek',
+                                                      icon: Icons.send,
+                                                    )
+                                                  : ListView.builder(
                                                   itemCount:
                                                       _sentRequests.length,
                                                   itemBuilder:
@@ -1301,38 +1284,11 @@ class _FriendsPageState extends State<FriendsPage>
                                                   child:
                                                       CircularProgressIndicator())
                                               : _friendSuggestions.isEmpty
-                                                  ? const Center(
-                                                      child: Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Icon(
-                                                            Icons
-                                                                .auto_awesome,
-                                                            size: 64,
-                                                            color: Colors.grey,
-                                                          ),
-                                                          SizedBox(height: 16),
-                                                          Text(
-                                                            'Öneri yok',
-                                                            style: TextStyle(
-                                                              fontSize: 16,
-                                                              color:
-                                                                  Colors.grey,
-                                                            ),
-                                                          ),
-                                                          SizedBox(height: 8),
-                                                          Text(
-                                                            'Şu anda öneri bulunmuyor',
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                              color:
-                                                                  Colors.grey,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
+                                                  ? DesignSystem.globalEmptyStateScreen(
+                                                      context,
+                                                      title: 'Öneri Yok',
+                                                      message: 'Şu anda arkadaş önerisi bulunmuyor',
+                                                      icon: Icons.auto_awesome,
                                                     )
                                                   : ListView.builder(
                                                       itemCount:
@@ -1420,9 +1376,12 @@ class _FriendsPageState extends State<FriendsPage>
 
                                           // All Registered Users Tab
                                           _allRegisteredUsers.isEmpty
-                                              ? const Center(
-                                                  child: Text(
-                                                      'Kayıtlı kullanıcı bulunamadı'))
+                                              ? DesignSystem.globalEmptyStateScreen(
+                                                  context,
+                                                  title: 'Kullanıcı Bulunamadı',
+                                                  message: 'Henüz kayıtlı kullanıcı yok',
+                                                  icon: Icons.people,
+                                                )
                                               : ListView.builder(
                                                   itemCount: _allRegisteredUsers
                                                       .length,
@@ -1455,6 +1414,12 @@ class _FriendsPageState extends State<FriendsPage>
                                                     );
                                                   },
                                                 ),
+
+                                          // QR Code Tab
+                                          UserQRCodeWidget(
+                                            userId: FirebaseAuth.instance.currentUser?.uid ?? '',
+                                            nickname: widget.userNickname,
+                                          ),
                                         ],
                                       ),
                                     ),

@@ -526,6 +526,13 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
               ),
               _buildActionButton(
                 context,
+                icon: Icons.emoji_events,
+                label: 'Ödüller',
+                color: Colors.amber,
+                onTap: () => Navigator.of(context).pushNamed(AppRoutes.rewards),
+              ),
+              _buildActionButton(
+                context,
                 icon: Icons.help_outline,
                 label: 'Yardım',
                 color: Colors.blueGrey,

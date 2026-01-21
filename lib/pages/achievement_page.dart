@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import '../services/achievement_service.dart';
+import '../services/real_time_progress_service.dart';
 import '../models/achievement.dart';
 import '../models/user_progress.dart';
 import '../widgets/achievement_card.dart';

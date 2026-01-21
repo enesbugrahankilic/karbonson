@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -50,19 +47,27 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDummyKey-ForDevelopmentOnly',
-    appId: '1:123456789012:android:abcdef123456789012',
-    messagingSenderId: '123456789012',
-    projectId: 'karbonson-app',
-    storageBucket: 'karbonson-app.appspot.com',
+    apiKey: 'AIzaSyDd6CWJLN__xASlFHo6aNQVGghjGaQqg0c',
+    appId: '1:523262104471:android:cd1cf27fe02259302eead2',
+    messagingSenderId: '523262104471',
+    projectId: 'karbon2-c39e7',
+    storageBucket: 'karbon2-c39e7.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDummyKey-ForDevelopmentOnly',
-    appId: '1:123456789012:ios:abcdef123456789012',
-    messagingSenderId: '123456789012',
-    projectId: 'karbonson-app',
-    storageBucket: 'karbonson-app.appspot.com',
+    apiKey: 'AIzaSyAJofoTHi1wOdulPmW0ZQxdr3O8nOEAdHI',
+    appId: '1:523262104471:ios:349f07eb68af53d82eead2',
+    messagingSenderId: '523262104471',
+    projectId: 'karbon2-c39e7',
+    storageBucket: 'karbon2-c39e7.firebasestorage.app',
     iosBundleId: 'com.example.karbonson',
   );
-}
+  
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyDd6CWJLN__xASlFHo6aNQVGghjGaQqg0c',
+    appId: '1:523262104471:web:cd1cf27fe02259302eead2',
+    messagingSenderId: '523262104471',
+    projectId: 'karbon2-c39e7',
+    storageBucket: 'karbon2-c39e7.firebasestorage.app',
+  );
+  }

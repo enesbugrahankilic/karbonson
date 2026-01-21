@@ -1500,7 +1500,7 @@ class _HomeDashboardState extends State<HomeDashboard>
               ],
             ),
             child: InkWell(
-              onTap: () => _showThemeSelectionDialog(context),
+              onTap: () => Navigator.of(context).pushNamed(AppRoutes.quizSettings),
               borderRadius: BorderRadius.circular(DesignSystem.radiusL),
               child: Column(
                 children: [

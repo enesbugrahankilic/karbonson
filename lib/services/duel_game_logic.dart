@@ -61,6 +61,13 @@ class DuelGameLogic extends ChangeNotifier {
     }
   }
 
+  /// Set duel room without starting the game (for joining existing rooms)
+  void setRoom(DuelRoom room) {
+    _currentRoom = room;
+    _listenToRoomChanges();
+    notifyListeners();
+  }
+
   /// Initialize duel room and start game
   Future<void> initializeDuelRoom(DuelRoom room, String playerId) async {
     _currentRoom = room;

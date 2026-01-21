@@ -4,11 +4,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import '../../services/comprehensive_2fa_service.dart';
+import '../../models/question.dart';
+import '../../enums/app_language.dart';
+import '../../core/navigation/navigation_service.dart';
 import '../../pages/login_page.dart';
 import '../../pages/tutorial_page.dart';
 import '../../pages/profile_page.dart';
 import '../../pages/board_game_page.dart';
 import '../../pages/quiz_page.dart';
+import '../../pages/quiz_settings_page.dart';
+import '../../pages/quiz_results_page.dart';
 import '../../pages/leaderboard_page.dart';
 import '../../pages/friends_page.dart';
 import '../../pages/multiplayer_lobby_page.dart';
@@ -36,6 +41,7 @@ import '../../pages/email_otp_verification_page.dart';
 import '../../pages/email_verification_redirect_page.dart';
 import '../../pages/how_to_play_page.dart';
 import '../../pages/rewards_shop_page.dart';
+import '../../pages/rewards_main_page.dart';
 import '../../pages/won_boxes_page.dart';
 import '../../pages/notifications_page.dart';
 import '../../pages/two_factor_auth_page.dart';
@@ -73,27 +79,34 @@ class AppRoutes {
   static const String comprehensive2FAVerification = '/comprehensive-2fa-verification';
 
   // Main app routes
-  static const String home = '/home';
-  static const String profile = '/profile';
-  static const String boardGame = '/board-game';
-  static const String quiz = '/quiz';
-  static const String leaderboard = '/leaderboard';
-  static const String friends = '/friends';
-  static const String multiplayerLobby = '/multiplayer-lobby';
-  static const String duel = '/duel';
-  static const String duelInvitation = '/duel-invitation';
-  static const String roomManagement = '/room-management';
-  static const String settings = '/settings';
-  static const String aiRecommendations = '/ai-recommendations';
-  static const String achievement = '/achievement';
-  static const String achievementsGallery = '/achievements-gallery';
-  static const String dailyChallenge = '/daily-challenge';
-  static const String rewardsShop = '/rewards-shop';
-  static const String wonBoxes = '/won-boxes';
-  static const String notifications = '/notifications';
-  static const String howToPlay = '/how-to-play';
-  static const String tutorialPage = '/tutorial-page';
-  static const String spectatorMode = '/spectator-mode';
+   static const String home = '/home';
+   static const String profile = '/profile';
+   static const String boardGame = '/board-game';
+   static const String quiz = '/quiz';
+   static const String quizSettings = '/quiz-settings';
+   static const String quizResults = '/quiz-results';
+   static const String leaderboard = '/leaderboard';
+   static const String friends = '/friends';
+   static const String multiplayerLobby = '/multiplayer-lobby';
+   static const String multiplayerResults = '/multiplayer-results';
+   static const String duel = '/duel';
+   static const String duelCreateRoom = '/duel-create-room';
+   static const String duelResults = '/duel-results';
+   static const String duelInvitation = '/duel-invitation';
+   static const String roomManagement = '/room-management';
+   static const String settings = '/settings';
+   static const String aiRecommendations = '/ai-recommendations';
+   static const String achievement = '/achievement';
+   static const String achievementsGallery = '/achievements-gallery';
+   static const String dailyChallenge = '/daily-challenge';
+   static const String dailyTasks = '/daily-tasks';
+   static const String rewards = '/rewards';
+   static const String rewardsShop = '/rewards-shop';
+   static const String wonBoxes = '/won-boxes';
+   static const String notifications = '/notifications';
+   static const String howToPlay = '/how-to-play';
+   static const String tutorialPage = '/tutorial-page';
+   static const String spectatorMode = '/spectator-mode';
 
   // Debug routes (only in debug mode)
   static const String uidDebug = '/uid-debug';
@@ -168,6 +181,35 @@ class AppRouter {
         return _createRoute(QuizPage(
           quizLogic: QuizLogic(),
         ));
+      case AppRoutes.quizSettings:
+        return _createRoute(QuizSettingsPage(
+          onStartQuiz: ({
+            required String category,
+            required DifficultyLevel difficulty,
+            required int questionCount,
+            required AppLanguage language,
+          }) {
+            // Navigate to quiz with settings
+            NavigationService.navigatorKey.currentState?.pushNamed(
+              AppRoutes.quiz,
+              arguments: {
+                'category': category,
+                'difficulty': difficulty,
+                'questionCount': questionCount,
+                'language': language,
+              },
+            );
+          },
+        ));
+      case AppRoutes.quizResults:
+        final args = settings.arguments as Map<String, dynamic>? ?? {};
+        return _createRoute(QuizResultsPage(
+          score: args['score'] ?? 0,
+          totalQuestions: args['totalQuestions'] ?? 0,
+          category: args['category'] ?? 'Tümü',
+          difficulty: args['difficulty'] ?? 'Orta',
+          correctAnswers: args['correctAnswers'] ?? 0,
+        ));
       case AppRoutes.leaderboard:
         return _createRoute(const LeaderboardPage());
       case AppRoutes.friends:
@@ -199,10 +241,14 @@ class AppRouter {
         return _createRoute(const AchievementPage());
       case AppRoutes.dailyChallenge:
         return _createRoute(const DailyChallengePage());
+      case AppRoutes.dailyTasks:
+        return _createRoute(const DailyChallengePage());
 
       // Extended app routes
       case AppRoutes.achievementsGallery:
         return _createRoute(const AchievementsGalleryPage());
+      case AppRoutes.rewards:
+        return _createRoute(const RewardsMainPage());
       case AppRoutes.rewardsShop:
         return _createRoute(const RewardsShopPage());
       case AppRoutes.wonBoxes:

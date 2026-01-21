@@ -10,6 +10,21 @@
 -keep class com.google.firebase.** { *; }
 -keep class com.google.android.gms.** { *; }
 
+# Firebase Auth persistence and token management
+-keep class com.google.firebase.auth.** { *; }
+-keep class com.google.android.gms.auth.** { *; }
+-keep class com.google.android.gms.tasks.** { *; }
+
+# Prevent obfuscation of Firebase Auth internal classes
+-keep class com.google.firebase.auth.FirebaseAuth { *; }
+-keep class com.google.firebase.auth.FirebaseUser { *; }
+-keep class com.google.firebase.auth.GetTokenResult { *; }
+
+# Keep SharedPreferences keys used by Firebase Auth
+-keep class * extends android.content.SharedPreferences {
+    public static final java.lang.String *;
+}
+
 # Kotlin specific rules
 -keep class kotlin.** { *; }
 -keep class kotlin.Metadata { *; }

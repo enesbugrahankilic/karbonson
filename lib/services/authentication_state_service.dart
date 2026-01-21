@@ -112,6 +112,47 @@ class AuthenticationStateService extends ChangeNotifier {
     return _isAuthenticated && _authenticatedUid == user.uid;
   }
 
+  /// Refresh token if needed and perform silent re-authentication
+  Future<bool> refreshTokenIfNeeded() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        if (kDebugMode) debugPrint('No current user for token refresh');
+        return false;
+      }
+
+      // Force refresh the ID token to ensure it's valid
+      final idTokenResult = await user.getIdTokenResult(true);
+
+      if (kDebugMode) {
+        debugPrint('Token refreshed successfully. Expires: ${idTokenResult.expirationTime}');
+      }
+
+      // If token refresh succeeded, ensure our state is synced
+      if (user.email != null && user.email!.isNotEmpty) {
+        if (!_isAuthenticated || _authenticatedUid != user.uid) {
+          final nickname = await _profileService.getCurrentNickname() ??
+              user.email!.split('@')[0] ??
+              'Kullanıcı';
+
+          await setAuthenticatedUser(
+            nickname: nickname,
+            uid: user.uid,
+          );
+        }
+      }
+
+      return true;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Token refresh failed: $e');
+
+      // If refresh fails, try to re-authenticate silently if we have credentials
+      // For now, just clear the state and return false
+      clearAuthenticationState();
+      return false;
+    }
+  }
+
   /// Initialize authentication state from current Firebase user with persistent session support
   Future<void> initializeAuthState() async {
     try {
@@ -124,30 +165,42 @@ class AuthenticationStateService extends ChangeNotifier {
       }
 
       if (user != null) {
-        // Check if user has email (indicates real account vs anonymous)
-        final hasEmail = user.email != null && user.email!.isNotEmpty;
+        // Try to refresh token first to ensure validity
+        final tokenRefreshed = await refreshTokenIfNeeded();
 
-        if (hasEmail) {
-          // User has email account, set as authenticated
-          final nickname = await _profileService.getCurrentNickname() ??
-              user.email!.split('@')[0] ??
-              'Kullanıcı';
+        if (tokenRefreshed) {
+          // Check if user has email (indicates real account vs anonymous)
+          final hasEmail = user.email != null && user.email!.isNotEmpty;
 
-          await setAuthenticatedUser(
-            nickname: nickname,
-            uid: user.uid,
-          );
+          if (hasEmail) {
+            // User has email account, set as authenticated
+            final nickname = await _profileService.getCurrentNickname() ??
+                user.email!.split('@')[0] ??
+                'Kullanıcı';
 
-          if (kDebugMode) {
-            debugPrint(
-                'AuthenticationStateService: Authenticated user restored from persistent session: $nickname (${user.uid})');
+            await setAuthenticatedUser(
+              nickname: nickname,
+              uid: user.uid,
+            );
+
+            if (kDebugMode) {
+              debugPrint(
+                  'AuthenticationStateService: Authenticated user restored from persistent session: $nickname (${user.uid})');
+            }
+          } else {
+            // Anonymous user, clear authentication state
+            clearAuthenticationState();
+            if (kDebugMode) {
+              debugPrint(
+                  'AuthenticationStateService: Anonymous user detected, clearing auth state');
+            }
           }
         } else {
-          // Anonymous user, clear authentication state
+          // Token refresh failed, clear state
           clearAuthenticationState();
           if (kDebugMode) {
             debugPrint(
-                'AuthenticationStateService: Anonymous user detected, clearing auth state');
+                'AuthenticationStateService: Token refresh failed, clearing auth state');
           }
         }
       } else {

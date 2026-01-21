@@ -11,6 +11,9 @@ import '../models/notification_data.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/home_button.dart';
 import '../utils/datetime_parser.dart';
+import '../core/navigation/navigation_service.dart';
+import '../core/navigation/app_router.dart';
+import '../theme/design_system.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -214,7 +217,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
     try {
       await NotificationService().deleteAllNotifications(_currentUserId!);
-      
+
       setState(() {
         _notifications = [];
         _unreadNotifications = [];
@@ -231,6 +234,44 @@ class _NotificationsPageState extends State<NotificationsPage> {
       }
     } catch (e) {
       if (kDebugMode) debugPrint('Tüm bildirimler silinirken hata: $e');
+    }
+  }
+
+  /// Navigate to related page based on notification type
+  Future<void> _navigateToRelatedPage(NotificationData notification) async {
+    String? routeName;
+
+    switch (notification.type) {
+      case NotificationType.friendRequestAccepted:
+      case NotificationType.friendRequestRejected:
+        routeName = AppRoutes.friends;
+        break;
+      case NotificationType.gameInvite:
+      case NotificationType.gameInviteAccepted:
+        routeName = AppRoutes.duel;
+        break;
+      case NotificationType.dailyTaskCompleted:
+        routeName = AppRoutes.dailyChallenge;
+        break;
+      case NotificationType.rewardBoxEarned:
+      case NotificationType.boxOpened:
+        routeName = AppRoutes.rewards;
+        break;
+      case NotificationType.achievementEarned:
+        routeName = AppRoutes.achievementsGallery;
+        break;
+      case NotificationType.general:
+      default:
+        // No navigation for general notifications
+        return;
+    }
+
+    if (routeName != null) {
+      try {
+        await NavigationService.navigatorKey.currentState?.pushNamed(routeName);
+      } catch (e) {
+        if (kDebugMode) debugPrint('Navigation error: $e');
+      }
     }
   }
 
@@ -317,7 +358,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   ),
                 )
               : null,
-          onTap: () => _markAsRead(notification.id),
+          onTap: () async {
+            await _markAsRead(notification.id);
+            await _navigateToRelatedPage(notification);
+          },
         ),
       ),
     );
@@ -443,18 +487,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
         ],
       ),
       body: _isLoading
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 16),
-                  Text(
-                    l10n?.loadingData ?? 'Loading data...',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
+          ? DesignSystem.globalLoadingScreen(
+              context,
+              message: l10n?.loadingData ?? 'Loading data...',
             )
           : Column(
               children: [
@@ -542,35 +577,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 // Bildirim listesi
                 Expanded(
                   child: displayedNotifications.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.notifications_none,
-                                size: 64,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                l10n?.noNotifications ?? 'No notifications yet',
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              const SizedBox(height: 8),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 32),
-                                child: Text(
-                                  l10n?.noNotificationsDescription ??
-                                      'Your notifications will appear here when you receive them',
-                                  style: TextStyle(
-                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
+                      ? DesignSystem.globalNoNotificationsScreen(context)
                       : RefreshIndicator(
                           onRefresh: _loadNotifications,
                           child: ListView.builder(

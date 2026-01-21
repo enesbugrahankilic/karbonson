@@ -49,6 +49,15 @@ class _RewardsShopPageState extends State<RewardsShopPage>
     _tabController = TabController(length: 3, vsync: this);
     _loadData();
     _subscribeToRewardStream();
+
+    // Set initial tab from arguments
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final initialTab = args?['initialTab'] as int? ?? 0;
+      if (initialTab != _tabController.index && initialTab >= 0 && initialTab < 3) {
+        _tabController.animateTo(initialTab);
+      }
+    });
   }
 
   @override
