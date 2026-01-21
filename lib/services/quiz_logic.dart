@@ -261,7 +261,7 @@ class QuizLogic {
 
   // YENİ ZORLUK SEVİYESİ METHOD'LARI
 
-  /// Belirli zorluk seviyesinde soru seçimi
+  /// Belirli zorluk seviyesinde soru seçimi - SORU SAYISI SENKRONİZASYONU DÜZELTİLDİ
   void _selectRandomQuestionsByDifficulty(int count,
       {AppLanguage? language, String? category, DifficultyLevel? difficulty}) {
     // Use provided language or default to current language
@@ -310,43 +310,90 @@ class QuizLogic {
     }
 
     // Calculate how many questions to select from each group
-    final wrongCategoryCount = (count * 0.6).round(); // 60% from wrong categories
-    final otherCategoryCount = count - wrongCategoryCount; // 40% from other categories
+    // Ensure we don't request more than available
+    final safeCount = count.clamp(1, availableQuestions.isEmpty ? 1 : availableQuestions.length);
+    final wrongCategoryCount = (safeCount * 0.6).round(); // 60% from wrong categories
+    final otherCategoryCount = safeCount - wrongCategoryCount; // 40% from other categories
 
     questions = [];
+    final selectedIds = <String>{};
 
     // First, select from wrong answer categories (if available)
     if (wrongCategoryQuestions.isNotEmpty) {
       wrongCategoryQuestions.shuffle(_random);
       for (var q in wrongCategoryQuestions) {
         if (questions.length >= wrongCategoryCount) break;
-        questions.add(q);
-        _answeredQuestions.add(q.text);
-        _usedQuestionIds.add(_getQuestionId(q, selectedLanguage));
+        final qid = _getQuestionId(q, selectedLanguage);
+        if (!selectedIds.contains(qid)) {
+          questions.add(q);
+          _answeredQuestions.add(q.text);
+          _usedQuestionIds.add(qid);
+          selectedIds.add(qid);
+        }
       }
     }
 
     // Then fill remaining slots with other categories
-    otherCategoryQuestions.shuffle(_random);
-    for (var q in otherCategoryQuestions) {
-      if (questions.length >= count) break;
-      questions.add(q);
-      _answeredQuestions.add(q.text);
-      _usedQuestionIds.add(_getQuestionId(q, selectedLanguage));
+    if (otherCategoryQuestions.isNotEmpty) {
+      otherCategoryQuestions.shuffle(_random);
+      for (var q in otherCategoryQuestions) {
+        if (questions.length >= safeCount) break;
+        final qid = _getQuestionId(q, selectedLanguage);
+        if (!selectedIds.contains(qid)) {
+          questions.add(q);
+          _answeredQuestions.add(q.text);
+          _usedQuestionIds.add(qid);
+          selectedIds.add(qid);
+        }
+      }
     }
 
-    // If still need more questions, allow duplicates
-    if (questions.length < count) {
+    // If still need more questions, add from all available (allow duplicates if necessary)
+    if (questions.length < safeCount) {
       var allQuestions = List<Question>.from(allAvailableQuestions);
       allQuestions.shuffle(_random);
 
       for (var q in allQuestions) {
-        if (questions.length >= count) break;
-        if (!questions.contains(q)) {
+        if (questions.length >= safeCount) break;
+        final qid = _getQuestionId(q, selectedLanguage);
+        if (!selectedIds.contains(qid)) {
           questions.add(q);
           _answeredQuestions.add(q.text);
+          _usedQuestionIds.add(qid);
+          selectedIds.add(qid);
         }
       }
+    }
+
+    // FINAL GUARANTEE: Ensure exactly 'count' questions
+    // If still less, fill with first available questions (duplicates allowed in edge case)
+    while (questions.length < safeCount && availableQuestions.isNotEmpty) {
+      final q = availableQuestions[questions.length % availableQuestions.length];
+      final qid = _getQuestionId(q, selectedLanguage);
+      if (!selectedIds.contains(qid)) {
+        questions.add(q);
+        _answeredQuestions.add(q.text);
+        _usedQuestionIds.add(qid);
+        selectedIds.add(qid);
+      } else {
+        // Add anyway to reach target count (edge case)
+        questions.add(q);
+        _answeredQuestions.add(q.text);
+      }
+    }
+
+    // If somehow we have more than count, truncate
+    if (questions.length > safeCount) {
+      questions = questions.take(safeCount).toList();
+      final int removeCount = _answeredQuestions.length - safeCount;
+      if (removeCount > 0) {
+        _answeredQuestions.removeRange(0, removeCount);
+      }
+    }
+
+    // Debug log for verification
+    if (kDebugMode) {
+      debugPrint('✅ _selectRandomQuestionsByDifficulty: Requested=$count, Actual=${questions.length}');
     }
   }
 

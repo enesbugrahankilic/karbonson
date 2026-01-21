@@ -73,13 +73,17 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       final passedCategory = args?['category'] as String?;
       final passedDifficulty = args?['difficulty'] as DifficultyLevel?;
+      final passedQuestionCount = args?['questionCount'] as int?; // SORU SAYISI ALINIYOR
 
       if (passedCategory != null) {
-        // Use passed category directly
+        // Use passed values directly
         _selectedCategory = passedCategory;
         if (passedDifficulty != null) {
           _selectedDifficulty = passedDifficulty;
           _difficultyDisplayName = passedDifficulty.displayName;
+        }
+        if (passedQuestionCount != null) {
+          _selectedQuestionCount = passedQuestionCount;
         }
         // Start time tracking
         _quizStartTime = DateTime.now();

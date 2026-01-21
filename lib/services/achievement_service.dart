@@ -674,6 +674,123 @@ class AchievementService {
             case ChallengeType.streak:
               // Streak challenges are handled separately
               break;
+            case ChallengeType.energy:
+              // Energy challenges are quiz-based
+              if (completedQuizzes != null && completedQuizzes > 0) {
+                final newCurrentValue = (challenge.currentValue + completedQuizzes)
+                    .clamp(0, challenge.targetValue);
+                final updatedChallenge = challenge.copyWith(
+                  currentValue: newCurrentValue,
+                  isCompleted: newCurrentValue >= challenge.targetValue,
+                );
+                await doc.reference.update(updatedChallenge.toJson());
+                updated = true;
+              }
+              break;
+            case ChallengeType.water:
+              // Water challenges are quiz-based
+              if (completedQuizzes != null && completedQuizzes > 0) {
+                final newCurrentValue = (challenge.currentValue + completedQuizzes)
+                    .clamp(0, challenge.targetValue);
+                final updatedChallenge = challenge.copyWith(
+                  currentValue: newCurrentValue,
+                  isCompleted: newCurrentValue >= challenge.targetValue,
+                );
+                await doc.reference.update(updatedChallenge.toJson());
+                updated = true;
+              }
+              break;
+            case ChallengeType.recycling:
+              // Recycling challenges are quiz-based
+              if (completedQuizzes != null && completedQuizzes > 0) {
+                final newCurrentValue = (challenge.currentValue + completedQuizzes)
+                    .clamp(0, challenge.targetValue);
+                final updatedChallenge = challenge.copyWith(
+                  currentValue: newCurrentValue,
+                  isCompleted: newCurrentValue >= challenge.targetValue,
+                );
+                await doc.reference.update(updatedChallenge.toJson());
+                updated = true;
+              }
+              break;
+            case ChallengeType.forest:
+              // Forest challenges are quiz-based
+              if (completedQuizzes != null && completedQuizzes > 0) {
+                final newCurrentValue = (challenge.currentValue + completedQuizzes)
+                    .clamp(0, challenge.targetValue);
+                final updatedChallenge = challenge.copyWith(
+                  currentValue: newCurrentValue,
+                  isCompleted: newCurrentValue >= challenge.targetValue,
+                );
+                await doc.reference.update(updatedChallenge.toJson());
+                updated = true;
+              }
+              break;
+            case ChallengeType.climate:
+              // Climate challenges are quiz-based
+              if (completedQuizzes != null && completedQuizzes > 0) {
+                final newCurrentValue = (challenge.currentValue + completedQuizzes)
+                    .clamp(0, challenge.targetValue);
+                final updatedChallenge = challenge.copyWith(
+                  currentValue: newCurrentValue,
+                  isCompleted: newCurrentValue >= challenge.targetValue,
+                );
+                await doc.reference.update(updatedChallenge.toJson());
+                updated = true;
+              }
+              break;
+            case ChallengeType.transportation:
+              // Transportation challenges are quiz-based
+              if (completedQuizzes != null && completedQuizzes > 0) {
+                final newCurrentValue = (challenge.currentValue + completedQuizzes)
+                    .clamp(0, challenge.targetValue);
+                final updatedChallenge = challenge.copyWith(
+                  currentValue: newCurrentValue,
+                  isCompleted: newCurrentValue >= challenge.targetValue,
+                );
+                await doc.reference.update(updatedChallenge.toJson());
+                updated = true;
+              }
+              break;
+            case ChallengeType.biodiversity:
+              // Biodiversity challenges are quiz-based
+              if (completedQuizzes != null && completedQuizzes > 0) {
+                final newCurrentValue = (challenge.currentValue + completedQuizzes)
+                    .clamp(0, challenge.targetValue);
+                final updatedChallenge = challenge.copyWith(
+                  currentValue: newCurrentValue,
+                  isCompleted: newCurrentValue >= challenge.targetValue,
+                );
+                await doc.reference.update(updatedChallenge.toJson());
+                updated = true;
+              }
+              break;
+            case ChallengeType.consumption:
+              // Consumption challenges are quiz-based
+              if (completedQuizzes != null && completedQuizzes > 0) {
+                final newCurrentValue = (challenge.currentValue + completedQuizzes)
+                    .clamp(0, challenge.targetValue);
+                final updatedChallenge = challenge.copyWith(
+                  currentValue: newCurrentValue,
+                  isCompleted: newCurrentValue >= challenge.targetValue,
+                );
+                await doc.reference.update(updatedChallenge.toJson());
+                updated = true;
+              }
+              break;
+            case ChallengeType.boardGame:
+              // Board game challenges
+              if (multiplayerWins != null && multiplayerWins > 0) {
+                final newCurrentValue = (challenge.currentValue + multiplayerWins)
+                    .clamp(0, challenge.targetValue);
+                final updatedChallenge = challenge.copyWith(
+                  currentValue: newCurrentValue,
+                  isCompleted: newCurrentValue >= challenge.targetValue,
+                );
+                await doc.reference.update(updatedChallenge.toJson());
+                updated = true;
+              }
+              break;
           }
 
           if (updated) {

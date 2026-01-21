@@ -14,6 +14,15 @@ enum ChallengeType {
   seasonal,
   friendship,
   streak,
+  energy,
+  water,
+  recycling,
+  forest,
+  climate,
+  transportation,
+  biodiversity,
+  consumption,
+  boardGame,
 }
 
 /// Reward types
@@ -160,6 +169,24 @@ class DailyChallenge extends Equatable {
         return 'Arkadaşlık';
       case ChallengeType.streak:
         return 'Seri';
+      case ChallengeType.energy:
+        return 'Enerji';
+      case ChallengeType.water:
+        return 'Su';
+      case ChallengeType.recycling:
+        return 'Geri Dönüşüm';
+      case ChallengeType.forest:
+        return 'Orman';
+      case ChallengeType.climate:
+        return 'İklim';
+      case ChallengeType.transportation:
+        return 'Ulaşım';
+      case ChallengeType.biodiversity:
+        return 'Biyoçeşitlilik';
+      case ChallengeType.consumption:
+        return 'Tüketim';
+      case ChallengeType.boardGame:
+        return 'Masa Oyunu';
     }
   }
 

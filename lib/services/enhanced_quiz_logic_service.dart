@@ -131,6 +131,7 @@ class EnhancedQuizLogicService {
     String? category,
     DifficultyLevel? preferredDifficulty,
     bool enableAdaptation = true,
+    int questionCount = 15, // SORU SAYISI SENKRONİZASYONU İÇİN EKLENDİ
   }) async {
     _sessionStartTime = DateTime.now();
     _currentScore = 0;
@@ -143,8 +144,9 @@ class EnhancedQuizLogicService {
     _currentDifficulty =
         preferredDifficulty ?? _difficultyService.getRecommendedDifficulty();
 
+    // Kullanıcının seçtiği soru sayısını kullan (zorluk tabanlı sayı yerine)
     await _generateQuestions(
-      count: _getQuestionCountForDifficulty(_currentDifficulty),
+      count: questionCount, // Use user-selected question count
       category: category,
       difficulty: _currentDifficulty,
     );
@@ -154,7 +156,7 @@ class EnhancedQuizLogicService {
     if (kDebugMode) {
       debugPrint(
         '✅ Quiz başladı - Zorluk: ${_currentDifficulty.displayName}, '
-        'Soru sayısı: ${_currentQuestions.length}',
+        'Soru sayısı: ${_currentQuestions.length} (istenen: $questionCount)',
       );
     }
   }
@@ -360,13 +362,9 @@ class EnhancedQuizLogicService {
     return '${_currentLanguage.code}_${question.text.hashCode}';
   }
 
-  int _getQuestionCountForDifficulty(DifficultyLevel difficulty) {
-    return switch (difficulty) {
-      DifficultyLevel.easy => 15,
-      DifficultyLevel.medium => 12,
-      DifficultyLevel.hard => 10,
-    };
-  }
+  // NOT: _getQuestionCountForDifficulty metodu kaldırıldı
+  // Artık kullanıcının startNewQuiz içinde seçtiği questionCount kullanılıyor
+  // Bu, frontend ve backend arasında soru sayısı senkronizasyonunu sağlar
 
   // ============ SETTERS ============
 

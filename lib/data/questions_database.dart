@@ -649,6 +649,7 @@ class QuestionsDatabase {
   }
 
   /// Karışık zorluk seviyelerinde sorular getirir (kolay:orta:zor = 1:1:1 oranında)
+  /// SORU SAYISI SENKRONİZASYONU DÜZELTİLDİ - Yuvarlama hatası giderildi
   static List<Question> getMixedDifficultyQuestions(
       AppLanguage language, int totalQuestions) {
     final easyQuestions = getQuestionsByDifficulty(language, DifficultyLevel.easy);
@@ -656,40 +657,46 @@ class QuestionsDatabase {
         getQuestionsByDifficulty(language, DifficultyLevel.medium);
     final hardQuestions = getQuestionsByDifficulty(language, DifficultyLevel.hard);
 
-    // Her seviyeden eşit sayıda soru al
-    final questionsPerLevel = (totalQuestions / 3).round();
+    // Her seviyeden eşit sayıda soru al (yuvarlama hatası önlemek için floor kullan)
+    final basePerLevel = totalQuestions ~/ 3;
+    final remainder = totalQuestions % 3;
+    
+    // İlk seviyelere remainder kadar fazla soru ekle
+    final easyCount = basePerLevel + (remainder > 0 ? 1 : 0);
+    final mediumCount = basePerLevel + (remainder > 1 ? 1 : 0);
+    final hardCount = basePerLevel;
 
     final selectedQuestions = <Question>[];
 
     // Kolay sorular
     final shuffledEasy = List<Question>.from(easyQuestions)..shuffle();
-    selectedQuestions.addAll(shuffledEasy.take(questionsPerLevel));
+    final actualEasyCount = easyCount.clamp(0, shuffledEasy.length);
+    selectedQuestions.addAll(shuffledEasy.take(actualEasyCount));
 
     // Orta sorular
     final shuffledMedium = List<Question>.from(mediumQuestions)..shuffle();
-    selectedQuestions.addAll(shuffledMedium.take(questionsPerLevel));
+    final actualMediumCount = mediumCount.clamp(0, shuffledMedium.length);
+    selectedQuestions.addAll(shuffledMedium.take(actualMediumCount));
 
     // Zor sorular
     final shuffledHard = List<Question>.from(hardQuestions)..shuffle();
-    selectedQuestions.addAll(shuffledHard.take(questionsPerLevel));
+    final actualHardCount = hardCount.clamp(0, shuffledHard.length);
+    selectedQuestions.addAll(shuffledHard.take(actualHardCount));
 
-    // Eğer toplam soru sayısı tam bölünmemişse, kalan soruları ekle
+    // Eğer toplam soru sayısı yeterli değilse, diğer seviyelerden ekle
+    final allAvailableQuestions = [...easyQuestions, ...mediumQuestions, ...hardQuestions];
+    final usedTexts = selectedQuestions.map((q) => q.text).toSet();
+    
     while (selectedQuestions.length < totalQuestions) {
-      final remainingEasy = easyQuestions
-          .where((q) => !selectedQuestions.contains(q))
-          .take(1);
-      final remainingMedium = mediumQuestions
-          .where((q) => !selectedQuestions.contains(q))
-          .take(1);
-      final remainingHard = hardQuestions
-          .where((q) => !selectedQuestions.contains(q))
-          .take(1);
-
-      final allRemaining = [...remainingEasy, ...remainingMedium, ...remainingHard];
-      if (allRemaining.isEmpty) break;
-
-      allRemaining.shuffle();
-      selectedQuestions.add(allRemaining.first);
+      final remaining = allAvailableQuestions
+          .where((q) => !usedTexts.contains(q.text))
+          .toList();
+      
+      if (remaining.isEmpty) break;
+      
+      remaining.shuffle();
+      selectedQuestions.add(remaining.first);
+      usedTexts.add(remaining.first.text);
     }
 
     selectedQuestions.shuffle();
