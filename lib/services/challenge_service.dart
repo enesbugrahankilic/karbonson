@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/daily_challenge.dart';
+import '../services/daily_task_reward_service.dart';
 
 /// Challenge Service for managing daily and weekly challenges
 class ChallengeService {

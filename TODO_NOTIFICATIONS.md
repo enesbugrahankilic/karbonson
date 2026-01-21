@@ -1,44 +1,61 @@
-# Bildirimler Sayfası Implementasyon Planı
+# Hesap Bazlı Bildirim Sistemi (Account-Based Notification System)
 
-## ✅ Tamamlanan Görevler
+## Görev Listesi
 
-### 1. Localization Dosyalarına Bildirim Metinleri Ekleme
-- ✅ `lib/l10n/app_en.arb` dosyasına bildirim metinleri eklendi
+### ✅ Tamamlanan Görevler
+- [x] 1. NotificationService'i Firestore entegrasyonu ile güncelle
+- [x] 2. Real-time notification stream ekle
+- [x] 3. Tüm bildirim türleri için Firestore kayıt metodları ekle
+- [x] 4. NotificationsPage'i real-time updates ile güncelle
+- [x] 5. Unread notification count badge ekle
+- [x] 6. Arkadaşlık isteği bildirimlerini güncelle
+- [x] 7. Duel/game davet bildirimlerini güncelle
+- [x] 8. Achievement/Reward bildirimlerini güncelle
+- [x] 9. Static helper methods for backward compatibility
 
-### 2. Bildirimler Sayfası Oluşturma
-- ✅ `lib/pages/notifications_page.dart` dosyası oluşturuldu
-- ✅ Bildirimleri listeleme (Firestore'dan)
-- ✅ Okunmamış/okunmuş ayrımı
-- ✅ Bildirim türleri (arkadaş isteği, oyun daveti, vs.)
-- ✅ Boş durum gösterimi
+## Detaylı Plan
 
-### 3. DateTimeParser'a formatRelativeTime Metodu Ekleme
-- ✅ `lib/utils/datetime_parser.dart` dosyasına relative time format metodu eklendi
+### 1. NotificationService Güncelleme
+- Firestore bağlantısı ekle
+- `saveNotification()` metodu - bildirimi Firestore'a kaydet
+- `listenToNotifications()` metodu - real-time dinleme
+- `getUnreadCount()` metodu - okunmamış sayısı
+- Tüm notification type'lar için create metodları
 
-### 4. App Router'a Bildirimler Route'u Ekleme
-- ✅ `lib/core/navigation/app_router.dart` güncellendi
-- ✅ `/notifications` route tanımlandı
-- ✅ Sayfa import edildi
-- ✅ Protected route olarak eklendi (giriş yapmış kullanıcılar için)
+### 2. NotificationsPage Güncelleme
+- StreamBuilder ile real-time updates
+- Unread badge gösterimi
+- Pull-to-refresh özelliği
 
-## 📋 Kalan Görevler (Opsiyonel)
+### 3. Bildirim Türleri
+- friend_request
+- friend_request_accepted
+- friend_request_rejected
+- game_invite
+- duel_invite
+- achievement_unlocked
+- reward_unlocked
+- level_up
+- daily_challenge
+- high_score
 
-### 5. Settings Page'den Bildirimler Sayfasına Bağlantı
-- [ ] `lib/pages/settings_page.dart` dosyasını güncelleme
-- [ ] Bildirimler ayarları bölümünden sayfaya erişim
-
-### 6. Bottom Navigation'a Bildirimler İkonu Ekleme (İsteğe Bağlı)
-- [ ] `lib/core/navigation/bottom_navigation.dart` dosyasını güncelleme
-- [ ] Tüm nav konfigürasyonlarına bildirimler ekleme
-- [ ] Badge gösterimi için altyapı
-
-### 7. FirestoreService'e Bildirim Metodları Ekleme (İsteğe Bağlı)
-- [ ] Okunmamış bildirim sayısını getirme
-- [ ] Tüm bildirimleri okundu yap
+## Firebase Yapısı
+```
+notifications/{userId}/
+  └── notifications/{notificationId}/
+      ├── id: string
+      ├── type: string
+      ├── title: string
+      ├── message: string
+      ├── senderId: string
+      ├── senderNickname: string
+      ├── additionalData: map
+      ├── createdAt: timestamp
+      └── isRead: boolean
+```
 
 ## Notlar
-- Bildirimler sayfası sadece giriş yapmış kullanıcılar için erişilebilir
-- Gerçek zamanlı güncellemeler için Stream kullanılıyor
-- Route: `/notifications`
-
+- Bildirimler hesap bazlı (userId) saklanır
+- Farklı cihazlardan erişim mümkün
+- Real-time sync ile anlık güncelleme
 

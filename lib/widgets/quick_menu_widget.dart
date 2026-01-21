@@ -834,9 +834,11 @@ class QuickMenuBuilder {
     required VoidCallback onHowToPlayTap,
     required VoidCallback onSettingsTap,
     required VoidCallback onProfileTap,
+    required VoidCallback onNotificationsTap,
     int? friendRequestCount,
     int? dailyChallengeCount,
     int? achievementCount,
+    int? notificationCount,
   }) {
     return [
       // Game Modes - Featured
@@ -935,6 +937,21 @@ class QuickMenuBuilder {
         onTap: onAchievementsTap,
         category: 'social',
         badgeCount: achievementCount,
+      ),
+      
+      // Notifications - NEW
+      QuickMenuItem(
+        id: 'notifications',
+        title: 'Bildirimlerim',
+        subtitle: 'Tüm bildirimlerin',
+        icon: Icons.notifications,
+        color: Colors.red,
+        gradientStart: Colors.red.shade400,
+        gradientEnd: Colors.red.shade700,
+        onTap: onNotificationsTap,
+        category: 'social',
+        badgeCount: notificationCount,
+        isNew: false,
       ),
       
       // Tools & Features

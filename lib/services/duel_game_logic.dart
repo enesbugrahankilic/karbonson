@@ -71,12 +71,15 @@ class DuelGameLogic extends ChangeNotifier {
     _listenToRoomChanges();
     _startGameTimer();
 
-    // Send game started notification
+    // Send game started notification to all players
     final playerNames = room.players.map((p) => p.nickname).toList();
-    await NotificationService().showGameStartedNotification(
-      gameMode: 'Düello Modu',
-      playerNames: playerNames,
-    );
+    for (final player in room.players) {
+      await NotificationService().createGameStartedNotification(
+        recipientId: player.id,
+        gameMode: 'Düello Modu',
+        playerNames: playerNames,
+      );
+    }
 
     // Start first question after a short delay
     Timer(const Duration(seconds: 2), () {
@@ -391,12 +394,15 @@ class DuelGameLogic extends ChangeNotifier {
       );
     }
 
-    // Send game finished notification
-    await NotificationService().showGameFinishedNotification(
-      winnerName: winnerName,
-      gameMode: 'Düello Modu',
-      score: winnerScore,
-    );
+    // Send game finished notification to all players
+    for (final player in _currentRoom!.players) {
+      await NotificationService().createGameFinishedNotification(
+        recipientId: player.id,
+        winnerName: winnerName,
+        gameMode: 'Düello Modu',
+        score: winnerScore,
+      );
+    }
 
     if (kDebugMode) {
       debugPrint(

@@ -872,9 +872,14 @@ class _HomeDashboardState extends State<HomeDashboard>
         Navigator.pop(context);
         Navigator.of(context).pushNamed(AppRoutes.profile);
       },
+      onNotificationsTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.notifications);
+      },
       friendRequestCount: 3, // Bu değer dinamik olarak güncellenmeli
       dailyChallengeCount: _dailyChallenges.length,
       achievementCount: _userAchievements.length,
+      notificationCount: null, // Bildirim sayısı dinamik olarak güncellenmeli
     );
 
     // Full screen overlay dialog

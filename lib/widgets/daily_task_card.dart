@@ -588,7 +588,9 @@ class _DailyTaskCardState extends State<DailyTaskCard> {
       case ChallengeType.energy:
         return 'Enerji tasarrufu, karbon ayak izini azaltır';
       case ChallengeType.water:
-        return 'Su kıtlığına karşı farkındalık yaratırs
+        return 'Su kıtlığına karşı farkındalık yaratırsın';
+      case ChallengeType.recycling:
+        return 'Atık miktarını azaltır, kaynakları korursun';
       case ChallengeType.forest:
         return 'Ormanları koruma bilinci kazanırsın';
       case ChallengeType.climate:

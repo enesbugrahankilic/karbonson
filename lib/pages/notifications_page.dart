@@ -1,10 +1,11 @@
 // lib/pages/notifications_page.dart
-// Bildirimler Sayfası - Kullanıcının tüm bildirimlerini gösterir
+// Hesap Bazlı Bildirimler Sayfası - Real-time updates ile
 
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:firebase_auth/firebase_auth.dart';
+import '../services/notification_service.dart';
 import '../services/firestore_service.dart';
 import '../models/notification_data.dart';
 import '../l10n/app_localizations.dart';
@@ -24,11 +25,46 @@ class _NotificationsPageState extends State<NotificationsPage> {
   bool _isLoading = true;
   bool _showUnreadOnly = false;
   String? _currentUserId;
+  int _unreadCount = 0;
+  StreamSubscription? _notificationSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadNotifications();
+    _listenToNotifications();
+  }
+
+  @override
+  void dispose() {
+    _notificationSubscription?.cancel();
+    super.dispose();
+  }
+
+  /// Listen to real-time notification updates (Account-Based)
+  void _listenToNotifications() {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+
+    _notificationSubscription = NotificationService()
+        .listenToNotifications(userId)
+        .listen((notifications) {
+      if (mounted) {
+        setState(() {
+          _notifications = notifications;
+          _unreadNotifications = notifications.where((n) => !n.isRead).toList();
+          _unreadCount = _unreadNotifications.length;
+          _isLoading = false;
+        });
+      }
+    }, onError: (error) {
+      if (kDebugMode) debugPrint('🚨 Notification stream error: $error');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    });
   }
 
   Future<void> _loadNotifications() async {
@@ -37,17 +73,31 @@ class _NotificationsPageState extends State<NotificationsPage> {
       
       if (currentUser == null) {
         if (kDebugMode) debugPrint('Kullanıcı giriş yapmamış');
-        setState(() {
-          _isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
         return;
       }
 
-      setState(() {
-        _currentUserId = currentUser.uid;
-      });
+      if (mounted) {
+        setState(() {
+          _currentUserId = currentUser.uid;
+        });
+      }
 
-      // Firestore'dan bildirimleri getir
+      // Get unread count for badge
+      final unreadCount = await NotificationService()
+          .getUnreadCount(currentUser.uid);
+      
+      if (mounted) {
+        setState(() {
+          _unreadCount = unreadCount;
+        });
+      }
+
+      // Firestore'dan bildirimleri getir (fallback if stream fails)
       final notifications = await FirestoreService().getNotifications(currentUser.uid);
       
       if (mounted) {
@@ -71,7 +121,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     if (_currentUserId == null) return;
 
     try {
-      await FirestoreService().markNotificationAsRead(_currentUserId!, notificationId);
+      await NotificationService().markAsRead(_currentUserId!, notificationId);
       
       setState(() {
         _notifications = _notifications.map((n) {
@@ -82,6 +132,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         }).toList();
         
         _unreadNotifications = _notifications.where((n) => !n.isRead).toList();
+        _unreadCount = _unreadNotifications.length;
       });
     } catch (e) {
       if (kDebugMode) debugPrint('Bildirim okundu işaretlenirken hata: $e');
@@ -92,13 +143,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
     if (_currentUserId == null || _unreadNotifications.isEmpty) return;
 
     try {
-      for (final notification in _unreadNotifications) {
-        await FirestoreService().markNotificationAsRead(_currentUserId!, notification.id);
-      }
-
+      await NotificationService().markAllAsRead(_currentUserId!);
+      
       setState(() {
         _notifications = _notifications.map((n) => n.copyWith(isRead: true)).toList();
         _unreadNotifications = [];
+        _unreadCount = 0;
       });
 
       if (mounted) {
@@ -111,6 +161,76 @@ class _NotificationsPageState extends State<NotificationsPage> {
       }
     } catch (e) {
       if (kDebugMode) debugPrint('Tüm bildirimler okundu yapılırken hata: $e');
+    }
+  }
+
+  Future<void> _deleteNotification(String notificationId) async {
+    if (_currentUserId == null) return;
+
+    try {
+      await NotificationService().deleteNotification(_currentUserId!, notificationId);
+      
+      setState(() {
+        _notifications.removeWhere((n) => n.id == notificationId);
+        _unreadNotifications.removeWhere((n) => n.id == notificationId);
+        _unreadCount = _unreadNotifications.length;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Notification deleted'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Bildirim silinirken hata: $e');
+    }
+  }
+
+  Future<void> _deleteAllNotifications() async {
+    if (_currentUserId == null || _notifications.isEmpty) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete All'),
+        content: const Text('Are you sure you want to delete all notifications?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      await NotificationService().deleteAllNotifications(_currentUserId!);
+      
+      setState(() {
+        _notifications = [];
+        _unreadNotifications = [];
+        _unreadCount = 0;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('All notifications deleted'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Tüm bildirimler silinirken hata: $e');
     }
   }
 
@@ -130,11 +250,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
         ),
       ),
       confirmDismiss: (direction) async {
-        return await showDialog<bool>(
+        final confirm = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text(l10n?.close ?? 'Delete'),
-            content: Text(l10n?.cancel ?? 'Are you sure you want to delete this notification?'),
+            title: const Text('Delete'),
+            content: const Text('Are you sure you want to delete this notification?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
@@ -147,12 +267,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
             ],
           ),
         );
-      },
-      onDismissed: (direction) {
-        setState(() {
-          _notifications.remove(notification);
-          _unreadNotifications.remove(notification);
-        });
+        if (confirm == true) {
+          await _deleteNotification(notification.id);
+        }
+        return false;
       },
       child: Card(
         color: notification.isRead 
@@ -254,6 +372,32 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
   }
 
+  /// Build notification badge widget
+  Widget _buildNotificationBadge(int count) {
+    if (count <= 0) return const SizedBox.shrink();
+    
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.red,
+        shape: BoxShape.circle,
+      ),
+      constraints: const BoxConstraints(
+        minWidth: 18,
+        minHeight: 18,
+      ),
+      child: Text(
+        count > 99 ? '99+' : count.toString(),
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+        ),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -268,11 +412,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return Scaffold(
       appBar: AppBar(
         leading: const HomeButton(),
-        title: Text(
-          l10n?.notifications ?? 'Notifications',
-          style: TextStyle(fontSize: titleFontSize),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              l10n?.notifications ?? 'Notifications',
+              style: TextStyle(fontSize: titleFontSize),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(width: 8),
+            _buildNotificationBadge(_unreadCount),
+          ],
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -282,6 +433,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
               icon: const Icon(Icons.done_all),
               tooltip: l10n?.markAllAsRead ?? 'Mark All as Read',
               onPressed: _markAllAsRead,
+            ),
+          if (_notifications.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete_sweep),
+              tooltip: 'Delete All',
+              onPressed: _deleteAllNotifications,
             ),
         ],
       ),
@@ -321,7 +478,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: FilterChip(
-                          label: Text(l10n?.unreadNotifications ?? 'Unread'),
+                          label: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(l10n?.unreadNotifications ?? 'Unread'),
+                              if (_unreadCount > 0) ...[
+                                const SizedBox(width: 4),
+                                _buildNotificationBadge(_unreadCount),
+                              ],
+                            ],
+                          ),
                           selected: _showUnreadOnly,
                           onSelected: (selected) {
                             setState(() {
@@ -336,7 +502,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 ),
 
                 // Okunmamış bildirim sayısı
-                if (_unreadNotifications.isNotEmpty)
+                if (_unreadNotifications.isNotEmpty && !_showUnreadOnly)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Container(
@@ -360,15 +526,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
                               ),
                             ),
                           ),
-                          if (_showUnreadOnly)
-                            TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  _showUnreadOnly = false;
-                                });
-                              },
-                              child: Text(l10n?.viewNotifications ?? 'View All'),
-                            ),
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _showUnreadOnly = true;
+                              });
+                            },
+                            child: Text(l10n?.viewNotifications ?? 'View Unread'),
+                          ),
                         ],
                       ),
                     ),
@@ -406,13 +571,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             ],
                           ),
                         )
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          itemCount: displayedNotifications.length,
-                          itemBuilder: (context, index) {
-                            final notification = displayedNotifications[index];
-                            return _buildNotificationItem(notification);
-                          },
+                      : RefreshIndicator(
+                          onRefresh: _loadNotifications,
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            itemCount: displayedNotifications.length,
+                            itemBuilder: (context, index) {
+                              final notification = displayedNotifications[index];
+                              return _buildNotificationItem(notification);
+                            },
+                          ),
                         ),
                 ),
               ],
