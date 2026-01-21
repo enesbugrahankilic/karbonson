@@ -130,7 +130,7 @@ class ErrorRecoveryService {
   }
 
   /// Restore last valid state
-  Map<String, dynamic>? restoreLastValidState() {
+  Future<Map<String, dynamic>?> restoreLastValidState() async {
     try {
       final stateJson = _prefs.getString(_lastValidStateKey);
       if (stateJson == null) return null;

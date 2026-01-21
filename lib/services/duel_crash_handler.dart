@@ -116,21 +116,41 @@ class DuelCrashHandler {
       }
 
       final duelData = duelDoc.data()!;
-      final player1Id = duelData['player1_id'] as String;
-      final player2Id = duelData['player2_id'] as String;
+      final player1Id = duelData['player1_id'] as String?;
+      final player2Id = duelData['player2_id'] as String?;
       final currentUserId = _auth.currentUser?.uid;
+
+      if (currentUserId == null) {
+        if (kDebugMode) debugPrint('❌ No current user, cannot handle abandonment');
+        return;
+      }
+
+      if (player1Id == null || player2Id == null) {
+        if (kDebugMode) debugPrint('❌ Invalid duel data, missing player ids');
+        return;
+      }
+
+      if (currentUserId != player1Id && currentUserId != player2Id) {
+        if (kDebugMode) debugPrint('❌ Current user not in duel');
+        return;
+      }
 
       // Determine winner (the one who didn't abandon)
       final winnerId = currentUserId == player1Id ? player2Id : player1Id;
       final loserId = currentUserId;
 
       // Give opponent automatic win
+      final startTimeStr = duelData['start_time'] as String?;
+      final duration = startTimeStr != null
+          ? DateTime.now().difference(DateTime.parse(startTimeStr)).inSeconds
+          : 0;
+
       final result = await BackendValidationService().validateDuelResult(
         winnerId: winnerId,
         loserId: loserId,
         winnerScore: 100,
         loserScore: 0,
-        duration: DateTime.now().difference(DateTime.parse(duelData['start_time'])).inSeconds,
+        duration: duration,
       );
 
       if (result) {

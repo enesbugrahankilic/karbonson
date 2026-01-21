@@ -15,6 +15,7 @@ import '../theme/app_theme.dart';
 import '../widgets/loot_box_widget.dart';
 import '../utils/loot_box_animations.dart';
 import '../core/navigation/app_router.dart';
+import '../widgets/page_templates.dart';
 
 class QuizResultsPage extends StatefulWidget {
   final int score;
@@ -298,55 +299,29 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
     final percentage = widget.totalQuestions > 0 ? (widget.correctAnswers / widget.totalQuestions * 100) : 0.0;
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'Quiz Sonuçları',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
+      appBar: StandardAppBar(
+        title: 'Quiz Sonuçları',
+        onBackPressed: () => Navigator.pop(context),
         actions: [
-          Container(
-            margin: const EdgeInsets.only(right: DesignSystem.spacingS),
-            decoration: BoxDecoration(
-              color: ThemeColors.getSuccessColor(context).withOpacity(0.8),
-              borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.home, color: Colors.white),
-              onPressed: _navigateToHome,
-              tooltip: 'Ana Sayfaya Dön',
-            ),
+          IconButton(
+            icon: const Icon(Icons.home),
+            onPressed: _navigateToHome,
+            tooltip: 'Ana Sayfaya Dön',
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: ThemeColors.getGradientColors(context),
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(DesignSystem.spacingM),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Celebration animation overlay
-                AnimatedBuilder(
-                  animation: _celebrationController,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: _celebrationOpacityAnimation.value,
-                      child: const Center(
+      body: PageBody(
+        scrollable: true,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Celebration animation overlay
+            AnimatedBuilder(
+              animation: _celebrationController,
+              builder: (context, child) {
+                return Opacity(
+                  opacity: _celebrationOpacityAnimation.value,
+                  child: const Center(
                         child: Icon(
                           Icons.celebration,
                           size: 100,

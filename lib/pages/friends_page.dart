@@ -16,7 +16,7 @@ import '../services/achievement_service.dart';
 import '../services/friend_suggestion_service.dart';
 import '../models/friend_suggestion.dart';
 import '../widgets/game_invitation_dialog.dart';
-import '../widgets/home_button.dart';
+import '../widgets/page_templates.dart';
 import '../services/app_localizations.dart';
 import '../provides/language_provider.dart';
 import '../widgets/qr_code_scanner_widget.dart';
@@ -722,15 +722,13 @@ class _FriendsPageState extends State<FriendsPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: const HomeButton(),
+      appBar: StandardAppBar(
         title: Consumer<LanguageProvider>(
           builder: (context, languageProvider, child) {
-            return Text(AppLocalizations.friends);
+            return AppLocalizations.friends;
           },
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        onBackPressed: () => Navigator.pop(context),
         actions: [
           // QR Scanner button
           IconButton(
@@ -815,189 +813,174 @@ class _FriendsPageState extends State<FriendsPage>
             ),
         ],
       ),
-      body: RefreshIndicator(
-        key: _refreshIndicatorKey,
-        onRefresh: _refreshData,
-        color: Colors.blue,
-        child: Scrollbar(
-          child: SingleChildScrollView(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+      body: PageBody(
+        scrollable: true,
+        child: RefreshIndicator(
+          key: _refreshIndicatorKey,
+          onRefresh: _refreshData,
+          color: Colors.blue,
+          child: Column(
+            children: [
+              // Search Bar
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Kullanıcı ara...',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor:
+                              Colors.white.withOpacity( 0.9),
+                        ),
+                        onChanged: _searchUsers,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    // Refresh button
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.refresh,
+                          color: Colors.white,
+                        ),
+                        onPressed: _isLoading ? null : _refreshData,
+                        tooltip: 'Yenile',
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: _isLoading && _friends.isEmpty && _receivedRequests.isEmpty
-                  ? const Center(child: CircularProgressIndicator())
-                  : Column(
-                      children: [
-                        // Search Bar
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _searchController,
-                                  decoration: InputDecoration(
-                                    hintText: 'Kullanıcı ara...',
-                                    prefixIcon: const Icon(Icons.search),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    filled: true,
-                                    fillColor:
-                                        Colors.white.withOpacity( 0.9),
-                                  ),
-                                  onChanged: _searchUsers,
-                                ),
-                              ),
-                              SizedBox(width: 8),
-                              // Refresh button
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: IconButton(
-                                  icon: Icon(
-                                    Icons.refresh,
-                                    color: Colors.white,
-                                  ),
-                                  onPressed: _isLoading ? null : _refreshData,
-                                  tooltip: 'Yenile',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
 
-                        // Search Results
-                        if (_searchResults.isNotEmpty)
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.7,
-                            child: ListView.builder(
-                              itemCount: _searchResults.length,
-                              itemBuilder: (context, index) {
-                                final user = _searchResults[index];
-                                final nickname = user['nickname'] as String;
+              // Search Results or Tab Bar
+              Expanded(
+                child: _searchResults.isNotEmpty
+                    ? ListView.builder(
+                        itemCount: _searchResults.length,
+                        itemBuilder: (context, index) {
+                          final user = _searchResults[index];
+                          final nickname = user['nickname'] as String;
 
-                                return Card(
-                                  margin: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 4),
-                                  elevation: 2,
-                                  child: ListTile(
-                                    leading: CircleAvatar(
-                                      backgroundColor:
-                                          Colors.green.withOpacity( 0.1),
-                                      child: Icon(Icons.person_add,
-                                          color: Colors.green),
-                                    ),
-                                    title: Text(nickname),
-                                    trailing: ElevatedButton(
-                                      onPressed: _isLoading
-                                          ? null
-                                          : () => _sendFriendRequest(nickname),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.blue,
-                                        foregroundColor: Colors.white,
-                                      ),
-                                      child: Text(_isLoading
-                                          ? 'Yükleniyor...'
-                                          : 'İstek Gönder'),
-                                    ),
-                                  ),
-                                );
-                              },
+                          return Card(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 4),
+                            elevation: 2,
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor:
+                                    Colors.green.withOpacity( 0.1),
+                                child: Icon(Icons.person_add,
+                                    color: Colors.green),
+                              ),
+                              title: Text(nickname),
+                              trailing: ElevatedButton(
+                                onPressed: _isLoading
+                                    ? null
+                                    : () => _sendFriendRequest(nickname),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  foregroundColor: Colors.white,
+                                ),
+                                child: Text(_isLoading
+                                    ? 'Yükleniyor...'
+                                    : 'İstek Gönder'),
+                              ),
                             ),
-                          )
-                        else
-                          // Tab Bar
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.75,
-                            child: Scrollbar(
-                              child: DefaultTabController(
-                                  length: 6,
-                                  child: Column(
-                                  children: [
-                                    TabBar(
-                                      tabs: [
-                                        Tab(
-                                          text: 'Arkadaşlar',
-                                          icon: Icon(Icons.group),
-                                        ),
-                                        Tab(
-                                          text: 'İstekler',
-                                          icon: Stack(
-                                            children: [
-                                              Icon(Icons.person_add),
-                                              if (_receivedRequests.isNotEmpty)
-                                                Positioned(
-                                                  right: -2,
-                                                  top: -2,
-                                                  child: Container(
-                                                    padding: EdgeInsets.all(3),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.red,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              8),
-                                                      border: Border.all(
-                                                        color: Colors.white,
-                                                        width: 1,
-                                                      ),
-                                                    ),
-                                                    constraints: BoxConstraints(
-                                                      minWidth: 12,
-                                                      minHeight: 12,
-                                                    ),
-                                                    child: Text(
-                                                      '${_receivedRequests.length}',
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 8,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                    ),
-                                                  ),
+                          );
+                        },
+                      )
+                    : SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.75,
+                        child: DefaultTabController(
+                            length: 6,
+                            child: Column(
+                            children: [
+                              TabBar(
+                                tabs: [
+                                  Tab(
+                                    text: 'Arkadaşlar',
+                                    icon: Icon(Icons.group),
+                                  ),
+                                  Tab(
+                                    text: 'İstekler',
+                                    icon: Stack(
+                                      children: [
+                                        Icon(Icons.person_add),
+                                        if (_receivedRequests.isNotEmpty)
+                                          Positioned(
+                                            right: -2,
+                                            top: -2,
+                                            child: Container(
+                                              padding: EdgeInsets.all(3),
+                                              decoration: BoxDecoration(
+                                                color: Colors.red,
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        8),
+                                                border: Border.all(
+                                                  color: Colors.white,
+                                                  width: 1,
                                                 ),
-                                            ],
+                                              ),
+                                              constraints: BoxConstraints(
+                                                minWidth: 12,
+                                                minHeight: 12,
+                                              ),
+                                              child: Text(
+                                                '${_receivedRequests.length}',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 8,
+                                                  fontWeight:
+                                                      FontWeight.bold,
+                                                ),
+                                                textAlign:
+                                                    TextAlign.center,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                        Tab(
-                                          text: 'Gönderilen',
-                                          icon: Icon(Icons.send),
-                                        ),
-                                        Tab(
-                                          text: 'Öneriler',
-                                          icon: Icon(Icons.auto_awesome),
-                                        ),
-                                        Tab(
-                                          text: 'Kullanıcılar',
-                                          icon: Icon(Icons.people),
-                                        ),
-                                        Tab(
-                                          text: 'QR Kodum',
-                                          icon: Icon(Icons.qr_code),
-                                        ),
                                       ],
-                                      indicatorColor: Colors.blue,
-                                      labelColor: Colors.blue,
-                                      unselectedLabelColor: Colors.black54,
                                     ),
-                                    Expanded(
-                                      child: TabBarView(
-                                        children: [
-                                          // Friends Tab with Online Status
-                                          _friends.isEmpty
-                                              ? DesignSystem.globalNoFriendsScreen(context)
-                                              : ListView.builder(
-                                                  itemCount: _friends.length,
+                                  ),
+                                  Tab(
+                                    text: 'Gönderilen',
+                                    icon: Icon(Icons.send),
+                                  ),
+                                  Tab(
+                                    text: 'Öneriler',
+                                    icon: Icon(Icons.auto_awesome),
+                                  ),
+                                  Tab(
+                                    text: 'Kullanıcılar',
+                                    icon: Icon(Icons.people),
+                                  ),
+                                  Tab(
+                                    text: 'QR Kodum',
+                                    icon: Icon(Icons.qr_code),
+                                  ),
+                                ],
+                                indicatorColor: Colors.blue,
+                                labelColor: Colors.blue,
+                                unselectedLabelColor: Colors.black54,
+                              ),
+                              Expanded(
+                                child: TabBarView(
+                                  children: [
+                                    // Friends Tab with Online Status
+                                    _friends.isEmpty
+                                        ? DesignSystem.globalNoFriendsScreen(context)
+                                        : ListView.builder(
+                                            itemCount: _friends.length,
                                                   itemBuilder:
                                                       (context, index) {
                                                     final friend =

@@ -5,6 +5,7 @@ import '../models/question.dart';
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../enums/app_language.dart';
+import '../widgets/page_templates.dart';
 
 class QuizSettingsPage extends StatefulWidget {
   final Function({
@@ -152,52 +153,55 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: DesignSystem.getPageContainerDecoration(context),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header
-              _buildHeader(context),
-              
-              // Content - Scrollable
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(DesignSystem.spacingL),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Kategori Seçimi - Wide Card
-                      _buildSectionTitle(context, 'Kategori Seçin', Icons.category),
-                      const SizedBox(height: DesignSystem.spacingM),
-                      _buildCategorySelection(context),
-                      const SizedBox(height: DesignSystem.spacingXl),
+      appBar: StandardAppBar(
+        title: const Text('Quiz Ayarları'),
+        onBackPressed: () => Navigator.pop(context),
+      ),
+      body: PageBody(
+        scrollable: true,
+        child: Column(
+          children: [
+            // Header
+            _buildHeader(context),
+            
+            // Content - Scrollable
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(DesignSystem.spacingL),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Kategori Seçimi - Wide Card
+                    _buildSectionTitle(context, 'Kategori Seçin', Icons.category),
+                    const SizedBox(height: DesignSystem.spacingM),
+                    _buildCategorySelection(context),
+                    const SizedBox(height: DesignSystem.spacingXl),
 
-                      // Zorluk Seviyesi - Wide Cards
-                      _buildSectionTitle(context, 'Zorluk Seviyesi', Icons.speed),
-                      const SizedBox(height: DesignSystem.spacingM),
-                      _buildDifficultySelection(context),
-                      const SizedBox(height: DesignSystem.spacingXl),
+                    // Zorluk Seviyesi - Wide Cards
+                    _buildSectionTitle(context, 'Zorluk Seviyesi', Icons.speed),
+                    const SizedBox(height: DesignSystem.spacingM),
+                    _buildDifficultySelection(context),
+                    const SizedBox(height: DesignSystem.spacingXl),
 
-                      // Soru Sayısı - Wide Tiles
-                      _buildSectionTitle(context, 'Soru Sayısı', Icons.numbers),
-                      const SizedBox(height: DesignSystem.spacingM),
-                      _buildQuestionCountSelection(context),
-                      const SizedBox(height: DesignSystem.spacingXl),
+                    // Soru Sayısı - Wide Tiles
+                    _buildSectionTitle(context, 'Soru Sayısı', Icons.numbers),
+                    const SizedBox(height: DesignSystem.spacingM),
+                    _buildQuestionCountSelection(context),
+                    const SizedBox(height: DesignSystem.spacingXl),
 
-                      // Dil Seçimi - Wide Cards
-                      _buildSectionTitle(context, 'Dil Seçimi', Icons.language),
-                      const SizedBox(height: DesignSystem.spacingM),
-                      _buildLanguageSelection(context),
-                      const SizedBox(height: DesignSystem.spacingXl),
+                    // Dil Seçimi - Wide Cards
+                    _buildSectionTitle(context, 'Dil Seçimi', Icons.language),
+                    const SizedBox(height: DesignSystem.spacingM),
+                    _buildLanguageSelection(context),
+                    const SizedBox(height: DesignSystem.spacingXl),
 
-                      // Özet Kartı - Full Width
-                      _buildSummaryCard(context),
-                      const SizedBox(height: DesignSystem.spacingXl),
-                    ],
-                  ),
+                    // Özet Kartı - Full Width
+                    _buildSummaryCard(context),
+                    const SizedBox(height: DesignSystem.spacingXl),
+                  ],
                 ),
               ),
+            ),
 
               // Başlat Butonu
               _buildStartButton(context),

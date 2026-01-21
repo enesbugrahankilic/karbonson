@@ -9,11 +9,11 @@ import '../services/notification_service.dart';
 import '../services/firestore_service.dart';
 import '../models/notification_data.dart';
 import '../l10n/app_localizations.dart';
-import '../widgets/home_button.dart';
 import '../utils/datetime_parser.dart';
 import '../core/navigation/navigation_service.dart';
 import '../core/navigation/app_router.dart';
 import '../theme/design_system.dart';
+import '../widgets/page_templates.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -444,33 +444,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 360;
-    final titleFontSize = isSmallScreen ? 18.0 : 20.0;
     final l10n = AppLocalizations.of(context);
-
     final displayedNotifications = _showUnreadOnly 
         ? _unreadNotifications 
         : _notifications;
 
     return Scaffold(
-      appBar: AppBar(
-        leading: const HomeButton(),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              l10n?.notifications ?? 'Notifications',
-              style: TextStyle(fontSize: titleFontSize),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(width: 8),
-            _buildNotificationBadge(_unreadCount),
-          ],
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+      appBar: StandardAppBar(
+        title: '${l10n?.notifications ?? 'Notifications'} ${_unreadCount > 0 ? '($_unreadCount)' : ''}',
+        onBackPressed: () => Navigator.pop(context),
         actions: [
           if (_unreadNotifications.isNotEmpty)
             IconButton(
@@ -491,106 +473,104 @@ class _NotificationsPageState extends State<NotificationsPage> {
               context,
               message: l10n?.loadingData ?? 'Loading data...',
             )
-          : Column(
-              children: [
-                // Filtre bölümü
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: FilterChip(
-                          label: Text(l10n?.allNotifications ?? 'All'),
-                          selected: !_showUnreadOnly,
-                          onSelected: (selected) {
-                            setState(() {
-                              _showUnreadOnly = false;
-                            });
-                          },
-                          avatar: const Icon(Icons.list, size: 18),
+          : PageBody(
+              scrollable: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Filtre bölümü
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: FilterChip(
+                            label: Text(l10n?.allNotifications ?? 'All'),
+                            selected: !_showUnreadOnly,
+                            onSelected: (selected) {
+                              setState(() {
+                                _showUnreadOnly = false;
+                              });
+                            },
+                            avatar: const Icon(Icons.list, size: 18),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: FilterChip(
-                          label: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(l10n?.unreadNotifications ?? 'Unread'),
-                              if (_unreadCount > 0) ...[
-                                const SizedBox(width: 4),
-                                _buildNotificationBadge(_unreadCount),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: FilterChip(
+                            label: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(l10n?.unreadNotifications ?? 'Unread'),
+                                if (_unreadCount > 0) ...[
+                                  const SizedBox(width: 4),
+                                  _buildNotificationBadge(_unreadCount),
+                                ],
                               ],
-                            ],
-                          ),
-                          selected: _showUnreadOnly,
-                          onSelected: (selected) {
-                            setState(() {
-                              _showUnreadOnly = true;
-                            });
-                          },
-                          avatar: const Icon(Icons.mark_email_unread, size: 18),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Okunmamış bildirim sayısı
-                if (_unreadNotifications.isNotEmpty && !_showUnreadOnly)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info,
-                            color: Theme.of(context).colorScheme.onPrimaryContainer,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              '${_unreadNotifications.length} ${l10n?.unreadNotifications?.toLowerCase() ?? 'unread notifications'}',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onPrimaryContainer,
-                              ),
                             ),
-                          ),
-                          TextButton(
-                            onPressed: () {
+                            selected: _showUnreadOnly,
+                            onSelected: (selected) {
                               setState(() {
                                 _showUnreadOnly = true;
                               });
                             },
-                            child: Text(l10n?.viewNotifications ?? 'View Unread'),
+                            avatar: const Icon(Icons.mark_email_unread, size: 18),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
 
-                // Bildirim listesi
-                Expanded(
-                  child: displayedNotifications.isEmpty
-                      ? DesignSystem.globalNoNotificationsScreen(context)
-                      : RefreshIndicator(
-                          onRefresh: _loadNotifications,
-                          child: ListView.builder(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            itemCount: displayedNotifications.length,
-                            itemBuilder: (context, index) {
-                              final notification = displayedNotifications[index];
-                              return _buildNotificationItem(notification);
-                            },
-                          ),
+                  // Okunmamış bildirim sayısı
+                  if (_unreadNotifications.isNotEmpty && !_showUnreadOnly)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                ),
-              ],
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.info,
+                              color: Theme.of(context).colorScheme.onPrimaryContainer,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                '${_unreadNotifications.length} ${l10n?.unreadNotifications?.toLowerCase() ?? 'unread notifications'}',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _showUnreadOnly = true;
+                                });
+                              },
+                              child: Text(l10n?.viewNotifications ?? 'View Unread'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                  // Bildirim listesi
+                  if (displayedNotifications.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: DesignSystem.globalNoNotificationsScreen(context),
+                    )
+                  else
+                    ...displayedNotifications.map((notification) {
+                      return _buildNotificationItem(notification);
+                    }).toList(),
+                ],
+              ),
             ),
     );
   }

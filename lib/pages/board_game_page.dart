@@ -17,6 +17,7 @@ import '../theme/theme_colors.dart';
 import 'login_page.dart';
 import '../services/app_localizations.dart';
 import '../provides/language_provider.dart';
+import '../widgets/page_templates.dart';
 
 class BoardGamePage extends StatefulWidget {
   final String? userNickname;
@@ -557,47 +558,40 @@ class _BoardGamePageState extends State<BoardGamePage>
         gameLogic.board.tiles[gameLogic.currentPlayer!.position];
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: null,
+      appBar: StandardAppBar(
+        title: const Text('Tahta Oyunu'),
+        onBackPressed: () => _confirmExit(context),
         actions: [
           IconButton(
-            icon: const Icon(Icons.exit_to_app, color: Colors.white),
+            icon: const Icon(Icons.exit_to_app),
             onPressed: () => _confirmExit(context),
             tooltip: AppLocalizations.exitGame,
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          if (_notificationMessage != null)
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: Material(
-                color: _notificationColor,
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      _notificationMessage!,
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
-                      textAlign: TextAlign.center,
+      body: PageBody(
+        scrollable: false,
+        child: Stack(
+          children: [
+            if (_notificationMessage != null)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Material(
+                  color: _notificationColor,
+                  child: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        _notificationMessage!,
+                        style: const TextStyle(color: Colors.white, fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
               ),
             ),
             child: LayoutBuilder(

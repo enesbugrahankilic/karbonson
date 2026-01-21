@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import '../services/achievement_service.dart';
 import '../models/daily_challenge.dart';
 import '../widgets/daily_challenge_card.dart';
+import '../widgets/page_templates.dart';
+import '../theme/theme_colors.dart';
 
 class DailyChallengePage extends StatelessWidget {
   const DailyChallengePage({super.key});
@@ -12,10 +14,13 @@ class DailyChallengePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Günlük Görevler'),
+      appBar: StandardAppBar(
+        title: 'Günlük Görevler',
+        onBackPressed: () => Navigator.pop(context),
       ),
-      body: StreamBuilder<List<DailyChallenge>>(
+      body: PageBody(
+        scrollable: true,
+        child: StreamBuilder<List<DailyChallenge>>(
         stream: AchievementService().challengesStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -43,46 +48,23 @@ class DailyChallengePage extends StatelessWidget {
           final expiredChallenges =
               challenges.where((c) => c.isExpired && !c.isCompleted).toList();
 
-          return ListView(
-            padding: const EdgeInsets.all(16),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (activeChallenges.isNotEmpty) ...[
-                const Text(
-                  'Aktif Görevler',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
+                SectionHeader(title: 'Aktif Görevler'),
                 ...activeChallenges.map(
                     (challenge) => DailyChallengeCard(challenge: challenge)),
               ],
               if (completedChallenges.isNotEmpty) ...[
                 const SizedBox(height: 24),
-                const Text(
-                  'Tamamlanan Görevler',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
-                  ),
-                ),
-                const SizedBox(height: 8),
+                SectionHeader(title: 'Tamamlanan Görevler'),
                 ...completedChallenges.map(
                     (challenge) => DailyChallengeCard(challenge: challenge)),
               ],
               if (expiredChallenges.isNotEmpty) ...[
                 const SizedBox(height: 24),
-                const Text(
-                  'Süresi Dolan Görevler',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red,
-                  ),
-                ),
-                const SizedBox(height: 8),
+                SectionHeader(title: 'Süresi Dolan Görevler'),
                 ...expiredChallenges.map(
                     (challenge) => DailyChallengeCard(challenge: challenge)),
               ],

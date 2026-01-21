@@ -9,6 +9,7 @@ import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../theme/app_theme.dart';
 import '../models/question.dart';
+import '../widgets/page_templates.dart';
 
 class QuizPage extends StatefulWidget {
   final QuizLogic quizLogic;
@@ -495,46 +496,61 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return BlocBuilder<QuizBloc, QuizState>(
       builder: (context, state) {
         if (state is QuizLoading) {
           return Scaffold(
-            body: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: ThemeColors.getGradientColors(context),
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+            appBar: StandardAppBar(
+              title: 'Quiz Yükleniyor',
+              onBackPressed: () => Navigator.pop(context),
+            ),
+            body: PageBody(
+              scrollable: false,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 16),
+                    Text('Quiz yükleniyor...', style: Theme.of(context).textTheme.bodyLarge),
+                  ],
                 ),
               ),
-              child: DesignSystem.loadingIndicator(context,
-                  message: 'Quiz yükleniyor...'),
             ),
           );
         }
 
         if (state is QuizError) {
           return Scaffold(
-            body: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: ThemeColors.getGradientColors(context),
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+            appBar: StandardAppBar(
+              title: 'Hata',
+              onBackPressed: () => Navigator.pop(context),
+            ),
+            body: PageBody(
+              scrollable: true,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Hata: ${state.message}',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<QuizBloc>().add(LoadQuiz(
+                            category: _selectedCategory == 'Tümü'
+                                ? null
+                                : _selectedCategory));
+                      },
+                      child: const Text('Tekrar Dene'),
+                    ),
+                  ],
                 ),
-              ),
-              child: DesignSystem.errorState(
-                context,
-                message: 'Error: ${state.message}',
-                onRetry: () {
-                  context.read<QuizBloc>().add(LoadQuiz(
-                      category: _selectedCategory == 'Tümü'
-                          ? null
-                          : _selectedCategory));
-                },
-                retryText: 'Tekrar Dene',
               ),
             ),
           );
@@ -544,85 +560,55 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
           final currentQuestion = state.questions[state.currentQuestion];
 
           return Scaffold(
-            extendBodyBehindAppBar: true,
-            appBar: AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              centerTitle: true,
-              title: Text(
-                'Soru ${state.currentQuestion + 1}/${state.questions.length}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
+            appBar: StandardAppBar(
+              title: 'Soru ${state.currentQuestion + 1}/${state.questions.length}',
+              onBackPressed: () => _confirmExit(context),
               actions: [
-                Container(
-                  margin: const EdgeInsets.only(right: DesignSystem.spacingS),
-                  decoration: BoxDecoration(
-                    color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.8),
-                    borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.exit_to_app, color: Colors.white),
-                    onPressed: () => _confirmExit(context),
-                    tooltip: 'Oyundan Çık',
-                  ),
+                IconButton(
+                  icon: const Icon(Icons.exit_to_app),
+                  onPressed: () => _confirmExit(context),
+                  tooltip: 'Çık',
                 ),
               ],
             ),
-            body: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: ThemeColors.getGradientColors(context),
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: SafeArea(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(DesignSystem.spacingM),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Score area at top
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: DesignSystem.spacingM),
-                        child: _buildScoreArea(state),
+            body: PageBody(
+              scrollable: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Score area
+                  _buildScoreArea(state),
+                  const SizedBox(height: 16),
+                  
+                  // Question card with full width
+                  FadeTransition(
+                    opacity: _fadeController,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, 0.2),
+                        end: Offset.zero,
+                      ).animate(_slideController),
+                      child: CustomQuestionCard(
+                        question: currentQuestion.text,
+                        options: currentQuestion.options
+                            .map((o) => o.text)
+                            .toList(),
+                        onOptionSelected: (answer) =>
+                            _onAnswerSelected(answer, state.currentQuestion),
+                        isAnswered:
+                            state.answers[state.currentQuestion].isNotEmpty,
+                        selectedAnswer:
+                            state.answers[state.currentQuestion],
+                        correctAnswer: currentQuestion.options
+                            .firstWhere((o) => o.score > 0)
+                            .text,
+                        difficulty: _selectedDifficulty,
                       ),
-                      
-                      // Question card with full width
-                      FadeTransition(
-                        opacity: _fadeController,
-                        child: SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(0, 0.2),
-                            end: Offset.zero,
-                          ).animate(_slideController),
-                          child: CustomQuestionCard(
-                            question: currentQuestion.text,
-                            options: currentQuestion.options
-                                .map((o) => o.text)
-                                .toList(),
-                            onOptionSelected: (answer) =>
-                                _onAnswerSelected(answer, state.currentQuestion),
-                            isAnswered:
-                                state.answers[state.currentQuestion].isNotEmpty,
-                            selectedAnswer:
-                                state.answers[state.currentQuestion],
-                            correctAnswer: currentQuestion.options
-                                .firstWhere((o) => o.score > 0)
-                                .text,
-                            difficulty: _selectedDifficulty,
-                          ),
-                        ),
-                      ),
-                      
-                      const SizedBox(height: DesignSystem.spacingXl),
-                    ],
+                    ),
                   ),
-                ),
+                  
+                  const SizedBox(height: 24),
+                ],
               ),
             ),
           );

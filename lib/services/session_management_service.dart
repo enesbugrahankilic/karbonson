@@ -112,7 +112,7 @@ class SessionManagementService {
       }
 
       // Force token refresh
-      final idTokenResult = await user.getIdTokenResult(forceRefresh: true);
+      final idTokenResult = await user.getIdTokenResult(true);
       _currentToken = idTokenResult.token;
       _tokenExpiry = idTokenResult.expirationTime;
 

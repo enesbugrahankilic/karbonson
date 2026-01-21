@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '../services/firestore_service.dart';
 import '../services/friendship_service.dart';
 import '../widgets/leaderboard_item.dart';
+import '../widgets/page_templates.dart';
 
 class LeaderboardPage extends StatefulWidget {
   const LeaderboardPage({super.key});
@@ -277,46 +278,46 @@ class _LeaderboardPageState extends State<LeaderboardPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: const Text('Lider Tablosu'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Global'),
-            Tab(text: 'Arkadaşlar'),
-            Tab(text: 'Kategoriler'),
-          ],
-          labelColor: Theme.of(context).primaryColor,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: Theme.of(context).primaryColor,
-        ),
+      appBar: StandardAppBar(
+        title: 'Lider Tablosu',
+        onBackPressed: () => Navigator.pop(context),
       ),
-      body: Column(
-        children: [
-          // Class and Section Filter
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Theme.of(context).cardColor,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Filtrele',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).primaryColor,
+      body: PageBody(
+        scrollable: false,
+        child: Column(
+          children: [
+            // TabBar
+            Material(
+              color: Theme.of(context).cardColor,
+              child: TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: 'Global', icon: Icon(Icons.public)),
+                  Tab(text: 'Arkadaşlar', icon: Icon(Icons.people)),
+                  Tab(text: 'Kategoriler', icon: Icon(Icons.category)),
+                ],
+                labelColor: Theme.of(context).primaryColor,
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: Theme.of(context).primaryColor,
+              ),
+            ),
+            // Filter Section
+            Container(
+              padding: const EdgeInsets.all(16),
+              color: Theme.of(context).cardColor,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Filtrele',
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField<int?>(
-                        value: _selectedClassLevel,
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<int?>(
+                          value: _selectedClassLevel,
                         decoration: InputDecoration(
                           labelText: 'Sınıf',
                           border: OutlineInputBorder(

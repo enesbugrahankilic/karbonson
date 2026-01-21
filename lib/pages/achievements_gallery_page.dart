@@ -5,10 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../models/achievement.dart';
 import '../services/achievement_service.dart';
-import 'package:flutter/material.dart';
 import '../widgets/achievement_card.dart';
 import '../theme/app_theme.dart';
-import '../models/achievement.dart';
+import '../widgets/page_templates.dart';
 
 class AchievementsGalleryPage extends StatefulWidget {
   const AchievementsGalleryPage({super.key});
@@ -64,31 +63,43 @@ class _AchievementsGalleryPageState extends State<AchievementsGalleryPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: const Text('Başarımlar Galerisi'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Tüm Başarımlar'),
-            Tab(text: 'Kazandıklarım'),
+      appBar: StandardAppBar(
+        title: 'Başarımlar Galerisi',
+        onBackPressed: () => Navigator.pop(context),
+      ),
+      body: PageBody(
+        scrollable: false,
+        child: Column(
+          children: [
+            // TabBar
+            Material(
+              color: Theme.of(context).cardColor,
+              child: TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: 'Tüm Başarımlar', icon: Icon(Icons.star_outline)),
+                  Tab(text: 'Kazandıklarım', icon: Icon(Icons.emoji_events)),
+                ],
+                labelColor: Theme.of(context).primaryColor,
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: Theme.of(context).primaryColor,
+              ),
+            ),
+            // TabBarView
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildAllAchievementsTab(),
+                        _buildUserAchievementsTab(),
+                      ],
+                    ),
+            ),
           ],
-          labelColor: Theme.of(context).primaryColor,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: Theme.of(context).primaryColor,
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildAllAchievementsTab(),
-                _buildUserAchievementsTab(),
-              ],
-            ),
     );
   }
 

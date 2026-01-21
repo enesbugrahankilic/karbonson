@@ -12,7 +12,7 @@ import '../services/profile_picture_service.dart';
 import '../services/nickname_service.dart';
 import '../theme/theme_colors.dart';
 import '../core/navigation/app_router.dart';
-import '../widgets/home_button.dart';
+import '../widgets/page_templates.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -69,29 +69,13 @@ class _ProfileContentState extends State<ProfileContent>
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 360;
-
     return Scaffold(
-      backgroundColor: ThemeColors.getCardBackground(context),
-      appBar: AppBar(
-        leading: const HomeButton(),
-        title: Text(
-          'Profilim',
-          style: TextStyle(
-            fontSize: isSmallScreen ? 18 : 20,
-            fontWeight: FontWeight.w600,
-            color: ThemeColors.getText(context),
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+      appBar: StandardAppBar(
+        title: 'Profilim',
+        onBackPressed: () => Navigator.pop(context),
         actions: [
           IconButton(
-            icon: Icon(
-              Icons.refresh,
-              color: ThemeColors.getPrimaryButtonColor(context),
-            ),
+            icon: const Icon(Icons.refresh),
             onPressed: () {
               context.read<ProfileBloc>().add(RefreshServerData());
             },
@@ -99,25 +83,27 @@ class _ProfileContentState extends State<ProfileContent>
           ),
         ],
       ),
-      body: FadeTransition(
-        opacity: _fadeController,
-        child: SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0, 0.3),
-            end: Offset.zero,
-          ).animate(_slideController),
-          child: BlocListener<ProfileBloc, ProfileState>(
-            listener: (context, state) {
-              if (state is ProfileError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.message),
-                    backgroundColor: ThemeColors.getErrorColor(context),
-                    duration: const Duration(seconds: 3),
-                  ),
-                );
-              } else if (state is ProfileUpdateSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(
+      body: PageBody(
+        scrollable: true,
+        child: FadeTransition(
+          opacity: _fadeController,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.3),
+              end: Offset.zero,
+            ).animate(_slideController),
+            child: BlocListener<ProfileBloc, ProfileState>(
+              listener: (context, state) {
+                if (state is ProfileError) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.message),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                } else if (state is ProfileUpdateSuccess) {
+                  ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(state.message),
                     backgroundColor: ThemeColors.getSuccessColor(context),

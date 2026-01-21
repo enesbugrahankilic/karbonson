@@ -7,7 +7,7 @@ import '../services/authentication_state_service.dart';
 import '../theme/theme_colors.dart';
 import '../widgets/duel_invite_dialog.dart';
 import '../widgets/copy_to_clipboard_widget.dart';
-import '../widgets/home_button.dart';
+import '../widgets/page_templates.dart';
 import '../utils/firebase_logger.dart';
 
 class DuelPage extends StatefulWidget {
@@ -304,60 +304,43 @@ class _DuelPageState extends State<DuelPage> {
 
   Widget _buildLobbyView() {
     return Scaffold(
-      appBar: AppBar(
-        leading: const HomeButton(),
-        title: const Text('Düello Modu'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+      appBar: StandardAppBar(
+        title: 'Düello Modu',
+        onBackPressed: () => Navigator.pop(context),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: ThemeColors.getGradientColors(context),
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.security,
-                    size: 100,
-                    color: ThemeColors.getGreen(context),
-                  ),
-                  const SizedBox(height: 32),
-                  Text(
-                    'Düello Modu',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: ThemeColors.getText(context),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'İki oyuncu arasında hızlı cevap yarışı!',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: ThemeColors.getSecondaryText(context),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 48),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _isCreatingRoom ? null : _createDuelRoom,
-                      icon: _isCreatingRoom
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
+      body: PageBody(
+        scrollable: true,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.security,
+                size: 80,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(height: 32),
+              Text(
+                'Düello Modu',
+                style: Theme.of(context).textTheme.headlineSmall,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'İki oyuncu arasında hızlı cevap yarışı!',
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 48),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _isCreatingRoom ? null : _createDuelRoom,
+                  icon: _isCreatingRoom
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.add),

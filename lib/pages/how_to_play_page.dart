@@ -1,6 +1,6 @@
 // lib/pages/how_to_play_page.dart
 import 'package:flutter/material.dart';
-import '../widgets/home_button.dart';
+import '../widgets/page_templates.dart';
 import '../theme/theme_colors.dart';
 
 class HowToPlayPage extends StatelessWidget {
@@ -9,42 +9,37 @@ class HowToPlayPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: const HomeButton(),
-        title: const Text('Nasil Oynanir?'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+      appBar: StandardAppBar(
+        title: 'Nasıl Oynanır?',
+        onBackPressed: () => Navigator.pop(context),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: ThemeColors.getGradientColors(context),
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: ListView(
-          padding: const EdgeInsets.all(16),
+      body: PageBody(
+        scrollable: true,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionTitle('Masa Oyunu'),
+            SectionHeader(title: 'Masa Oyunu'),
             _buildSectionDescription(
-                '25 karelik bir tahtada ilerleyerek bitise ulasin.'),
+                '25 karelik bir tahtada ilerleyerek bitişe ulaşın.'),
+            const SizedBox(height: 12),
             _buildInfoCard(
               Icons.casino,
               'Zar At',
-              'Butona basarak 1-3 arasinda zar atin',
+              'Butona basarak 1-3 arasında zar atın',
               Colors.green,
             ),
+            const SizedBox(height: 8),
             _buildInfoCard(
               Icons.grid_on,
               'Kareler',
-              'Quiz, Bonus (+5 sn) ve Caza (-5 sn, -5 puan) kareleri',
+              'Quiz, Bonus (+5 sn) ve Ceza (-5 sn, -5 puan) kareleri',
               Colors.blue,
             ),
+            const SizedBox(height: 8),
             _buildInfoCard(
               Icons.shield,
               'Koruma',
-              'Ilk 2 turde ceza kareleri etki etmez',
+              'İlk 2 turda ceza kareleri etki etmez',
               Colors.purple,
             ),
             const SizedBox(height: 24),

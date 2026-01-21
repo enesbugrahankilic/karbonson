@@ -9,7 +9,8 @@ import '../utils/room_code_generator.dart';
 import '../widgets/friend_invite_dialog.dart';
 import '../widgets/game_invitation_list.dart';
 import '../widgets/copy_to_clipboard_widget.dart';
-import '../widgets/home_button.dart';
+// import '../widgets/home_button.dart';
+import '../widgets/page_templates.dart';
 
 class RoomManagementPage extends StatefulWidget {
   final String userNickname;
@@ -463,13 +464,9 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: const HomeButton(),
-        title:
-            const Text('Oda Yönetimi', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+      appBar: StandardAppBar(
+        title: const Text('Oda Yönetimi'),
+        onBackPressed: () => Navigator.pop(context),
         actions: [
           if (_currentRoom != null && _isHost) ...[
             IconButton(
@@ -488,24 +485,15 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
           ],
         ],
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+      body: PageBody(
+        scrollable: true,
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
-            : SafeArea(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 600),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
+            : ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                         Card(
                           elevation: 4,
                           shape: RoundedRectangleBorder(

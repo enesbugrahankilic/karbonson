@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../theme/theme_colors.dart';
-import '../widgets/home_button.dart';
+import '../widgets/page_templates.dart';
 import 'duel_page.dart';
 
 class DuelInvitationPage extends StatefulWidget {
@@ -132,11 +132,9 @@ class _DuelInvitationPageState extends State<DuelInvitationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: const HomeButton(),
-        title: const Text('Düello Davetleri'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+      appBar: StandardAppBar(
+        title: 'Düello Davetleri',
+        onBackPressed: () => Navigator.pop(context),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -145,21 +143,13 @@ class _DuelInvitationPageState extends State<DuelInvitationPage> {
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: ThemeColors.getGradientColors(context),
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _invitations.isEmpty
-                  ? _buildEmptyState()
-                  : _buildInvitationsList(),
-        ),
+      body: PageBody(
+        scrollable: false,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _invitations.isEmpty
+                ? _buildEmptyState()
+                : _buildInvitationsList(),
       ),
     );
   }
@@ -171,24 +161,24 @@ class _DuelInvitationPageState extends State<DuelInvitationPage> {
         children: [
           Icon(
             Icons.mail_outline,
-            size: 100,
-            color: ThemeColors.getSecondaryText(context),
+            size: 80,
+            color: Colors.grey[400],
           ),
           const SizedBox(height: 24),
           Text(
             'Henüz davet yok',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: ThemeColors.getText(context),
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           const SizedBox(height: 16),
           Text(
             'Arkadaşlarınız size düello daveti gönderdiğinde burada görünecek',
             style: TextStyle(
-              fontSize: 16,
-              color: ThemeColors.getSecondaryText(context),
+              fontSize: 14,
+              color: Colors.grey[600],
             ),
             textAlign: TextAlign.center,
           ),

@@ -5,9 +5,8 @@ import '../provides/theme_provider.dart';
 import '../provides/language_provider.dart';
 import '../enums/app_language.dart';
 import '../l10n/app_localizations.dart';
-// import '../pages/uid_debug_page.dart'; // Removed unused import
 import '../pages/two_factor_auth_setup_page.dart';
-import '../widgets/home_button.dart';
+import '../widgets/page_templates.dart';
 
 
 class SettingsPage extends StatelessWidget {
@@ -15,39 +14,24 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 360;
-    final titleFontSize = isSmallScreen ? 18.0 : 20.0;
-
     return Scaffold(
-      appBar: AppBar(
-        leading: const HomeButton(),
-        title: Consumer<LanguageProvider>(
-          builder: (context, languageProvider, child) {
-            final l10n = AppLocalizations.of(context);
-            return Text(
-              l10n?.settings ?? 'Settings',
-              style: TextStyle(fontSize: titleFontSize),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            );
-          },
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+      appBar: StandardAppBar(
+        title: 'Ayarlar',
+        onBackPressed: () => Navigator.pop(context),
       ),
-      body: Consumer2<ThemeProvider, LanguageProvider>(
-        builder: (context, themeProvider, languageProvider, child) {
-          final l10n = AppLocalizations.of(context);
+      body: PageBody(
+        scrollable: true,
+        child: Consumer2<ThemeProvider, LanguageProvider>(
+          builder: (context, themeProvider, languageProvider, child) {
+            final l10n = AppLocalizations.of(context);
 
-          return Scrollbar(
-            child: ListView(
-              padding: EdgeInsets.all(isSmallScreen ? 12.0 : 16.0),
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Card(
-                  child: ListTile(
-                    leading: Icon(
-                      themeProvider.isDarkMode
+                SectionHeader(title: 'Tema'),
+                StandardListItem(
+                  leading: Icon(
+                    themeProvider.isDarkMode
                           ? Icons.dark_mode
                           : Icons.light_mode,
                       color: Theme.of(context).colorScheme.primary,

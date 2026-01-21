@@ -12,6 +12,7 @@ import '../widgets/reward_card.dart';
 import '../widgets/owned_rewards_section.dart';
 import '../theme/app_theme.dart';
 import '../theme/theme_colors.dart';
+import '../widgets/page_templates.dart';
 
 class RewardsShopPage extends StatefulWidget {
   const RewardsShopPage({super.key});
@@ -187,33 +188,45 @@ class _RewardsShopPageState extends State<RewardsShopPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: const Text('Ödül Mağazası'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Mağaza'),
-            Tab(text: 'Envanterim'),
-            Tab(text: 'İstatistikler'),
+      appBar: StandardAppBar(
+        title: 'Ödül Mağazası',
+        onBackPressed: () => Navigator.pop(context),
+      ),
+      body: PageBody(
+        scrollable: false,
+        child: Column(
+          children: [
+            // TabBar
+            Material(
+              color: Theme.of(context).cardColor,
+              child: TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: 'Mağaza', icon: Icon(Icons.store)),
+                  Tab(text: 'Envanterim', icon: Icon(Icons.backpack)),
+                  Tab(text: 'İstatistikler', icon: Icon(Icons.bar_chart)),
+                ],
+                labelColor: Theme.of(context).primaryColor,
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: Theme.of(context).primaryColor,
+              ),
+            ),
+            // Content
+            Expanded(
+              child: _isLoading
+                  ? _buildLoadingState()
+                  : TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildShopTab(),
+                        _buildInventoryTab(),
+                        _buildStatisticsTab(),
+                      ],
+                    ),
+            ),
           ],
-          labelColor: Theme.of(context).primaryColor,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: Theme.of(context).primaryColor,
         ),
       ),
-      body: _isLoading
-          ? _buildLoadingState()
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildShopTab(),
-                _buildInventoryTab(),
-                _buildStatisticsTab(),
-              ],
-            ),
     );
   }
 

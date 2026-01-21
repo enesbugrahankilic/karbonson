@@ -7,6 +7,7 @@ import '../widgets/ai_recommendation_widget.dart';
 import '../widgets/empty_state_widget.dart';
 import '../utils/firebase_logger.dart';
 import '../services/profile_service.dart';
+import '../widgets/page_templates.dart';
 
 class AIRecommendationsPage extends StatefulWidget {
   const AIRecommendationsPage({super.key});
@@ -60,8 +61,9 @@ class _AIRecommendationsPageState extends State<AIRecommendationsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('AI Önerileri'),
+      appBar: StandardAppBar(
+        title: 'AI Önerileri',
+        onBackPressed: () => Navigator.pop(context),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -70,33 +72,35 @@ class _AIRecommendationsPageState extends State<AIRecommendationsPage> {
           ),
         ],
       ),
-      body: BlocBuilder<AIBloc, AIState>(
-        builder: (context, state) {
-          if (state is AIInitial) {
-            FirebaseLogger.logAIService(
-              operation: 'INITIAL_STATE',
-              success: true,
-              responseSize: '0',
-            );
-            return const EmptyStateWidget(
-              type: EmptyStateType.loading,
-              showLoading: true,
-            );
-          } else if (state is AILoading) {
-            FirebaseLogger.logAIService(
-              operation: 'LOADING',
-              success: true,
-              responseSize: '0',
-            );
-            return const EmptyStateWidget(
-              type: EmptyStateType.loading,
-              showLoading: true,
-              message: 'AI önerileri yükleniyor...',
-            );
-          } else if (state is RecommendationsLoaded) {
-            FirebaseLogger.logAIService(
-              operation: 'LOAD_SUCCESS',
-              success: true,
+      body: PageBody(
+        scrollable: true,
+        child: BlocBuilder<AIBloc, AIState>(
+          builder: (context, state) {
+            if (state is AIInitial) {
+              FirebaseLogger.logAIService(
+                operation: 'INITIAL_STATE',
+                success: true,
+                responseSize: '0',
+              );
+              return const EmptyStateWidget(
+                type: EmptyStateType.loading,
+                showLoading: true,
+              );
+            } else if (state is AILoading) {
+              FirebaseLogger.logAIService(
+                operation: 'LOADING',
+                success: true,
+                responseSize: '0',
+              );
+              return const EmptyStateWidget(
+                type: EmptyStateType.loading,
+                showLoading: true,
+                message: 'AI önerileri yükleniyor...',
+              );
+            } else if (state is RecommendationsLoaded) {
+              FirebaseLogger.logAIService(
+                operation: 'LOAD_SUCCESS',
+                success: true,
               responseSize: '${state.recommendations.length}',
             );
 
