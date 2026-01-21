@@ -18,38 +18,6 @@ enum SortOption {
   expiry,
 }
 
-/// LootBox result class
-class LootBoxOpenResult {
-  final bool isSuccess;
-  final String? errorMessage;
-  final UserLootBox? openedBox;
-  final List<OpenedReward>? rewards;
-
-  LootBoxOpenResult._({
-    required this.isSuccess,
-    this.errorMessage,
-    this.openedBox,
-    this.rewards,
-  });
-
-  factory LootBoxOpenResult.success({
-    required UserLootBox openedBox,
-    required List<OpenedReward> rewards,
-  }) {
-    return LootBoxOpenResult._(
-      isSuccess: true,
-      openedBox: openedBox,
-      rewards: rewards,
-    );
-  }
-
-  factory LootBoxOpenResult.failure(String error) {
-    return LootBoxOpenResult._(
-      isSuccess: false,
-      errorMessage: error,
-    );
-  }
-}
 
 /// Kazanılan Kutular Sayfası - Açılmamış kutuların listelendiği ekran
 class WonBoxesPage extends StatefulWidget {
@@ -209,13 +177,13 @@ class _WonBoxesPageState extends State<WonBoxesPage> with TickerProviderStateMix
   Future<void> _openBox(UserLootBox box) async {
     try {
       final result = await _lootBoxService.openLootBox(box.id);
-      
-      if (result.isSuccess && result.rewards != null && result.rewards!.isNotEmpty) {
+
+      if (result.success && result.rewards.isNotEmpty) {
         if (mounted) {
           showLootBoxOpeningDialog(
-            context: context,
+            context,
             lootBox: box,
-            reward: result.rewards!.first,
+            reward: result.rewards.first,
             onClose: () {
               Navigator.of(context).pop();
               _refreshBoxes();

@@ -503,7 +503,7 @@ class _AchievementProgressWidgetState extends State<AchievementProgressWidget>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '$currentValue / $targetValue',
+                      '${widget.currentValue} / ${widget.targetValue}',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                             color: Colors.grey[600],
                           ),
