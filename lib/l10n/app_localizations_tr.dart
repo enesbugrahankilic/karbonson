@@ -15,61 +15,61 @@ class AppLocalizationsTr extends AppLocalizations {
   String get world => 'Dünya';
 
   @override
-  String get notifications => 'Bildirimlerim';
+  String get notifications => 'Notifications';
 
   @override
-  String get noNotifications => 'Henüz bildirim yok';
+  String get noNotifications => 'No notifications yet';
 
   @override
-  String get notificationSettings => 'Bildirim Ayarları';
+  String get notificationSettings => 'Notification Settings';
 
   @override
-  String get markAllAsRead => 'Tümünü Okundu İşaretle';
+  String get markAllAsRead => 'Mark All as Read';
 
   @override
-  String get unreadNotifications => 'Okunmamış Bildirimler';
+  String get unreadNotifications => 'Unread Notifications';
 
   @override
-  String get allNotifications => 'Tüm Bildirimler';
+  String get allNotifications => 'All Notifications';
 
   @override
-  String get friendRequest => 'Arkadaşlık İsteği';
+  String get friendRequest => 'Friend Request';
 
   @override
-  String get friendRequestAccepted => 'Arkadaşlık İsteği Kabul Edildi';
+  String get friendRequestAccepted => 'Friend Request Accepted';
 
   @override
-  String get friendRequestRejected => 'Arkadaşlık İsteği Reddedildi';
+  String get friendRequestRejected => 'Friend Request Rejected';
 
   @override
-  String get gameInvitation => 'Oyun Daveti';
+  String get gameInvitation => 'Game Invitation';
 
   @override
-  String get duelInvitation => 'Düello Daveti';
+  String get duelInvitation => 'Duel Invitation';
 
   @override
-  String get viewNotifications => 'Bildirimleri Görüntüle';
+  String get viewNotifications => 'View Notifications';
 
   @override
   String notificationDescription(Object count) {
-    return '$count okunmamış bildiriminiz var';
+    return 'You have $count unread notifications';
   }
 
   @override
   String get noNotificationsDescription =>
-      'Bildirimleriniz burada görünecek';
+      'Your notifications will appear here when you receive them';
 
   @override
-  String get justNow => 'Az önce';
+  String get justNow => 'Just now';
 
   @override
-  String get minutesAgo => 'dakika önce';
+  String get minutesAgo => 'minutes ago';
 
   @override
-  String get hoursAgo => 'saat önce';
+  String get hoursAgo => 'hours ago';
 
   @override
-  String get daysAgo => 'gün önce';
+  String get daysAgo => 'days ago';
 
   @override
   String get welcomeBack => 'Welcome Back';

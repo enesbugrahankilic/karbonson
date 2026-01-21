@@ -340,14 +340,67 @@ class NotificationService {
   }) async {
     await saveNotification(
       recipientId: recipientId,
-      type: NotificationType.general,
-      title: '🏆 Başarı Kazanıldı!',
+      type: NotificationType.achievementEarned,
+      title: '🏆 Başarım Kazanıldı!',
       message: '$achievementTitle: $achievementDescription',
       additionalData: {
         'notificationType': 'achievement',
         'achievementTitle': achievementTitle,
         'achievementDescription': achievementDescription,
         'achievementIcon': achievementIcon,
+      },
+    );
+  }
+
+  /// Create daily task completed notification
+  Future<void> createDailyTaskCompletedNotification({
+    required String recipientId,
+    required String taskName,
+  }) async {
+    await saveNotification(
+      recipientId: recipientId,
+      type: NotificationType.dailyTaskCompleted,
+      title: '📅 Günlük Görev Tamamlandı',
+      message: '$taskName görevi tamamladınız!',
+      additionalData: {
+        'notificationType': 'daily_task_completed',
+        'taskName': taskName,
+      },
+    );
+  }
+
+  /// Create reward box earned notification
+  Future<void> createRewardBoxEarnedNotification({
+    required String recipientId,
+    required String boxType,
+  }) async {
+    await saveNotification(
+      recipientId: recipientId,
+      type: NotificationType.rewardBoxEarned,
+      title: '🎁 Ödül Kutusu Kazanıldı',
+      message: '$boxType kutusu kazandınız!',
+      additionalData: {
+        'notificationType': 'reward_box_earned',
+        'boxType': boxType,
+      },
+    );
+  }
+
+  /// Create box opened notification
+  Future<void> createBoxOpenedNotification({
+    required String recipientId,
+    required String boxType,
+    required String reward,
+  }) async {
+    await saveNotification(
+      recipientId: recipientId,
+      type: NotificationType.boxOpened,
+      title: '🎉 Kutu Açıldı',
+      message: '$boxType kutusundan $reward kazandınız!',
+      additionalData: {
+        'notificationType': 'box_opened',
+        'boxType': boxType,
+        'reward': reward,
       },
     );
   }

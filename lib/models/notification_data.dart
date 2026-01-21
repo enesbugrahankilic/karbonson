@@ -8,6 +8,10 @@ enum NotificationType {
   friendRequestRejected,
   gameInvite,
   gameInviteAccepted,
+  dailyTaskCompleted,
+  rewardBoxEarned,
+  boxOpened,
+  achievementEarned,
   general,
 }
 

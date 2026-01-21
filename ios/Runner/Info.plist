@@ -97,5 +97,18 @@
 		<string>applinks:*.page.link</string>
 		<string>applinks:karbonson.page.link</string>
 	</array>
+	
+	<!-- URL Schemes for External Apps (WhatsApp, etc.) -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>whatsapp</string>
+		<string>whatsapp://</string>
+		<string>mailto</string>
+		<string>tg</string>
+		<string>twitter</string>
+		<string>facebook</string>
+		<string>instagram</string>
+		<string>karbonson</string>
+	</array>
 </dict>
 </plist>
