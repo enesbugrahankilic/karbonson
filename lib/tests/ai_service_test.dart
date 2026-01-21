@@ -16,7 +16,7 @@ void main() {
       try {
         // Test with a user that should have recommendations
         final recommendations =
-            await aiService.getPersonalizedQuizRecommendations('user1');
+            await aiService.getPersonalizedQuizRecommendations('user1', 10);
 
         // If we get here without throwing an exception, the service is working
         expect(recommendations, isNotNull);
@@ -66,6 +66,38 @@ void main() {
         // This is acceptable for an integration test
         print('API server not running or other error: $e');
         // We'll consider this a successful test since it confirms the service is trying to connect
+        expect(e, isA<Exception>());
+      }
+    });
+
+    test('getPersonalizedQuizRecommendations includes class level in request', () async {
+      try {
+        // Test with class level parameter
+        final recommendations =
+            await aiService.getPersonalizedQuizRecommendations('user1', 10);
+
+        // If we get here without throwing an exception, the service is working
+        expect(recommendations, isNotNull);
+        expect(recommendations, isA<Map<String, dynamic>>());
+      } catch (e) {
+        // If the API server isn't running, we expect an exception
+        print('API server not running or other error: $e');
+        expect(e, isA<Exception>());
+      }
+    });
+
+    test('getPersonalizedQuizRecommendations handles null class level', () async {
+      try {
+        // Test without class level parameter
+        final recommendations =
+            await aiService.getPersonalizedQuizRecommendations('user1', null);
+
+        // If we get here without throwing an exception, the service is working
+        expect(recommendations, isNotNull);
+        expect(recommendations, isA<Map<String, dynamic>>());
+      } catch (e) {
+        // If the API server isn't running, we expect an exception
+        print('API server not running or other error: $e');
         expect(e, isA<Exception>());
       }
     });

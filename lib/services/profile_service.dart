@@ -212,6 +212,8 @@ class ProfileService {
     String? profilePictureUrl,
     user_model.PrivacySettings? privacySettings,
     User? user,
+    int? classLevel,
+    String? classSection,
   }) async {
     try {
       final currentUser = user ?? _auth.currentUser;
@@ -227,6 +229,8 @@ class ProfileService {
         nickname: nickname,
         profilePictureUrl: profilePictureUrl,
         privacySettings: privacySettings,
+        classLevel: classLevel,
+        classSection: classSection,
       );
 
       if (kDebugMode) {

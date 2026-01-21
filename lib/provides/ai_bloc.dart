@@ -8,8 +8,9 @@ abstract class AIState {}
 
 class LoadRecommendations extends AIEvent {
   final String userId;
+  final int? classLevel;
 
-  LoadRecommendations(this.userId);
+  LoadRecommendations(this.userId, this.classLevel);
 }
 
 class SetNotAuthenticated extends AIEvent {
@@ -55,7 +56,7 @@ class AIBloc extends Bloc<AIEvent, AIState> {
     try {
       emit(AILoading());
       final data =
-          await aiService.getPersonalizedQuizRecommendations(event.userId);
+          await aiService.getPersonalizedQuizRecommendations(event.userId, event.classLevel);
 
       final recommendations = (data['recommendations'] as List)
           .map((item) => AIRecommendation.fromJson(item))

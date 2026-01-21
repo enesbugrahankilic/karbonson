@@ -6,6 +6,7 @@ import '../provides/ai_bloc.dart';
 import '../widgets/ai_recommendation_widget.dart';
 import '../widgets/empty_state_widget.dart';
 import '../utils/firebase_logger.dart';
+import '../services/profile_service.dart';
 
 class AIRecommendationsPage extends StatefulWidget {
   const AIRecommendationsPage({super.key});
@@ -23,14 +24,23 @@ class _AIRecommendationsPageState extends State<AIRecommendationsPage> {
     });
   }
 
-  void _loadRecommendations(BuildContext context) {
+  void _loadRecommendations(BuildContext context) async {
     if (kDebugMode) {
       debugPrint('🎯 [AI_PAGE] Loading AI recommendations...');
     }
 
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      BlocProvider.of<AIBloc>(context).add(LoadRecommendations(user.uid));
+      // Get user profile to access class level
+      final profileService = ProfileService();
+      final userData = await profileService.getUserProfile();
+      final classLevel = userData?.classLevel;
+
+      if (kDebugMode) {
+        debugPrint('🎯 [AI_PAGE] User class level: $classLevel');
+      }
+
+      BlocProvider.of<AIBloc>(context).add(LoadRecommendations(user.uid, classLevel));
     } else {
       if (kDebugMode) {
         debugPrint('❌ [AI_PAGE] No user logged in');

@@ -8,10 +8,17 @@ class AIService {
   AIService({required this.baseUrl});
 
   Future<Map<String, dynamic>> getPersonalizedQuizRecommendations(
-      String userId) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/recommendations?user_id=$userId'),
-    );
+      String userId, int? classLevel) async {
+    final queryParams = {
+      'user_id': userId,
+      if (classLevel != null) 'class_level': classLevel.toString(),
+    };
+    final uri = Uri.parse('$baseUrl/recommendations').replace(queryParameters: queryParams);
+
+    print('AI Service: Getting recommendations for user $userId, class level: $classLevel');
+    print('AI Service: Request URL: $uri');
+
+    final response = await http.get(uri);
 
     if (response.statusCode == 200) {
       return json.decode(response.body);

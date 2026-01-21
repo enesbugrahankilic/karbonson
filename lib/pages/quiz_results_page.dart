@@ -47,6 +47,10 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
   bool _rewardsGranted = false;
   String? _errorMessage;
 
+  // Carbon footprint calculation
+  double _carbonFootprint = 0.0;
+  String _carbonFootprintCategory = '';
+
   // Animation controllers
   late AnimationController _scoreAnimationController;
   late AnimationController _boxesAnimationController;
@@ -66,6 +70,7 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
     _initializeServices();
     _grantRewards();
     _updateDailyTasks();
+    _calculateCarbonFootprint();
   }
 
   @override
@@ -206,6 +211,23 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
       });
     } catch (e) {
       debugPrint('Error updating daily tasks: $e');
+    }
+  }
+
+  void _calculateCarbonFootprint() {
+    // Calculate carbon footprint based on quiz score
+    // Assuming higher score means better environmental awareness (lower footprint)
+    final percentage = widget.totalQuestions > 0 ? (widget.correctAnswers / widget.totalQuestions) : 0.0;
+    _carbonFootprint = (100 - (percentage * 100)) * 0.1; // Example calculation
+
+    if (_carbonFootprint < 2.0) {
+      _carbonFootprintCategory = 'Çok Düşük';
+    } else if (_carbonFootprint < 5.0) {
+      _carbonFootprintCategory = 'Düşük';
+    } else if (_carbonFootprint < 8.0) {
+      _carbonFootprintCategory = 'Orta';
+    } else {
+      _carbonFootprintCategory = 'Yüksek';
     }
   }
 
@@ -399,6 +421,91 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
                       ),
                     );
                   },
+                ),
+
+                const SizedBox(height: DesignSystem.spacingXl),
+
+                // Carbon Footprint Display
+                FadeTransition(
+                  opacity: _celebrationController,
+                  child: Container(
+                    padding: const EdgeInsets.all(DesignSystem.spacingXl),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.green.withOpacity(0.2),
+                          Colors.green.withOpacity(0.1),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+                      border: Border.all(
+                        color: Colors.green.withOpacity(0.3),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.eco,
+                              color: Colors.green,
+                              size: 32,
+                            ),
+                            const SizedBox(width: DesignSystem.spacingM),
+                            Text(
+                              'Karbon Ayak İzi',
+                              style: AppTheme.getGameQuestionStyle(context).copyWith(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: DesignSystem.spacingL),
+                        Text(
+                          '${_carbonFootprint.toStringAsFixed(1)} ton CO₂/ yıl',
+                          style: AppTheme.getGameScoreStyle(context).copyWith(
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: DesignSystem.spacingM),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: DesignSystem.spacingM,
+                            vertical: DesignSystem.spacingS,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                          ),
+                          child: Text(
+                            _carbonFootprintCategory,
+                            style: DesignSystem.getTitleMedium(context).copyWith(
+                              color: Colors.green,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: DesignSystem.spacingM),
+                        Text(
+                          'Çevre bilinciniz arttıkça karbon ayak iziniz azalır!',
+                          style: DesignSystem.getBodyMedium(context).copyWith(
+                            color: ThemeColors.getSecondaryText(context),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
 
                 const SizedBox(height: DesignSystem.spacingXl),

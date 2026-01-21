@@ -25,16 +25,20 @@ class _LeaderboardPageState extends State<LeaderboardPage>
 
   // Global leaderboard data
   List<Map<String, dynamic>> _globalLeaderboard = [];
-  
-  // Friends leaderboard data  
+
+  // Friends leaderboard data
   List<Map<String, dynamic>> _friendsLeaderboard = [];
-  
+
   // Loading states
   bool _isLoading = true;
-  
+
   // Category data - dynamically loaded
   Map<String, List<Map<String, dynamic>>> _categoryData = {};
   bool _isLoadingCategories = true;
+
+  // Class and section filters
+  int? _selectedClassLevel;
+  String? _selectedClassSection;
 
   @override
   void initState() {
@@ -53,7 +57,7 @@ class _LeaderboardPageState extends State<LeaderboardPage>
     setState(() => _isLoading = true);
 
     try {
-      // Load global leaderboard from Firestore
+      // Load global leaderboard from Firestore with filters
       _globalLeaderboard = await _loadGlobalLeaderboard();
 
       // Load friends leaderboard from Firestore
@@ -136,8 +140,11 @@ class _LeaderboardPageState extends State<LeaderboardPage>
 
   Future<List<Map<String, dynamic>>> _loadGlobalLeaderboard() async {
     try {
-      // Get leaderboard data from Firestore
-      final leaderboardData = await _firestoreService.getLeaderboard();
+      // Get leaderboard data from Firestore with class filters
+      final leaderboardData = await _firestoreService.getLeaderboard(
+        classLevel: _selectedClassLevel,
+        classSection: _selectedClassSection,
+      );
 
       if (leaderboardData.isEmpty) {
         return [];
@@ -150,7 +157,7 @@ class _LeaderboardPageState extends State<LeaderboardPage>
         final index = entry.key;
         final user = entry.value;
         final score = user['score'] as int? ?? 0;
-        
+
         // Calculate level based on score (approx 500 points per level)
         final level = (score / 500).floor() + 1;
 
@@ -164,6 +171,8 @@ class _LeaderboardPageState extends State<LeaderboardPage>
           'achievements': user['achievements'] as int? ?? 0,
           'winRate': user['winRate'] as double? ?? 0.0,
           'isCurrentUser': user['uid'] == currentUserUid || user['userId'] == currentUserUid,
+          'classLevel': user['classLevel'] as int?,
+          'classSection': user['classSection'] as String?,
         };
       }).toList();
     } catch (e) {
@@ -285,16 +294,101 @@ class _LeaderboardPageState extends State<LeaderboardPage>
           indicatorColor: Theme.of(context).primaryColor,
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
+      body: Column(
+        children: [
+          // Class and Section Filter
+          Container(
+            padding: const EdgeInsets.all(16),
+            color: Theme.of(context).cardColor,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildGlobalLeaderboard(),
-                _buildFriendsLeaderboard(),
-                _buildCategoriesLeaderboard(),
+                Text(
+                  'Filtrele',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<int?>(
+                        value: _selectedClassLevel,
+                        decoration: InputDecoration(
+                          labelText: 'Sınıf',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        items: [
+                          const DropdownMenuItem(value: null, child: Text('Tümü')),
+                          const DropdownMenuItem(value: 9, child: Text('9. Sınıf')),
+                          const DropdownMenuItem(value: 10, child: Text('10. Sınıf')),
+                          const DropdownMenuItem(value: 11, child: Text('11. Sınıf')),
+                          const DropdownMenuItem(value: 12, child: Text('12. Sınıf')),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedClassLevel = value;
+                          });
+                          _loadLeaderboards();
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: DropdownButtonFormField<String?>(
+                        value: _selectedClassSection,
+                        decoration: InputDecoration(
+                          labelText: 'Şube',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        items: [
+                          const DropdownMenuItem(value: null, child: Text('Tümü')),
+                          const DropdownMenuItem(value: 'A', child: Text('A Şubesi')),
+                          const DropdownMenuItem(value: 'B', child: Text('B Şubesi')),
+                          const DropdownMenuItem(value: 'C', child: Text('C Şubesi')),
+                          const DropdownMenuItem(value: 'D', child: Text('D Şubesi')),
+                          if (_selectedClassLevel != 9) ...[
+                            const DropdownMenuItem(value: 'E', child: Text('E Şubesi')),
+                            const DropdownMenuItem(value: 'F', child: Text('F Şubesi')),
+                          ],
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedClassSection = value;
+                          });
+                          _loadLeaderboards();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
+          ),
+          // TabBarView
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildGlobalLeaderboard(),
+                      _buildFriendsLeaderboard(),
+                      _buildCategoriesLeaderboard(),
+                    ],
+                  ),
+          ),
+        ],
+      ),
     );
   }
 

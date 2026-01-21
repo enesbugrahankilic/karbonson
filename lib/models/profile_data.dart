@@ -9,6 +9,8 @@ class ServerProfileData {
   final String? profilePictureUrl;
   final DateTime? lastLogin;
   final DateTime? createdAt;
+  final int? classLevel;
+  final String? classSection;
 
   ServerProfileData({
     required this.uid,
@@ -16,6 +18,8 @@ class ServerProfileData {
     this.profilePictureUrl,
     this.lastLogin,
     this.createdAt,
+    this.classLevel,
+    this.classSection,
   });
 
   factory ServerProfileData.fromMap(Map<String, dynamic> map) {
@@ -25,6 +29,8 @@ class ServerProfileData {
       profilePictureUrl: map['profilePictureUrl'],
       lastLogin: DateTimeParser.parse(map['lastLogin']),
       createdAt: DateTimeParser.parse(map['createdAt']),
+      classLevel: map['classLevel'],
+      classSection: map['classSection'],
     );
   }
 
@@ -34,6 +40,8 @@ class ServerProfileData {
     String? profilePictureUrl,
     DateTime? lastLogin,
     DateTime? createdAt,
+    int? classLevel,
+    String? classSection,
   }) {
     return ServerProfileData(
       uid: uid ?? this.uid,
@@ -41,6 +49,8 @@ class ServerProfileData {
       profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
       lastLogin: lastLogin ?? this.lastLogin,
       createdAt: createdAt ?? this.createdAt,
+      classLevel: classLevel ?? this.classLevel,
+      classSection: classSection ?? this.classSection,
     );
   }
 
@@ -51,6 +61,8 @@ class ServerProfileData {
       'profilePictureUrl': profilePictureUrl,
       'lastLogin': DateTimeParser.toTimestamp(lastLogin),
       'createdAt': DateTimeParser.toTimestamp(createdAt),
+      'classLevel': classLevel,
+      'classSection': classSection,
     };
   }
 }

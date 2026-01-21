@@ -19,6 +19,10 @@ class _AchievementPageState extends State<AchievementPage>
     with TickerProviderStateMixin {
   late TabController _tabController;
 
+  // Class and section filters
+  int? _selectedClassLevel;
+  String? _selectedClassSection;
+
   @override
   void initState() {
     super.initState();

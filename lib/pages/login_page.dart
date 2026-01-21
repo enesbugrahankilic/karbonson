@@ -33,9 +33,14 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
-  final TextEditingController _nicknameController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  final ProfileService _profileService = ProfileService();
+   final TextEditingController _nicknameController = TextEditingController();
+   final _formKey = GlobalKey<FormState>();
+   final ProfileService _profileService = ProfileService();
+
+   // Sınıf ve şube seçim state'leri
+   int? _selectedClass;
+   String? _selectedBranch;
+   String? _errorMessage;
 
   // Animation controllers
   late AnimationController _fadeController;
@@ -328,7 +333,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   }
 
   Future<void> _startGame() async {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState!.validate() && _validateForm()) {
       final nickname = _nicknameController.text;
 
       // Cache the username for future use
@@ -374,6 +379,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             await profileService.initializeProfile(
               nickname: nickname,
               user: user, // Pass user to avoid race condition
+              classLevel: _selectedClass,
+              classSection: _selectedBranch,
             );
 
             if (kDebugMode) {
@@ -736,6 +743,53 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     }
   }
 
+  /// Sınıf seçeneklerini döndürür
+  List<int> get _classOptions => [9, 10, 11, 12];
+
+  /// Seçilen sınıfa göre şube seçeneklerini döndürür
+  List<String> _getBranchOptions(int? selectedClass) {
+    if (selectedClass == null) return [];
+    if (selectedClass == 9) return ['A', 'B', 'C', 'D'];
+    return ['A', 'B', 'C', 'D', 'E', 'F'];
+  }
+
+  /// Sınıf değiştiğinde çağrılır
+  void _onClassChanged(int? newClass) {
+    if (kDebugMode) {
+      debugPrint('LoginPage: Class changed from $_selectedClass to $newClass');
+    }
+    setState(() {
+      _selectedClass = newClass;
+      _selectedBranch = null; // Şubeyi resetle
+      _errorMessage = null; // Hata mesajını temizle
+    });
+  }
+
+  /// Şube değiştiğinde çağrılır
+  void _onBranchChanged(String? newBranch) {
+    setState(() {
+      _selectedBranch = newBranch;
+      _errorMessage = null; // Hata mesajını temizle
+    });
+  }
+
+  /// Form validasyonunu gerçekleştirir
+  bool _validateForm() {
+    if (kDebugMode) {
+      debugPrint('LoginPage: Validating form - Class: $_selectedClass, Branch: $_selectedBranch');
+    }
+    if (_selectedClass == null) {
+      setState(() => _errorMessage = 'Lütfen bir sınıf seçin');
+      return false;
+    }
+    if (_selectedBranch == null) {
+      setState(() => _errorMessage = 'Lütfen bir şube seçin');
+      return false;
+    }
+    setState(() => _errorMessage = null);
+    return true;
+  }
+
   /// Show logout confirmation dialog
   void _showLogoutDialog() {
     showDialog(
@@ -831,6 +885,104 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         );
       }
     }
+  }
+
+  /// Sınıf dropdown widget'ı
+  Widget _buildClassDropdown() {
+    return DropdownButtonFormField<int>(
+      value: _selectedClass,
+      decoration: DesignSystem.getInputDecoration(
+        context,
+        labelText: 'Sınıf',
+        hintText: 'Sınıfınızı seçin',
+        prefixIcon: Icon(Icons.school,
+            color: ThemeColors.getSecondaryText(context)),
+      ),
+      items: _classOptions.map((int classNum) {
+        return DropdownMenuItem<int>(
+          value: classNum,
+          child: Text('$classNum. Sınıf'),
+        );
+      }).toList(),
+      onChanged: _onClassChanged,
+      validator: (value) {
+        if (value == null) {
+          return 'Lütfen bir sınıf seçin';
+        }
+        return null;
+      },
+      style: DesignSystem.getBodyLarge(context).copyWith(
+        fontSize: 16.0,
+      ),
+    );
+  }
+
+  /// Şube dropdown widget'ı
+  Widget _buildBranchDropdown() {
+    final branchOptions = _getBranchOptions(_selectedClass);
+
+    return DropdownButtonFormField<String>(
+      value: _selectedBranch,
+      decoration: DesignSystem.getInputDecoration(
+        context,
+        labelText: 'Şube',
+        hintText: _selectedClass == null ? 'Önce sınıf seçin' : 'Şubenizi seçin',
+        prefixIcon: Icon(Icons.class_,
+            color: ThemeColors.getSecondaryText(context)),
+      ),
+      items: branchOptions.map((String branch) {
+        return DropdownMenuItem<String>(
+          value: branch,
+          child: Text(branch),
+        );
+      }).toList(),
+      onChanged: _selectedClass == null ? null : _onBranchChanged,
+      validator: (value) {
+        if (_selectedClass != null && value == null) {
+          return 'Lütfen bir şube seçin';
+        }
+        return null;
+      },
+      style: DesignSystem.getBodyLarge(context).copyWith(
+        fontSize: 16.0,
+      ),
+    );
+  }
+
+  /// Hata mesajı widget'ı
+  Widget _buildErrorMessage() {
+    if (_errorMessage == null) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(DesignSystem.spacingS),
+      margin: const EdgeInsets.only(top: DesignSystem.spacingS),
+      decoration: BoxDecoration(
+        color: ThemeColors.getErrorColor(context).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(DesignSystem.radiusS),
+        border: Border.all(
+          color: ThemeColors.getErrorColor(context),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.error_outline,
+            color: ThemeColors.getErrorColor(context),
+            size: 20,
+          ),
+          const SizedBox(width: DesignSystem.spacingS),
+          Expanded(
+            child: Text(
+              _errorMessage!,
+              style: DesignSystem.getBodyMedium(context).copyWith(
+                color: ThemeColors.getErrorColor(context),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildHelpSection(String icon, String title, String content) {
@@ -1018,6 +1170,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                           return null;
                                         },
                                       ),
+                                      const SizedBox(height: DesignSystem.spacingM),
+                                      _buildClassDropdown(),
+                                      const SizedBox(height: DesignSystem.spacingM),
+                                      _buildBranchDropdown(),
+                                      _buildErrorMessage(),
                                     ],
                                   ),
                                 ),
@@ -1044,7 +1201,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   color: ThemeColors.getSecondaryButtonColor(
                                       context),
                                   onPressed: () {
-                                    if (_formKey.currentState!.validate()) {
+                                    if (_formKey.currentState!.validate() && _validateForm()) {
                                       _shouldRequireLogin()
                                           .then((requiresLogin) async {
                                         if (requiresLogin && !_isRegistered) {

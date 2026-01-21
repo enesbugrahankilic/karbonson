@@ -30,6 +30,9 @@ import 'enums/app_language.dart';
 import 'theme/app_theme.dart';
 import 'core/navigation/app_router.dart';
 import 'core/navigation/navigation_service.dart';
+import 'services/analytics_service.dart';
+import 'services/session_management_service.dart';
+import 'services/backend_validation_service.dart';
 
 void main() {
   // Run the app inside a guarded zone; call ensureInitialized and runApp
@@ -37,9 +40,17 @@ void main() {
   runZonedGuarded(() {
     WidgetsFlutterBinding.ensureInitialized();
 
+    // Initialize analytics first for crash reporting
+    AnalyticsService().initialize();
+
     // Forward Flutter framework errors into the current zone so runZonedGuarded can catch them
     FlutterError.onError = (FlutterErrorDetails details) {
       FlutterError.dumpErrorToConsole(details);
+      AnalyticsService().logCrash(
+        details.exception,
+        details.stack ?? StackTrace.current,
+        reason: 'Flutter Error',
+      );
       Zone.current.handleUncaughtError(
           details.exception, details.stack ?? StackTrace.current);
     };
@@ -66,6 +77,7 @@ void main() {
     // Log uncaught errors from the zone
     if (kDebugMode) debugPrint('Uncaught zone error: $error');
     if (kDebugMode) debugPrint('$stack');
+    AnalyticsService().logCrash(error, stack, reason: 'Zone Error');
   });
 }
 

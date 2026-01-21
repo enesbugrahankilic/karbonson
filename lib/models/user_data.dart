@@ -47,6 +47,10 @@ class UserData {
   final int longestStreak;         // For "Streak Kings" category
   final int quizCount;             // For "Quiz Masters" category
 
+  // Class and Section Information
+  final int? classLevel;           // 9, 10, 11, 12
+  final String? classSection;      // A, B, C, D, E, F
+
   const UserData({
     required this.uid,
     required this.nickname,
@@ -71,6 +75,8 @@ class UserData {
     this.duelWins = 0,
     this.longestStreak = 0,
     this.quizCount = 0,
+    this.classLevel,
+    this.classSection,
   });
 
   factory UserData.fromMap(Map<String, dynamic> map, String documentId) {
@@ -111,6 +117,9 @@ class UserData {
       duelWins: map['duelWins'] ?? 0,
       longestStreak: map['longestStreak'] ?? 0,
       quizCount: map['quizCount'] ?? 0,
+      // Class and section information
+      classLevel: map['classLevel'],
+      classSection: map['classSection'],
     );
   }
 
@@ -140,6 +149,9 @@ class UserData {
       'duelWins': duelWins,
       'longestStreak': longestStreak,
       'quizCount': quizCount,
+      // Class and section information
+      'classLevel': classLevel,
+      'classSection': classSection,
     };
   }
 
@@ -167,6 +179,8 @@ class UserData {
     int? duelWins,
     int? longestStreak,
     int? quizCount,
+    int? classLevel,
+    String? classSection,
   }) {
     return UserData(
       uid: uid ?? this.uid,
@@ -192,6 +206,8 @@ class UserData {
       duelWins: duelWins ?? this.duelWins,
       longestStreak: longestStreak ?? this.longestStreak,
       quizCount: quizCount ?? this.quizCount,
+      classLevel: classLevel ?? this.classLevel,
+      classSection: classSection ?? this.classSection,
     );
   }
 }

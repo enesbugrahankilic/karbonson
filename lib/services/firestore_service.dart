@@ -83,12 +83,28 @@ class FirestoreService {
 
   /// Tüm skorları puana göre azalan sırada (en yüksekten en düşüğe) çeker.
   /// Updated: Filters out users with score <= 0 for better leaderboard display
-  Future<List<Map<String, dynamic>>> getLeaderboard() async {
+  Future<List<Map<String, dynamic>>> getLeaderboard({int? classLevel, String? classSection}) async {
     FirebaseLogger.log('LEADERBOARD', 'Fetching leaderboard data from Firestore');
     try {
-      final querySnapshot = await _db
+      Query query = _db
           .collection(_usersCollection)
-          .where('score', isGreaterThan: 0) // Only users with actual scores
+          .where('score', isGreaterThan: 0); // Only users with actual scores
+
+      // Add class and section filters if provided
+      if (classLevel != null) {
+        query = query.where('classLevel', isEqualTo: classLevel);
+        if (kDebugMode) {
+          debugPrint('Leaderboard: Filtering by class level: $classLevel');
+        }
+      }
+      if (classSection != null) {
+        query = query.where('classSection', isEqualTo: classSection);
+        if (kDebugMode) {
+          debugPrint('Leaderboard: Filtering by class section: $classSection');
+        }
+      }
+
+      final querySnapshot = await query
           .orderBy('score', descending: true) // Sort by score descending
           .get();
 
@@ -99,15 +115,18 @@ class FirestoreService {
 
       // Map documents to data with proper error handling
       return querySnapshot.docs.map((doc) {
-        final data = doc.data();
+        final data = doc.data() as Map<String, dynamic>?;
+        if (data == null) return null;
         // Ensure required fields exist with defaults
         return {
           'nickname': data['nickname'] as String? ?? 'Anonim',
           'score': data['score'] as int? ?? 0,
           'avatarUrl': data['avatarUrl'] as String?,
           'uid': data['uid'] as String? ?? doc.id, // Use document ID as fallback
+          'classLevel': data['classLevel'] as int?,
+          'classSection': data['classSection'] as String?,
         };
-      }).toList();
+      }).where((item) => item != null).cast<Map<String, dynamic>>().toList();
     } catch (e) {
       FirebaseLogger.log('LEADERBOARD', 'Error fetching leaderboard: $e');
       if (kDebugMode) {
@@ -677,6 +696,8 @@ class FirestoreService {
     String? profilePictureUrl,
     PrivacySettings? privacySettings,
     String? fcmToken,
+    int? classLevel,
+    String? classSection,
   }) async {
     try {
       final user = _auth.currentUser;
@@ -700,6 +721,22 @@ class FirestoreService {
         return null;
       }
 
+      // Validate class and section combination
+      if (classLevel != null && classSection != null) {
+        final classSectionValidation = _validateClassSection(classLevel, classSection);
+        if (!classSectionValidation.isValid) {
+          if (kDebugMode) {
+            debugPrint('❌ Class-section validation failed: ${classSectionValidation.error}');
+            debugPrint('   Class: $classLevel, Section: $classSection');
+          }
+          return null;
+        } else {
+          if (kDebugMode) {
+            debugPrint('✅ Class-section validation passed: Class $classLevel, Section $classSection');
+          }
+        }
+      }
+
       final userData = UserData(
         uid: user.uid, // Always use document ID as UID
         nickname: nickname,
@@ -710,6 +747,8 @@ class FirestoreService {
         isAnonymous: user.isAnonymous,
         privacySettings: privacySettings ?? const PrivacySettings.defaults(),
         fcmToken: fcmToken,
+        classLevel: classLevel,
+        classSection: classSection,
       );
 
       await userDocRef.set(userData.toMap(), SetOptions(merge: true));
@@ -1051,6 +1090,25 @@ class FirestoreService {
       if (kDebugMode) debugPrint('🚨 Error adding game result: $e');
       return false;
     }
+  }
+
+  /// Validate class and section combination
+  /// 9th grade: A-D sections, 10-12th grades: A-F sections
+  ({bool isValid, String error}) _validateClassSection(int? classLevel, String? classSection) {
+    if (classLevel == null || classSection == null) {
+      return (isValid: true, error: ''); // Optional fields, allow null
+    }
+
+    final validSections = classLevel == 9 ? ['A', 'B', 'C', 'D'] : ['A', 'B', 'C', 'D', 'E', 'F'];
+
+    if (!validSections.contains(classSection.toUpperCase())) {
+      return (
+        isValid: false,
+        error: '$classLevel. sınıf için geçerli şubeler: ${validSections.join(', ')}'
+      );
+    }
+
+    return (isValid: true, error: '');
   }
 
   /// Clean up invalid or orphaned data (Specification I.2)
