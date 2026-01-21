@@ -9,7 +9,6 @@ import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../theme/app_theme.dart';
 import '../models/question.dart';
-import '../services/game_completion_service.dart';
 
 class QuizPage extends StatefulWidget {
   final QuizLogic quizLogic;
@@ -337,36 +336,6 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
     context.read<QuizBloc>().add(AnswerQuestion(answer, questionIndex));
   }
 
-  /// Send quiz completion event to backend
-  Future<void> _sendQuizCompletionEvent(QuizCompleted state) async {
-    if (_quizStartTime == null) return;
-    
-    // Calculate time spent
-    _timeSpentSeconds = DateTime.now().difference(_quizStartTime!).inSeconds;
-    
-    // Get category (use 'Tümü' if null)
-    final category = _selectedCategory ?? 'Tümü';
-    
-    // Get answers and correct answers list
-    final answers = state.answers.map((a) => a).toList();
-    final correctAnswersList = state.questions.map((q) {
-      final selectedAnswer = state.answers[state.questions.indexOf(q)];
-      final correctAnswer = q.options.firstWhere((o) => o.score > 0).text;
-      return selectedAnswer == correctAnswer;
-    }).toList();
-    
-    // Send completion event
-    await QuizCompletionHelper.completeQuiz(
-      score: state.score,
-      totalQuestions: state.questions.length,
-      timeSpentSeconds: _timeSpentSeconds,
-      category: category,
-      difficulty: _difficultyDisplayName,
-      answers: answers,
-      correctAnswersList: correctAnswersList,
-    );
-  }
-
   Widget _buildScoreArea(dynamic state) {
     int score = 0;
     int currentQuestion = 0;
@@ -656,13 +625,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         }
 
         if (state is QuizCompleted) {
-          // Send completion event once
-          if (!_completionEventSent) {
-            _completionEventSent = true;
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _sendQuizCompletionEvent(state);
-            });
-          }
+          // Completion screen - backend was successful
           return Scaffold(
             extendBodyBehindAppBar: true,
             appBar: AppBar(
@@ -770,6 +733,198 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                                     vertical: DesignSystem.spacingM,
                                   ),
                                 ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        // Handle QuizCompletionInProgress state
+        if (state is QuizCompletionInProgress) {
+          return Scaffold(
+            extendBodyBehindAppBar: true,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: true,
+              title: const Text(
+                'Kaydediliyor...',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+            body: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: ThemeColors.getGradientColors(context),
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: SafeArea(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                      const SizedBox(height: DesignSystem.spacingL),
+                      Text(
+                        'Quiz sonucunuz kaydediliyor...',
+                        style: DesignSystem.getTitleMedium(context).copyWith(
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: DesignSystem.spacingS),
+                      Text(
+                        'Lütfen bekleyin',
+                        style: DesignSystem.getBodyMedium(context).copyWith(
+                          color: Colors.white.withOpacity(0.8),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        // Handle QuizCompletionError state
+        if (state is QuizCompletionError) {
+          return Scaffold(
+            extendBodyBehindAppBar: true,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: true,
+              title: const Text(
+                'Hata',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+            body: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: ThemeColors.getGradientColors(context),
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(DesignSystem.spacingM),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Score area
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: DesignSystem.spacingM),
+                        child: _buildScoreArea(state),
+                      ),
+                      
+                      // Error message
+                      FadeTransition(
+                        opacity: _fadeController,
+                        child: Container(
+                          padding: const EdgeInsets.all(DesignSystem.spacingXl),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.red.withOpacity(0.1),
+                                Colors.red.withOpacity(0.05),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+                            border: Border.all(
+                              color: Colors.red.withOpacity(0.3),
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                size: 80,
+                                color: Colors.red,
+                              ),
+                              const SizedBox(height: DesignSystem.spacingL),
+                              Text(
+                                'Bir Hata Oluştu!',
+                                style: AppTheme.getGameQuestionStyle(context).copyWith(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.red,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: DesignSystem.spacingM),
+                              Text(
+                                state.errorMessage,
+                                style: DesignSystem.getBodyMedium(context).copyWith(
+                                  fontSize: 16,
+                                  color: ThemeColors.getTitleColor(context),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: DesignSystem.spacingL),
+                              Text(
+                                'Puanınız: ${state.score}/${state.questions.length}',
+                                style: AppTheme.getGameScoreStyle(context).copyWith(
+                                  fontSize: 20,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: DesignSystem.spacingXl),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  ElevatedButton.icon(
+                                    onPressed: () => Navigator.pop(context, state.score),
+                                    icon: const Icon(Icons.home, color: Colors.white),
+                                    label: const Text('Ana Sayfaya Dön'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.grey,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: DesignSystem.spacingM,
+                                        vertical: DesignSystem.spacingS,
+                                      ),
+                                    ),
+                                  ),
+                                  ElevatedButton.icon(
+                                    onPressed: () {
+                                      context.read<QuizBloc>().add(const RetryQuizCompletion());
+                                    },
+                                    icon: const Icon(Icons.refresh, color: Colors.white),
+                                    label: const Text('Tekrar Dene'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: ThemeColors.getPrimaryButtonColor(context),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: DesignSystem.spacingM,
+                                        vertical: DesignSystem.spacingS,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),

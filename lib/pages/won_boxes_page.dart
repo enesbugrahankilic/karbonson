@@ -1,11 +1,13 @@
 // lib/pages/won_boxes_page.dart
 // Kazanılan Kutular (Won Boxes) Page - Ödül bölümü için açılmamış kutular
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 import '../models/loot_box.dart';
 import '../models/loot_box_reward.dart';
 import '../services/loot_box_service.dart';
+import '../services/state_refresh_service.dart';
 import '../widgets/loot_box_widget.dart';
 import '../utils/loot_box_animations.dart';
 
@@ -44,16 +46,21 @@ class _WonBoxesPageState extends State<WonBoxesPage> with TickerProviderStateMix
   // Tab controller for view types
   late TabController _tabController;
 
+  // Refresh subscription for force refresh
+  StreamSubscription<RefreshEvent>? _refreshSubscription;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _initializeService();
     _subscribeToStreams();
+    _subscribeToRefreshEvents();
   }
 
   @override
   void dispose() {
+    _refreshSubscription?.cancel();
     _tabController.dispose();
     super.dispose();
   }
@@ -92,6 +99,17 @@ class _WonBoxesPageState extends State<WonBoxesPage> with TickerProviderStateMix
     // Listen for reward reveal to refresh list
     _lootBoxService.rewardRevealedStream.listen((reward) {
       if (reward != null && mounted) {
+        _refreshBoxes();
+      }
+    });
+  }
+
+  /// Subscribe to state refresh events for force refresh
+  void _subscribeToRefreshEvents() {
+    _refreshSubscription = StateRefreshService().refreshStream.listen((event) {
+      if (mounted) {
+        debugPrint('🔄 WonBoxesPage received refresh event: ${event.type}');
+        // Refresh the boxes list when any relevant event occurs
         _refreshBoxes();
       }
     });

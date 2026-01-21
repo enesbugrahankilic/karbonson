@@ -8,6 +8,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/completion_data.dart';
+import 'state_refresh_service.dart';
+import 'daily_task_event_service.dart';
 
 /// Backend completion event gönderme servisi
 class GameCompletionService {
@@ -17,6 +19,9 @@ class GameCompletionService {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // Daily Task Event Service for automatic challenge progress updates
+  final DailyTaskEventService _dailyTaskService = DailyTaskEventService();
 
   // Offline queue for pending events
   final List<String> _pendingEvents = [];
@@ -97,6 +102,17 @@ class GameCompletionService {
           debugPrint('✅ Quiz completion event sent: ${event.eventId}');
           debugPrint('   Score: $score/$totalQuestions, Category: $category');
         }
+        
+        // Trigger state refresh after successful completion
+        _triggerRefreshAfterCompletion('quiz', score: score, category: category);
+        
+        // Update daily task challenge progress (event-driven)
+        await _dailyTaskService.onQuizCompleted(
+          category: category,
+          score: score,
+          correctAnswers: correctAnswers,
+          difficulty: difficulty,
+        );
       } else {
         // Add to queue for later
         await _addToQueue(event.toJsonString());
@@ -155,6 +171,15 @@ class GameCompletionService {
           debugPrint('✅ Game completion event sent: ${event.eventId}');
           debugPrint('   GameType: $gameType, Score: $finalScore, Position: $position');
         }
+        
+        // Update daily task challenge progress (event-driven)
+        // Only counts wins for duel/multiplayer challenges
+        await _dailyTaskService.onGamePlayed(
+          gameType: gameType,
+          finalScore: finalScore,
+          isWinner: isWinner,
+          position: position,
+        );
       } else {
         // Add to queue for later
         await _addToQueue(event.toJsonString());
@@ -310,6 +335,46 @@ class GameCompletionService {
     _syncTimer = null;
     await _savePendingEvents();
     _isInitialized = false;
+  }
+
+  /// Trigger state refresh after successful completion
+  /// This method calls StateRefreshService to update all related UI
+  void _triggerRefreshAfterCompletion(
+    String completionType, {
+    int? score,
+    dynamic category,
+    String? gameType,
+    int? position,
+  }) {
+    try {
+      if (completionType == 'quiz') {
+        StateRefreshService().triggerQuizCompletionRefresh(
+          score: score,
+          category: category?.toString(),
+        );
+      } else if (completionType == 'game') {
+        StateRefreshService().triggerGameCompletionRefresh(
+          gameType: gameType,
+          position: position,
+        );
+      } else {
+        StateRefreshService().triggerComprehensiveRefresh(
+          metadata: {
+            'completionType': completionType,
+            'score': score,
+            'gameType': gameType,
+          },
+        );
+      }
+      
+      if (kDebugMode) {
+        debugPrint('🔄 State refresh triggered after $completionType completion');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Error triggering state refresh: $e');
+      }
+    }
   }
 }
 

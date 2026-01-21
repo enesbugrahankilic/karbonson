@@ -50,6 +50,13 @@ class ChangeLanguage extends QuizEvent {
   List<Object> get props => [language];
 }
 
+class RetryQuizCompletion extends QuizEvent {
+  const RetryQuizCompletion();
+
+  @override
+  List<Object> get props => [];
+}
+
 // States
 abstract class QuizState extends Equatable {
   const QuizState();
@@ -108,6 +115,44 @@ class QuizCompleted extends QuizState {
   List<Object> get props => [questions, score, answers, currentLanguage];
 }
 
+/// State for when quiz completion is being processed by backend
+class QuizCompletionInProgress extends QuizState {
+  final List<Question> questions;
+  final int score;
+  final List<String> answers;
+  final AppLanguage currentLanguage;
+
+  const QuizCompletionInProgress({
+    required this.questions,
+    required this.score,
+    required this.answers,
+    this.currentLanguage = AppLanguage.turkish,
+  });
+
+  @override
+  List<Object> get props => [questions, score, answers, currentLanguage];
+}
+
+/// State for when quiz completion fails on backend
+class QuizCompletionError extends QuizState {
+  final List<Question> questions;
+  final int score;
+  final List<String> answers;
+  final AppLanguage currentLanguage;
+  final String errorMessage;
+
+  const QuizCompletionError({
+    required this.questions,
+    required this.score,
+    required this.answers,
+    required this.errorMessage,
+    this.currentLanguage = AppLanguage.turkish,
+  });
+
+  @override
+  List<Object> get props => [questions, score, answers, errorMessage, currentLanguage];
+}
+
 // Bloc
 class QuizBloc extends Bloc<QuizEvent, QuizState> {
   final QuizLogic quizLogic;
@@ -116,6 +161,7 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
     on<LoadQuiz>(_onLoadQuiz);
     on<AnswerQuestion>(_onAnswerQuestion);
     on<ChangeLanguage>(_onChangeLanguage);
+    on<RetryQuizCompletion>(_onRetryQuizCompletion);
   }
 
   Future<void> _onLoadQuiz(LoadQuiz event, Emitter<QuizState> emit) async {
@@ -184,18 +230,28 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
 
       // Check if this is the last question
       if (event.questionIndex == currentState.questions.length - 1) {
-        // Quiz completed - send completion event to backend
+        // Calculate correct answers list
+        final correctAnswersList = List<bool>.filled(currentState.questions.length, false);
+        for (int i = 0; i < currentState.questions.length; i++) {
+          final correctOption = currentState.questions[i].options.firstWhere((o) => o.score > 0);
+          correctAnswersList[i] = newAnswers[i] == correctOption.text;
+        }
+        
+        // Emit in-progress state to show loading in UI
+        emit(QuizCompletionInProgress(
+          questions: currentState.questions,
+          score: newScore,
+          answers: newAnswers,
+          currentLanguage: currentState.currentLanguage,
+        ));
+        
+        // Send completion event to backend
         final userId = FirebaseAuth.instance.currentUser?.uid;
+        bool backendSuccess = false;
+        String errorMessage = '';
+        
         if (userId != null) {
-          // Calculate correct answers list
-          final correctAnswersList = List<bool>.filled(currentState.questions.length, false);
-          for (int i = 0; i < currentState.questions.length; i++) {
-            final correctOption = currentState.questions[i].options.firstWhere((o) => o.score > 0);
-            correctAnswersList[i] = newAnswers[i] == correctOption.text;
-          }
-          
-          // Send completion event to backend
-          await GameCompletionService().sendQuizCompletion(
+          backendSuccess = await GameCompletionService().sendQuizCompletion(
             score: newScore,
             totalQuestions: currentState.questions.length,
             correctAnswers: correctAnswersList.where((a) => a).length,
@@ -209,15 +265,33 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
             answers: newAnswers,
             correctAnswersList: correctAnswersList,
           );
+          
+          if (!backendSuccess) {
+            errorMessage = 'Sunucuya kaydedilemedi. Lütfen internet bağlantınızı kontrol edin.';
+          }
+        } else {
+          errorMessage = 'Kullanıcı girişi yapılmamış.';
+          backendSuccess = true; // Allow proceeding if no user (for testing)
         }
         
-        // Quiz completed
-        emit(QuizCompleted(
-          questions: currentState.questions,
-          score: newScore,
-          answers: newAnswers,
-          currentLanguage: currentState.currentLanguage,
-        ));
+        if (backendSuccess) {
+          // Backend success - show completion screen
+          emit(QuizCompleted(
+            questions: currentState.questions,
+            score: newScore,
+            answers: newAnswers,
+            currentLanguage: currentState.currentLanguage,
+          ));
+        } else {
+          // Backend failed - show error
+          emit(QuizCompletionError(
+            questions: currentState.questions,
+            score: newScore,
+            answers: newAnswers,
+            errorMessage: errorMessage,
+            currentLanguage: currentState.currentLanguage,
+          ));
+        }
       } else {
         // Continue to next question
         final nextIndex = event.questionIndex + 1;
@@ -226,6 +300,65 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
           currentQuestion: nextIndex,
           score: newScore,
           answers: newAnswers,
+          currentLanguage: currentState.currentLanguage,
+        ));
+      }
+    }
+  }
+
+  Future<void> _onRetryQuizCompletion(
+      RetryQuizCompletion event, Emitter<QuizState> emit) async {
+    final currentState = state;
+    if (currentState is QuizCompletionError) {
+      // Emit in-progress state
+      emit(QuizCompletionInProgress(
+        questions: currentState.questions,
+        score: currentState.score,
+        answers: currentState.answers,
+        currentLanguage: currentState.currentLanguage,
+      ));
+      
+      // Calculate correct answers list
+      final correctAnswersList = List<bool>.filled(currentState.questions.length, false);
+      for (int i = 0; i < currentState.questions.length; i++) {
+        final correctOption = currentState.questions[i].options.firstWhere((o) => o.score > 0);
+        correctAnswersList[i] = currentState.answers[i] == correctOption.text;
+      }
+      
+      // Retry sending completion event to backend
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      bool backendSuccess = false;
+      
+      if (userId != null) {
+        backendSuccess = await GameCompletionService().sendQuizCompletion(
+          score: currentState.score,
+          totalQuestions: currentState.questions.length,
+          correctAnswers: correctAnswersList.where((a) => a).length,
+          timeSpentSeconds: 0,
+          category: currentState.questions.isNotEmpty 
+              ? currentState.questions[0].category 
+              : 'General',
+          difficulty: 'medium',
+          answers: currentState.answers,
+          correctAnswersList: correctAnswersList,
+        );
+      }
+      
+      if (backendSuccess) {
+        // Backend success - show completion screen
+        emit(QuizCompleted(
+          questions: currentState.questions,
+          score: currentState.score,
+          answers: currentState.answers,
+          currentLanguage: currentState.currentLanguage,
+        ));
+      } else {
+        // Backend still failed - show error again
+        emit(QuizCompletionError(
+          questions: currentState.questions,
+          score: currentState.score,
+          answers: currentState.answers,
+          errorMessage: 'Tekrar denendi ancak sunucuya kaydedilemedi.',
           currentLanguage: currentState.currentLanguage,
         ));
       }
