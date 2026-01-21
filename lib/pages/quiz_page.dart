@@ -9,6 +9,7 @@ import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../theme/app_theme.dart';
 import '../models/question.dart';
+import '../services/game_completion_service.dart';
 
 class QuizPage extends StatefulWidget {
   final QuizLogic quizLogic;
@@ -24,6 +25,12 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
   String? _selectedCategory;
   DifficultyLevel _selectedDifficulty = DifficultyLevel.medium; // quiz_settings_page ile tutarlı
   int _selectedQuestionCount = 15;
+  
+  // Time tracking
+  DateTime? _quizStartTime;
+  int _timeSpentSeconds = 0;
+  String _difficultyDisplayName = 'Orta';
+  bool _completionEventSent = false;
 
   // Animation controllers
   late AnimationController _fadeController;
@@ -73,7 +80,10 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         _selectedCategory = passedCategory;
         if (passedDifficulty != null) {
           _selectedDifficulty = passedDifficulty;
+          _difficultyDisplayName = passedDifficulty.displayName;
         }
+        // Start time tracking
+        _quizStartTime = DateTime.now();
         context.read<QuizBloc>().add(LoadQuiz(
             category: passedCategory == 'Tümü' ? null : passedCategory,
             difficulty: passedDifficulty ?? _selectedDifficulty,
@@ -281,6 +291,9 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         _selectedCategory = selectedCategory;
         _selectedDifficulty = selectedDifficulty;
         _selectedQuestionCount = selectedQuestionCount;
+        _difficultyDisplayName = selectedDifficulty.displayName;
+        // Start time tracking
+        _quizStartTime = DateTime.now();
         context.read<QuizBloc>().add(LoadQuiz(
             category: selectedCategory == 'Tümü' ? null : selectedCategory,
             difficulty: selectedDifficulty,
@@ -322,6 +335,36 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
 
   void _onAnswerSelected(String answer, int questionIndex) {
     context.read<QuizBloc>().add(AnswerQuestion(answer, questionIndex));
+  }
+
+  /// Send quiz completion event to backend
+  Future<void> _sendQuizCompletionEvent(QuizCompleted state) async {
+    if (_quizStartTime == null) return;
+    
+    // Calculate time spent
+    _timeSpentSeconds = DateTime.now().difference(_quizStartTime!).inSeconds;
+    
+    // Get category (use 'Tümü' if null)
+    final category = _selectedCategory ?? 'Tümü';
+    
+    // Get answers and correct answers list
+    final answers = state.answers.map((a) => a).toList();
+    final correctAnswersList = state.questions.map((q) {
+      final selectedAnswer = state.answers[state.questions.indexOf(q)];
+      final correctAnswer = q.options.firstWhere((o) => o.score > 0).text;
+      return selectedAnswer == correctAnswer;
+    }).toList();
+    
+    // Send completion event
+    await QuizCompletionHelper.completeQuiz(
+      score: state.score,
+      totalQuestions: state.questions.length,
+      timeSpentSeconds: _timeSpentSeconds,
+      category: category,
+      difficulty: _difficultyDisplayName,
+      answers: answers,
+      correctAnswersList: correctAnswersList,
+    );
   }
 
   Widget _buildScoreArea(dynamic state) {
@@ -613,6 +656,13 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         }
 
         if (state is QuizCompleted) {
+          // Send completion event once
+          if (!_completionEventSent) {
+            _completionEventSent = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _sendQuizCompletionEvent(state);
+            });
+          }
           return Scaffold(
             extendBodyBehindAppBar: true,
             appBar: AppBar(

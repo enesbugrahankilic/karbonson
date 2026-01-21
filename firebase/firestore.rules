@@ -87,23 +87,7 @@ service cloud.firestore {
       allow create: if request.auth != null && 
         request.resource.data.email is string &&
         request.resource.data.code is string &&
-        request.resource.data.code.matches('^[0-9]{6}
-
-    // === ADMIN ACCESS (Optional - restrict to specific users) ===
-    match /admin/{documentId} {
-      // Only allow access to authenticated admin users
-      // This would require additional admin role checking
-      allow read, write: if request.auth != null && 
-        request.auth.token.admin == true;
-    }
-
-    // === SECURITY RULES FOR PREVENTING UNAUTHORIZED ACCESS ===
-    // Deny all other access by default
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}) && // 6-digit numeric code
+        request.resource.data.code.matches('^[0-9]{6}') &&
         request.resource.data.createdAt is timestamp &&
         request.resource.data.expiresAt is timestamp &&
         request.resource.data.expiresAt > request.time &&
@@ -139,13 +123,52 @@ service cloud.firestore {
         request.resource.data.email == resource.data.email &&
         request.resource.data.usageCount == resource.data.usageCount + 1 &&
         request.resource.data.usageCount <= 2;
-      
+    }
+
+    // === SCORES COLLECTION (Leaderboard) ===
+    match /scores/{documentId} {
       // Allow read access to scores for leaderboard
       allow read: if true;
       
       // Allow authenticated users to write their scores
       allow create: if request.auth != null;
       allow update, delete: if false; // Prevent score modification after creation
+    }
+
+    // === QUIZ COMPLETIONS COLLECTION (New - for tracking quiz results) ===
+    match /quiz_completions/{completionId} {
+      // Users can read their own quiz completions
+      allow read: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Users can create their own quiz completion records
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId &&
+        request.resource.data.eventType == 'quiz_completion' &&
+        request.resource.data.quizId is string &&
+        request.resource.data.score is int &&
+        request.resource.data.completedAt is timestamp;
+      
+      // Prevent modifications after creation
+      allow update, delete: if false;
+    }
+
+    // === GAME COMPLETIONS COLLECTION (New - for tracking game results) ===
+    match /game_completions/{completionId} {
+      // Users can read their own game completions
+      allow read: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Users can create their own game completion records
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId &&
+        request.resource.data.eventType == 'game_completion' &&
+        request.resource.data.gameId is string &&
+        request.resource.data.finalScore is int &&
+        request.resource.data.completedAt is timestamp;
+      
+      // Prevent modifications after creation
+      allow update, delete: if false;
     }
 
     // === ADMIN ACCESS (Optional - restrict to specific users) ===

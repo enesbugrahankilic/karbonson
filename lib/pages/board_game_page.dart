@@ -12,6 +12,7 @@ import 'quiz_page.dart';
 import 'leaderboard_page.dart';
 import '../services/firestore_service.dart';
 import '../services/profile_service.dart';
+import '../services/game_completion_service.dart';
 import '../theme/theme_colors.dart';
 import 'login_page.dart';
 import '../services/app_localizations.dart';
@@ -47,6 +48,7 @@ class _BoardGamePageState extends State<BoardGamePage>
   Color? _notificationColor;
   bool _scoreSaved = false;
   bool _endGameDialogShown = false;
+  bool _gameCompletionEventSent = false;
   final AuthenticationStateService _authStateService =
       AuthenticationStateService();
 
@@ -99,6 +101,57 @@ class _BoardGamePageState extends State<BoardGamePage>
         });
       }
     });
+  }
+
+  /// Send game completion event to backend
+  Future<void> _sendGameCompletionEvent({
+    required bool isMultiplayer,
+    required String nickname,
+    required int quizScore,
+    required int timeElapsedSeconds,
+    required String? roomId,
+    required List<Map<String, dynamic>>? playerResults,
+  }) async {
+    if (_gameCompletionEventSent) return;
+    _gameCompletionEventSent = true;
+
+    final finalScore = quizScore - (timeElapsedSeconds ~/ 10);
+
+    if (isMultiplayer && roomId != null && playerResults != null) {
+      // Multiplayer game completion
+      // Find player's position and if they won
+      final playerEntry = playerResults.firstWhere(
+        (p) => p['nickname'] == nickname,
+        orElse: () => {'finalScore': 0},
+      );
+      final myFinalScore = playerEntry['finalScore'] as int? ?? finalScore;
+      
+      // Calculate position (1-based)
+      final sortedPlayers = List<Map<String, dynamic>>.from(playerResults)
+        ..sort((a, b) => (b['finalScore'] as int).compareTo(a['finalScore'] as int));
+      
+      final position = sortedPlayers.indexWhere((p) => p['nickname'] == nickname) + 1;
+      final isWinner = position == 1;
+
+      await GameCompletionHelper.completeMultiplayerGame(
+        roomId: roomId,
+        quizScore: quizScore,
+        timeElapsedSeconds: timeElapsedSeconds,
+        finalScore: myFinalScore,
+        position: position,
+        isWinner: isWinner,
+        nickname: nickname,
+        allPlayers: playerResults,
+      );
+    } else {
+      // Single player game completion
+      await GameCompletionHelper.completeSinglePlayerGame(
+        quizScore: quizScore,
+        timeElapsedSeconds: timeElapsedSeconds,
+        finalScore: finalScore,
+        nickname: nickname,
+      );
+    }
   }
 
   // Quiz penceresini açar
@@ -178,6 +231,24 @@ class _BoardGamePageState extends State<BoardGamePage>
           score: finalScore,
           isWin: totalScore > 0,
           gameType: 'multiplayer',
+        );
+
+        // Send game completion event to backend
+        final playerResults = gameLogic.currentRoom.players.map((player) {
+          return {
+            'nickname': player.nickname,
+            'quizScore': player.quizScore,
+            'finalScore': player.quizScore - (gameLogic.timeElapsedInSeconds ~/ 10),
+          };
+        }).toList();
+        
+        _sendGameCompletionEvent(
+          isMultiplayer: true,
+          nickname: currentPlayer.nickname,
+          quizScore: finalScore,
+          timeElapsedSeconds: gameLogic.timeElapsedInSeconds,
+          roomId: widget.roomId,
+          playerResults: playerResults,
         );
 
         // Check if in top 10
@@ -328,6 +399,16 @@ class _BoardGamePageState extends State<BoardGamePage>
           score: finalScore,
           isWin: totalScore > 0,
           gameType: 'single_player',
+        );
+
+        // Send game completion event to backend
+        _sendGameCompletionEvent(
+          isMultiplayer: false,
+          nickname: gameLogic.player.nickname,
+          quizScore: finalScore,
+          timeElapsedSeconds: gameLogic.timeElapsedInSeconds,
+          roomId: null,
+          playerResults: null,
         );
       }
 

@@ -3,6 +3,8 @@ import 'package:equatable/equatable.dart';
 import '../models/question.dart';
 import '../services/quiz_logic.dart';
 import '../enums/app_language.dart';
+import '../services/game_completion_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // Events
 abstract class QuizEvent extends Equatable {
@@ -182,6 +184,33 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
 
       // Check if this is the last question
       if (event.questionIndex == currentState.questions.length - 1) {
+        // Quiz completed - send completion event to backend
+        final userId = FirebaseAuth.instance.currentUser?.uid;
+        if (userId != null) {
+          // Calculate correct answers list
+          final correctAnswersList = List<bool>.filled(currentState.questions.length, false);
+          for (int i = 0; i < currentState.questions.length; i++) {
+            final correctOption = currentState.questions[i].options.firstWhere((o) => o.score > 0);
+            correctAnswersList[i] = newAnswers[i] == correctOption.text;
+          }
+          
+          // Send completion event to backend
+          await GameCompletionService().sendQuizCompletion(
+            score: newScore,
+            totalQuestions: currentState.questions.length,
+            correctAnswers: correctAnswersList.where((a) => a).length,
+            timeSpentSeconds: 0, // Will be calculated on the page side
+            category: currentState.questions.isNotEmpty 
+                ? currentState.questions[0].category 
+                : 'General',
+            difficulty: currentState.currentLanguage == AppLanguage.turkish 
+                ? 'medium' 
+                : 'medium',
+            answers: newAnswers,
+            correctAnswersList: correctAnswersList,
+          );
+        }
+        
         // Quiz completed
         emit(QuizCompleted(
           questions: currentState.questions,
