@@ -8,6 +8,8 @@ import '../models/loot_box.dart';
 import '../models/loot_box_reward.dart';
 import '../services/loot_box_service.dart';
 import '../services/state_refresh_service.dart';
+import '../theme/design_system.dart';
+import '../widgets/page_templates.dart';
 import '../widgets/loot_box_widget.dart';
 import '../utils/loot_box_animations.dart';
 
@@ -452,14 +454,13 @@ class _WonBoxesPageState extends State<WonBoxesPage> with TickerProviderStateMix
     final totalCount = _unopenedBoxes.length;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: StandardAppBar(
         title: const Text('Kazanılan Kutular'),
-        centerTitle: true,
-        elevation: 0,
+        onBackPressed: () => Navigator.pop(context),
         actions: [
           // Box count badge
           Container(
-            margin: const EdgeInsets.only(right: 16),
+            margin: const EdgeInsets.only(right: 8),
             child: Badge(
               label: Text('$totalCount'),
               backgroundColor: totalCount > 0 ? Colors.green : Colors.grey,
@@ -473,21 +474,30 @@ class _WonBoxesPageState extends State<WonBoxesPage> with TickerProviderStateMix
             tooltip: 'Filtrele ve Sırala',
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(
-              icon: Icon(Icons.grid_view),
-              text: 'Grid',
+      ),
+      body: PageBody(
+        scrollable: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Tab bar for view types
+            Container(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(icon: Icon(Icons.grid_view), text: 'Grid'),
+                  Tab(icon: Icon(Icons.list), text: 'Liste'),
+                ],
+              ),
             ),
-            Tab(
-              icon: Icon(Icons.list),
-              text: 'Liste',
+            // Tab content
+            Expanded(
+              child: _buildBody(),
             ),
           ],
         ),
       ),
-      body: _buildBody(),
       floatingActionButton: _unopenedBoxes.isNotEmpty
           ? FloatingActionButton.extended(
               onPressed: () {

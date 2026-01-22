@@ -121,14 +121,29 @@ class AuthenticationStateService extends ChangeNotifier {
         return false;
       }
 
-      // Force refresh the ID token to ensure it's valid
-      final idTokenResult = await user.getIdTokenResult(true);
+      // Check if token is close to expiry (within 10 minutes)
+      final idTokenResult = await user.getIdTokenResult(false);
+      final now = DateTime.now();
+      final expiryTime = idTokenResult.expirationTime ?? now.add(const Duration(hours: 1));
+      final timeUntilExpiry = expiryTime.difference(now);
+
+      // Only refresh if token expires within 10 minutes
+      final shouldRefresh = timeUntilExpiry.inMinutes < 10;
 
       if (kDebugMode) {
-        debugPrint('Token refreshed successfully. Expires: ${idTokenResult.expirationTime}');
+        debugPrint('Token expiry check: ${timeUntilExpiry.inMinutes} minutes remaining, should refresh: $shouldRefresh');
       }
 
-      // If token refresh succeeded, ensure our state is synced
+      if (shouldRefresh) {
+        // Force refresh the ID token to ensure it's valid
+        final refreshedTokenResult = await user.getIdTokenResult(true);
+
+        if (kDebugMode) {
+          debugPrint('Token refreshed successfully. New expiry: ${refreshedTokenResult.expirationTime}');
+        }
+      }
+
+      // Ensure our state is synced with current user
       if (user.email != null && user.email!.isNotEmpty) {
         if (!_isAuthenticated || _authenticatedUid != user.uid) {
           final nickname = await _profileService.getCurrentNickname() ??
@@ -146,8 +161,14 @@ class AuthenticationStateService extends ChangeNotifier {
     } catch (e) {
       if (kDebugMode) debugPrint('Token refresh failed: $e');
 
-      // If refresh fails, try to re-authenticate silently if we have credentials
-      // For now, just clear the state and return false
+      // If refresh fails due to network or auth issues, clear state
+      // But don't clear if it's just a temporary network issue
+      if (e.toString().contains('network') || e.toString().contains('unavailable')) {
+        if (kDebugMode) debugPrint('Network-related token refresh failure, keeping current state');
+        return false;
+      }
+
+      // For auth-related failures, clear the state
       clearAuthenticationState();
       return false;
     }

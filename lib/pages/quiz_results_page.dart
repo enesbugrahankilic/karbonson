@@ -11,11 +11,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/loot_box.dart';
 import '../models/daily_challenge.dart';
 import '../services/loot_box_service.dart';
 import '../services/daily_task_event_service.dart';
 import '../services/enhanced_reward_service.dart';
+import '../services/firestore_service.dart';
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../theme/app_theme.dart';
@@ -180,6 +182,7 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
       await Future.wait([
         _lootBoxService.initializeForUser(),
         _dailyTaskService.initialize(),
+        _saveQuizScore(), // Skor kaydetme eklendi
       ]);
     } catch (e) {
       debugPrint('Error initializing services: $e');
@@ -188,6 +191,27 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
           _errorMessage = 'Servisler başlatılamadı: $e';
         });
       }
+    }
+  }
+
+  Future<void> _saveQuizScore() async {
+    try {
+      // FirestoreService kullanarak skoru kaydet
+      final firestoreService = FirestoreService();
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        final nickname = user.displayName ?? user.email?.split('@')[0] ?? 'Oyuncu';
+        final result = await firestoreService.saveUserScore(nickname, widget.score);
+
+        if (result != 'Skor kaydedildi!') {
+          debugPrint('Skor kaydetme uyarısı: $result');
+        } else {
+          debugPrint('Skor başarıyla kaydedildi: ${widget.score}');
+        }
+      }
+    } catch (e) {
+      debugPrint('Skor kaydetme hatası: $e');
     }
   }
 

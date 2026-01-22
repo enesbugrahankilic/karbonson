@@ -46,6 +46,7 @@ import '../../pages/won_boxes_page.dart';
 import '../../pages/notifications_page.dart';
 import '../../pages/two_factor_auth_page.dart';
 import '../../pages/spectator_mode_page.dart';
+import '../../pages/carbon_footprint_page.dart';
 import '../../services/authentication_state_service.dart';
 import '../../services/quiz_logic.dart';
 
@@ -107,6 +108,7 @@ class AppRoutes {
    static const String howToPlay = '/how-to-play';
    static const String tutorialPage = '/tutorial-page';
    static const String spectatorMode = '/spectator-mode';
+   static const String carbonFootprint = '/carbon-footprint';
 
   // Debug routes (only in debug mode)
   static const String uidDebug = '/uid-debug';
@@ -168,7 +170,7 @@ class AppRouter {
 
       // Main app routes
       case AppRoutes.home:
-        return _createProtectedRoute(const HomeDashboard(), settings);
+        return _createRoute(const HomeDashboard());
       case AppRoutes.profile:
         return _createProtectedRoute(const ProfilePage(), settings);
       case AppRoutes.boardGame:
@@ -285,6 +287,10 @@ class AppRouter {
       // Spectator Mode
       case AppRoutes.spectatorMode:
         return _createRoute(const SpectatorModePage());
+
+      // Carbon Footprint
+      case AppRoutes.carbonFootprint:
+        return _createProtectedRoute(const CarbonFootprintPage(), settings);
 
       // Debug routes (only in debug mode)
       case AppRoutes.uidDebug:

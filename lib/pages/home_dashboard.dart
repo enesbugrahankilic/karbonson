@@ -889,6 +889,10 @@ class _HomeDashboardState extends State<HomeDashboard>
         Navigator.pop(context);
         Navigator.of(context).pushNamed(AppRoutes.spectatorMode);
       },
+      onCarbonFootprintTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.carbonFootprint);
+      },
       friendRequestCount: 3, // Bu değer dinamik olarak güncellenmeli
       dailyChallengeCount: _dailyChallenges.length,
       achievementCount: _userAchievements.length,

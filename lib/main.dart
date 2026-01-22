@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode, debugPrint;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
@@ -31,6 +32,7 @@ import 'theme/app_theme.dart';
 import 'core/navigation/app_router.dart';
 import 'core/navigation/navigation_service.dart';
 import 'services/analytics_service.dart';
+import 'services/session_management_service.dart';
 
 void main() {
   // Run the app inside a guarded zone; call ensureInitialized and runApp
@@ -66,7 +68,7 @@ void main() {
               create: (_) => ProfileBloc(profileService: ProfileService())),
           BlocProvider(
               create: (_) =>
-                  AIBloc(AIService(baseUrl: 'http://localhost:5000'))),
+                  AIBloc(AIService(baseUrl: 'http://localhost:5001'))),
         ],
         child: const AppRoot(),
       ),
@@ -253,6 +255,19 @@ class _AppRootState extends State<AppRoot> {
         if (kDebugMode) debugPrint('$st');
       }
 
+      // Initialize session management service for token handling
+      try {
+        if (kDebugMode) debugPrint('AppRoot: initializing SessionManagementService');
+        final prefs = await SharedPreferences.getInstance();
+        await SessionManagementService().initialize(prefs);
+        if (kDebugMode) debugPrint('AppRoot: SessionManagementService initialized');
+      } catch (e, st) {
+        if (kDebugMode) {
+          debugPrint('AppRoot: SessionManagementService init failed: $e');
+        }
+        if (kDebugMode) debugPrint('$st');
+      }
+
       setState(() => _initializing = false);
     } catch (e, st) {
       if (kDebugMode) debugPrint('AppRoot: initialization error: $e');
@@ -358,32 +373,20 @@ class _Karbon2AppState extends State<Karbon2App> {
 
   Future<void> _determineInitialRoute() async {
     try {
-      // Check if user is already authenticated
-      final authStateService = AuthenticationStateService();
-      final isAuthenticated = await authStateService.isCurrentUserAuthenticated();
-      
-      if (isAuthenticated) {
-        setState(() {
-          _initialRoute = AppRoutes.home;
-        });
-        if (kDebugMode) {
-          debugPrint('main: User is authenticated, starting at home');
-        }
-      } else {
-        setState(() {
-          _initialRoute = AppRoutes.login;
-        });
-        if (kDebugMode) {
-          debugPrint('main: User is not authenticated, starting at login');
-        }
+      // Always start at home - authentication checks will be handled in the home page
+      setState(() {
+        _initialRoute = AppRoutes.home;
+      });
+      if (kDebugMode) {
+        debugPrint('main: Starting at home - authentication handled in home page');
       }
     } catch (e) {
       if (kDebugMode) {
         debugPrint('main: Error determining initial route: $e');
       }
-      // Default to login on error
+      // Default to home on error
       setState(() {
-        _initialRoute = AppRoutes.login;
+        _initialRoute = AppRoutes.home;
       });
     } finally {
       setState(() {

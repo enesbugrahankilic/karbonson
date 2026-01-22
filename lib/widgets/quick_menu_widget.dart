@@ -836,10 +836,12 @@ class QuickMenuBuilder {
     required VoidCallback onSettingsTap,
     required VoidCallback onProfileTap,
     required VoidCallback onNotificationsTap,
+    required VoidCallback onCarbonFootprintTap,
     int? friendRequestCount,
     int? dailyChallengeCount,
     int? achievementCount,
     int? notificationCount,
+    bool? hasClassInfo,
   }) {
     return [
       // Game Modes - Featured
@@ -1012,6 +1014,20 @@ class QuickMenuBuilder {
         onTap: onSettingsTap,
         category: 'tools',
       ),
+      if (hasClassInfo == true) ...[
+        QuickMenuItem(
+          id: 'carbon_footprint',
+          title: 'Karbon Ayak İzi',
+          subtitle: 'Sınıfınızın karbon raporu',
+          icon: Icons.eco,
+          color: Colors.green,
+          gradientStart: Colors.green.shade400,
+          gradientEnd: Colors.green.shade700,
+          onTap: onCarbonFootprintTap,
+          category: 'tools',
+          isNew: true,
+        ),
+      ],
       QuickMenuItem(
         id: 'profile',
         title: 'Profil',

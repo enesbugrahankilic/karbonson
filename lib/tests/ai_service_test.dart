@@ -8,7 +8,7 @@ void main() {
 
     setUp(() {
       // For integration tests, we'll use the actual service with a mock base URL
-      aiService = AIService(baseUrl: 'http://localhost:5000');
+      aiService = AIService(baseUrl: 'http://localhost:5001');
     });
 
     test('getPersonalizedQuizRecommendations returns a valid response',

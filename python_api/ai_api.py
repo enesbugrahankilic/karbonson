@@ -7,9 +7,21 @@ from sklearn.decomposition import TruncatedSVD
 from scipy.sparse import csr_matrix
 import uuid
 from datetime import datetime
+import firebase_admin
+from firebase_admin import credentials, firestore
 
 app = Flask(__name__)
 CORS(app)
+
+# Firebase initialization
+try:
+    cred = credentials.Certificate('firebase_service_account.json')
+    firebase_admin.initialize_app(cred)
+    db = firestore.client()
+    print("Firebase initialized successfully")
+except Exception as e:
+    print(f"Firebase initialization failed: {e}")
+    db = None
 
 # Kullanıcı quiz geçmişi verileri (örnek veri)
 user_quiz_data = {
@@ -152,15 +164,74 @@ def analyze_user():
 @app.route('/user_data', methods=['POST'])
 def submit_user_data():
     user_data = request.get_json()
-    
+
     if not user_data:
         return jsonify({'error': 'No data provided'}), 400
-    
+
     # Kullanıcı verilerini işle (örnek)
     print(f"Received user data: {json.dumps(user_data, indent=2)}")
-    
+
     # Başarı mesajı döndür
     return jsonify({'status': 'success', 'message': 'User data received'})
 
+@app.route('/add_questions', methods=['POST'])
+def add_questions():
+    if db is None:
+        return jsonify({'error': 'Firebase not initialized'}), 500
+
+    questions_data = request.get_json()
+
+    if not questions_data or not isinstance(questions_data, list):
+        return jsonify({'error': 'Questions data must be a list'}), 400
+
+    try:
+        added_questions = []
+        for question_data in questions_data:
+            # Add question to Firestore
+            doc_ref = db.collection('questions').document()
+            doc_ref.set(question_data)
+            added_questions.append({
+                'id': doc_ref.id,
+                'text': question_data.get('text', ''),
+                'category': question_data.get('category', '')
+            })
+
+        return jsonify({
+            'status': 'success',
+            'message': f'{len(added_questions)} questions added',
+            'questions': added_questions
+        })
+
+    except Exception as e:
+        print(f"Error adding questions: {e}")
+        return jsonify({'error': f'Failed to add questions: {str(e)}'}), 500
+
+@app.route('/get_questions', methods=['GET'])
+def get_questions():
+    if db is None:
+        return jsonify({'error': 'Firebase not initialized'}), 500
+
+    try:
+        questions_ref = db.collection('questions')
+        docs = questions_ref.stream()
+
+        questions = []
+        for doc in docs:
+            question_data = doc.to_dict()
+            question_data['id'] = doc.id
+            questions.append(question_data)
+
+        return jsonify({
+            'status': 'success',
+            'count': len(questions),
+            'questions': questions
+        })
+
+    except Exception as e:
+        print(f"Error getting questions: {e}")
+        return jsonify({'error': f'Failed to get questions: {str(e)}'}), 500
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    import os
+    port = int(os.environ.get('PORT', 5001))
+    app.run(host='0.0.0.0', port=port, debug=True)

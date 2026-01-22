@@ -10,7 +10,7 @@ import '../services/authentication_state_service.dart';
 import '../services/profile_service.dart';
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
-
+import '../widgets/page_templates.dart';
 import '../widgets/copy_to_clipboard_widget.dart';
 import '../widgets/user_qr_code_widget.dart';
 import '../utils/firebase_logger.dart';
@@ -148,12 +148,19 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
      try {
        final playerId = await _getPlayerId();
        final playerNickname = await _getPlayerNickname();
+
+       if (kDebugMode) debugPrint('🎯 [CREATE_ROOM] Starting room creation for $playerNickname ($playerId)');
+
        final room = await _firestoreService.createDuelRoom(playerId, playerNickname);
+
        if (room != null && mounted) {
+         if (kDebugMode) debugPrint('✅ [CREATE_ROOM] Room created successfully: ${room.id}');
+
          setState(() {
            _createdRoomCode = room.id;
          });
          FirebaseLogger.logPlayerAction(roomId: room.id, playerId: playerId, nickname: playerNickname, action: 'CREATE_ROOM', success: true);
+
          ScaffoldMessenger.of(context).showSnackBar(
            SnackBar(
              content: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -178,8 +185,16 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DesignSystem.radiusM)),
            ),
          );
+       } else {
+         if (kDebugMode) debugPrint('❌ [CREATE_ROOM] Room creation failed - returned null');
+         throw Exception('Oda oluşturulamadı');
        }
-     } catch (e) {
+     } catch (e, stackTrace) {
+       if (kDebugMode) {
+         debugPrint('🚨 [CREATE_ROOM] Error: $e');
+         debugPrint('Stack trace: $stackTrace');
+       }
+
        if (mounted) {
          ScaffoldMessenger.of(context).showSnackBar(
            SnackBar(
@@ -408,168 +423,98 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
 
    @override
    Widget build(BuildContext context) {
-     final screenSize = MediaQuery.of(context).size;
-     final screenWidth = screenSize.width;
-     final screenHeight = screenSize.height;
-
-     // Responsive values
-     final isSmallScreen = screenWidth < 360;
-     final isMediumScreen = screenWidth < 600;
-
-     final appBarHeight = isSmallScreen ? 80.0 : (isMediumScreen ? 100.0 : 120.0);
-
      // Show loading indicator while fetching user data
      if (_isLoading) {
        return Scaffold(
-         backgroundColor: ThemeColors.getCardBackground(context),
-         body: Center(
-           child: Column(
-             mainAxisAlignment: MainAxisAlignment.center,
-             children: [
-               DesignSystem.modernProgressIndicator(context),
-               SizedBox(height: DesignSystem.spacingM),
-               Text(
-                 'Yükleniyor...',
-                 style: DesignSystem.getBodyLarge(context).copyWith(
-                   color: ThemeColors.getSecondaryText(context),
+         appBar: StandardAppBar(
+           title: const Text('Çok Oyunculu Lobi'),
+           onBackPressed: () => Navigator.pop(context),
+         ),
+         body: PageBody(
+           scrollable: true,
+           child: Center(
+             child: Column(
+               mainAxisAlignment: MainAxisAlignment.center,
+               children: [
+                 DesignSystem.modernProgressIndicator(context),
+                 const SizedBox(height: 16),
+                 Text(
+                   'Yükleniyor...',
+                   style: DesignSystem.getBodyLarge(context).copyWith(
+                     color: ThemeColors.getSecondaryText(context),
+                   ),
                  ),
-               ),
-             ],
+               ],
+             ),
            ),
          ),
        );
      }
 
      return Scaffold(
-       backgroundColor: ThemeColors.getCardBackground(context),
-       body: Container(
-         height: screenHeight,
-         decoration: BoxDecoration(
-           gradient: LinearGradient(
-             colors: ThemeColors.getGradientColors(context),
-             begin: Alignment.topCenter,
-             end: Alignment.bottomCenter,
+       appBar: StandardAppBar(
+         title: const Text('Çok Oyunculu Lobi'),
+         onBackPressed: () => Navigator.pop(context),
+         actions: [
+           IconButton(
+             onPressed: _showHowToPlayDialog,
+             icon: const Icon(Icons.help_outline),
+             tooltip: 'Nasıl Oynanır?',
            ),
-         ),
-         child: SafeArea(
-           child: Column(
-             children: [
-               // Modern App Bar
-               Container(
-                 height: appBarHeight,
-                 padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                 child: Row(
-                   children: [
-                     IconButton(
-                       onPressed: () => Navigator.pop(context),
-                       icon: Icon(
-                         Icons.arrow_back,
-                         color: ThemeColors.getText(context),
-                       ),
-                       style: IconButton.styleFrom(
-                         backgroundColor: ThemeColors.getInteractiveHover(context),
-                         padding: const EdgeInsets.all(12),
-                       ),
-                     ),
-                     SizedBox(width: DesignSystem.spacingM),
-                     Expanded(
-                       child: FadeTransition(
-                         opacity: _fadeController,
-                         child: SlideTransition(
-                           position: Tween<Offset>(
-                             begin: const Offset(-0.2, 0),
-                             end: Offset.zero,
-                           ).animate(CurvedAnimation(
-                             parent: _headerSlideController,
-                             curve: Curves.easeOut,
-                           )),
-                           child: Text(
-                             'Çok Oyunculu Lobi',
-                             style: DesignSystem.getHeadlineSmall(context).copyWith(
-                               color: ThemeColors.getText(context),
-                               fontWeight: FontWeight.w700,
-                             ),
-                           ),
-                         ),
-                       ),
-                     ),
-                     IconButton(
-                       onPressed: _showHowToPlayDialog,
-                       icon: Icon(
-                         Icons.help_outline,
-                         color: ThemeColors.getSecondaryText(context),
-                       ),
-                       style: IconButton.styleFrom(
-                         backgroundColor: ThemeColors.getInteractiveHover(context),
-                         padding: const EdgeInsets.all(12),
-                       ),
-                     ),
-                   ],
-                 ),
+         ],
+       ),
+       body: PageBody(
+         scrollable: true,
+         child: Column(
+           crossAxisAlignment: CrossAxisAlignment.stretch,
+           children: [
+             // User Profile Section
+             SlideTransition(
+               position: Tween<Offset>(
+                 begin: const Offset(0, 0.2),
+                 end: Offset.zero,
+               ).animate(CurvedAnimation(
+                 parent: _slideController,
+                 curve: Curves.easeOut,
+               )),
+               child: _buildUserProfileSection(context, false),
+             ),
+
+             const SizedBox(height: 24),
+
+             // Room Created Card (if applicable)
+             if (_createdRoomCode != null)
+               FadeTransition(
+                 opacity: _cardControllers.isNotEmpty ? _cardControllers[0] : _fadeController,
+                 child: _buildRoomCreatedCard(context, false),
                ),
 
-               // Main Content - Scrollable with Custom Layout
-               Expanded(
-                 child: SingleChildScrollView(
-                   physics: const BouncingScrollPhysics(),
-                   padding: EdgeInsets.symmetric(
-                     horizontal: isSmallScreen ? DesignSystem.spacingM : DesignSystem.spacingL,
-                     vertical: DesignSystem.spacingM,
-                   ),
-                   child: Column(
-                     children: [
-                       // User Profile Section
-                       SlideTransition(
-                         position: Tween<Offset>(
-                           begin: const Offset(0, 0.2),
-                           end: Offset.zero,
-                         ).animate(CurvedAnimation(
-                           parent: _slideController,
-                           curve: Curves.easeOut,
-                         )),
-                         child: _buildUserProfileSection(context, isSmallScreen),
-                       ),
+             if (_createdRoomCode != null) const SizedBox(height: 24),
 
-                       SizedBox(height: DesignSystem.spacingL),
+             // Main Actions Section
+             FadeTransition(
+               opacity: _cardControllers.length > 1 ? _cardControllers[1] : _fadeController,
+               child: _buildMainActionsSection(context, false),
+             ),
 
-                       // Room Created Card (if applicable)
-                       if (_createdRoomCode != null)
-                         FadeTransition(
-                           opacity: _cardControllers.length > 0 ? _cardControllers[0] : _fadeController,
-                           child: _buildRoomCreatedCard(context, isSmallScreen),
-                         ),
+             const SizedBox(height: 24),
 
-                       if (_createdRoomCode != null) SizedBox(height: DesignSystem.spacingL),
+             // Quick Access Section
+             FadeTransition(
+               opacity: _cardControllers.length > 2 ? _cardControllers[2] : _fadeController,
+               child: _buildQuickAccessSection(context, false),
+             ),
 
-                       // Main Actions Section
-                       FadeTransition(
-                         opacity: _cardControllers.length > 1 ? _cardControllers[1] : _fadeController,
-                         child: _buildMainActionsSection(context, isSmallScreen),
-                       ),
+             const SizedBox(height: 24),
 
-                       SizedBox(height: DesignSystem.spacingL),
+             // How to Play Section
+             FadeTransition(
+               opacity: _cardControllers.length > 3 ? _cardControllers[3] : _fadeController,
+               child: _buildHowToPlaySection(context, false),
+             ),
 
-                       // Quick Access Section
-                       FadeTransition(
-                         opacity: _cardControllers.length > 2 ? _cardControllers[2] : _fadeController,
-                         child: _buildQuickAccessSection(context, isSmallScreen),
-                       ),
-
-                       SizedBox(height: DesignSystem.spacingL),
-
-                       // How to Play Section
-                       FadeTransition(
-                         opacity: _cardControllers.length > 3 ? _cardControllers[3] : _fadeController,
-                         child: _buildHowToPlaySection(context, isSmallScreen),
-                       ),
-
-                       SizedBox(height: DesignSystem.spacingXl),
-                     ],
-                   ),
-                 ),
-               ),
-             ],
-           ),
+             const SizedBox(height: 20),
+           ],
          ),
        ),
      );

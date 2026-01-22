@@ -11,6 +11,7 @@ import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../widgets/language_selector_button.dart';
 import '../widgets/page_templates.dart';
+import '../widgets/carbon_class_selection_widget.dart';
 import 'profile_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -29,6 +30,10 @@ class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   final EmailUsageService _emailUsageService = EmailUsageService();
+
+  // Class information
+  int? _selectedClassLevel;
+  String? _selectedClassSection;
 
   @override
   void initState() {
@@ -128,6 +133,21 @@ class _RegisterPageState extends State<RegisterPage> {
         final email = _emailController.text.trim();
         final password = _passwordController.text.trim();
         final nickname = _nicknameController.text.trim();
+
+        // Validate class information
+        if (_selectedClassLevel == null || _selectedClassSection == null) {
+          if (!mounted) return;
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Lütfen sınıf ve şube bilgilerinizi seçin'),
+              backgroundColor: Colors.red,
+            ),
+          );
+
+          setState(() => _isLoading = false);
+          return;
+        }
 
         if (kDebugMode) debugPrint('Starting registration for: $email');
 
@@ -251,6 +271,8 @@ class _RegisterPageState extends State<RegisterPage> {
           await profileService.initializeProfile(
             nickname: nickname,
             user: user,
+            classLevel: _selectedClassLevel,
+            classSection: _selectedClassSection,
           );
 
           if (kDebugMode) debugPrint('User profile created in Firestore');
@@ -333,6 +355,13 @@ class _RegisterPageState extends State<RegisterPage> {
     _confirmPasswordController.dispose();
     _nicknameController.dispose();
     super.dispose();
+  }
+
+  void _onClassSelected(({int? classLevel, String? classSection}) classInfo) {
+    setState(() {
+      _selectedClassLevel = classInfo.classLevel;
+      _selectedClassSection = classInfo.classSection;
+    });
   }
 
   @override
@@ -478,6 +507,14 @@ class _RegisterPageState extends State<RegisterPage> {
                       }
                       return null;
                     },
+                  ),
+                  const SizedBox(height: DesignSystem.spacingM),
+
+                  // Sınıf bilgisi alanı
+                  CarbonClassSelectionWidget(
+                    onClassSelected: _onClassSelected,
+                    isRequired: true,
+                    helperText: 'Karbon ayak izi raporlarınız için gereklidir',
                   ),
                 ],
               ),

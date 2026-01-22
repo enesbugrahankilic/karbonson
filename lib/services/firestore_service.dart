@@ -77,6 +77,10 @@ class FirestoreService {
       }
     } catch (e) {
       if (kDebugMode) debugPrint('🚨 ERROR: Failed to save score: $e');
+      // Check for specific Firebase errors
+      if (e.toString().contains('permission-denied')) {
+        return 'Kimlik doğrulama hatası. Lütfen tekrar giriş yapın.';
+      }
       return 'Skor kaydedilirken hata oluştu.';
     }
   }

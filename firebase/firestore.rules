@@ -89,7 +89,7 @@ service cloud.firestore {
       // Host can update room status, players can update their ready state
       allow update: if request.auth != null && (
         request.resource.data.hostId == request.auth.uid ||
-        (request.auth.uid in request.resource.data.players.*.id)
+        request.auth.uid in request.resource.data.players
       );
       
       // Allow authenticated users to delete their own duel rooms
