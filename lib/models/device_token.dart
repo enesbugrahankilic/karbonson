@@ -33,7 +33,7 @@ class DeviceToken {
       platform: map['platform'] ?? 'unknown',
       appVersion: map['appVersion'] ?? '1.0.0',
       createdAt: _parseTimestamp(map['createdAt']),
-      lastUsedAt: _parseTimestamp(map['lastUsedAt']) ?? DateTime.now(),
+      lastUsedAt: _parseTimestamp(map['lastUsedAt']),
       isActive: map['isActive'] ?? true,
     );
   }

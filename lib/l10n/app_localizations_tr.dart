@@ -15,218 +15,223 @@ class AppLocalizationsTr extends AppLocalizations {
   String get world => 'Dünya';
 
   @override
-  String get notifications => 'Notifications';
+  String get notifications => 'Bildirimler';
 
   @override
-  String get noNotifications => 'No notifications yet';
+  String get noNotifications => 'Henüz bildirim yok';
 
   @override
-  String get notificationSettings => 'Notification Settings';
+  String get notificationSettings => 'Bildirim Ayarları';
 
   @override
-  String get markAllAsRead => 'Mark All as Read';
+  String get markAllAsRead => 'Tümünü Okundu Olarak İşaretle';
 
   @override
-  String get unreadNotifications => 'Unread Notifications';
+  String get unreadNotifications => 'Okunmamış Bildirimler';
 
   @override
-  String get allNotifications => 'All Notifications';
+  String get allNotifications => 'Tüm Bildirimler';
 
   @override
-  String get friendRequest => 'Friend Request';
+  String get friendRequest => 'Arkadaş İsteği';
 
   @override
-  String get friendRequestAccepted => 'Friend Request Accepted';
+  String get friendRequestAccepted => 'Arkadaş İsteği Kabul Edildi';
 
   @override
-  String get friendRequestRejected => 'Friend Request Rejected';
+  String get friendRequestRejected => 'Arkadaş İsteği Reddedildi';
 
   @override
-  String get gameInvitation => 'Game Invitation';
+  String get gameInvitation => 'Oyun Daveti';
 
   @override
-  String get duelInvitation => 'Duel Invitation';
+  String get duelInvitation => 'Düello Daveti';
 
   @override
-  String get viewNotifications => 'View Notifications';
+  String get viewNotifications => 'Bildirimleri Görüntüle';
 
   @override
   String notificationDescription(Object count) {
-    return 'You have $count unread notifications';
+    return '$count adet okunmamış bildiriminiz var';
   }
 
   @override
-  String get noNotificationsDescription =>
-      'Your notifications will appear here when you receive them';
+  String get noNotificationsDescription => 'Bildirimleriniz burada görünecek';
 
   @override
-  String get justNow => 'Just now';
+  String get justNow => 'Az önce';
 
   @override
-  String get minutesAgo => 'minutes ago';
+  String minutesAgo(Object count) {
+    return '$count dakika önce';
+  }
 
   @override
-  String get hoursAgo => 'hours ago';
+  String hoursAgo(Object count) {
+    return '$count saat önce';
+  }
 
   @override
-  String get daysAgo => 'days ago';
+  String daysAgo(Object count) {
+    return '$count gün önce';
+  }
 
   @override
-  String get welcomeBack => 'Welcome Back';
+  String get welcomeBack => 'Tekrar Hoş Geldiniz';
 
   @override
-  String get helloEmoji => 'Hello 👋';
+  String get helloEmoji => 'Merhaba 👋';
 
   @override
-  String get loadingData => 'Loading data...';
+  String get loadingData => 'Veri yükleniyor...';
 
   @override
-  String get totalPoints => 'Total Points';
+  String get totalPoints => 'Toplam Puan';
 
   @override
-  String get achievementCount => 'Achievement Count';
+  String get achievementCount => 'Başarım Sayısı';
 
   @override
-  String get quickAccess => 'Quick Access';
+  String get quickAccess => 'Hızlı Erişim';
 
   @override
-  String get progressAndAchievements => 'Progress & Achievements';
+  String get progressAndAchievements => 'İlerleme ve Başarımlar';
 
   @override
-  String get startQuiz => 'Start Quiz';
+  String get startQuiz => 'Quiz Başlat';
 
   @override
-  String get duelMode => 'Duel Mode';
+  String get duelMode => 'Düello Modu';
 
   @override
-  String get teamPlay => 'Team Play';
+  String get teamPlay => 'Takım Oyunu';
 
   @override
-  String get dailyChallenges => 'Daily Challenges';
+  String get dailyChallenges => 'Günlük Görevler';
 
   @override
-  String get statisticsSummary => 'Statistics Summary';
+  String get statisticsSummary => 'İstatistik Özeti';
 
   @override
-  String get recentActivity => 'Recent Activities';
+  String get recentActivity => 'Son Etkinlikler';
 
   @override
-  String get play => 'Play';
+  String get play => 'Oyna';
 
   @override
-  String get start => 'Start';
+  String get start => 'Başlat';
 
   @override
-  String get create => 'Create';
+  String get create => 'Oluştur';
 
   @override
-  String get join => 'Join';
+  String get join => 'Katıl';
 
   @override
-  String get badges => 'Badges';
+  String get badges => 'Rozetler';
 
   @override
-  String get homePageTitle => 'Home';
+  String get homePageTitle => 'Ana Sayfa';
 
   @override
-  String get quickAccessTitle => 'Quick Access';
+  String get quickAccessTitle => 'Hızlı Erişim';
 
   @override
-  String get quizInfoTitle => 'Start Quick Quiz';
+  String get quizInfoTitle => 'Hızlı Quiz Başlat';
 
   @override
-  String get ecoQuizTitle => 'Eco Knowledge Quiz';
+  String get ecoQuizTitle => 'Çevre Bilgi Quiz\'i';
 
   @override
-  String get startQuizAction => 'Start Now';
+  String get startQuizAction => 'Şimdi Başla';
 
   @override
-  String get increaseAwareness => 'Increase eco awareness, earn points!';
+  String get increaseAwareness => 'Çevre bilincini artır, puan kazan!';
 
   @override
-  String get quickAccessSettings => 'Settings';
+  String get quickAccessSettings => 'Ayarlar';
 
   @override
-  String get quickAccessProfile => 'Profile';
+  String get quickAccessProfile => 'Profil';
 
   @override
-  String get noActivities => 'No activities yet';
+  String get noActivities => 'Henüz etkinlik yok';
 
   @override
-  String get activityHint => 'See your activities';
+  String get activityHint => 'Etkinliklerini gör';
 
   @override
-  String get levelProgress => 'Level Progress';
+  String get levelProgress => 'Seviye İlerlemesi';
 
   @override
-  String get quizStatistics => 'Quiz Statistics';
+  String get quizStatistics => 'Quiz İstatistikleri';
 
   @override
-  String get totalQuizzes => 'Total Quizzes';
+  String get totalQuizzes => 'Toplam Quiz';
 
   @override
-  String get correctRate => 'Correct Rate';
+  String get correctRate => 'Doğruluk Oranı';
 
   @override
-  String get averageTime => 'Avg. Time';
+  String get averageTime => 'Ortalama Süre';
 
   @override
-  String get recentAchievements => 'Recent Achievements';
+  String get recentAchievements => 'Son Başarımlar';
 
   @override
-  String get noAchievements => 'No achievements yet';
+  String get noAchievements => 'Henüz başarı yok';
 
   @override
-  String get achievementsHint => 'Earn achievements by taking quizzes!';
+  String get achievementsHint => 'Quiz yaparak başarı kazan!';
 
   @override
-  String get totalTime => 'Total Time';
+  String get totalTime => 'Toplam Süre';
 
   @override
-  String get longestStreak => 'Longest Streak';
+  String get longestStreak => 'En Uzun Seri';
 
   @override
-  String get loginStreak => 'Login Streak';
+  String get loginStreak => 'Giriş Serisi';
 
   @override
-  String get highestScore => 'Highest Score';
+  String get highestScore => 'En Yüksek Skor';
 
   @override
-  String get quizScore => 'Quiz score';
+  String get quizScore => 'Quiz skoru';
 
   @override
-  String get duelWinRate => 'Duel Win Rate';
+  String get duelWinRate => 'Düello Kazanma Oranı';
 
   @override
-  String get totalDuels => 'duels';
+  String get totalDuels => 'düello';
 
   @override
-  String get weeklyActivity => 'Weekly Activity';
+  String get weeklyActivity => 'Haftalık Etkinlik';
 
   @override
-  String get noDailyChallenges => 'No challenges for today';
+  String get noDailyChallenges => 'Bugün için görev yok';
 
   @override
-  String get newChallengesTomorrow => 'New challenges tomorrow!';
+  String get newChallengesTomorrow => 'Yarın yeni görevler!';
 
   @override
-  String get challengeReward => 'Reward:';
+  String get challengeReward => 'Ödül:';
 
   @override
-  String get challengePoints => 'Points';
+  String get challengePoints => 'Puan';
 
   @override
-  String get loading => 'Loading...';
+  String get loading => 'Yükleniyor...';
 
   @override
-  String get startupError => 'Startup Error';
+  String get startupError => 'Başlatma Hatası';
 
   @override
   String get startupErrorDescription =>
-      'An error occurred during startup. Please try again.';
+      'Başlatma sırasında bir hata oluştu. Lütfen tekrar deneyin.';
 
   @override
-  String get retry => 'Retry';
+  String get retry => 'Tekrar Dene';
 
   @override
   String get appNameHighContrast => 'KarbonSon';
@@ -235,32 +240,32 @@ class AppLocalizationsTr extends AppLocalizations {
   String get appName => 'KarbonSon';
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'Ayarlar';
 
   @override
-  String get theme => 'Theme';
+  String get theme => 'Tema';
 
   @override
-  String get darkMode => 'Dark Mode';
+  String get darkMode => 'Koyu Mod';
 
   @override
-  String get lightMode => 'Light Mode';
+  String get lightMode => 'Açık Mod';
 
   @override
-  String get language => 'Language';
+  String get language => 'Dil';
 
   @override
-  String get about => 'About';
+  String get about => 'Hakkında';
 
   @override
-  String get version => 'Version';
+  String get version => 'Sürüm';
 
   @override
-  String get twoFactorAuth => 'Two-Factor Authentication';
+  String get twoFactorAuth => 'İki Faktörlü Kimlik Doğrulama';
 
   @override
-  String get close => 'Close';
+  String get close => 'Kapat';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'İptal';
 }

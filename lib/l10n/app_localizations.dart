@@ -204,19 +204,19 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'minutes ago'**
-  String get minutesAgo;
+  String minutesAgo(Object count);
 
   /// No description provided for @hoursAgo.
   ///
   /// In en, this message translates to:
   /// **'hours ago'**
-  String get hoursAgo;
+  String hoursAgo(Object count);
 
   /// No description provided for @daysAgo.
   ///
   /// In en, this message translates to:
   /// **'days ago'**
-  String get daysAgo;
+  String daysAgo(Object count);
 
   /// No description provided for @welcomeBack.
   ///

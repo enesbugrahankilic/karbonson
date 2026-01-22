@@ -7,3 +7,4 @@ preferred-supported-locales:
   - en
 nullable-argument: false
 use-escaping: true
+untranslated-messages-file: untranslated_messages.txt

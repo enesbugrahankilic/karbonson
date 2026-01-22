@@ -598,7 +598,6 @@ class ProfileImageBloc extends Bloc<ProfileImageEvent, ProfileImageState> {
     Emitter<ProfileImageState> emit,
   ) async {
     if (state is ProfileImageUploading) {
-      final currentState = state as ProfileImageUploading;
       emit(ProfileImageUploading(
         uploadProgress: event.uploadProgress,
         optimizationParams: _currentOptimizationParams,

@@ -825,6 +825,7 @@ class QuickMenuBuilder {
     required VoidCallback onDuelTap,
     required VoidCallback onBoardGameTap,
     required VoidCallback onMultiplayerTap,
+    required VoidCallback onSpectatorModeTap,
     required VoidCallback onFriendsTap,
     required VoidCallback onLeaderboardTap,
     required VoidCallback onDailyChallengeTap,
@@ -889,7 +890,18 @@ class QuickMenuBuilder {
         onTap: onMultiplayerTap,
         category: 'game_modes',
       ),
-      
+      QuickMenuItem(
+        id: 'spectator_mode',
+        title: 'İzleyici Modu',
+        subtitle: 'Canlı oyunları izle',
+        icon: Icons.visibility,
+        color: Colors.blueGrey,
+        gradientStart: Colors.blueGrey.shade400,
+        gradientEnd: Colors.blueGrey.shade700,
+        onTap: onSpectatorModeTap,
+        category: 'game_modes',
+      ),
+
       // Social
       QuickMenuItem(
         id: 'friends',

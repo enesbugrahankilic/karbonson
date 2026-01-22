@@ -4,8 +4,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
+import 'package:flutter/foundation.dart';
 import 'dart:async';
+import 'dart:ui';
 
 class AnalyticsService {
   static final AnalyticsService _instance = AnalyticsService._internal();
@@ -57,7 +58,7 @@ class AnalyticsService {
   Future<void> logUserLogin(String userId, String method) async {
     try {
       await _analytics.logLogin(loginMethod: method);
-      await _analytics.setUserId(userId);
+      await _analytics.setUserId(id: userId);
       if (kDebugMode) debugPrint('📊 Login logged: $userId via $method');
     } catch (e) {
       if (kDebugMode) debugPrint('❌ Error logging login: $e');
@@ -68,7 +69,7 @@ class AnalyticsService {
   Future<void> logUserRegistration(String userId, String method) async {
     try {
       await _analytics.logSignUp(signUpMethod: method);
-      await _analytics.setUserId(userId);
+      await _analytics.setUserId(id: userId);
       if (kDebugMode) debugPrint('📊 Registration logged: $userId');
     } catch (e) {
       if (kDebugMode) debugPrint('❌ Error logging registration: $e');
@@ -90,7 +91,7 @@ class AnalyticsService {
     try {
       await _analytics.logEvent(
         name: eventName,
-        parameters: parameters ?? {},
+        parameters: parameters?.cast<String, Object>() ?? {},
       );
       if (kDebugMode) debugPrint('📊 Event logged: $eventName');
     } catch (e) {
@@ -101,13 +102,14 @@ class AnalyticsService {
   /// Log game start
   Future<void> logGameStart(String gameType, {int? difficulty}) async {
     try {
+      Map<String, Object> params = {
+        'game_type': gameType, // 'quiz', 'duel', 'multiplayer'
+        'timestamp': DateTime.now().toIso8601String(),
+      };
+      if (difficulty != null) params['difficulty'] = difficulty;
       await _analytics.logEvent(
         name: 'game_start',
-        parameters: {
-          'game_type': gameType, // 'quiz', 'duel', 'multiplayer'
-          'difficulty': difficulty,
-          'timestamp': DateTime.now().toIso8601String(),
-        },
+        parameters: params,
       );
       if (kDebugMode) debugPrint('📊 Game started: $gameType');
     } catch (e) {
@@ -124,16 +126,17 @@ class AnalyticsService {
     int? difficulty,
   }) async {
     try {
+      Map<String, Object> params = {
+        'game_type': gameType,
+        'score': score,
+        'duration_seconds': duration,
+        'is_win': isWin,
+        'timestamp': DateTime.now().toIso8601String(),
+      };
+      if (difficulty != null) params['difficulty'] = difficulty;
       await _analytics.logEvent(
         name: 'game_complete',
-        parameters: {
-          'game_type': gameType,
-          'score': score,
-          'duration_seconds': duration,
-          'is_win': isWin,
-          'difficulty': difficulty,
-          'timestamp': DateTime.now().toIso8601String(),
-        },
+        parameters: params,
       );
       if (kDebugMode) {
         debugPrint('📊 Game completed: $gameType - Score: $score - Win: $isWin');
@@ -167,14 +170,15 @@ class AnalyticsService {
     String? source,
   }) async {
     try {
+      Map<String, Object> params = {
+        'reward_type': rewardType, // 'points', 'coins', 'boxes'
+        'amount': amount,
+        'timestamp': DateTime.now().toIso8601String(),
+      };
+      if (source != null) params['source'] = source; // 'quiz', 'duel', 'daily', 'shop'
       await _analytics.logEvent(
         name: 'reward_earned',
-        parameters: {
-          'reward_type': rewardType, // 'points', 'coins', 'boxes'
-          'amount': amount,
-          'source': source, // 'quiz', 'duel', 'daily', 'shop'
-          'timestamp': DateTime.now().toIso8601String(),
-        },
+        parameters: params,
       );
       if (kDebugMode) debugPrint('📊 Reward: $rewardType x$amount from $source');
     } catch (e) {

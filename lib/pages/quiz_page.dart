@@ -26,15 +26,13 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
   DifficultyLevel _selectedDifficulty = DifficultyLevel.medium; // quiz_settings_page ile tutarlı
   int _selectedQuestionCount = 15;
   
-  // Time tracking
-  DateTime? _quizStartTime;
-  int _timeSpentSeconds = 0;
-  String _difficultyDisplayName = 'Orta';
-  bool _completionEventSent = false;
-
   // Animation controllers
   late AnimationController _fadeController;
   late AnimationController _slideController;
+  
+  // Quiz state
+  String? _difficultyDisplayName;
+  DateTime? _quizStartTime;
 
   @override
   void initState() {
@@ -501,7 +499,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         if (state is QuizLoading) {
           return Scaffold(
             appBar: StandardAppBar(
-              title: 'Quiz Yükleniyor',
+              title: const Text('Quiz Yükleniyor'),
               onBackPressed: () => Navigator.pop(context),
             ),
             body: PageBody(
@@ -523,7 +521,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         if (state is QuizError) {
           return Scaffold(
             appBar: StandardAppBar(
-              title: 'Hata',
+              title: const Text('Hata'),
               onBackPressed: () => Navigator.pop(context),
             ),
             body: PageBody(
@@ -561,7 +559,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
 
           return Scaffold(
             appBar: StandardAppBar(
-              title: 'Soru ${state.currentQuestion + 1}/${state.questions.length}',
+              title: Text('Soru ${state.currentQuestion + 1}/${state.questions.length}'),
               onBackPressed: () => _confirmExit(context),
               actions: [
                 IconButton(

@@ -388,6 +388,15 @@ class _HomeDashboardState extends State<HomeDashboard>
 
                             SizedBox(height: isSmallScreen ? 20.0 : 24.0),
 
+                            // Spectator Mode Section
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: isSmallScreen ? 16.0 : 20.0),
+                              child: _buildSpectatorModeSection(context),
+                            ),
+
+                            SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
                             // Daily Challenges Section
                             Padding(
                               padding: EdgeInsets.symmetric(
@@ -875,6 +884,10 @@ class _HomeDashboardState extends State<HomeDashboard>
       onNotificationsTap: () {
         Navigator.pop(context);
         Navigator.of(context).pushNamed(AppRoutes.notifications);
+      },
+      onSpectatorModeTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.spectatorMode);
       },
       friendRequestCount: 3, // Bu değer dinamik olarak güncellenmeli
       dailyChallengeCount: _dailyChallenges.length,
@@ -2434,6 +2447,116 @@ class _HomeDashboardState extends State<HomeDashboard>
     );
   }
 
+  Widget _buildSpectatorModeSection(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    return Container(
+      margin: const EdgeInsets.all(DesignSystem.spacingM),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: isSmallScreen
+                    ? DesignSystem.spacingS
+                    : DesignSystem.spacingM,
+                vertical: DesignSystem.spacingS),
+            child: Text(
+              'İzleyici Modu',
+              style: DesignSystem.getTitleLarge(context).copyWith(
+                color: Colors.white,
+                fontSize: isSmallScreen ? 18.0 : 22.0,
+                fontWeight: FontWeight.w700,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withOpacity( 0.3),
+                    offset: const Offset(0, 2),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(
+                isSmallScreen ? DesignSystem.spacingM : DesignSystem.spacingL),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.indigo,
+                  Colors.purple,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.indigo.withOpacity( 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: InkWell(
+              onTap: () => Navigator.of(context).pushNamed(AppRoutes.spectatorMode),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.visibility,
+                    size: isSmallScreen ? 48.0 : 64.0,
+                    color: Colors.white,
+                  ),
+                  SizedBox(height: DesignSystem.spacingM),
+                  Text(
+                    'İzleyici Modu',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isSmallScreen ? 18.0 : 22.0,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: DesignSystem.spacingS),
+                  Text(
+                    'Canlı oyunları izle',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity( 0.9),
+                      fontSize: isSmallScreen ? 14.0 : 16.0,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: DesignSystem.spacingM),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: DesignSystem.spacingM,
+                      vertical: DesignSystem.spacingS,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity( 0.2),
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                    ),
+                    child: Text(
+                      'İzle',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: isSmallScreen ? 14.0 : 16.0,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMultiplayerFeature(
     BuildContext context, {
     required IconData icon,
@@ -2650,7 +2773,6 @@ class _HomeDashboardState extends State<HomeDashboard>
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: weekData.map((data) {
         final value = data['value'] as double;
-        final actualValue = data['actualValue'] as int;
         return Column(
           children: [
             Container(
@@ -2954,62 +3076,6 @@ class _HomeDashboardState extends State<HomeDashboard>
       default:
         return ThemeColors.getAccentButtonColor(context);
     }
-  }
-
-  Widget _buildSimpleMenuButton(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(DesignSystem.spacingL),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  ThemeColors.getPrimaryButtonColor(context)
-                      .withOpacity( 0.2),
-                  ThemeColors.getPrimaryButtonColor(context)
-                      .withOpacity( 0.1),
-                ],
-              ),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: ThemeColors.getPrimaryButtonColor(context)
-                    .withOpacity( 0.3),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: ThemeColors.getPrimaryButtonColor(context)
-                      .withOpacity( 0.2),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Icon(
-              icon,
-              size: 28,
-              color: ThemeColors.getPrimaryButtonColor(context),
-            ),
-          ),
-          const SizedBox(height: DesignSystem.spacingS),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: ThemeColors.getText(context),
-                  fontWeight: FontWeight.w500,
-                ),
-          ),
-        ],
-      ),
-    );
   }
 
   Color _getRarityColor(String rarity) {

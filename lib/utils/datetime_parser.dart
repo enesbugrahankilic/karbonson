@@ -52,13 +52,13 @@ class DateTimeParser {
       return l10n.justNow;
     } else if (difference.inMinutes < 60) {
       final minutes = difference.inMinutes;
-      return minutes == 1 ? '1 ${l10n.minutesAgo.replaceFirst('minutes', 'minute')}' : '$minutes ${l10n.minutesAgo}';
+      return l10n.minutesAgo(minutes);
     } else if (difference.inHours < 24) {
       final hours = difference.inHours;
-      return hours == 1 ? '1 ${l10n.hoursAgo.replaceFirst('hours', 'hour')}' : '$hours ${l10n.hoursAgo}';
+      return l10n.hoursAgo(hours);
     } else if (difference.inDays < 7) {
       final days = difference.inDays;
-      return days == 1 ? '1 ${l10n.daysAgo.replaceFirst('days', 'day')}' : '$days ${l10n.daysAgo}';
+      return l10n.daysAgo(days);
     } else {
       // Format as date for older items
       final locale = Localizations.localeOf(context);

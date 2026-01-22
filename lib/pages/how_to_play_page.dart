@@ -10,7 +10,7 @@ class HowToPlayPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: StandardAppBar(
-        title: 'Nasıl Oynanır?',
+        title: const Text('Nasıl Oynanır?'),
         onBackPressed: () => Navigator.pop(context),
       ),
       body: PageBody(

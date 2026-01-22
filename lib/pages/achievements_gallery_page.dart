@@ -2,11 +2,9 @@
 // Achievements Gallery Page - Tüm başarımları görüntüleme ve filtreleme
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../models/achievement.dart';
 import '../services/achievement_service.dart';
 import '../widgets/achievement_card.dart';
-import '../theme/app_theme.dart';
 import '../widgets/page_templates.dart';
 
 class AchievementsGalleryPage extends StatefulWidget {
@@ -64,7 +62,7 @@ class _AchievementsGalleryPageState extends State<AchievementsGalleryPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: StandardAppBar(
-        title: 'Başarımlar Galerisi',
+        title: Text('Başarımlar Galerisi'),
         onBackPressed: () => Navigator.pop(context),
       ),
       body: PageBody(
@@ -217,14 +215,6 @@ class AchievementDetailSheet extends StatelessWidget {
   final Achievement achievement;
 
   const AchievementDetailSheet({super.key, required this.achievement});
-
-  // Helper function to convert hex string to Color
-  Color _hexToColor(String hexColor) {
-    final buffer = StringBuffer();
-    if (hexColor.length == 7) buffer.write('ff');
-    buffer.write(hexColor.replaceFirst('#', ''));
-    return Color(int.parse(buffer.toString(), radix: 16));
-  }
 
   // Helper function to get rarity color
   Color _getRarityColor() {

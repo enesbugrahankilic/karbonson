@@ -279,14 +279,13 @@ class _LeaderboardPageState extends State<LeaderboardPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: StandardAppBar(
-        title: 'Lider Tablosu',
+        title: const Text('Lider Tablosu'),
         onBackPressed: () => Navigator.pop(context),
       ),
       body: PageBody(
         scrollable: false,
         child: Column(
           children: [
-            // TabBar
             Material(
               color: Theme.of(context).cardColor,
               child: TabBar(
@@ -301,94 +300,20 @@ class _LeaderboardPageState extends State<LeaderboardPage>
                 indicatorColor: Theme.of(context).primaryColor,
               ),
             ),
-            // Filter Section
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: Theme.of(context).cardColor,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Filtrele',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<int?>(
-                          value: _selectedClassLevel,
-                        decoration: InputDecoration(
-                          labelText: 'Sınıf',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        ),
-                        items: [
-                          const DropdownMenuItem(value: null, child: Text('Tümü')),
-                          const DropdownMenuItem(value: 9, child: Text('9. Sınıf')),
-                          const DropdownMenuItem(value: 10, child: Text('10. Sınıf')),
-                          const DropdownMenuItem(value: 11, child: Text('11. Sınıf')),
-                          const DropdownMenuItem(value: 12, child: Text('12. Sınıf')),
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedClassLevel = value;
-                          });
-                          _loadLeaderboards();
-                        },
-                      ),
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildGlobalLeaderboard(),
+                        _buildFriendsLeaderboard(),
+                        _buildCategoriesLeaderboard(),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: DropdownButtonFormField<String?>(
-                        value: _selectedClassSection,
-                        decoration: InputDecoration(
-                          labelText: 'Şube',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        ),
-                        items: [
-                          const DropdownMenuItem(value: null, child: Text('Tümü')),
-                          const DropdownMenuItem(value: 'A', child: Text('A Şubesi')),
-                          const DropdownMenuItem(value: 'B', child: Text('B Şubesi')),
-                          const DropdownMenuItem(value: 'C', child: Text('C Şubesi')),
-                          const DropdownMenuItem(value: 'D', child: Text('D Şubesi')),
-                          if (_selectedClassLevel != 9) ...[
-                            const DropdownMenuItem(value: 'E', child: Text('E Şubesi')),
-                            const DropdownMenuItem(value: 'F', child: Text('F Şubesi')),
-                          ],
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedClassSection = value;
-                          });
-                          _loadLeaderboards();
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
             ),
-          ),
-          // TabBarView
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildGlobalLeaderboard(),
-                      _buildFriendsLeaderboard(),
-                      _buildCategoriesLeaderboard(),
-                    ],
-                  ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -611,7 +536,6 @@ class _LeaderboardPageState extends State<LeaderboardPage>
         final index = entry.key;
         final player = entry.value;
         final avatar = player['avatar'] ?? '👤';
-        final displayName = player['displayName'] ?? '';
         
         return Container(
           margin: EdgeInsets.only(right: index < 2 ? 4 : 0),

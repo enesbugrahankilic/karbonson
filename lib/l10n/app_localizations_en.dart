@@ -63,13 +63,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get justNow => 'Just now';
 
   @override
-  String get minutesAgo => 'minutes ago';
+  String minutesAgo(Object count) {
+    return 'minutes ago';
+  }
 
   @override
-  String get hoursAgo => 'hours ago';
+  String hoursAgo(Object count) {
+    return 'hours ago';
+  }
 
   @override
-  String get daysAgo => 'days ago';
+  String daysAgo(Object count) {
+    return 'days ago';
+  }
 
   @override
   String get welcomeBack => 'Welcome Back';

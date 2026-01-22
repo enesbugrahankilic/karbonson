@@ -16,7 +16,7 @@ class EmailVerificationPage extends StatefulWidget {
 class _EmailVerificationPageState extends State<EmailVerificationPage> {
   bool _isLoading = false;
   bool _isVerified = false;
-  EmailVerificationStatus? _verificationStatus;
+  ProfileEmailVerificationStatus? _verificationStatus;
   final ProfileService _profileService = ProfileService();
 
   @override
@@ -31,15 +31,14 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
 
   Future<void> _checkVerificationStatus() async {
     try {
-      final status = await _profileService.getEmailVerificationStatus();
+      final status = await _profileService.getProfileEmailVerificationStatus();
       setState(() {
         _verificationStatus = status;
         _isVerified = status.emailVerified;
       });
 
-      // If email is verified, sync with Firestore and navigate back
+      // If email is verified, navigate back
       if (status.emailVerified) {
-        await _profileService.syncEmailVerificationStatus();
         if (mounted) {
           Navigator.of(context).pop(true); // Return true to indicate verified
         }

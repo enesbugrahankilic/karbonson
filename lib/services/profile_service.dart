@@ -10,7 +10,7 @@ import '../models/profile_data.dart'; // For GameHistoryItem
 import 'firestore_service.dart';
 
 /// Email verification status for UI display
-class EmailVerificationStatus {
+class ProfileEmailVerificationStatus {
   final String uid;
   final bool emailVerified;
   final DateTime createdAt;
@@ -19,7 +19,7 @@ class EmailVerificationStatus {
   final bool hasEmail;
   final String? email;
 
-  EmailVerificationStatus({
+  ProfileEmailVerificationStatus({
     required this.uid,
     required this.emailVerified,
     required this.createdAt,
@@ -287,11 +287,11 @@ class ProfileService {
   }
 
   /// Get email verification status with detailed information
-  Future<EmailVerificationStatus> getEmailVerificationStatus() async {
+  Future<ProfileEmailVerificationStatus> getProfileEmailVerificationStatus() async {
     try {
       final user = _auth.currentUser;
       if (user == null) {
-        return EmailVerificationStatus(
+        return ProfileEmailVerificationStatus(
           uid: '',
           emailVerified: false,
           createdAt: DateTime.now(),
@@ -306,7 +306,7 @@ class ProfileService {
       final hasEmail = currentUser.email != null && currentUser.email!.isNotEmpty;
       final isVerified = currentUser.emailVerified;
 
-      return EmailVerificationStatus(
+      return ProfileEmailVerificationStatus(
         uid: user.uid,
         emailVerified: isVerified,
         createdAt: DateTime.now(),
@@ -319,7 +319,7 @@ class ProfileService {
       );
     } catch (e) {
       if (kDebugMode) debugPrint('Error getting email verification status: $e');
-      return EmailVerificationStatus(
+      return ProfileEmailVerificationStatus(
         uid: '',
         emailVerified: false,
         createdAt: DateTime.now(),
@@ -330,7 +330,7 @@ class ProfileService {
   }
 
   /// Sync email verification status between Firebase Auth and Firestore
-  Future<bool> syncEmailVerificationStatus() async {
+  Future<bool> syncProfileEmailVerificationStatus() async {
     try {
       final user = _auth.currentUser;
       if (user == null) return false;
@@ -526,7 +526,7 @@ class ProfileService {
       }
 
       // Sync email verification status
-      await syncEmailVerificationStatus();
+      await syncProfileEmailVerificationStatus();
 
       // Sync 2FA status
       await sync2FAStatus();

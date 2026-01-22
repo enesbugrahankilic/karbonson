@@ -8,7 +8,9 @@ import '../services/firebase_auth_service.dart';
 import '../services/email_usage_service.dart';
 import '../models/user_data.dart';
 import '../theme/theme_colors.dart';
+import '../theme/design_system.dart';
 import '../widgets/language_selector_button.dart';
+import '../widgets/page_templates.dart';
 import 'profile_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -335,359 +337,185 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final screenWidth = screenSize.width;
-    final isSmallScreen = screenWidth < 360;
-    final isMediumScreen = screenWidth < 600;
-    final isLargeScreen = screenWidth > 800;
-
-    // Responsive text sizes
-    final titleFontSize = isSmallScreen ? 18.0 : (isMediumScreen ? 20.0 : (isLargeScreen ? 28.0 : 24.0));
-    final buttonTextSize = isSmallScreen ? 14.0 : 16.0;
-
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: Text('Kayıt Ol',
-            style: TextStyle(
-              color: ThemeColors.getAppBarText(context),
-              fontSize: titleFontSize,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-        ),
-        iconTheme: IconThemeData(color: ThemeColors.getAppBarIcon(context)),
+      appBar: StandardAppBar(
+        title: const Text('Kayıt Ol'),
+        onBackPressed: () => Navigator.pop(context),
         actions: [
           const LanguageSelectorButton(),
         ],
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+      body: PageBody(
+        scrollable: true,
+        child: Container(
+          decoration: DesignSystem.getPageContainerDecoration(context),
+          padding: const EdgeInsets.all(DesignSystem.spacingM),
+          child: SafeArea(
+            child: DesignSystem.responsiveContainer(
+              context,
+              mobile: _buildRegistrationForm(context),
+              tablet: _buildRegistrationForm(context),
+              desktop: _buildRegistrationForm(context),
+              maxWidth: 600,
+            ),
           ),
         ),
-        child: SafeArea(
-          child: Center(
-            child: Scrollbar(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(isSmallScreen ? 12.0 : 16.0),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: isLargeScreen ? 600 : 500,
+      ),
+    );
+  }
+
+  Widget _buildRegistrationForm(BuildContext context) {
+    return Center(
+      child: DesignSystem.card(
+        context,
+        padding: const EdgeInsets.all(DesignSystem.spacingL),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Icon(
+              Icons.person_add,
+              size: 64,
+              color: ThemeColors.getPrimaryButtonColor(context),
+            ),
+            const SizedBox(height: DesignSystem.spacingM),
+            Text(
+              'Yeni Hesap Oluştur',
+              textAlign: TextAlign.center,
+              style: DesignSystem.getTitleLarge(context),
+            ),
+            const SizedBox(height: DesignSystem.spacingXl),
+            Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  // E-posta alanı
+                  TextFormField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: DesignSystem.getInputDecoration(
+                      context,
+                      labelText: 'E-posta Adresi',
+                      prefixIcon: const Icon(Icons.email),
+                    ),
+                    style: DesignSystem.getBodyLarge(context),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'E-posta adresi gerekli';
+                      }
+                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                        return 'Geçerli bir e-posta adresi girin';
+                      }
+                      return null;
+                    },
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: ThemeColors.getContainerBackground(context),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: ThemeColors.getShadow(context),
-                              blurRadius: 15,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Icon(
-                              Icons.person_add,
-                              size: 60,
-                              color: const Color(0xFF4CAF50),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Yeni Hesap Oluştur',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: titleFontSize,
-                                fontWeight: FontWeight.bold,
-                                color: ThemeColors.getTitleText(context),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 24),
-                            Form(
-                              key: _formKey,
-                              child: Column(
-                                children: [
-                                  // E-posta alanı
-                                  TextFormField(
-                                    controller: _emailController,
-                                    keyboardType: TextInputType.emailAddress,
-                                    decoration: InputDecoration(
-                                      labelText: 'E-posta Adresi',
-                                      filled: true,
-                                      fillColor: ThemeColors.getInputBackground(
-                                          context),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                            color:
-                                                ThemeColors.getBorder(context)),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                            color:
-                                                ThemeColors.getBorder(context)),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: const BorderSide(
-                                            color: Color(0xFF4CAF50), width: 2),
-                                      ),
-                                      prefixIcon: Icon(Icons.email,
-                                          color: ThemeColors.getSecondaryText(
-                                              context)),
-                                      labelStyle: TextStyle(
-                                          color: ThemeColors.getSecondaryText(
-                                              context)),
-                                    ),
-                                    style: TextStyle(
-                                        color: ThemeColors.getText(context)),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'E-posta adresi gerekli';
-                                      }
-                                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-                                          .hasMatch(value)) {
-                                        return 'Geçerli bir e-posta adresi girin';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                  const SizedBox(height: 16),
+                  const SizedBox(height: DesignSystem.spacingM),
 
-                                  // Şifre alanı
-                                  TextFormField(
-                                    controller: _passwordController,
-                                    obscureText: true,
-                                    decoration: InputDecoration(
-                                      labelText: 'Şifre',
-                                      filled: true,
-                                      fillColor: ThemeColors.getInputBackground(
-                                          context),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                            color:
-                                                ThemeColors.getBorder(context)),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                            color:
-                                                ThemeColors.getBorder(context)),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: const BorderSide(
-                                            color: Color(0xFF4CAF50), width: 2),
-                                      ),
-                                      prefixIcon: Icon(Icons.lock,
-                                          color: ThemeColors.getSecondaryText(
-                                              context)),
-                                      labelStyle: TextStyle(
-                                          color: ThemeColors.getSecondaryText(
-                                              context)),
-                                    ),
-                                    style: TextStyle(
-                                        color: ThemeColors.getText(context)),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Şifre gerekli';
-                                      }
-                                      if (value.length < 6) {
-                                        return 'Şifre en az 6 karakter olmalı';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                  const SizedBox(height: 16),
+                  // Şifre alanı
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    decoration: DesignSystem.getInputDecoration(
+                      context,
+                      labelText: 'Şifre',
+                      prefixIcon: const Icon(Icons.lock),
+                    ),
+                    style: DesignSystem.getBodyLarge(context),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Şifre gerekli';
+                      }
+                      if (value.length < 6) {
+                        return 'Şifre en az 6 karakter olmalı';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: DesignSystem.spacingM),
 
-                                  // Şifre tekrar alanı
-                                  TextFormField(
-                                    controller: _confirmPasswordController,
-                                    obscureText: true,
-                                    decoration: InputDecoration(
-                                      labelText: 'Şifre Tekrar',
-                                      filled: true,
-                                      fillColor: ThemeColors.getInputBackground(
-                                          context),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                            color:
-                                                ThemeColors.getBorder(context)),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                            color:
-                                                ThemeColors.getBorder(context)),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: const BorderSide(
-                                            color: Color(0xFF4CAF50), width: 2),
-                                      ),
-                                      prefixIcon: Icon(Icons.lock_outline,
-                                          color: ThemeColors.getSecondaryText(
-                                              context)),
-                                      labelStyle: TextStyle(
-                                          color: ThemeColors.getSecondaryText(
-                                              context)),
-                                    ),
-                                    style: TextStyle(
-                                        color: ThemeColors.getText(context)),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Şifre tekrarı gerekli';
-                                      }
-                                      if (value != _passwordController.text) {
-                                        return 'Şifreler eşleşmiyor';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                  const SizedBox(height: 16),
+                  // Şifre tekrar alanı
+                  TextFormField(
+                    controller: _confirmPasswordController,
+                    obscureText: true,
+                    decoration: DesignSystem.getInputDecoration(
+                      context,
+                      labelText: 'Şifre Tekrar',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                    ),
+                    style: DesignSystem.getBodyLarge(context),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Şifre tekrarı gerekli';
+                      }
+                      if (value != _passwordController.text) {
+                        return 'Şifreler eşleşmiyor';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: DesignSystem.spacingM),
 
-                                  // Takma ad alanı
-                                  TextFormField(
-                                    controller: _nicknameController,
-                                    decoration: InputDecoration(
-                                      labelText: 'Takma Adınız',
-                                      filled: true,
-                                      fillColor: ThemeColors.getInputBackground(
-                                          context),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                            color:
-                                                ThemeColors.getBorder(context)),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                            color:
-                                                ThemeColors.getBorder(context)),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: const BorderSide(
-                                            color: Color(0xFF4CAF50), width: 2),
-                                      ),
-                                      prefixIcon: Icon(Icons.person,
-                                          color: ThemeColors.getSecondaryText(
-                                              context)),
-                                      suffixIcon: IconButton(
-                                        icon: Icon(Icons.casino,
-                                            color:
-                                                ThemeColors.getGreen(context)),
-                                        onPressed: _suggestRandomName,
-                                        tooltip: 'Rastgele isim öner',
-                                      ),
-                                      labelStyle: TextStyle(
-                                          color: ThemeColors.getSecondaryText(
-                                              context)),
-                                    ),
-                                    style: TextStyle(
-                                        color: ThemeColors.getText(context)),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Takma ad gerekli';
-                                      }
-                                      if (value.length < 3) {
-                                        return 'Takma ad en az 3 karakter olmalı';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-
-                            // Kayıt ol butonu
-                            ElevatedButton.icon(
-                              onPressed: _isLoading ? null : _registerUser,
-                              icon: _isLoading
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2, color: Colors.white),
-                                    )
-                                  : const Icon(Icons.person_add),
-                              label: Text(
-                                  _isLoading ? 'Kayıt Oluyor...' : 'Kayıt Ol',
-                                  style: TextStyle(
-                                    fontSize: buttonTextSize,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF4CAF50),
-                                foregroundColor: Colors.white,
-                                padding:
-                                    EdgeInsets.symmetric(vertical: isSmallScreen ? 12 : 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Biyometri kurulum widget'ı (opsiyonel) - TODO: Implement
-                            /*
-                            BiometricSetupWidget(
-                              onSetupCompleted: () {
-                                if (kDebugMode) debugPrint('Biyometri kurulumu tamamlandı');
-                              },
-                              onSetupSkipped: () {
-                                if (kDebugMode) debugPrint('Biyometri kurulumu atlandı');
-                              },
-                            ),
-                            */
-                            const SizedBox(height: 8),
-
-                            // Giriş sayfasına yönlendir
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: Text(
-                                'Zaten hesabınız var mı? Giriş Yapın',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.blue[700],
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                  // Takma ad alanı
+                  TextFormField(
+                    controller: _nicknameController,
+                    decoration: DesignSystem.getInputDecoration(
+                      context,
+                      labelText: 'Takma Adınız',
+                      prefixIcon: const Icon(Icons.person),
+                      suffixIcon: IconButton(
+                        icon: Icon(Icons.casino,
+                            color: ThemeColors.getGreen(context)),
+                        onPressed: _suggestRandomName,
+                        tooltip: 'Rastgele isim öner',
                       ),
-                    ],
+                    ),
+                    style: DesignSystem.getBodyLarge(context),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Takma ad gerekli';
+                      }
+                      if (value.length < 3) {
+                        return 'Takma ad en az 3 karakter olmalı';
+                      }
+                      return null;
+                    },
                   ),
+                ],
+              ),
+            ),
+            const SizedBox(height: DesignSystem.spacingXl),
+
+            // Kayıt ol butonu
+            ElevatedButton.icon(
+              onPressed: _isLoading ? null : _registerUser,
+              icon: _isLoading
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: DesignSystem.modernProgressIndicator(context),
+                    )
+                  : const Icon(Icons.person_add),
+              label: Text(
+                _isLoading ? 'Kayıt Oluyor...' : 'Kayıt Ol',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              style: DesignSystem.getPrimaryButtonStyle(context),
+            ),
+            const SizedBox(height: DesignSystem.spacingM),
+
+            // Giriş sayfasına yönlendir
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: DesignSystem.getTextButtonStyle(context),
+              child: Text(
+                'Zaten hesabınız var mı? Giriş Yapın',
+                style: DesignSystem.getBodyMedium(context).copyWith(
+                  color: ThemeColors.getPrimaryButtonColor(context),
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

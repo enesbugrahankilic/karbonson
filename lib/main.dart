@@ -31,8 +31,6 @@ import 'theme/app_theme.dart';
 import 'core/navigation/app_router.dart';
 import 'core/navigation/navigation_service.dart';
 import 'services/analytics_service.dart';
-import 'services/session_management_service.dart';
-import 'services/backend_validation_service.dart';
 
 void main() {
   // Run the app inside a guarded zone; call ensureInitialized and runApp
@@ -330,8 +328,6 @@ class Karbon2App extends StatefulWidget {
 class _Karbon2AppState extends State<Karbon2App> {
   bool _loading = true;
   String _initialRoute = AppRoutes.login;
-  // State key to force rebuild when language changes
-  Locale? _previousLocale;
 
   @override
   void initState() {
@@ -345,9 +341,6 @@ class _Karbon2AppState extends State<Karbon2App> {
     // Force rebuild by calling setState with a different locale
     // This will cause the MaterialApp to rebuild with the new locale
     if (mounted) {
-      setState(() {
-        _previousLocale = Locale(newLanguage.code);
-      });
       if (kDebugMode) {
         debugPrint('Language changed to: ${newLanguage.code} - forcing app rebuild');
       }

@@ -1,11 +1,11 @@
 // lib/pages/profile_page.dart
-// Gelişmiş Profil Sayfası - UID merkezli mimari ile iki aşamalı yükleme
+// Gelişmiş Profil Sayfası - UID merkezli mimari ile tamamen dinamik
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/user_data.dart';
-import '../models/profile_data.dart';
+import '../models/profile_data.dart'; // For GameHistoryItem
 import '../provides/profile_bloc.dart';
 import '../services/profile_service.dart';
 import '../services/profile_picture_service.dart';
@@ -69,9 +69,10 @@ class _ProfileContentState extends State<ProfileContent>
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: StandardAppBar(
-        title: 'Profilim',
+        title: const Text('Profilim'),
         onBackPressed: () => Navigator.pop(context),
         actions: [
           IconButton(
@@ -98,32 +99,33 @@ class _ProfileContentState extends State<ProfileContent>
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(state.message),
-                      backgroundColor: Colors.red,
+                      backgroundColor: ThemeColors.getErrorColor(context),
                       duration: const Duration(seconds: 3),
                     ),
                   );
                 } else if (state is ProfileUpdateSuccess) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.message),
-                    backgroundColor: ThemeColors.getSuccessColor(context),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              }
-            },
-            child: BlocBuilder<ProfileBloc, ProfileState>(
-              builder: (context, state) {
-                if (state is ProfileLoading) {
-                  return _buildLoadingState();
-                } else if (state is ProfileLoaded) {
-                  return _buildProfileContent(context, state.userData, state.currentNickname);
-                } else if (state is ProfileError) {
-                  return _buildErrorState(context, state.message);
-                } else {
-                  return _buildLoadingState();
+                    SnackBar(
+                      content: Text(state.message),
+                      backgroundColor: ThemeColors.getSuccessColor(context),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
                 }
               },
+              child: BlocBuilder<ProfileBloc, ProfileState>(
+                builder: (context, state) {
+                  if (state is ProfileLoading) {
+                    return _buildLoadingState();
+                  } else if (state is ProfileLoaded) {
+                    return _buildProfileContent(context, state.userData, state.currentNickname);
+                  } else if (state is ProfileError) {
+                    return _buildErrorState(context, state.message);
+                  } else {
+                    return _buildLoadingState();
+                  }
+                },
+              ),
             ),
           ),
         ),
@@ -201,189 +203,284 @@ class _ProfileContentState extends State<ProfileContent>
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
 
-    return SingleChildScrollView(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header section with profile identity
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(isSmallScreen ? 20 : 24),
+          margin: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                ThemeColors.getPrimaryButtonColor(context),
+                ThemeColors.getAccentButtonColor(context),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: _buildIdentityCard(context, userData, currentNickname),
+        ),
+
+        // Account Information Section
+        _buildSectionHeader(context, 'Hesap Bilgileri'),
+        _buildAccountInfoCard(context, userData),
+
+        // Game Statistics Section
+        _buildSectionHeader(context, 'Oyun İstatistikleri'),
+        _buildGameStatistics(context, userData),
+
+        // Achievements Section
+        _buildSectionHeader(context, 'Başarımlar'),
+        _buildAchievementsAndRewards(context, userData),
+
+        // Game History Section
+        _buildSectionHeader(context, 'Oyun Geçmişi'),
+        _buildGameHistory(context, userData),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: ThemeColors.getText(context),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAccountInfoCard(BuildContext context, UserData userData) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
+      decoration: BoxDecoration(
+        color: ThemeColors.getCardBackground(context),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ThemeColors.getBorder(context), width: 1),
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildIdentityCard(context, userData, currentNickname),
-          const SizedBox(height: 24),
-          _buildGameStatistics(context, userData),
-          const SizedBox(height: 24),
-          _buildAchievementsAndRewards(context, userData),
-          const SizedBox(height: 24),
-          _buildGameHistory(context, userData),
+          _buildInfoRow(context, 'UID', userData.uid.substring(0, 8) + '...', Icons.fingerprint),
+          const SizedBox(height: 12),
+          _buildInfoRow(context, 'Kayıt Tarihi', _formatDate(userData.createdAt), Icons.calendar_today),
+          const SizedBox(height: 12),
+          _buildInfoRow(context, 'Son Giriş', _formatLastLogin(userData.lastLogin), Icons.access_time),
+          const SizedBox(height: 12),
+          _buildInfoRow(context, 'E-posta Doğrulama', userData.isEmailVerified ? 'Doğrulanmış' : 'Doğrulanmamış',
+              userData.isEmailVerified ? Icons.verified : Icons.unpublished,
+              color: userData.isEmailVerified ? ThemeColors.getSuccessColor(context) : ThemeColors.getWarningColor(context)),
+          const SizedBox(height: 12),
+          _buildInfoRow(context, '2FA', userData.is2FAEnabled ? 'Aktif' : 'Pasif',
+              userData.is2FAEnabled ? Icons.security : Icons.security_outlined,
+              color: userData.is2FAEnabled ? ThemeColors.getSuccessColor(context) : ThemeColors.getSecondaryText(context)),
+          if (userData.classLevel != null) ...[
+            const SizedBox(height: 12),
+            _buildInfoRow(context, 'Sınıf', '${userData.classLevel}. Sınıf ${userData.classSection ?? ''}', Icons.school),
+          ],
         ],
       ),
     );
+  }
+
+  Widget _buildInfoRow(BuildContext context, String label, String value, IconData icon, {Color? color}) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: (color ?? ThemeColors.getPrimaryButtonColor(context)).withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: color ?? ThemeColors.getPrimaryButtonColor(context), size: 20),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: ThemeColors.getSecondaryText(context),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: TextStyle(
+                  color: ThemeColors.getText(context),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'Bilinmiyor';
+    return '${date.day}/${date.month}/${date.year}';
   }
 
   Widget _buildIdentityCard(BuildContext context, UserData userData, String currentNickname) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(isSmallScreen ? 20 : 24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            ThemeColors.getPrimaryButtonColor(context),
-            ThemeColors.getAccentButtonColor(context),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          GestureDetector(
-            onTap: () => _showEditProfilePictureDialog(context),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  width: isSmallScreen ? 100 : 120,
-                  height: isSmallScreen ? 100 : 120,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
-                      width: 4,
-                    ),
-                  ),
-                ),
-                CircleAvatar(
-                  radius: isSmallScreen ? 40 : 48,
-                  backgroundColor: Colors.white.withOpacity(0.2),
-                  backgroundImage: userData.profilePictureUrl != null
-                      ? (userData.profilePictureUrl!.startsWith('assets/')
-                          ? AssetImage(userData.profilePictureUrl!) as ImageProvider
-                          : NetworkImage(userData.profilePictureUrl!) as ImageProvider)
-                      : null,
-                  child: userData.profilePictureUrl == null
-                      ? Text(
-                          currentNickname.isNotEmpty
-                              ? currentNickname[0].toUpperCase()
-                              : 'U',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: isSmallScreen ? 24 : 28,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        )
-                      : null,
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: ThemeColors.getPrimaryButtonColor(context),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: Icon(
-                      Icons.camera_alt,
-                      color: Colors.white,
-                      size: isSmallScreen ? 14 : 16,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          GestureDetector(
-            onTap: () => _showEditNicknameDialog(context, currentNickname),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  currentNickname.isNotEmpty ? currentNickname : 'Kullanıcı',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: isSmallScreen ? 20 : 24,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.edit,
-                  color: Colors.white.withOpacity(0.7),
-                  size: isSmallScreen ? 16 : 18,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: () => _showEditProfilePictureDialog(context),
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              Icon(Icons.copy, size: 16, color: Colors.white.withOpacity(0.8)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'UID: ${userData.uid.substring(0, 8)}...',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: isSmallScreen ? 12 : 14,
-                    fontFamily: 'monospace',
+              Container(
+                width: isSmallScreen ? 100 : 120,
+                height: isSmallScreen ? 100 : 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.3),
+                    width: 4,
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('UID kopyalandı (debug modunda)'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                },
+              CircleAvatar(
+                radius: isSmallScreen ? 40 : 48,
+                backgroundColor: Colors.white.withOpacity(0.2),
+                backgroundImage: userData.profilePictureUrl != null
+                    ? (userData.profilePictureUrl!.startsWith('assets/')
+                        ? AssetImage(userData.profilePictureUrl!) as ImageProvider
+                        : NetworkImage(userData.profilePictureUrl!) as ImageProvider)
+                    : null,
+                child: userData.profilePictureUrl == null
+                    ? Text(
+                        currentNickname.isNotEmpty
+                            ? currentNickname[0].toUpperCase()
+                            : 'U',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: isSmallScreen ? 24 : 28,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      )
+                    : null,
+              ),
+              Positioned(
+                bottom: 0,
+                right: 0,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
+                    color: ThemeColors.getPrimaryButtonColor(context),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
                   ),
-                  child: Text(
-                    'Kopyala',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  child: Icon(
+                    Icons.camera_alt,
+                    color: Colors.white,
+                    size: isSmallScreen ? 14 : 16,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            _formatLastLogin(userData.lastLogin),
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
-              fontSize: isSmallScreen ? 11 : 12,
-            ),
-            textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16),
+        GestureDetector(
+          onTap: () => _showEditNicknameDialog(context, currentNickname),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                currentNickname.isNotEmpty ? currentNickname : 'Kullanıcı',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: isSmallScreen ? 20 : 24,
+                  fontWeight: FontWeight.w700,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.edit,
+                color: Colors.white.withOpacity(0.7),
+                size: isSmallScreen ? 16 : 18,
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.copy, size: 16, color: Colors.white.withOpacity(0.8)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'UID: ${userData.uid.substring(0, 8)}...',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.8),
+                  fontSize: isSmallScreen ? 12 : 14,
+                  fontFamily: 'monospace',
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('UID kopyalandı (debug modunda)'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Kopyala',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -391,57 +488,46 @@ class _ProfileContentState extends State<ProfileContent>
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Oyun İstatistikleri',
-          style: TextStyle(
-            color: ThemeColors.getText(context),
-            fontSize: isSmallScreen ? 18 : 20,
-            fontWeight: FontWeight.w700,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: GridView.count(
+        crossAxisCount: 2,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: isSmallScreen ? 1.3 : 1.5,
+        children: [
+          _buildStatCard(
+            context,
+            icon: Icons.trending_up,
+            title: 'Kazanma Oranı',
+            value: '${(userData.winRate * 100).round()}%',
+            color: ThemeColors.getSuccessColor(context),
           ),
-        ),
-        const SizedBox(height: 16),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: isSmallScreen ? 1.3 : 1.5,
-          children: [
-            _buildStatCard(
-              context,
-              icon: Icons.trending_up,
-              title: 'Kazanma Oranı',
-              value: '${(userData.winRate * 100).round()}%',
-              color: ThemeColors.getSuccessColor(context),
-            ),
-            _buildStatCard(
-              context,
-              icon: Icons.games,
-              title: 'Toplam Oyun',
-              value: userData.totalGamesPlayed.toString(),
-              color: ThemeColors.getInfoColor(context),
-            ),
-            _buildStatCard(
-              context,
-              icon: Icons.emoji_events,
-              title: 'En Yüksek Skor',
-              value: userData.highestScore.toString(),
-              color: ThemeColors.getWarningColor(context),
-            ),
-            _buildStatCard(
-              context,
-              icon: Icons.analytics,
-              title: 'Ortalama Puan',
-              value: userData.averageScore.toString(),
-              color: Colors.purple,
-            ),
-          ],
-        ),
-      ],
+          _buildStatCard(
+            context,
+            icon: Icons.games,
+            title: 'Toplam Oyun',
+            value: userData.totalGamesPlayed.toString(),
+            color: ThemeColors.getInfoColor(context),
+          ),
+          _buildStatCard(
+            context,
+            icon: Icons.emoji_events,
+            title: 'En Yüksek Skor',
+            value: userData.highestScore.toString(),
+            color: ThemeColors.getWarningColor(context),
+          ),
+          _buildStatCard(
+            context,
+            icon: Icons.analytics,
+            title: 'Ortalama Puan',
+            value: userData.averageScore.toString(),
+            color: Colors.purple,
+          ),
+        ],
+      ),
     );
   }
 
@@ -510,19 +596,10 @@ class _ProfileContentState extends State<ProfileContent>
     final isSmallScreen = screenWidth < 360;
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Başarımlar ve Ödüller',
-          style: TextStyle(
-            color: ThemeColors.getText(context),
-            fontSize: isSmallScreen ? 18 : 20,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 16),
+        // Main achievement card
         Container(
-          width: double.infinity,
+          margin: const EdgeInsets.symmetric(horizontal: 16),
           padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -615,47 +692,51 @@ class _ProfileContentState extends State<ProfileContent>
           ),
         ),
         const SizedBox(height: 20),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: isSmallScreen ? 1.1 : 1.2,
-          children: [
-            _buildAchievementCard(
-              context,
-              icon: Icons.emoji_events,
-              title: 'En Yüksek Skor',
-              value: '${userData.highestScore}',
-              subtitle: 'Puan',
-              color: Colors.amber,
-            ),
-            _buildAchievementCard(
-              context,
-              icon: Icons.assignment_turned_in,
-              title: 'Toplam Oyun',
-              value: '${userData.totalGamesPlayed}',
-              subtitle: 'Oynandı',
-              color: Colors.green,
-            ),
-            _buildAchievementCard(
-              context,
-              icon: Icons.card_giftcard,
-              title: 'Ortalama',
-              value: '${userData.averageScore}',
-              subtitle: 'Puan',
-              color: Colors.purple,
-            ),
-            _buildAchievementCard(
-              context,
-              icon: Icons.local_fire_department,
-              title: 'Kazanma Oranı',
-              value: '%${(userData.winRate * 100).round()}',
-              subtitle: 'Başarı',
-              color: Colors.orange,
-            ),
-          ],
+        // Achievement grid
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          child: GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: isSmallScreen ? 1.1 : 1.2,
+            children: [
+              _buildAchievementCard(
+                context,
+                icon: Icons.emoji_events,
+                title: 'En Yüksek Skor',
+                value: '${userData.highestScore}',
+                subtitle: 'Puan',
+                color: Colors.amber,
+              ),
+              _buildAchievementCard(
+                context,
+                icon: Icons.assignment_turned_in,
+                title: 'Toplam Oyun',
+                value: '${userData.totalGamesPlayed}',
+                subtitle: 'Oynandı',
+                color: Colors.green,
+              ),
+              _buildAchievementCard(
+                context,
+                icon: Icons.card_giftcard,
+                title: 'Ortalama',
+                value: '${userData.averageScore}',
+                subtitle: 'Puan',
+                color: Colors.purple,
+              ),
+              _buildAchievementCard(
+                context,
+                icon: Icons.local_fire_department,
+                title: 'Kazanma Oranı',
+                value: '%${(userData.winRate * 100).round()}',
+                subtitle: 'Başarı',
+                color: Colors.orange,
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -730,85 +811,70 @@ class _ProfileContentState extends State<ProfileContent>
   }
 
   Widget _buildGameHistory(BuildContext context, UserData userData) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 360;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Oyun Geçmişi',
-          style: TextStyle(
-            color: ThemeColors.getText(context),
-            fontSize: isSmallScreen ? 18 : 20,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 16),
-        if (userData.recentGames.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: ThemeColors.getCardBackground(context),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: ThemeColors.getBorder(context), width: 1),
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.gamepad,
-                  size: 48,
-                  color: ThemeColors.getSecondaryText(context),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Henüz oyun oynanmamış',
-                  style: TextStyle(
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: userData.recentGames.isEmpty
+          ? Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: ThemeColors.getCardBackground(context),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: ThemeColors.getBorder(context), width: 1),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.gamepad,
+                    size: 48,
                     color: ThemeColors.getSecondaryText(context),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'İlk oyununu oynamak için ana sayfaya git!',
-                  style: TextStyle(
-                    color: ThemeColors.getSecondaryText(context),
-                    fontSize: 14,
+                  const SizedBox(height: 16),
+                  Text(
+                    'Henüz oyun oynanmamış',
+                    style: TextStyle(
+                      color: ThemeColors.getSecondaryText(context),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                      AppRoutes.home,
-                      (route) => false,
-                    );
-                  },
-                  icon: const Icon(Icons.home),
-                  label: const Text('Ana Sayfa'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ThemeColors.getPrimaryButtonColor(context),
-                    foregroundColor: Colors.white,
+                  const SizedBox(height: 8),
+                  Text(
+                    'İlk oyununu oynamak için ana sayfaya git!',
+                    style: TextStyle(
+                      color: ThemeColors.getSecondaryText(context),
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                        AppRoutes.home,
+                        (route) => false,
+                      );
+                    },
+                    icon: const Icon(Icons.home),
+                    label: const Text('Ana Sayfa'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ThemeColors.getPrimaryButtonColor(context),
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Container(
+              decoration: BoxDecoration(
+                color: ThemeColors.getCardBackground(context),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: ThemeColors.getBorder(context), width: 1),
+              ),
+              child: Column(
+                children: userData.recentGames.take(10).map((game) => _buildGameHistoryItem(context, game)).toList(),
+              ),
             ),
-          )
-        else
-          Container(
-            decoration: BoxDecoration(
-              color: ThemeColors.getCardBackground(context),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: ThemeColors.getBorder(context), width: 1),
-            ),
-            child: Column(
-              children: userData.recentGames.take(10).map((game) => _buildGameHistoryItem(context, game)).toList(),
-            ),
-          ),
-      ],
     );
   }
 

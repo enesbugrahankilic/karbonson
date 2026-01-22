@@ -188,7 +188,7 @@ class ImprovedNavigationService {
     _recordNavigation(
       fromRoute: previousRoute,
       toRoute: routeName,
-      arguments: arguments as Map<String, dynamic>?,
+      arguments: arguments,
       type: NavigationType.push,
     );
 
@@ -226,7 +226,7 @@ class ImprovedNavigationService {
     _recordNavigation(
       fromRoute: previousRoute,
       toRoute: routeName,
-      arguments: arguments as Map<String, dynamic>?,
+      arguments: arguments,
       type: NavigationType.replace,
     );
 
@@ -245,7 +245,7 @@ class ImprovedNavigationService {
     _recordNavigation(
       fromRoute: previousRoute,
       toRoute: routeName,
-      arguments: arguments as Map<String, dynamic>?,
+      arguments: arguments,
       type: NavigationType.replaceAll,
     );
 

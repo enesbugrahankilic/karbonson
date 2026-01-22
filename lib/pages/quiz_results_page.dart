@@ -1,5 +1,12 @@
 // lib/pages/quiz_results_page.dart
-// Quiz Results Screen - Displays score, reward boxes, updates daily tasks, and navigation
+// Quiz Results Screen - Displays quiz completion results with animations, rewards, and navigation
+//
+// Features:
+// - Animated score display with counting animation
+// - Carbon footprint calculation based on quiz performance
+// - Reward boxes with opening animations
+// - Daily tasks update notification
+// - Navigation to home or replay quiz
 
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -16,6 +23,92 @@ import '../widgets/loot_box_widget.dart';
 import '../utils/loot_box_animations.dart';
 import '../core/navigation/app_router.dart';
 import '../widgets/page_templates.dart';
+
+/// Class to handle all animations for QuizResultsPage
+class QuizAnimations {
+  late AnimationController scoreAnimationController;
+  late AnimationController boxesAnimationController;
+  late AnimationController celebrationController;
+  late Animation<double> scoreScaleAnimation;
+  late Animation<double> boxesFadeAnimation;
+  late Animation<double> celebrationOpacityAnimation;
+
+  int displayedScore = 0;
+
+  QuizAnimations(TickerProvider vsync) {
+    scoreAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: vsync,
+    );
+
+    boxesAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: vsync,
+    );
+
+    celebrationController = AnimationController(
+      duration: const Duration(milliseconds: 2000),
+      vsync: vsync,
+    );
+
+    scoreScaleAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: scoreAnimationController,
+      curve: Curves.elasticOut,
+    ));
+
+    boxesFadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: boxesAnimationController,
+      curve: Curves.easeInOut,
+    ));
+
+    celebrationOpacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: celebrationController,
+      curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
+    ));
+  }
+
+  void startAnimations(VoidCallback onScoreComplete) {
+    scoreAnimationController.forward().then((_) {
+      _startScoreCounting(onScoreComplete);
+    });
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      celebrationController.forward();
+    });
+  }
+
+  void _startScoreCounting(VoidCallback onScoreComplete) {
+    const steps = 60;
+    final stepValue = displayedScore / steps; // This will be set later
+    var currentStep = 0;
+
+    Timer.periodic(const Duration(milliseconds: 16), (timer) {
+      currentStep++;
+      if (currentStep >= steps) {
+        displayedScore = displayedScore; // Already set
+        timer.cancel();
+        onScoreComplete();
+      } else {
+        displayedScore = (stepValue * currentStep).round();
+      }
+    });
+  }
+
+  void dispose() {
+    scoreAnimationController.dispose();
+    boxesAnimationController.dispose();
+    celebrationController.dispose();
+  }
+}
 
 class QuizResultsPage extends StatefulWidget {
   final int score;
@@ -52,22 +145,24 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
   double _carbonFootprint = 0.0;
   String _carbonFootprintCategory = '';
 
-  // Animation controllers
-  late AnimationController _scoreAnimationController;
-  late AnimationController _boxesAnimationController;
-  late AnimationController _celebrationController;
-  late Animation<double> _scoreScaleAnimation;
-  late Animation<double> _boxesFadeAnimation;
-  late Animation<double> _celebrationOpacityAnimation;
-
-  // Animation values
-  double _scoreDisplay = 0;
-  int _displayedScore = 0;
+  // Animation controllers and animations
+  late final QuizAnimations _animations;
 
   @override
   void initState() {
     super.initState();
-    _initializeAnimations();
+    // Initialize animations
+    _animations = QuizAnimations(this);
+    _animations.displayedScore = widget.score;
+    _animations.startAnimations(() {
+      setState(() {});
+      // Start boxes animation after score counting completes
+      Future.delayed(const Duration(milliseconds: 300), () {
+        _animations.boxesAnimationController.forward();
+      });
+    });
+
+    // Initialize services and update data
     _initializeServices();
     _grantRewards();
     _updateDailyTasks();
@@ -76,97 +171,23 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
 
   @override
   void dispose() {
-    _scoreAnimationController.dispose();
-    _boxesAnimationController.dispose();
-    _celebrationController.dispose();
+    _animations.dispose();
     super.dispose();
-  }
-
-  void _initializeAnimations() {
-    _scoreAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-
-    _boxesAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-
-    _celebrationController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
-      vsync: this,
-    );
-
-    _scoreScaleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _scoreAnimationController,
-      curve: Curves.elasticOut,
-    ));
-
-    _boxesFadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _boxesAnimationController,
-      curve: Curves.easeInOut,
-    ));
-
-    _celebrationOpacityAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _celebrationController,
-      curve: const Interval(0.3, 1.0, curve: Curves.easeInOut),
-    ));
-
-    // Start score animation
-    _scoreAnimationController.forward().then((_) {
-      _startScoreCounting();
-    });
-
-    // Start celebration animation after a delay
-    Future.delayed(const Duration(milliseconds: 500), () {
-      _celebrationController.forward();
-    });
-  }
-
-  void _startScoreCounting() {
-    const duration = Duration(milliseconds: 1000);
-    const steps = 60;
-    final stepValue = widget.score / steps;
-    var currentStep = 0;
-
-    Timer.periodic(const Duration(milliseconds: 16), (timer) {
-      currentStep++;
-      if (currentStep >= steps) {
-        setState(() {
-          _displayedScore = widget.score;
-        });
-        timer.cancel();
-        // Start boxes animation after score counting
-        Future.delayed(const Duration(milliseconds: 300), () {
-          _boxesAnimationController.forward();
-        });
-      } else {
-        setState(() {
-          _displayedScore = (stepValue * currentStep).round();
-        });
-      }
-    });
   }
 
   Future<void> _initializeServices() async {
     try {
-      await _lootBoxService.initializeForUser();
-      await _dailyTaskService.initialize();
+      await Future.wait([
+        _lootBoxService.initializeForUser(),
+        _dailyTaskService.initialize(),
+      ]);
     } catch (e) {
       debugPrint('Error initializing services: $e');
-      setState(() {
-        _errorMessage = 'Servisler başlatılamadı: $e';
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Servisler başlatılamadı: $e';
+        });
+      }
     }
   }
 
@@ -182,18 +203,22 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
 
       // Load the newly granted boxes
       final boxes = await _lootBoxService.getUnopenedBoxes();
-      setState(() {
-        _rewardBoxes = boxes.where((box) =>
-          box.boxType == LootBoxType.quiz &&
-          box.obtainedAt.isAfter(DateTime.now().subtract(const Duration(minutes: 1)))
-        ).toList();
-        _rewardsGranted = true;
-      });
+      if (mounted) {
+        setState(() {
+          _rewardBoxes = boxes.where((box) =>
+            box.boxType == LootBoxType.quiz &&
+            box.obtainedAt.isAfter(DateTime.now().subtract(const Duration(minutes: 1)))
+          ).toList();
+          _rewardsGranted = true;
+        });
+      }
     } catch (e) {
       debugPrint('Error granting rewards: $e');
-      setState(() {
-        _errorMessage = 'Ödüller verilemedi: $e';
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Ödüller verilemedi: $e';
+        });
+      }
     }
   }
 
@@ -207,9 +232,11 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
         correctAnswers: widget.correctAnswers,
         difficulty: widget.difficulty,
       );
-      setState(() {
-        _dailyTasksUpdated = true;
-      });
+      if (mounted) {
+        setState(() {
+          _dailyTasksUpdated = true;
+        });
+      }
     } catch (e) {
       debugPrint('Error updating daily tasks: $e');
     }
@@ -296,11 +323,9 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    final percentage = widget.totalQuestions > 0 ? (widget.correctAnswers / widget.totalQuestions * 100) : 0.0;
-
     return Scaffold(
       appBar: StandardAppBar(
-        title: 'Quiz Sonuçları',
+        title: const Text('Quiz Sonuçları'),
         onBackPressed: () => Navigator.pop(context),
         actions: [
           IconButton(
@@ -315,328 +340,337 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Celebration animation overlay
-            AnimatedBuilder(
-              animation: _celebrationController,
-              builder: (context, child) {
-                return Opacity(
-                  opacity: _celebrationOpacityAnimation.value,
-                  child: const Center(
-                        child: Icon(
-                          Icons.celebration,
-                          size: 100,
-                          color: Colors.yellow,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: DesignSystem.spacingXl),
-
-                // Score display with animation
-                AnimatedBuilder(
-                  animation: _scoreAnimationController,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _scoreScaleAnimation.value,
-                      child: Container(
-                        padding: const EdgeInsets.all(DesignSystem.spacingXl),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              ThemeColors.getSuccessColor(context).withOpacity(0.2),
-                              ThemeColors.getSuccessColor(context).withOpacity(0.1),
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(DesignSystem.radiusL),
-                          border: Border.all(
-                            color: ThemeColors.getSuccessColor(context).withOpacity(0.3),
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              'Tebrikler!',
-                              style: AppTheme.getGameQuestionStyle(context).copyWith(
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: DesignSystem.spacingL),
-                            Text(
-                              '$_displayedScore / ${widget.totalQuestions}',
-                              style: AppTheme.getGameScoreStyle(context).copyWith(
-                                fontSize: 48,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: DesignSystem.spacingM),
-                            Text(
-                              '${percentage.toStringAsFixed(1)}% Başarı',
-                              style: DesignSystem.getTitleMedium(context).copyWith(
-                                color: ThemeColors.getTitleColor(context),
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: DesignSystem.spacingS),
-                            Text(
-                              '${widget.correctAnswers} doğru, ${widget.totalQuestions - widget.correctAnswers} yanlış',
-                              style: DesignSystem.getBodyMedium(context).copyWith(
-                                color: ThemeColors.getSecondaryText(context),
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: DesignSystem.spacingXl),
-
-                // Carbon Footprint Display
-                FadeTransition(
-                  opacity: _celebrationController,
-                  child: Container(
-                    padding: const EdgeInsets.all(DesignSystem.spacingXl),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.green.withOpacity(0.2),
-                          Colors.green.withOpacity(0.1),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(DesignSystem.radiusL),
-                      border: Border.all(
-                        color: Colors.green.withOpacity(0.3),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.eco,
-                              color: Colors.green,
-                              size: 32,
-                            ),
-                            const SizedBox(width: DesignSystem.spacingM),
-                            Text(
-                              'Karbon Ayak İzi',
-                              style: AppTheme.getGameQuestionStyle(context).copyWith(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: DesignSystem.spacingL),
-                        Text(
-                          '${_carbonFootprint.toStringAsFixed(1)} ton CO₂/ yıl',
-                          style: AppTheme.getGameScoreStyle(context).copyWith(
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: DesignSystem.spacingM),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: DesignSystem.spacingM,
-                            vertical: DesignSystem.spacingS,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                          ),
-                          child: Text(
-                            _carbonFootprintCategory,
-                            style: DesignSystem.getTitleMedium(context).copyWith(
-                              color: Colors.green,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        const SizedBox(height: DesignSystem.spacingM),
-                        Text(
-                          'Çevre bilinciniz arttıkça karbon ayak iziniz azalır!',
-                          style: DesignSystem.getBodyMedium(context).copyWith(
-                            color: ThemeColors.getSecondaryText(context),
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: DesignSystem.spacingXl),
-
-                // Reward boxes section
-                AnimatedBuilder(
-                  animation: _boxesAnimationController,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: _boxesFadeAnimation.value,
-                      child: Column(
-                        children: [
-                          Text(
-                            'Kazanılan Ödüller',
-                            style: DesignSystem.getHeadlineSmall(context),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: DesignSystem.spacingL),
-
-                          if (_rewardBoxes.isNotEmpty) ...[
-                            GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                childAspectRatio: 1,
-                                crossAxisSpacing: DesignSystem.spacingM,
-                                mainAxisSpacing: DesignSystem.spacingM,
-                              ),
-                              itemCount: _rewardBoxes.length,
-                              itemBuilder: (context, index) {
-                                final box = _rewardBoxes[index];
-                                return _buildRewardBoxItem(box, index);
-                              },
-                            ),
-                          ] else ...[
-                            Container(
-                              padding: const EdgeInsets.all(DesignSystem.spacingXl),
-                              decoration: BoxDecoration(
-                                color: ThemeColors.getCardBackground(context).withOpacity(0.5),
-                                borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                              ),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.inventory_2_outlined,
-                                    size: 48,
-                                    color: ThemeColors.getSecondaryText(context),
-                                  ),
-                                  const SizedBox(height: DesignSystem.spacingM),
-                                  Text(
-                                    'Ödül kutuları yükleniyor...',
-                                    style: DesignSystem.getBodyMedium(context),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: DesignSystem.spacingXl),
-
-                // Daily tasks update indicator
-                if (_dailyTasksUpdated)
-                  Container(
-                    padding: const EdgeInsets.all(DesignSystem.spacingM),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                      border: Border.all(
-                        color: Colors.blue.withOpacity(0.3),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.task_alt,
-                          color: Colors.blue,
-                        ),
-                        const SizedBox(width: DesignSystem.spacingM),
-                        Expanded(
-                          child: Text(
-                            'Günlük görevleriniz güncellendi!',
-                            style: DesignSystem.getBodyMedium(context).copyWith(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                const SizedBox(height: DesignSystem.spacingXl),
-
-                // Navigation buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: _navigateToHome,
-                        icon: const Icon(Icons.home, color: Colors.white),
-                        label: const Text('Ana Sayfa'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ThemeColors.getPrimaryButtonColor(context),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: DesignSystem.spacingM,
-                            vertical: DesignSystem.spacingM,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: DesignSystem.spacingM),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).pushNamed(AppRoutes.quiz);
-                        },
-                        icon: const Icon(Icons.replay),
-                        label: const Text('Tekrar Oyna'),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                            color: ThemeColors.getPrimaryButtonColor(context),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: DesignSystem.spacingM,
-                            vertical: DesignSystem.spacingM,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+            _buildCelebrationOverlay(),
+            const SizedBox(height: DesignSystem.spacingXl),
+            _buildScoreDisplay(),
+            const SizedBox(height: DesignSystem.spacingXl),
+            _buildCarbonFootprintDisplay(),
+            const SizedBox(height: DesignSystem.spacingXl),
+            _buildRewardBoxesSection(),
+            const SizedBox(height: DesignSystem.spacingXl),
+            _buildDailyTasksIndicator(),
+            const SizedBox(height: DesignSystem.spacingXl),
+            _buildNavigationButtons(),
+          ],
         ),
       ),
     );
   }
 
+  Widget _buildCelebrationOverlay() {
+    return AnimatedBuilder(
+      animation: _animations.celebrationController,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _animations.celebrationOpacityAnimation.value,
+          child: const Center(
+            child: Icon(
+              Icons.celebration,
+              size: 100,
+              color: Colors.yellow,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildScoreDisplay() {
+    final percentage = widget.totalQuestions > 0 ? (widget.correctAnswers / widget.totalQuestions * 100) : 0.0;
+
+    return AnimatedBuilder(
+      animation: _animations.scoreAnimationController,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _animations.scoreScaleAnimation.value,
+          child: Container(
+            padding: const EdgeInsets.all(DesignSystem.spacingXl),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  ThemeColors.getSuccessColor(context).withOpacity(0.2),
+                  ThemeColors.getSuccessColor(context).withOpacity(0.1),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+              border: Border.all(
+                color: ThemeColors.getSuccessColor(context).withOpacity(0.3),
+              ),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'Tebrikler!',
+                  style: AppTheme.getGameQuestionStyle(context).copyWith(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: DesignSystem.spacingL),
+                Text(
+                  '${_animations.displayedScore} / ${widget.totalQuestions}',
+                  style: AppTheme.getGameScoreStyle(context).copyWith(
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: DesignSystem.spacingM),
+                Text(
+                  '${percentage.toStringAsFixed(1)}% Başarı',
+                  style: DesignSystem.getTitleMedium(context).copyWith(
+                    color: ThemeColors.getTitleColor(context),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: DesignSystem.spacingS),
+                Text(
+                  '${widget.correctAnswers} doğru, ${widget.totalQuestions - widget.correctAnswers} yanlış',
+                  style: DesignSystem.getBodyMedium(context).copyWith(
+                    color: ThemeColors.getSecondaryText(context),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCarbonFootprintDisplay() {
+    return FadeTransition(
+      opacity: _animations.celebrationController,
+      child: Container(
+        padding: const EdgeInsets.all(DesignSystem.spacingXl),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.green.withOpacity(0.2),
+              Colors.green.withOpacity(0.1),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+          border: Border.all(
+            color: Colors.green.withOpacity(0.3),
+          ),
+        ),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.eco,
+                  color: Colors.green,
+                  size: 32,
+                ),
+                const SizedBox(width: DesignSystem.spacingM),
+                Text(
+                  'Karbon Ayak İzi',
+                  style: AppTheme.getGameQuestionStyle(context).copyWith(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+            const SizedBox(height: DesignSystem.spacingL),
+            Text(
+              '${_carbonFootprint.toStringAsFixed(1)} ton CO₂/ yıl',
+              style: AppTheme.getGameScoreStyle(context).copyWith(
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: DesignSystem.spacingM),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: DesignSystem.spacingM,
+                vertical: DesignSystem.spacingS,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+              ),
+              child: Text(
+                _carbonFootprintCategory,
+                style: DesignSystem.getTitleMedium(context).copyWith(
+                  color: Colors.green,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: DesignSystem.spacingM),
+            Text(
+              'Çevre bilinciniz arttıkça karbon ayak iziniz azalır!',
+              style: DesignSystem.getBodyMedium(context).copyWith(
+                color: ThemeColors.getSecondaryText(context),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRewardBoxesSection() {
+    return AnimatedBuilder(
+      animation: _animations.boxesAnimationController,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _animations.boxesFadeAnimation.value,
+          child: Column(
+            children: [
+              Text(
+                'Kazanılan Ödüller',
+                style: DesignSystem.getHeadlineSmall(context),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: DesignSystem.spacingL),
+
+              if (_rewardBoxes.isNotEmpty) ...[
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 1,
+                    crossAxisSpacing: DesignSystem.spacingM,
+                    mainAxisSpacing: DesignSystem.spacingM,
+                  ),
+                  itemCount: _rewardBoxes.length,
+                  itemBuilder: (context, index) {
+                    final box = _rewardBoxes[index];
+                    return _buildRewardBoxItem(box, index);
+                  },
+                ),
+              ] else ...[
+                Container(
+                  padding: const EdgeInsets.all(DesignSystem.spacingXl),
+                  decoration: BoxDecoration(
+                    color: ThemeColors.getCardBackground(context).withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.inventory_2_outlined,
+                        size: 48,
+                        color: ThemeColors.getSecondaryText(context),
+                      ),
+                      const SizedBox(height: DesignSystem.spacingM),
+                      Text(
+                        'Ödül kutuları yükleniyor...',
+                        style: DesignSystem.getBodyMedium(context),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDailyTasksIndicator() {
+    if (!_dailyTasksUpdated) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(DesignSystem.spacingM),
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+        border: Border.all(
+          color: Colors.blue.withOpacity(0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.task_alt,
+            color: Colors.blue,
+          ),
+          const SizedBox(width: DesignSystem.spacingM),
+          Expanded(
+            child: Text(
+              'Günlük görevleriniz güncellendi!',
+              style: DesignSystem.getBodyMedium(context).copyWith(
+                color: Colors.blue,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavigationButtons() {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: _navigateToHome,
+            icon: const Icon(Icons.home, color: Colors.white),
+            label: const Text('Ana Sayfa'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ThemeColors.getPrimaryButtonColor(context),
+              padding: const EdgeInsets.symmetric(
+                horizontal: DesignSystem.spacingM,
+                vertical: DesignSystem.spacingM,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: DesignSystem.spacingM),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () {
+              Navigator.of(context).pushNamed(AppRoutes.quiz);
+            },
+            icon: const Icon(Icons.replay),
+            label: const Text('Tekrar Oyna'),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(
+                color: ThemeColors.getPrimaryButtonColor(context),
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: DesignSystem.spacingM,
+                vertical: DesignSystem.spacingM,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildRewardBoxItem(UserLootBox box, int index) {
     return AnimatedBuilder(
-      animation: _boxesAnimationController,
+      animation: _animations.boxesAnimationController,
       builder: (context, child) {
         final delay = index * 0.2;
         final animation = Tween<double>(
           begin: 0.0,
           end: 1.0,
         ).animate(CurvedAnimation(
-          parent: _boxesAnimationController,
+          parent: _animations.boxesAnimationController,
           curve: Interval(delay, delay + 0.5, curve: Curves.elasticOut),
         ));
 

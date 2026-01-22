@@ -7,6 +7,8 @@ import '../enums/app_language.dart';
 import '../l10n/app_localizations.dart';
 import '../pages/two_factor_auth_setup_page.dart';
 import '../widgets/page_templates.dart';
+import '../theme/design_system.dart';
+import '../theme/theme_colors.dart';
 
 
 class SettingsPage extends StatelessWidget {
@@ -16,180 +18,166 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: StandardAppBar(
-        title: 'Ayarlar',
+        title: const Text('Ayarlar'),
         onBackPressed: () => Navigator.pop(context),
       ),
       body: PageBody(
         scrollable: true,
-        child: Consumer2<ThemeProvider, LanguageProvider>(
-          builder: (context, themeProvider, languageProvider, child) {
-            final l10n = AppLocalizations.of(context);
+        child: Container(
+          decoration: DesignSystem.getPageContainerDecoration(context),
+          padding: const EdgeInsets.all(DesignSystem.spacingM),
+          child: Consumer2<ThemeProvider, LanguageProvider>(
+            builder: (context, themeProvider, languageProvider, child) {
+              final l10n = AppLocalizations.of(context);
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              return _buildSettingsContent(context, themeProvider, languageProvider, l10n);
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsContent(BuildContext context, ThemeProvider themeProvider, LanguageProvider languageProvider, AppLocalizations? l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionHeader(title: 'Tema'),
+        StandardListItem(
+          leading: Icon(
+            themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          title: l10n?.theme ?? 'Theme Settings',
+          subtitle: themeProvider.isDarkMode
+              ? (l10n?.darkMode ?? 'Dark Mode Active')
+              : (l10n?.lightMode ?? 'Light Mode Active'),
+          trailing: Switch(
+            value: themeProvider.isDarkMode,
+            onChanged: (value) => themeProvider.toggleTheme(),
+          ),
+          onTap: () => themeProvider.toggleTheme(),
+        ),
+        const SizedBox(height: DesignSystem.spacingM),
+        DesignSystem.card(
+          context,
+          child: ListTile(
+            leading: Icon(
+              Icons.language,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: Text(l10n?.language ?? 'Language Settings'),
+            subtitle: Text(
+              '${languageProvider.currentLanguageFlag} ${languageProvider.currentLanguageName}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: () => _showLanguageSelection(context, languageProvider),
+          ),
+        ),
+        const SizedBox(height: DesignSystem.spacingM),
+        DesignSystem.card(
+          context,
+          child: Column(
+            children: [
+              ListTile(
+                leading: Icon(
+                  Icons.info,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+                title: Text(l10n?.about ?? 'About'),
+                subtitle: Text(l10n?.version ?? 'Version'),
+              ),
+              const Divider(),
+              ListTile(
+                leading: Icon(
+                  Icons.palette,
+                  color: Theme.of(context).colorScheme.tertiary,
+                ),
+                title: Text(l10n?.theme ?? 'Theme Preview'),
+                subtitle: Text(l10n?.settings ?? 'View current theme colors'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () => _showThemePreview(context),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: DesignSystem.spacingM),
+        DesignSystem.card(
+          context,
+          child: Column(
+            children: [
+              ListTile(
+                leading: Icon(
+                  Icons.accessibility,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                title: Text(l10n?.settings ?? 'Accessibility'),
+                subtitle: Text(l10n?.settings ?? 'Visual and audio settings'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () => _showAccessibilitySettings(context),
+              ),
+              const Divider(),
+              ListTile(
+                leading: Icon(
+                  Icons.notifications,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+                title: Text(l10n?.notifications ?? 'Notifications'),
+                subtitle: Text(l10n?.settings ?? 'Manage game notifications'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () => _showNotificationSettings(context),
+              ),
+              const Divider(),
+              ListTile(
+                leading: Icon(
+                  Icons.security,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                title: Text(l10n?.settings ?? 'Security Settings'),
+                subtitle: Text(l10n?.twoFactorAuth ?? 'Two-factor authentication and other security options'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () => _showSecuritySettings(context),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: DesignSystem.spacingM),
+        // Developer/Debug Section (only show in debug mode)
+        if (kDebugMode)
+          DesignSystem.card(
+            context,
+            backgroundColor: Colors.orange.shade50,
+            child: Column(
               children: [
-                SectionHeader(title: 'Tema'),
-                StandardListItem(
+                ListTile(
                   leading: Icon(
-                    themeProvider.isDarkMode
-                          ? Icons.dark_mode
-                          : Icons.light_mode,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    title: Text(l10n?.theme ?? 'Theme Settings'),
-                    subtitle: Text(
-                      themeProvider.isDarkMode
-                          ? (l10n?.darkMode ?? 'Dark Mode Active')
-                          : (l10n?.lightMode ?? 'Light Mode Active'),
-                    ),
-                    trailing: Switch(
-                      value: themeProvider.isDarkMode,
-                      onChanged: (value) {
-                        themeProvider.toggleTheme();
-                      },
-                    ),
-                    onTap: () {
-                      themeProvider.toggleTheme();
-                    },
+                    Icons.developer_mode,
+                    color: Colors.orange,
                   ),
+                  title: const Text('Geliştirici Araçları'),
+                  subtitle: const Text('Debug ve test araçları'),
                 ),
-                const SizedBox(height: 16),
-                Card(
-                  child: Column(
-                    children: [
-                      ListTile(
-                        leading: Icon(
-                          Icons.language,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        title: Text(l10n?.language ?? 'Language Settings'),
-                        subtitle: Text(
-                          '${languageProvider.currentLanguageFlag} ${languageProvider.currentLanguageName}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                        onTap: () {
-                          _showLanguageSelection(context, languageProvider);
-                        },
-                      ),
-                    ],
+                const Divider(),
+                ListTile(
+                  leading: Icon(
+                    Icons.security,
+                    color: Colors.red,
                   ),
+                  title: const Text('UID Debug & Cleanup'),
+                  subtitle: const Text('UID tutarsızlıklarını kontrol et ve temizle'),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('UID Debug page is no longer available')),
+                    );
+                  },
                 ),
-                const SizedBox(height: 16),
-                Card(
-                  child: Column(
-                    children: [
-                      ListTile(
-                        leading: Icon(
-                          Icons.info,
-                          color: Theme.of(context).colorScheme.secondary,
-                        ),
-                        title: Text(l10n?.about ?? 'About'),
-                        subtitle: Text(l10n?.version ?? 'Version'),
-                      ),
-                      const Divider(),
-                      ListTile(
-                        leading: Icon(
-                          Icons.palette,
-                          color: Theme.of(context).colorScheme.tertiary,
-                        ),
-                        title: Text(l10n?.theme ?? 'Theme Preview'),
-                        subtitle: Text(l10n?.settings ?? 'View current theme colors'),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                        onTap: () {
-                          _showThemePreview(context);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Card(
-                  child: Column(
-                    children: [
-                      ListTile(
-                        leading: Icon(
-                          Icons.accessibility,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        title: Text(l10n?.settings ?? 'Accessibility'),
-                        subtitle: Text(l10n?.settings ?? 'Visual and audio settings'),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                        onTap: () {
-                          _showAccessibilitySettings(context);
-                        },
-                      ),
-                      const Divider(),
-                      ListTile(
-                        leading: Icon(
-                          Icons.notifications,
-                          color: Theme.of(context).colorScheme.secondary,
-                        ),
-                        title: Text(l10n?.notifications ?? 'Notifications'),
-                        subtitle: Text(l10n?.settings ?? 'Manage game notifications'),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                        onTap: () {
-                          _showNotificationSettings(context);
-                        },
-                      ),
-                      const Divider(),
-                      ListTile(
-                        leading: Icon(
-                          Icons.security,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        title: Text(l10n?.settings ?? 'Security Settings'),
-                        subtitle: Text(l10n?.twoFactorAuth ?? 'Two-factor authentication and other security options'),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                        onTap: () {
-                          _showSecuritySettings(context);
-                        },
-                      ),
-
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // Developer/Debug Section (only show in debug mode)
-                if (kDebugMode)
-                  Card(
-                    color: Colors.orange.shade50,
-                    child: Column(
-                      children: [
-                        ListTile(
-                          leading: Icon(
-                            Icons.developer_mode,
-                            color: Colors.orange,
-                          ),
-                          title: const Text('Geliştirici Araçları'),
-                          subtitle: const Text('Debug ve test araçları'),
-                        ),
-                        const Divider(),
-                        ListTile(
-                          leading: Icon(
-                            Icons.security,
-                            color: Colors.red,
-                          ),
-                          title: const Text('UID Debug & Cleanup'),
-                          subtitle: const Text(
-                              'UID tutarsızlıklarını kontrol et ve temizle'),
-                          trailing: const Icon(Icons.arrow_forward_ios),
-                          onTap: () {
-                            // UID Debug page removed during cleanup
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('UID Debug page is no longer available')),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
               ],
             ),
-          );
-        },
-      ),
+          ),
+      ],
     );
   }
 
@@ -308,7 +296,7 @@ class SettingsPage extends StatelessWidget {
                                   color: Theme.of(context)
                                       .colorScheme
                                       .onSurface
-                                      .withOpacity( 0.7),
+                                      .withValues(alpha: 0.7),
                                 ),
                               ),
                             ],
@@ -347,7 +335,7 @@ class SettingsPage extends StatelessWidget {
                                   color: Theme.of(context)
                                       .colorScheme
                                       .onSurface
-                                      .withOpacity( 0.7),
+                                      .withValues(alpha: 0.7),
                                 ),
                               ),
                             ],
@@ -379,7 +367,7 @@ class SettingsPage extends StatelessWidget {
                                   color: Theme.of(context)
                                       .colorScheme
                                       .onSurface
-                                      .withOpacity( 0.7),
+                                      .withValues(alpha: 0.7),
                                 ),
                               ),
                             ],
@@ -441,19 +429,17 @@ class SettingsPage extends StatelessWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: AppLanguage.values.map((language) {
-                return RadioListTile<AppLanguage>(
-                  title: Text('${language.flag} ${language.displayName}'),
-                  value: language,
-                  groupValue: languageProvider.currentLanguage,
-                  onChanged: languageProvider.currentLanguage == language
-                      ? null
-                      : (AppLanguage? value) async {
-                          if (value != null) {
-                            Navigator.of(context).pop();
-                            await languageProvider.setLanguage(value);
-                          }
-                        },
-                );
+            return RadioListTile<AppLanguage>(
+              value: language,
+              groupValue: languageProvider.currentLanguage,
+              onChanged: (AppLanguage? value) async {
+                if (value != null) {
+                  Navigator.of(context).pop();
+                  await languageProvider.setLanguage(value);
+                }
+              },
+              title: Text('${language.flag} ${language.displayName}'),
+            );
           }).toList(),
         ),
         actions: [

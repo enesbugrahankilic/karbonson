@@ -490,16 +490,16 @@ class _GlowWidgetState extends State<GlowWidget> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _pulseController?.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _pulseAnimation ?? (AlwaysStoppedAnimation<double>(1.0)),
+      animation: _pulseAnimation,
       builder: (context, child) {
-        final intensity = widget.glowIntensity * (_pulseAnimation?.value ?? 1.0);
+        final intensity = widget.glowIntensity * _pulseAnimation.value;
         return Container(
           decoration: BoxDecoration(
             borderRadius: widget.borderRadius,

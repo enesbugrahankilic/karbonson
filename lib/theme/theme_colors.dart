@@ -39,6 +39,12 @@ class ThemeColors {
         : Colors.grey[50]!;
   }
 
+  static Color getBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.grey[900]!
+        : Colors.grey[50]!;
+  }
+
   static Color getInputBackground(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
         ? Colors.grey[700]!

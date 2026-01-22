@@ -2,7 +2,6 @@
 // Main Rewards Page - Entry point for all reward-related features
 
 import 'package:flutter/material.dart';
-import '../theme/theme_colors.dart';
 import '../core/navigation/app_router.dart';
 import '../widgets/page_templates.dart';
 
@@ -13,7 +12,7 @@ class RewardsMainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: StandardAppBar(
-        title: 'Ödüller',
+        title: Text('Ödüller'),
         onBackPressed: () => Navigator.pop(context),
       ),
       body: PageBody(

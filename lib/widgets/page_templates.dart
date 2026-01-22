@@ -12,6 +12,7 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
   final List<Widget>? actions;
   final bool showBackButton;
   final Color? backgroundColor;
+  final PreferredSizeWidget? bottom;
 
   const StandardAppBar({
     Key? key,
@@ -20,6 +21,7 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.actions,
     this.showBackButton = true,
     this.backgroundColor,
+    this.bottom,
   }) : super(key: key);
 
   @override
@@ -36,11 +38,14 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 1,
       actions: actions,
       centerTitle: false,
+      bottom: bottom,
     );
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => bottom == null
+      ? const Size.fromHeight(kToolbarHeight)
+      : Size.fromHeight(kToolbarHeight + bottom!.preferredSize.height);
 }
 
 /// Responsive page body

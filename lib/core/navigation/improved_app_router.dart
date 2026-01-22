@@ -13,7 +13,6 @@ import '../../pages/duel_page.dart';
 import '../../pages/duel_invitation_page.dart';
 import '../../pages/settings_page.dart';
 import '../../pages/home_dashboard.dart';
-import '../../pages/register_page.dart';
 import '../../pages/register_page_refactored.dart';
 import '../../pages/email_verification_page.dart';
 import '../../pages/forgot_password_page.dart';

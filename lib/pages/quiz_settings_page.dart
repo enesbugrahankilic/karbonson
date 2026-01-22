@@ -163,14 +163,13 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
           children: [
             // Header
             _buildHeader(context),
-            
-            // Content - Scrollable
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(DesignSystem.spacingL),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(DesignSystem.spacingL),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                     // Kategori Seçimi - Wide Card
                     _buildSectionTitle(context, 'Kategori Seçin', Icons.category),
                     const SizedBox(height: DesignSystem.spacingM),
@@ -198,18 +197,16 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
                     // Özet Kartı - Full Width
                     _buildSummaryCard(context),
                     const SizedBox(height: DesignSystem.spacingXl),
+
+                    // Başlat Butonu
+                    _buildStartButton(context),
                   ],
                 ),
               ),
-            ),
-
-              // Başlat Butonu
-              _buildStartButton(context),
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildHeader(BuildContext context) {

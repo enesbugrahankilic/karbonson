@@ -11,6 +11,8 @@ import '../widgets/game_invitation_list.dart';
 import '../widgets/copy_to_clipboard_widget.dart';
 // import '../widgets/home_button.dart';
 import '../widgets/page_templates.dart';
+import '../theme/design_system.dart';
+import '../theme/theme_colors.dart';
 
 class RoomManagementPage extends StatefulWidget {
   final String userNickname;
@@ -240,65 +242,67 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Card(
-              color: Colors.blue.shade50,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Oda Bilgileri',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Oda Kodu:',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                        Flexible(
-                          child: CopyToClipboardWidget(
-                            textToCopy: room.roomCode,
-                            successMessage: 'Oda kodu kopyalandı!',
-                            child: Text(
-                              room.roomCode,
-                              style: const TextStyle(
-                                  fontSize: 18, color: Colors.blue),
-                              textAlign: TextAlign.right,
+            DesignSystem.card(
+              context,
+              backgroundColor: Colors.blue.shade50,
+              padding: const EdgeInsets.all(DesignSystem.spacingL),
+              child: Column(
+                children: [
+                  Text(
+                    'Oda Bilgileri',
+                    style: DesignSystem.getTitleMedium(context),
+                  ),
+                  const SizedBox(height: DesignSystem.spacingM),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Oda Kodu:', style: DesignSystem.getBodyLarge(context)),
+                      Flexible(
+                        child: CopyToClipboardWidget(
+                          textToCopy: room.roomCode,
+                          successMessage: 'Oda kodu kopyalandı!',
+                          child: Text(
+                            room.roomCode,
+                            style: DesignSystem.getBodyLarge(context).copyWith(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
                             ),
+                            textAlign: TextAlign.right,
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Erişim Kodu:',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                        Flexible(
-                          child: CopyToClipboardWidget(
-                            textToCopy: accessCode,
-                            successMessage: 'Erişim kodu kopyalandı!',
-                            child: SelectableText(
-                              accessCode,
-                              style: const TextStyle(
-                                  fontSize: 18, color: Colors.green),
-                              textAlign: TextAlign.right,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: DesignSystem.spacingS),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Erişim Kodu:', style: DesignSystem.getBodyLarge(context)),
+                      Flexible(
+                        child: CopyToClipboardWidget(
+                          textToCopy: accessCode,
+                          successMessage: 'Erişim kodu kopyalandı!',
+                          child: SelectableText(
+                            accessCode,
+                            style: DesignSystem.getBodyLarge(context).copyWith(
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
                             ),
+                            textAlign: TextAlign.right,
                           ),
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: DesignSystem.spacingM),
+                  Text(
+                    'Bu kodları arkadaşlarınızla paylaşabilirsiniz!',
+                    style: DesignSystem.getBodySmall(context).copyWith(
+                      color: ThemeColors.getSecondaryText(context),
                     ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Bu kodları arkadaşlarınızla paylaşabilirsiniz!',
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
           ],
@@ -487,285 +491,219 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
       ),
       body: PageBody(
         scrollable: true,
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                        Card(
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              children: [
-                                Text(
-                                  'Hoş Geldin, ${widget.userNickname}!',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                ElevatedButton.icon(
-                                  onPressed: _createRoom,
-                                  icon: const Icon(Icons.add),
-                                  label: const Text('Yeni Oda Oluştur'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF4CAF50),
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 16,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                TextButton.icon(
-                                  onPressed: _showCustomRoomDialog,
-                                  icon: const Icon(Icons.settings, size: 18),
-                                  label: const Text('Özel Kod ile Oluştur'),
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Colors.green,
-                                    backgroundColor: Colors.green.shade50,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Card(
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                const Text(
-                                  'Erişim Kodu ile Katıl',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 16),
-                                TextField(
-                                  controller: _accessCodeController,
-                                  decoration: InputDecoration(
-                                    labelText: '4 Haneli Erişim Kodu',
-                                    filled: true,
-                                    fillColor: Colors.grey.shade50,
-                                    border: OutlineInputBorder(),
-                                    prefixIcon: Icon(Icons.key),
-                                  ),
-                                  style: const TextStyle(color: Colors.black),
-                                  maxLength: 4,
-                                  keyboardType: TextInputType.number,
-                                ),
-                                const SizedBox(height: 16),
-                                ElevatedButton(
-                                  onPressed: _joinRoomByAccessCode,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF2196F3),
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 16),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  child: const Text('Odaya Katıl'),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Card(
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                const Text(
-                                  'Bekleyen Oyun Davetleri',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 16),
-                                const GameInvitationList(),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Card(
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                const Text(
-                                  'Aktif Odalar',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 16),
-                                FutureBuilder<List<GameRoom>>(
-                                  future: _firestoreService.getActiveRooms(),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return const Center(
-                                          child: CircularProgressIndicator());
-                                    }
+        child: Container(
+          decoration: DesignSystem.getPageContainerDecoration(context),
+          padding: const EdgeInsets.all(DesignSystem.spacingM),
+          child: _isLoading
+              ? DesignSystem.loadingIndicator(context, message: 'Oda yükleniyor...')
+              : DesignSystem.responsiveContainer(
+                  context,
+                  mobile: _buildRoomManagementContent(context),
+                  tablet: _buildRoomManagementContent(context),
+                  desktop: _buildRoomManagementContent(context),
+                  maxWidth: 600,
+                ),
+        ),
+      ),
+    );
+  }
 
-                                    if (snapshot.hasError) {
-                                      return const Center(
-                                        child: Text(
-                                            'Aktif odalar yüklenirken hata oluştu'),
-                                      );
-                                    }
-
-                                    final activeRooms = snapshot.data ?? [];
-
-                                    if (activeRooms.isEmpty) {
-                                      return Center(
-                                        child: Text(
-                                          'Aktif oda bulunamadı',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      );
-                                    }
-
-                                    return ConstrainedBox(
-                                      constraints:
-                                          const BoxConstraints(maxHeight: 300),
-                                      child: ListView.builder(
-                                        shrinkWrap: true,
-                                        itemCount: activeRooms.length,
-                                        itemBuilder: (context, index) {
-                                          final room = activeRooms[index];
-                                          return Card(
-                                            margin: const EdgeInsets.only(
-                                                bottom: 8),
-                                            child: ListTile(
-                                              title: Text(
-                                                '${room.hostNickname}\'ın Odası',
-                                                style: const TextStyle(
-                                                    color: Colors.black),
-                                              ),
-                                              subtitle: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    '${room.players.length}/4 oyuncu',
-                                                    style: TextStyle(
-                                                        color:
-                                                            Colors.grey[600]),
-                                                  ),
-                                                  const SizedBox(height: 2),
-                                                  CopyToClipboardWidget(
-                                                    textToCopy: room.roomCode,
-                                                    successMessage:
-                                                        'Oda kodu kopyalandı!',
-                                                    iconSize: 14,
-                                                    child: Text(
-                                                      'Kod: ${room.roomCode}',
-                                                      style: TextStyle(
-                                                        color: Colors.grey[600],
-                                                        fontSize: 12,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              trailing: ElevatedButton(
-                                                onPressed:
-                                                    room.players.length >= 4
-                                                        ? null
-                                                        : () {
-                                                            // Oyunu başlatabilir veya özel bir işlem yapabilirsiniz
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(
-                                                              SnackBar(
-                                                                content: Text(
-                                                                    'Bu odaya katılmak için kod: ${room.accessCode}'),
-                                                                backgroundColor:
-                                                                    Colors.blue,
-                                                              ),
-                                                            );
-                                                          },
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.green,
-                                                  foregroundColor: Colors.white,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8),
-                                                  ),
-                                                ),
-                                                child: const Text('Kod Gör'),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+  Widget _buildRoomManagementContent(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        DesignSystem.card(
+          context,
+          padding: const EdgeInsets.all(DesignSystem.spacingL),
+          child: Column(
+            children: [
+              Text(
+                'Hoş Geldin, ${widget.userNickname}!',
+                style: DesignSystem.getTitleMedium(context),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: DesignSystem.spacingM),
+              ElevatedButton.icon(
+                onPressed: _createRoom,
+                icon: const Icon(Icons.add),
+                label: const Text('Yeni Oda Oluştur'),
+                style: DesignSystem.getPrimaryButtonStyle(context),
+              ),
+              const SizedBox(height: DesignSystem.spacingS),
+              TextButton.icon(
+                onPressed: _showCustomRoomDialog,
+                icon: const Icon(Icons.settings, size: 18),
+                label: const Text('Özel Kod ile Oluştur'),
+                style: DesignSystem.getTextButtonStyle(context).copyWith(
+                  backgroundColor: WidgetStateProperty.all(
+                    ThemeColors.getSecondaryButtonColor(context).withOpacity(0.1),
+                  ),
+                  foregroundColor: WidgetStateProperty.all(
+                    ThemeColors.getSecondaryButtonColor(context),
                   ),
                 ),
               ),
-      ),
+            ],
+          ),
+        ),
+        const SizedBox(height: DesignSystem.spacingM),
+        DesignSystem.card(
+          context,
+          padding: const EdgeInsets.all(DesignSystem.spacingL),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Erişim Kodu ile Katıl',
+                style: DesignSystem.getTitleMedium(context),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: DesignSystem.spacingM),
+              TextField(
+                controller: _accessCodeController,
+                decoration: DesignSystem.getInputDecoration(
+                  context,
+                  labelText: '4 Haneli Erişim Kodu',
+                  prefixIcon: const Icon(Icons.key),
+                ),
+                style: DesignSystem.getBodyLarge(context),
+                maxLength: 4,
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: DesignSystem.spacingM),
+              ElevatedButton(
+                onPressed: _joinRoomByAccessCode,
+                style: DesignSystem.getSecondaryButtonStyle(context),
+                child: const Text('Odaya Katıl'),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: DesignSystem.spacingM),
+        DesignSystem.card(
+          context,
+          padding: const EdgeInsets.all(DesignSystem.spacingL),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Bekleyen Oyun Davetleri',
+                style: DesignSystem.getTitleMedium(context),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: DesignSystem.spacingM),
+              const GameInvitationList(),
+            ],
+          ),
+        ),
+        const SizedBox(height: DesignSystem.spacingM),
+        DesignSystem.card(
+          context,
+          padding: const EdgeInsets.all(DesignSystem.spacingL),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Aktif Odalar',
+                style: DesignSystem.getTitleMedium(context),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: DesignSystem.spacingM),
+              FutureBuilder<List<GameRoom>>(
+                future: _firestoreService.getActiveRooms(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return DesignSystem.loadingIndicator(context);
+                  }
+
+                  if (snapshot.hasError) {
+                    return DesignSystem.errorState(
+                      context,
+                      message: 'Aktif odalar yüklenirken hata oluştu',
+                      onRetry: () => setState(() {}),
+                    );
+                  }
+
+                  final activeRooms = snapshot.data ?? [];
+
+                  if (activeRooms.isEmpty) {
+                    return DesignSystem.emptyState(
+                      context,
+                      message: 'Aktif oda bulunamadı',
+                      icon: Icons.meeting_room,
+                    );
+                  }
+
+                  return ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 300),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: activeRooms.length,
+                      itemBuilder: (context, index) {
+                        final room = activeRooms[index];
+                        return DesignSystem.card(
+                          context,
+                          margin: const EdgeInsets.only(bottom: DesignSystem.spacingS),
+                          padding: const EdgeInsets.all(DesignSystem.spacingM),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${room.hostNickname}\'ın Odası',
+                                style: DesignSystem.getBodyLarge(context),
+                              ),
+                              const SizedBox(height: DesignSystem.spacingXs),
+                              Text(
+                                '${room.players.length}/4 oyuncu',
+                                style: DesignSystem.getBodySmall(context).copyWith(
+                                  color: ThemeColors.getSecondaryText(context),
+                                ),
+                              ),
+                              const SizedBox(height: DesignSystem.spacingXs),
+                              CopyToClipboardWidget(
+                                textToCopy: room.roomCode,
+                                successMessage: 'Oda kodu kopyalandı!',
+                                iconSize: 14,
+                                child: Text(
+                                  'Kod: ${room.roomCode}',
+                                  style: DesignSystem.getBodySmall(context).copyWith(
+                                    color: ThemeColors.getSecondaryText(context),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: DesignSystem.spacingS),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: ElevatedButton(
+                                  onPressed: room.players.length >= 4
+                                      ? null
+                                      : () {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                  'Bu odaya katılmak için kod: ${room.accessCode}'),
+                                              backgroundColor: Colors.blue,
+                                            ),
+                                          );
+                                        },
+                                  style: DesignSystem.getAccentButtonStyle(context).copyWith(
+                                    minimumSize: WidgetStateProperty.all(const Size(80, 36)),
+                                  ),
+                                  child: const Text('Kod Gör'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

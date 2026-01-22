@@ -42,13 +42,19 @@ class _AchievementPageState extends State<AchievementPage>
       appBar: StandardAppBar(
         title: const Text('Başarımlar'),
         onBackPressed: () => Navigator.pop(context),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Tümü'),
-            Tab(text: 'Kazanılan'),
-            Tab(text: 'Kazanılmamış'),
-          ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Material(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            child: TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(text: 'Tümü'),
+                Tab(text: 'Kazanılan'),
+                Tab(text: 'Kazanılmamış'),
+              ],
+            ),
+          ),
         ),
       ),
       body: PageBody(

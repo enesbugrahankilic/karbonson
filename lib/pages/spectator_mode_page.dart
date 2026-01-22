@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../services/spectator_service.dart';
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
-import '../widgets/home_button.dart';
+import '../widgets/page_templates.dart';
 
 /// Spectator Mode Page - Watch live games and interact with other spectators
 class SpectatorModePage extends StatefulWidget {
@@ -289,20 +289,13 @@ class _SpectatorModePageState extends State<SpectatorModePage>
     final isSmallScreen = screenWidth < 360;
 
     return Scaffold(
-      appBar: AppBar(
-        leading: const HomeButton(),
+      appBar: StandardAppBar(
         title: Text(
           _currentGameState != null
               ? '${_currentGameState!.hostNickname}\'nin Oyunu'
               : 'İzleyici Modu',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: isSmallScreen ? 16 : 18,
-          ),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        onBackPressed: () => Navigator.pop(context),
         actions: [
           if (_currentGameState != null)
             IconButton(
@@ -312,21 +305,30 @@ class _SpectatorModePageState extends State<SpectatorModePage>
             ),
         ],
         bottom: _currentGameState == null
-            ? TabBar(
-                controller: _tabController,
-                labelColor: ThemeColors.getPrimaryButtonColor(context),
-                unselectedLabelColor: ThemeColors.getSecondaryText(context),
-                indicatorColor: ThemeColors.getPrimaryButtonColor(context),
-                tabs: const [
-                  Tab(text: 'Canlı Oyunlar'),
-                  Tab(text: 'Tekrarlar'),
-                ],
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(48.0),
+                child: Material(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  child: TabBar(
+                    controller: _tabController,
+                    labelColor: ThemeColors.getPrimaryButtonColor(context),
+                    unselectedLabelColor: ThemeColors.getSecondaryText(context),
+                    indicatorColor: ThemeColors.getPrimaryButtonColor(context),
+                    tabs: const [
+                      Tab(text: 'Canlı Oyunlar'),
+                      Tab(text: 'Tekrarlar'),
+                    ],
+                  ),
+                ),
               )
             : null,
       ),
-      body: _currentGameState != null
+      body: PageBody(
+        scrollable: true,
+        child: _currentGameState != null
           ? _buildWatchingView(context, isSmallScreen)
           : _buildGameListView(context, isSmallScreen),
+      ),
     );
   }
 

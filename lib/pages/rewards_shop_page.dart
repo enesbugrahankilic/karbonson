@@ -189,7 +189,7 @@ class _RewardsShopPageState extends State<RewardsShopPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: StandardAppBar(
-        title: 'Ödül Mağazası',
+        title: const Text('Ödül Mağazası'),
         onBackPressed: () => Navigator.pop(context),
       ),
       body: PageBody(

@@ -32,7 +32,6 @@ class _AIRecommendationsPageState extends State<AIRecommendationsPage> {
 
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      // Get user profile to access class level
       final profileService = ProfileService();
       final userData = await profileService.getUserProfile();
       final classLevel = userData?.classLevel;
@@ -46,7 +45,6 @@ class _AIRecommendationsPageState extends State<AIRecommendationsPage> {
       if (kDebugMode) {
         debugPrint('❌ [AI_PAGE] No user logged in');
       }
-      // Handle not logged in case
       BlocProvider.of<AIBloc>(context).add(SetNotAuthenticated());
     }
   }
@@ -62,7 +60,7 @@ class _AIRecommendationsPageState extends State<AIRecommendationsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: StandardAppBar(
-        title: 'AI Önerileri',
+        title: const Text('AI Önerileri'),
         onBackPressed: () => Navigator.pop(context),
         actions: [
           IconButton(
@@ -101,69 +99,70 @@ class _AIRecommendationsPageState extends State<AIRecommendationsPage> {
               FirebaseLogger.logAIService(
                 operation: 'LOAD_SUCCESS',
                 success: true,
-              responseSize: '${state.recommendations.length}',
-            );
+                responseSize: '${state.recommendations.length}',
+              );
 
-            if (state.recommendations.isEmpty) {
+              if (state.recommendations.isEmpty) {
+                return EmptyStateWidget(
+                  type: EmptyStateType.noData,
+                  title: 'Öneri Yok',
+                  message: 'Şu için kişiselleştirilmiş öneriniz bulunmuyor. Daha fazla quiz çözerek öneriler alabilirsiniz.',
+                  onRetry: _refresh,
+                );
+              }
+
+              return RefreshIndicator(
+                onRefresh: _refresh,
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: state.recommendations.length,
+                  itemBuilder: (context, index) {
+                    final recommendation = state.recommendations[index];
+                    return AIRecommendationWidget(
+                      recommendation: recommendation,
+                      onTap: () {
+                        if (kDebugMode) {
+                          debugPrint('🎯 [AI_PAGE] Tapped recommendation: ${recommendation.quizTitle}');
+                        }
+                      },
+                    );
+                  },
+                ),
+              );
+            } else if (state is AIError) {
+              FirebaseLogger.logAIService(
+                operation: 'LOAD_ERROR',
+                success: false,
+                error: state.message,
+              );
+
               return EmptyStateWidget(
-                type: EmptyStateType.noData,
-                title: 'Öneri Yok',
-                message: 'Şu için kişiselleştirilmiş öneriniz bulunmuyor. Daha fazla quiz çözerek öneriler alabilirsiniz.',
+                type: EmptyStateType.error,
+                title: 'Hata Oluştu',
+                message: state.message.isNotEmpty
+                    ? 'Hata: ${state.message}'
+                    : 'AI önerileri yüklenirken bir hata oluştu.',
+                onRetry: _refresh,
+                retryText: 'Tekrar Dene',
+              );
+            } else if (state is AINotAuthenticated) {
+              return EmptyStateWidget(
+                type: EmptyStateType.error,
+                title: 'Oturum Açın',
+                message: 'AI önerilerini görmek için lütfen oturum açın.',
+                onRetry: _refresh,
+                retryText: 'Yenile',
+              );
+            } else {
+              return EmptyStateWidget(
+                type: EmptyStateType.general,
+                title: 'Öneriler',
+                message: 'AI önerileri için bekleyin...',
                 onRetry: _refresh,
               );
             }
-
-            return RefreshIndicator(
-              onRefresh: _refresh,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: state.recommendations.length,
-                itemBuilder: (context, index) {
-                  final recommendation = state.recommendations[index];
-                  return AIRecommendationWidget(
-                    recommendation: recommendation,
-                    onTap: () {
-                      if (kDebugMode) {
-                        debugPrint('🎯 [AI_PAGE] Tapped recommendation: ${recommendation.quizTitle}');
-                      }
-                    },
-                  );
-                },
-              ),
-            );
-          } else if (state is AIError) {
-            FirebaseLogger.logAIService(
-              operation: 'LOAD_ERROR',
-              success: false,
-              error: state.message,
-            );
-
-            return EmptyStateWidget(
-              type: EmptyStateType.error,
-              title: 'Hata Oluştu',
-              message: state.message.isNotEmpty
-                ? 'Hata: ${state.message}'
-                : 'AI önerileri yüklenirken bir hata oluştu.',
-              onRetry: _refresh,
-              retryText: 'Tekrar Dene',
-            );
-          } else if (state is AINotAuthenticated) {
-            return EmptyStateWidget(
-              type: EmptyStateType.error,
-              title: 'Oturum Açın',
-              message: 'AI önerilerini görmek için lütfen oturum açın.',
-              onRetry: _refresh,
-              retryText: 'Yenile',
-            );
-          } else {
-            return EmptyStateWidget(
-              type: EmptyStateType.general,
-              title: 'Öneriler',
-              message: 'AI önerileri için bekleyin...',
-              onRetry: _refresh,
-            );
-          }
-        },
+          },
+        ),
       ),
     );
   }

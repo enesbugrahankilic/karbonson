@@ -14,6 +14,7 @@ import '../core/navigation/navigation_service.dart';
 import '../core/navigation/app_router.dart';
 import '../theme/design_system.dart';
 import '../widgets/page_templates.dart';
+import '../theme/theme_colors.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -261,39 +262,42 @@ class _NotificationsPageState extends State<NotificationsPage> {
         routeName = AppRoutes.achievementsGallery;
         break;
       case NotificationType.general:
-      default:
         // No navigation for general notifications
         return;
     }
 
-    if (routeName != null) {
-      try {
-        await NavigationService.navigatorKey.currentState?.pushNamed(routeName);
-      } catch (e) {
-        if (kDebugMode) debugPrint('Navigation error: $e');
-      }
+    try {
+      await NavigationService.navigatorKey.currentState?.pushNamed(routeName);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Navigation error: $e');
     }
   }
 
   Widget _buildNotificationItem(NotificationData notification) {
     final l10n = AppLocalizations.of(context);
-    
+
     return Dismissible(
       key: Key(notification.id),
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 16),
-        color: Colors.red.shade400,
+        padding: const EdgeInsets.only(right: 20),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: ThemeColors.getErrorColor(context),
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: const Icon(
           Icons.delete,
           color: Colors.white,
+          size: 28,
         ),
       ),
       confirmDismiss: (direction) async {
         final confirm = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             title: const Text('Delete'),
             content: const Text('Are you sure you want to delete this notification?'),
             actions: [
@@ -303,6 +307,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
+                style: TextButton.styleFrom(
+                  foregroundColor: ThemeColors.getErrorColor(context),
+                ),
                 child: const Text('Delete'),
               ),
             ],
@@ -313,47 +320,87 @@ class _NotificationsPageState extends State<NotificationsPage> {
         }
         return false;
       },
-      child: Card(
-        color: notification.isRead 
-            ? Theme.of(context).cardColor 
-            : Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: notification.isRead
+              ? ThemeColors.getCardBackground(context)
+              : ThemeColors.getPrimaryButtonColor(context).withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: notification.isRead
+                ? ThemeColors.getBorder(context)
+                : ThemeColors.getPrimaryButtonColor(context).withOpacity(0.2),
+            width: 1,
+          ),
+          boxShadow: notification.isRead ? null : [
+            BoxShadow(
+              color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
         child: ListTile(
-          leading: CircleAvatar(
-            backgroundColor: _getNotificationColor(notification.type),
+          contentPadding: const EdgeInsets.all(16),
+          leading: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _getNotificationColor(notification.type).withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
             child: Icon(
               _getNotificationIcon(notification.type),
-              color: Colors.white,
-              size: 20,
+              color: _getNotificationColor(notification.type),
+              size: 24,
             ),
           ),
           title: Text(
             notification.title,
             style: TextStyle(
-              fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
+              fontWeight: notification.isRead ? FontWeight.w500 : FontWeight.w700,
+              fontSize: 16,
+              color: ThemeColors.getText(context),
             ),
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 4),
-              Text(notification.message),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
               Text(
-                DateTimeParser.formatRelativeTime(notification.createdAt, context),
+                notification.message,
                 style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: ThemeColors.getSecondaryText(context),
+                  fontSize: 14,
+                  height: 1.4,
                 ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(
+                    Icons.access_time,
+                    size: 14,
+                    color: ThemeColors.getSecondaryText(context).withOpacity(0.7),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    DateTimeParser.formatRelativeTime(notification.createdAt, context),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: ThemeColors.getSecondaryText(context).withOpacity(0.7),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
           trailing: !notification.isRead
               ? Container(
-                  width: 12,
-                  height: 12,
+                  width: 10,
+                  height: 10,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
+                    color: ThemeColors.getPrimaryButtonColor(context),
                     shape: BoxShape.circle,
                   ),
                 )
@@ -399,23 +446,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
   }
 
-  String _getNotificationTypeName(NotificationType type, BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    switch (type) {
-      case NotificationType.friendRequestAccepted:
-        return l10n?.friendRequestAccepted ?? 'Friend Request Accepted';
-      case NotificationType.friendRequestRejected:
-        return l10n?.friendRequestRejected ?? 'Friend Request Rejected';
-      case NotificationType.gameInvite:
-        return l10n?.gameInvitation ?? 'Game Invitation';
-      case NotificationType.gameInviteAccepted:
-        return l10n?.duelInvitation ?? 'Game Invite Accepted';
-      case NotificationType.general:
-      default:
-        return l10n?.notifications ?? 'Notification';
-    }
-  }
-
   /// Build notification badge widget
   Widget _buildNotificationBadge(int count) {
     if (count <= 0) return const SizedBox.shrink();
@@ -445,13 +475,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final displayedNotifications = _showUnreadOnly 
-        ? _unreadNotifications 
+    final displayedNotifications = _showUnreadOnly
+        ? _unreadNotifications
         : _notifications;
 
     return Scaffold(
       appBar: StandardAppBar(
-        title: '${l10n?.notifications ?? 'Notifications'} ${_unreadCount > 0 ? '($_unreadCount)' : ''}',
+        title: Text('${l10n?.notifications ?? 'Notifications'} ${_unreadCount > 0 ? '($_unreadCount)' : ''}'),
         onBackPressed: () => Navigator.pop(context),
         actions: [
           if (_unreadNotifications.isNotEmpty)
@@ -478,71 +508,101 @@ class _NotificationsPageState extends State<NotificationsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Filtre bölümü
-                  Padding(
+                  // Header section with filters
+                  Container(
                     padding: const EdgeInsets.all(16),
-                    child: Row(
+                    decoration: BoxDecoration(
+                      color: ThemeColors.getCardBackground(context),
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(16),
+                        bottomRight: Radius.circular(16),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: FilterChip(
-                            label: Text(l10n?.allNotifications ?? 'All'),
-                            selected: !_showUnreadOnly,
-                            onSelected: (selected) {
-                              setState(() {
-                                _showUnreadOnly = false;
-                              });
-                            },
-                            avatar: const Icon(Icons.list, size: 18),
+                        Text(
+                          l10n?.notifications ?? 'Notifications',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: ThemeColors.getText(context),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: FilterChip(
-                            label: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(l10n?.unreadNotifications ?? 'Unread'),
-                                if (_unreadCount > 0) ...[
-                                  const SizedBox(width: 4),
-                                  _buildNotificationBadge(_unreadCount),
-                                ],
-                              ],
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: FilterChip(
+                                label: Text(l10n?.allNotifications ?? 'All'),
+                                selected: !_showUnreadOnly,
+                                onSelected: (selected) {
+                                  setState(() {
+                                    _showUnreadOnly = false;
+                                  });
+                                },
+                                avatar: const Icon(Icons.list, size: 18),
+                                backgroundColor: ThemeColors.getCardBackground(context),
+                                selectedColor: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
+                              ),
                             ),
-                            selected: _showUnreadOnly,
-                            onSelected: (selected) {
-                              setState(() {
-                                _showUnreadOnly = true;
-                              });
-                            },
-                            avatar: const Icon(Icons.mark_email_unread, size: 18),
-                          ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: FilterChip(
+                                label: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(l10n?.unreadNotifications ?? 'Unread'),
+                                    if (_unreadCount > 0) ...[
+                                      const SizedBox(width: 4),
+                                      _buildNotificationBadge(_unreadCount),
+                                    ],
+                                  ],
+                                ),
+                                selected: _showUnreadOnly,
+                                onSelected: (selected) {
+                                  setState(() {
+                                    _showUnreadOnly = true;
+                                  });
+                                },
+                                avatar: const Icon(Icons.mark_email_unread, size: 18),
+                                backgroundColor: ThemeColors.getCardBackground(context),
+                                selectedColor: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
 
-                  // Okunmamış bildirim sayısı
+                  // Unread notifications info
                   if (_unreadNotifications.isNotEmpty && !_showUnreadOnly)
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.all(16),
                       child: Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(8),
+                          color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.2),
+                          ),
                         ),
                         child: Row(
                           children: [
                             Icon(
-                              Icons.info,
-                              color: Theme.of(context).colorScheme.onPrimaryContainer,
+                              Icons.notifications_active,
+                              color: ThemeColors.getPrimaryButtonColor(context),
+                              size: 24,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                '${_unreadNotifications.length} ${l10n?.unreadNotifications?.toLowerCase() ?? 'unread notifications'}',
+                                '${_unreadNotifications.length} ${(l10n?.unreadNotifications ?? 'unread notifications').toLowerCase()}',
                                 style: TextStyle(
-                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                  color: ThemeColors.getText(context),
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
@@ -552,6 +612,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                   _showUnreadOnly = true;
                                 });
                               },
+                              style: TextButton.styleFrom(
+                                foregroundColor: ThemeColors.getPrimaryButtonColor(context),
+                              ),
                               child: Text(l10n?.viewNotifications ?? 'View Unread'),
                             ),
                           ],
@@ -559,7 +622,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       ),
                     ),
 
-                  // Bildirim listesi
+                  // Notifications list
                   if (displayedNotifications.isEmpty)
                     Padding(
                       padding: const EdgeInsets.all(16),
