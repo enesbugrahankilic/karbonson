@@ -3,8 +3,14 @@
 
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:karbonson/models/carbon_footprint_data.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:excel/excel.dart';
+import 'package:path_provider/path_provider.dart';
 
 /// Service for generating and managing carbon footprint reports
 class CarbonReportService {
@@ -39,9 +45,8 @@ class CarbonReportService {
     required String schoolName,
   }) async {
     try {
-      // This would use pdf package to generate PDF
-      // For now, creating a structure that can be implemented with pdf package
-      
+      final pdf = pw.Document();
+
       final reportData = {
         'className': carbonData.classIdentifier,
         'classLevel': carbonData.classLevel,
@@ -55,8 +60,49 @@ class CarbonReportService {
         'percentage': _calculatePercentage(carbonData.carbonValue, averageCarbon ?? 0),
       };
 
-      // Return empty bytes for now - to be implemented with pdf package
-      return Uint8List(0);
+      pdf.addPage(
+        pw.Page(
+          build: (pw.Context context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Header(
+                  level: 0,
+                  child: pw.Text(
+                    'KARBON AYAK İZİ RAPORU',
+                    style: pw.TextStyle(
+                      fontSize: 24,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ),
+                pw.SizedBox(height: 20),
+                pw.Text('Okul: $schoolName'),
+                pw.Text('Sınıf: ${reportData['className']}'),
+                pw.Text('Konum: ${reportData['location']}'),
+                pw.Text('Bitkiler: ${carbonData.hasPlants ? 'Var' : 'Yok'}'),
+                pw.SizedBox(height: 20),
+                pw.Text(
+                  'Karbon Değeri: ${reportData['carbonValue']} g CO₂/gün',
+                  style: pw.TextStyle(
+                    fontSize: 18,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.Text('Sınıf Ortalaması: ${reportData['averageCarbon']} g CO₂/gün'),
+                pw.Text('Yüzde Fark: ${(reportData['percentage'] as double).toStringAsFixed(2)}%'),
+                pw.SizedBox(height: 20),
+                pw.Text(
+                  'Oluşturulma Tarihi: ${DateFormat('dd.MM.yyyy HH:mm').format(DateTime.now())}',
+                  style: pw.TextStyle(fontSize: 10, color: PdfColors.grey),
+                ),
+              ],
+            );
+          },
+        ),
+      );
+
+      return pdf.save();
     } catch (e) {
       print('Error generating PDF report: $e');
       rethrow;
@@ -71,33 +117,45 @@ class CarbonReportService {
     required String filename,
   }) async {
     try {
-      // This would use excel or csv package to generate Excel
-      // Creating a CSV format that can be converted to Excel
-      
-      final headers = [
-        'Sınıf',
-        'Şube',
-        'Konum',
-        'Çiçek Durumu',
-        'Karbon Değeri',
-        'Ortalama Karbon',
-        'Yüzde',
-      ];
+      final excel = Excel.createExcel();
+      final sheet = excel['Karbon Raporu'];
 
-      final row = [
-        '${carbonData.classLevel}',
-        carbonData.classSection,
-        carbonData.classOrientation.name,
-        carbonData.hasPlants ? 'Var' : 'Yok',
-        '${carbonData.carbonValue}',
-        '${averageCarbon ?? 0}',
-        '${_calculatePercentage(carbonData.carbonValue, averageCarbon ?? 0).toStringAsFixed(2)}%',
-      ];
+      // Add headers
+      sheet.appendRow([
+        TextCellValue('Sınıf'),
+        TextCellValue('Şube'),
+        TextCellValue('Konum'),
+        TextCellValue('Çiçek Durumu'),
+        TextCellValue('Karbon Değeri'),
+        TextCellValue('Ortalama Karbon'),
+        TextCellValue('Yüzde'),
+        TextCellValue('Tarih'),
+      ]);
 
-      final csvContent = '${headers.join(',')}\n${row.join(',')}';
-      
-      // In real implementation, this would be saved to device storage
-      return filename;
+      // Add data
+      sheet.appendRow([
+        TextCellValue('${carbonData.classLevel}'),
+        TextCellValue(carbonData.classSection),
+        TextCellValue(carbonData.classOrientation.name),
+        TextCellValue(carbonData.hasPlants ? 'Var' : 'Yok'),
+        IntCellValue(carbonData.carbonValue),
+        IntCellValue(averageCarbon ?? 0),
+        TextCellValue('${_calculatePercentage(carbonData.carbonValue, averageCarbon ?? 0).toStringAsFixed(2)}%'),
+        TextCellValue(DateFormat('dd.MM.yyyy HH:mm').format(DateTime.now())),
+      ]);
+
+      // Save to file
+      final directory = await getApplicationDocumentsDirectory();
+      final reportsDir = Directory('${directory.path}/Reports');
+      if (!await reportsDir.exists()) {
+        await reportsDir.create(recursive: true);
+      }
+
+      final filePath = '${reportsDir.path}/$filename.xlsx';
+      final file = File(filePath);
+      await file.writeAsBytes(excel.encode()!);
+
+      return filePath;
     } catch (e) {
       print('Error generating Excel report: $e');
       rethrow;

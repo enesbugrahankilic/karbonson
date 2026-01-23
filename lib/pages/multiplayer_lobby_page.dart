@@ -305,7 +305,18 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
          if (kDebugMode) debugPrint('✅ [MULTIPLAYER_LOBBY] Successfully joined duel room: ${room.id}');
          FirebaseLogger.logPlayerAction(roomId: room.id, playerId: playerId, nickname: playerNickname, action: 'JOIN_ROOM', success: true);
          if (widget.preSharedRoomCode != null) Navigator.of(context).pop();
-         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const DuelPage()));
+
+         // Navigate to duel page with room information
+         Navigator.pushReplacement(
+           context,
+           MaterialPageRoute(
+             builder: (context) => DuelPage(
+               roomId: room.id,
+               opponentId: room.players.firstWhere((p) => p.id != playerId).id,
+             ),
+           ),
+         );
+
          ScaffoldMessenger.of(context).showSnackBar(
            SnackBar(
              content: const Text('Odaya başarıyla katıldınız!'),

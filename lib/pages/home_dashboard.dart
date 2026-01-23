@@ -78,6 +78,10 @@ class _HomeDashboardState extends State<HomeDashboard>
   List<UserActivity> _recentActivities = [];
   bool _isLoadingData = true;
 
+  // Live games data
+  List<Map<String, dynamic>> _liveGames = [];
+  Timer? _liveGamesTimer;
+
   // Stream subscriptions for proper disposal (using dynamic type for compatibility)
   dynamic _achievementsSubscription;
   dynamic _progressSubscription;
@@ -126,7 +130,10 @@ class _HomeDashboardState extends State<HomeDashboard>
 
     // Load user data
     _loadUserData();
-    
+
+    // Initialize live games data
+    _initializeLiveGames();
+
     // Check and show tutorial if first login
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAndShowTutorialIfFirstLogin();
@@ -139,7 +146,8 @@ class _HomeDashboardState extends State<HomeDashboard>
     _achievementsSubscription?.cancel();
     _progressSubscription?.cancel();
     _challengesSubscription?.cancel();
-    
+    _liveGamesTimer?.cancel();
+
     _fadeController.dispose();
     _slideController.dispose();
     for (final controller in _buttonControllers) {
@@ -171,27 +179,7 @@ class _HomeDashboardState extends State<HomeDashboard>
     try {
       final prefs = await SharedPreferences.getInstance();
       final hasSeenTutorial = prefs.getBool('hasSeenTutorialAfterLogin') ?? false;
-      final hasSeenWelcome = prefs.getBool('hasSeenWelcomePage') ?? false;
-
-      if (!hasSeenWelcome && mounted) {
-        // Mark as seen
-        await prefs.setBool('hasSeenWelcomePage', true);
-
-        // Show welcome page first
-        if (mounted) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => Scaffold(
-                appBar: AppBar(title: const Text('Hoşgeldin')),
-                body: const Center(
-                  child: Text('Hoşgeldiniz! Uygulamayı keşfetmeye başlayın.'),
-                ),
-              ),
-              fullscreenDialog: true,
-            ),
-          );
-        }
-      } else if (!hasSeenTutorial && mounted) {
+      if (!hasSeenTutorial && mounted) {
         // Mark as seen
         await prefs.setBool('hasSeenTutorialAfterLogin', true);
 
@@ -208,6 +196,116 @@ class _HomeDashboardState extends State<HomeDashboard>
     } catch (e) {
       debugPrint('Error checking tutorial status: $e');
     }
+  }
+
+  /// Initialize live games with mock data and real-time updates
+  void _initializeLiveGames() {
+    // Initialize with mock live games data
+    _liveGames = [
+      {
+        'player1': 'Ahmet K.',
+        'player2': 'Mehmet Y.',
+        'gameType': 'Düello',
+        'spectators': 12,
+        'timeRemaining': '2:34',
+        'startTime': DateTime.now().subtract(const Duration(minutes: 3, seconds: 26)),
+        'isAnimating': false,
+      },
+      {
+        'player1': 'Ayşe D.',
+        'player2': 'Fatma S.',
+        'gameType': 'Takım Oyunu',
+        'spectators': 8,
+        'timeRemaining': '5:12',
+        'startTime': DateTime.now().subtract(const Duration(minutes: 1, seconds: 48)),
+        'isAnimating': false,
+      },
+      {
+        'player1': 'Ali V.',
+        'player2': 'Can B.',
+        'gameType': 'Düello',
+        'spectators': 15,
+        'timeRemaining': '1:58',
+        'startTime': DateTime.now().subtract(const Duration(minutes: 4, seconds: 2)),
+        'isAnimating': false,
+      },
+    ];
+
+    // Start timer for real-time updates
+    _liveGamesTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        _updateLiveGames();
+      }
+    });
+  }
+
+  /// Update live games data in real-time
+  void _updateLiveGames() {
+    setState(() {
+      for (var game in _liveGames) {
+        final startTime = game['startTime'] as DateTime;
+        final elapsed = DateTime.now().difference(startTime);
+        final totalSeconds = elapsed.inSeconds;
+
+        // Simulate game progress (5 minutes max)
+        final remainingSeconds = (5 * 60) - totalSeconds;
+        if (remainingSeconds > 0) {
+          final minutes = remainingSeconds ~/ 60;
+          final seconds = remainingSeconds % 60;
+          game['timeRemaining'] = '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+
+          // Randomly increase/decrease spectators
+          if (DateTime.now().second % 10 == 0) { // Every 10 seconds
+            final change = (DateTime.now().millisecond % 3) - 1; // -1, 0, or 1
+            game['spectators'] = ((game['spectators'] as int) + change).clamp(0, 50);
+          }
+
+          // Trigger animation occasionally
+          if (DateTime.now().second % 15 == 0 && !game['isAnimating']) {
+            game['isAnimating'] = true;
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) {
+                setState(() {
+                  game['isAnimating'] = false;
+                });
+              }
+            });
+          }
+        } else {
+          // Game ended, replace with new one
+          _replaceEndedGame(game);
+        }
+      }
+    });
+  }
+
+  /// Replace ended game with new one
+  void _replaceEndedGame(Map<String, dynamic> game) {
+    final players = [
+      ['Burak T.', 'Deniz K.'],
+      ['Elif M.', 'Gül S.'],
+      ['Hasan Ö.', 'İsmail P.'],
+      ['Jale R.', 'Kemal U.'],
+    ];
+    final random = DateTime.now().millisecondsSinceEpoch;
+    final playerPair = players[random % players.length];
+    final gameTypes = ['Düello', 'Takım Oyunu'];
+
+    game['player1'] = playerPair[0];
+    game['player2'] = playerPair[1];
+    game['gameType'] = gameTypes[random % gameTypes.length];
+    game['spectators'] = 5 + (random % 20);
+    game['startTime'] = DateTime.now();
+    game['timeRemaining'] = '5:00';
+    game['isAnimating'] = true;
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          game['isAnimating'] = false;
+        });
+      }
+    });
   }
 
   /// Load user data from services
@@ -965,10 +1063,6 @@ class _HomeDashboardState extends State<HomeDashboard>
       onQuizSettingsTap: () {
         Navigator.pop(context);
         Navigator.of(context).pushNamed(AppRoutes.quizSettings);
-      },
-      onWelcomeTap: () {
-        Navigator.pop(context);
-        Navigator.of(context).pushNamed(AppRoutes.welcome);
       },
       onRewardsMainTap: () {
         Navigator.pop(context);
@@ -2680,36 +2774,20 @@ class _HomeDashboardState extends State<HomeDashboard>
                   ),
                   SizedBox(height: DesignSystem.spacingM),
 
-                  // Live Games List (Mock data for now)
-                  _buildLiveGameItem(
-                    context,
-                    player1: 'Ahmet K.',
-                    player2: 'Mehmet Y.',
-                    gameType: 'Düello',
-                    spectators: 12,
-                    timeRemaining: '2:34',
-                    isSmallScreen: isSmallScreen,
-                  ),
-                  SizedBox(height: DesignSystem.spacingS),
-                  _buildLiveGameItem(
-                    context,
-                    player1: 'Ayşe D.',
-                    player2: 'Fatma S.',
-                    gameType: 'Takım Oyunu',
-                    spectators: 8,
-                    timeRemaining: '5:12',
-                    isSmallScreen: isSmallScreen,
-                  ),
-                  SizedBox(height: DesignSystem.spacingS),
-                  _buildLiveGameItem(
-                    context,
-                    player1: 'Ali V.',
-                    player2: 'Can B.',
-                    gameType: 'Düello',
-                    spectators: 15,
-                    timeRemaining: '1:58',
-                    isSmallScreen: isSmallScreen,
-                  ),
+                  // Live Games List with real-time updates
+                  ..._liveGames.map((game) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _buildLiveGameItem(
+                      context,
+                      player1: game['player1'],
+                      player2: game['player2'],
+                      gameType: game['gameType'],
+                      spectators: game['spectators'],
+                      timeRemaining: game['timeRemaining'],
+                      isSmallScreen: isSmallScreen,
+                      isAnimating: game['isAnimating'],
+                    ),
+                  )),
 
                   SizedBox(height: DesignSystem.spacingM),
 
@@ -2805,16 +2883,32 @@ class _HomeDashboardState extends State<HomeDashboard>
     required int spectators,
     required String timeRemaining,
     required bool isSmallScreen,
+    bool isAnimating = false,
   }) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
       padding: EdgeInsets.all(isSmallScreen ? 12.0 : 16.0),
       decoration: BoxDecoration(
-        color: ThemeColors.getCardBackground(context).withOpacity( 0.5),
+        color: isAnimating
+            ? Colors.red.withOpacity(0.3)
+            : ThemeColors.getCardBackground(context).withOpacity(0.5),
         borderRadius: BorderRadius.circular(DesignSystem.radiusM),
         border: Border.all(
-          color: Colors.red.withOpacity( 0.2),
-          width: 1,
+          color: isAnimating
+              ? Colors.red.withOpacity(0.5)
+              : Colors.red.withOpacity(0.2),
+          width: isAnimating ? 2 : 1,
         ),
+        boxShadow: isAnimating
+            ? [
+                BoxShadow(
+                  color: Colors.red.withOpacity(0.3),
+                  blurRadius: 10,
+                  spreadRadius: 2,
+                )
+              ]
+            : null,
       ),
       child: Row(
         children: [
@@ -2855,22 +2949,38 @@ class _HomeDashboardState extends State<HomeDashboard>
                     size: 14,
                   ),
                   SizedBox(width: 4),
-                  Text(
-                    '$spectators',
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    transitionBuilder: (child, animation) => ScaleTransition(
+                      scale: animation,
+                      child: child,
+                    ),
+                    child: Text(
+                      '$spectators',
+                      key: ValueKey<int>(spectators),
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],
               ),
               SizedBox(height: 2),
-              Text(
-                timeRemaining,
-                style: TextStyle(
-                  color: ThemeColors.getSecondaryText(context),
-                  fontSize: 12,
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: child,
+                ),
+                child: Text(
+                  timeRemaining,
+                  key: ValueKey<String>(timeRemaining),
+                  style: TextStyle(
+                    color: ThemeColors.getSecondaryText(context),
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ],

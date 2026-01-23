@@ -8,6 +8,7 @@ import '../models/game_board.dart';
 import '../models/notification_data.dart';
 import '../models/user_data.dart';
 import '../models/profile_data.dart'; // For GameHistoryItem
+import '../models/board_game_models.dart';
 import '../utils/room_code_generator.dart';
 import 'duel_game_logic.dart';
 import '../utils/firebase_logger.dart';
@@ -2011,6 +2012,166 @@ class FirestoreService {
         debugPrint('🚨 Error setting up user profile listener: $e');
       }
       return const Stream.empty();
+    }
+  }
+
+  // === BOARD GAME METHODS ===
+
+  /// Board game rooms collection
+  static const String _boardGameRoomsCollection = 'board_game_rooms';
+
+  /// Create a new board game room
+  Future<BoardGameRoom?> createBoardGameRoom(String hostId, String hostNickname) async {
+    try {
+      if (kDebugMode) {
+        debugPrint('Creating board game room for host: $hostNickname ($hostId)');
+      }
+
+      final roomId = _db.collection(_boardGameRoomsCollection).doc().id;
+
+      // Create host player
+      final hostPlayer = BoardGamePlayer(
+        id: hostId,
+        nickname: hostNickname,
+        position: 0,
+        points: 0,
+        avatarUrl: null,
+      );
+
+      final room = BoardGameRoom(
+        id: roomId,
+        hostId: hostId,
+        hostNickname: hostNickname,
+        players: [hostPlayer],
+        currentPlayerIndex: 0,
+        currentTurn: 1,
+        isGameActive: false,
+        createdAt: DateTime.now(),
+      );
+
+      final roomData = room.toMap();
+      await _db.collection(_boardGameRoomsCollection).doc(roomId).set(roomData);
+
+      if (kDebugMode) {
+        debugPrint('✅ Board game room created successfully: $roomId');
+      }
+      return room;
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('🚨 ERROR: Failed to create board game room: $e');
+        debugPrint('Stack trace: $stackTrace');
+      }
+      return null;
+    }
+  }
+
+  /// Join an existing board game room
+  Future<BoardGameRoom?> joinBoardGameRoom(String roomId, String playerId, String playerNickname) async {
+    try {
+      if (kDebugMode) {
+        debugPrint('Attempting to join board game room: $roomId with player: $playerNickname ($playerId)');
+      }
+
+      final roomDocRef = _db.collection(_boardGameRoomsCollection).doc(roomId);
+      final roomDoc = await roomDocRef.get();
+
+      if (!roomDoc.exists) {
+        if (kDebugMode) debugPrint('❌ Board game room not found: $roomId');
+        return null;
+      }
+
+      final roomData = roomDoc.data()!;
+      final room = BoardGameRoom.fromMap(roomData);
+
+      // Check if player already in room
+      if (room.players.any((p) => p.id == playerId)) {
+        if (kDebugMode) debugPrint('✅ Player already in board game room');
+        return room;
+      }
+
+      // Check if room is full (max 4 players for board game)
+      if (room.players.length >= 4) {
+        if (kDebugMode) debugPrint('❌ Board game room is full (${room.players.length}/4 players)');
+        return null;
+      }
+
+      // Add new player
+      final newPlayer = BoardGamePlayer(
+        id: playerId,
+        nickname: playerNickname,
+        position: 0,
+        points: 0,
+        avatarUrl: null,
+      );
+      final updatedPlayers = [...room.players, newPlayer];
+
+      // Update room in Firestore
+      await roomDocRef.update({
+        'players': updatedPlayers.map((p) => p.toMap()).toList(),
+      });
+
+      // Return updated room
+      final updatedRoom = BoardGameRoom(
+        id: room.id,
+        hostId: room.hostId,
+        hostNickname: room.hostNickname,
+        players: updatedPlayers,
+        currentPlayerIndex: room.currentPlayerIndex,
+        currentTurn: room.currentTurn,
+        isGameActive: room.isGameActive,
+        createdAt: room.createdAt,
+      );
+
+      if (kDebugMode) {
+        debugPrint('✅ Player $playerNickname joined board game room $roomId');
+      }
+
+      return updatedRoom;
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('🚨 ERROR: Failed to join board game room: $e');
+        debugPrint('Stack trace: $stackTrace');
+      }
+      return null;
+    }
+  }
+
+  /// Listen to board game room changes
+  Stream<BoardGameRoom?> listenToBoardGameRoom(String roomId) {
+    return _db
+        .collection(_boardGameRoomsCollection)
+        .doc(roomId)
+        .snapshots()
+        .map((doc) {
+      if (doc.exists) {
+        return BoardGameRoom.fromMap(doc.data()!);
+      }
+      return null;
+    });
+  }
+
+  /// Update board game state
+  Future<bool> updateBoardGameState(
+    String roomId, {
+    List<Map<String, dynamic>>? players,
+    int? currentPlayerIndex,
+    int? currentTurn,
+    bool? isGameActive,
+  }) async {
+    try {
+      final updates = <String, dynamic>{};
+      if (players != null) updates['players'] = players;
+      if (currentPlayerIndex != null) updates['currentPlayerIndex'] = currentPlayerIndex;
+      if (currentTurn != null) updates['currentTurn'] = currentTurn;
+      if (isGameActive != null) updates['isGameActive'] = isGameActive;
+
+      if (updates.isNotEmpty) {
+        await _db.collection(_boardGameRoomsCollection).doc(roomId).update(updates);
+      }
+      return true;
+    } catch (e) {
+      if (kDebugMode) debugPrint('HATA: Board game state güncellenirken hata: $e');
+      return false;
     }
   }
 }

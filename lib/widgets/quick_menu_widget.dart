@@ -7,6 +7,21 @@ import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../core/navigation/app_router.dart';
 
+/// Sub-option for expandable menu items
+class QuickMenuSubOption {
+  final String title;
+  final String? subtitle;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  QuickMenuSubOption({
+    required this.title,
+    this.subtitle,
+    required this.icon,
+    required this.onTap,
+  });
+}
+
 /// Quick Menu Item with enhanced properties
 class QuickMenuItem {
   final String id;
@@ -22,6 +37,8 @@ class QuickMenuItem {
   final int? badgeCount;
   final String category;
   final bool isFeatured;
+  final List<QuickMenuSubOption>? subOptions;
+  final String? tooltip;
 
   QuickMenuItem({
     required this.id,
@@ -37,6 +54,8 @@ class QuickMenuItem {
     this.badgeCount,
     this.category = 'general',
     this.isFeatured = false,
+    this.subOptions,
+    this.tooltip,
   });
 }
 
@@ -95,6 +114,7 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
   late AnimationController _glowController;
   double _scrollPosition = 0;
   int _selectedIndex = -1;
+  String? _expandedItemId;
 
   @override
   void initState() {
@@ -127,17 +147,29 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
   }
 
   void _onItemTap(int index) {
+    final item = widget.items[index];
     setState(() {
       _selectedIndex = index;
+      // Close any expanded item
+      _expandedItemId = null;
     });
-    
+
     // Trigger scale animation
     _scaleController.forward().then((_) {
       _scaleController.reverse();
     });
-    
+
     // Trigger haptic feedback if available
-    widget.items[index].onTap();
+    item.onTap();
+  }
+
+  void _onItemLongPress(int index) {
+    final item = widget.items[index];
+    if (item.subOptions != null && item.subOptions!.isNotEmpty) {
+      setState(() {
+        _expandedItemId = _expandedItemId == item.id ? null : item.id;
+      });
+    }
   }
 
   @override
@@ -368,203 +400,319 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
   }
 
   Widget _buildMenuItem(QuickMenuItem item, BuildContext context, {bool isSelected = false}) {
-    return GestureDetector(
-      onTap: () => _onItemTap(widget.items.indexOf(item)),
-      child: AnimatedBuilder(
-        animation: _scaleController,
-        builder: (context, child) {
-          final scale = _scaleController.value;
-          return Transform.scale(
-            scale: isSelected ? 1.0 - (scale * 0.1) : 1.0,
-            child: child,
-          );
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          width: widget.itemWidth,
-          height: widget.itemHeight,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [item.gradientStart, item.gradientEnd],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: item.color.withValues(alpha: item.isFeatured ? 0.8 : 0.5),
-              width: item.isFeatured ? 3 : 2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: item.color.withValues(alpha: 0.4),
-                blurRadius: item.isFeatured ? 20 : 15,
-                offset: const Offset(0, 8),
-              ),
-              if (item.isFeatured)
-                BoxShadow(
-                  color: item.color.withValues(alpha: 0.2),
-                  blurRadius: 30,
-                  offset: const Offset(0, 15),
-                ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              // Background decorative icon
-              Positioned(
-                right: -15,
-                bottom: -15,
-                child: Icon(
-                  item.icon,
-                  size: 90,
-                  color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.08),
-                ),
-              ),
-              
-              // Featured badge
-              if (item.isFeatured)
-                Positioned(
-                  top: -5,
-                  right: -5,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.amber, Colors.orange],
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.amber.withValues(alpha: 0.5),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      '★ ÖNE ÇIKAN',
-                      style: TextStyle(
-                        color: ThemeColors.getTextOnColoredBackground(context),
-                        fontSize: 8,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+    final isExpanded = _expandedItemId == item.id;
+    final hasSubOptions = item.subOptions != null && item.subOptions!.isNotEmpty;
+
+    return Column(
+      children: [
+        Tooltip(
+          message: item.tooltip ?? item.title,
+          child: GestureDetector(
+            onTap: () => _onItemTap(widget.items.indexOf(item)),
+            onLongPress: hasSubOptions ? () => _onItemLongPress(widget.items.indexOf(item)) : null,
+            child: AnimatedBuilder(
+              animation: _scaleController,
+              builder: (context, child) {
+                final scale = _scaleController.value;
+                return Transform.scale(
+                  scale: isSelected ? 1.0 - (scale * 0.1) : 1.0,
+                  child: child,
+                );
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: widget.itemWidth,
+                height: widget.itemHeight,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [item.gradientStart, item.gradientEnd],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                ),
-              
-              // New badge
-              if (item.isNew && !item.isFeatured)
-                Positioned(
-                  top: -5,
-                  right: -5,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.red.withValues(alpha: 0.5),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      'YENİ',
-                      style: TextStyle(
-                        color: ThemeColors.getTextOnColoredBackground(context),
-                        fontSize: 8,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: isExpanded
+                        ? Colors.white.withValues(alpha: 0.8)
+                        : item.color.withValues(alpha: item.isFeatured ? 0.8 : 0.5),
+                    width: isExpanded ? 3 : (item.isFeatured ? 3 : 2),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: item.color.withValues(alpha: 0.4),
+                      blurRadius: item.isFeatured ? 20 : 15,
+                      offset: const Offset(0, 8),
+                    ),
+                    if (item.isFeatured)
+                      BoxShadow(
+                        color: item.color.withValues(alpha: 0.2),
+                        blurRadius: 30,
+                        offset: const Offset(0, 15),
+                      ),
+                  ],
                 ),
-              
-              // Content
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Stack(
                   children: [
-                    // Top row with icon and badge count
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
+                    // Background decorative icon
+                    Positioned(
+                      right: -15,
+                      bottom: -15,
+                      child: Icon(
+                        item.icon,
+                        size: 90,
+                        color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.08),
+                      ),
+                    ),
+
+                    // Featured badge
+                    if (item.isFeatured)
+                      Positioned(
+                        top: -5,
+                        right: -5,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.2),
-                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [Colors.amber, Colors.orange],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 5,
+                                color: Colors.amber.withValues(alpha: 0.5),
+                                blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
                             ],
                           ),
-                          child: Icon(
-                            item.icon,
-                            color: Colors.white,
-                            size: 26,
-                          ),
-                        ),
-                        if (item.badgeCount != null)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '${item.badgeCount}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    
-                    // Title and subtitle
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.title,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (item.subtitle != null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            item.subtitle!,
+                          child: Text(
+                            '★ ÖNE ÇIKAN',
                             style: TextStyle(
-                              color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.85),
-                              fontSize: 11,
+                              color: ThemeColors.getTextOnColoredBackground(context),
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
                             ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+
+                    // New badge
+                    if (item.isNew && !item.isFeatured)
+                      Positioned(
+                        top: -5,
+                        right: -5,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.red.withValues(alpha: 0.5),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            'YENİ',
+                            style: TextStyle(
+                              color: ThemeColors.getTextOnColoredBackground(context),
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                    // Expand indicator
+                    if (hasSubOptions)
+                      Positioned(
+                        bottom: 8,
+                        right: 8,
+                        child: AnimatedRotation(
+                          turns: isExpanded ? 0.5 : 0,
+                          duration: const Duration(milliseconds: 300),
+                          child: Icon(
+                            Icons.expand_more,
+                            color: Colors.white.withValues(alpha: 0.7),
+                            size: 20,
+                          ),
+                        ),
+                      ),
+
+                    // Content
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Top row with icon and badge count
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.2),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.1),
+                                      blurRadius: 5,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  item.icon,
+                                  color: Colors.white,
+                                  size: 26,
+                                ),
+                              ),
+                              if (item.badgeCount != null)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    '${item.badgeCount}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+
+                          // Title and subtitle
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.title,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (item.subtitle != null) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  item.subtitle!,
+                                  style: TextStyle(
+                                    color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.85),
+                                    fontSize: 11,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                              if (hasSubOptions) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Uzun basarak seçenekleri aç',
+                                  style: TextStyle(
+                                    color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.6),
+                                    fontSize: 9,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ],
-                      ],
+                      ),
                     ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
-      ),
+
+        // Sub-options
+        if (isExpanded && hasSubOptions)
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            margin: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: ThemeColors.getCardBackground(context),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: item.color.withValues(alpha: 0.3),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: item.subOptions!.map((subOption) {
+                return InkWell(
+                  onTap: () {
+                    setState(() {
+                      _expandedItemId = null;
+                    });
+                    subOption.onTap();
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    child: Row(
+                      children: [
+                        Icon(
+                          subOption.icon,
+                          color: item.color,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                subOption.title,
+                                style: TextStyle(
+                                  color: ThemeColors.getText(context),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              if (subOption.subtitle != null)
+                                Text(
+                                  subOption.subtitle!,
+                                  style: TextStyle(
+                                    color: ThemeColors.getSecondaryText(context),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          Icons.chevron_right,
+                          color: ThemeColors.getSecondaryText(context),
+                          size: 16,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -860,6 +1008,27 @@ class QuickMenuBuilder {
         onTap: onQuizTap,
         category: 'game_modes',
         isFeatured: true,
+        tooltip: 'Çevre konularında bilgi seviyenizi test edin',
+        subOptions: [
+          QuickMenuSubOption(
+            title: 'Hızlı Quiz',
+            subtitle: '15 soru, zaman limiti yok',
+            icon: Icons.flash_on,
+            onTap: onQuizTap,
+          ),
+          QuickMenuSubOption(
+            title: 'Zamanlı Quiz',
+            subtitle: '15 soru, 30 saniye süre',
+            icon: Icons.timer,
+            onTap: () => onQuizSettingsTap?.call(),
+          ),
+          QuickMenuSubOption(
+            title: 'Konu Seç',
+            subtitle: 'Belirli bir konuda quiz',
+            icon: Icons.category,
+            onTap: () => onQuizSettingsTap?.call(),
+          ),
+        ],
       ),
       QuickMenuItem(
         id: 'duel',
@@ -873,6 +1042,27 @@ class QuickMenuBuilder {
         category: 'game_modes',
         isFeatured: true,
         isNew: true,
+        tooltip: 'Arkadaşlarınızla gerçek zamanlı düello yapın',
+        subOptions: [
+          QuickMenuSubOption(
+            title: 'Hızlı Düello',
+            subtitle: '5 soru, 15 saniye süre',
+            icon: Icons.flash_on,
+            onTap: onDuelTap,
+          ),
+          QuickMenuSubOption(
+            title: 'Oda Oluştur',
+            subtitle: 'Kalıcı düello odası',
+            icon: Icons.add_circle,
+            onTap: onDuelTap,
+          ),
+          QuickMenuSubOption(
+            title: 'Arkadaş Davet Et',
+            subtitle: 'Belirli bir arkadaşı davet et',
+            icon: Icons.person_add,
+            onTap: () => onFriendsTap(),
+          ),
+        ],
       ),
       QuickMenuItem(
         id: 'board_game',
@@ -1017,6 +1207,27 @@ class QuickMenuBuilder {
         gradientEnd: Colors.grey.shade700,
         onTap: onSettingsTap,
         category: 'tools',
+        tooltip: 'Uygulama ayarlarını yönetin',
+        subOptions: [
+          QuickMenuSubOption(
+            title: 'Genel Ayarlar',
+            subtitle: 'Bildirimler, dil, tema',
+            icon: Icons.tune,
+            onTap: onSettingsTap,
+          ),
+          QuickMenuSubOption(
+            title: 'Profil Ayarları',
+            subtitle: 'Kullanıcı bilgileri',
+            icon: Icons.person,
+            onTap: () => onProfileTap(),
+          ),
+          QuickMenuSubOption(
+            title: 'Gizlilik',
+            subtitle: 'Veri ve gizlilik ayarları',
+            icon: Icons.privacy_tip,
+            onTap: onSettingsTap,
+          ),
+        ],
       ),
       if (hasClassInfo == true) ...[
         QuickMenuItem(

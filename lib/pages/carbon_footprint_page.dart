@@ -8,7 +8,9 @@ import 'package:karbonson/services/carbon_footprint_service.dart';
 import 'package:karbonson/services/carbon_report_service.dart';
 import 'package:karbonson/widgets/empty_state_widget.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'dart:io';
+import 'dart:typed_data';
 import '../widgets/page_templates.dart';
 
 class CarbonFootprintPage extends StatefulWidget {
@@ -177,6 +179,22 @@ class _CarbonFootprintPageState extends State<CarbonFootprintPage>
         // Rastgele demo verisi oluştur
         await _generateDemoData();
         return;
+      }
+
+      // İlk olarak seed data'nın initialize edilip edilmediğini kontrol et
+      final hasData = await _carbonService.carbonDataExists(classLevel, classSection);
+      if (!hasData) {
+        // Seed data initialize et
+        await _carbonService.initializeSeedData();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Karbon verisi başlatılıyor...'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
       }
 
       // Load user's class carbon data
@@ -963,49 +981,32 @@ class _CarbonFootprintPageState extends State<CarbonFootprintPage>
 
       // Generate report based on format
       if (format == 'pdf') {
-        // Simple text-based PDF simulation - in real app use pdf package
-        final pdfContent = '''
-KARBON AYAK İZİ RAPORU
-
-Sınıf: ${reportData['classIdentifier']}
-Karbon Değeri: ${reportData['carbonValue']} g CO₂
-Ortalama: ${reportData['averageCarbon']} g CO₂
-Durum: ${reportData['status']}
-
-Öneri: ${reportData['recommendation']}
-
-Oluşturulma Tarihi: ${DateTime.now().toString()}
-        '''.trim();
-
-        // For now, copy to clipboard as simulation
-        // In real app, generate actual PDF file
-        await _saveReportToFile('carbon_report_${_userClassCarbonData!.classIdentifier}.txt', pdfContent);
+        final pdfBytes = await _reportService.generatePDFReport(
+          _userClassCarbonData!,
+          averageCarbon: _averageCarbon,
+          schoolName: 'Karbonson Okulu',
+        );
+        await _saveReportToFile('carbon_report_${_userClassCarbonData!.classIdentifier}.pdf', '', bytes: pdfBytes);
 
       } else if (format == 'xlsx') {
-        // Simple CSV format as Excel simulation
-        final csvContent = '''
-Sınıf,Karbon Değeri (g CO₂),Ortalama (g CO₂),Durum,Öneri,Tarih
-${reportData['classIdentifier']},${reportData['carbonValue']},${reportData['averageCarbon']},"${reportData['status']}","${reportData['recommendation']}",${DateTime.now().toIso8601String()}
-        '''.trim();
+        final excelPath = await _reportService.generateExcelReport(
+          _userClassCarbonData!,
+          averageCarbon: _averageCarbon,
+          filename: 'carbon_report_${_userClassCarbonData!.classIdentifier}',
+        );
 
-        await _saveReportToFile('carbon_report_${_userClassCarbonData!.classIdentifier}.csv', csvContent);
+        // Read the file and save it
+        final excelFile = File(excelPath);
+        final bytes = await excelFile.readAsBytes();
+        await _saveReportToFile('carbon_report_${_userClassCarbonData!.classIdentifier}.xlsx', '', bytes: bytes);
 
       } else if (format == 'png') {
-        // For PNG, we'll save the summary as text
-        final pngContent = '''
-🌱 KARBON AYAK İZİ RAPORU 🌱
-
-📚 Sınıf: ${reportData['classIdentifier']}
-🌡️ Karbon: ${reportData['carbonValue']} g CO₂
-📊 Ortalama: ${reportData['averageCarbon']} g CO₂
-📈 Durum: ${reportData['status']}
-
-💡 Öneri: ${reportData['recommendation']}
-
-📅 Tarih: ${DateTime.now().toString().split(' ')[0]}
-        '''.trim();
-
-        await _saveReportToFile('carbon_report_${_userClassCarbonData!.classIdentifier}.txt', pngContent);
+        // For PNG, create a simple image representation
+        final pngBytes = await _reportService.generatePNGReport(
+          _userClassCarbonData!,
+          averageCarbon: _averageCarbon,
+        );
+        await _saveReportToFile('carbon_report_${_userClassCarbonData!.classIdentifier}.png', '', bytes: pngBytes);
       }
 
       // Show success message
@@ -1027,7 +1028,7 @@ ${reportData['classIdentifier']},${reportData['carbonValue']},${reportData['aver
     }
   }
 
-  Future<void> _saveReportToFile(String fileName, String content) async {
+  Future<void> _saveReportToFile(String fileName, String content, {Uint8List? bytes}) async {
     try {
       // Get the appropriate directory based on platform
       Directory? directory;
@@ -1051,7 +1052,11 @@ ${reportData['classIdentifier']},${reportData['carbonValue']},${reportData['aver
 
       // Create the file
       final file = File('${directory.path}/$fileName');
-      await file.writeAsString(content);
+      if (bytes != null) {
+        await file.writeAsBytes(bytes);
+      } else {
+        await file.writeAsString(content);
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1188,6 +1193,12 @@ ${reportData['classIdentifier']},${reportData['carbonValue']},${reportData['aver
 
   /// Aylık pasta grafiği
   Widget _buildMonthlyChart() {
+    if (_monthlyCarbonData == null || _monthlyCarbonData!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final totalCarbon = _monthlyCarbonData!.fold<int>(0, (sum, data) => sum + (data['carbonValue'] as int));
+
     return Card(
       elevation: 4,
       child: Padding(
@@ -1196,57 +1207,65 @@ ${reportData['classIdentifier']},${reportData['carbonValue']},${reportData['aver
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Aylık Karbon Değerleri',
+              '2 Aylık Karbon Dağılımı',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             SizedBox(
-              height: 200,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: _monthlyCarbonData!.map((data) {
-                  final isCurrentMonth = data['isCurrentMonth'] as bool;
-                  final carbonValue = data['carbonValue'] as int;
-                  final percentage = carbonValue / 4000; // Max 4000'e göre
+              height: 250,
+              child: PieChart(
+                PieChartData(
+                  sections: _monthlyCarbonData!.map((data) {
+                    final isCurrentMonth = data['isCurrentMonth'] as bool;
+                    final carbonValue = data['carbonValue'] as int;
+                    final percentage = (carbonValue / totalCarbon * 100).round();
 
-                  return Column(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          width: 60,
-                          decoration: BoxDecoration(
-                            color: isCurrentMonth ? Colors.blue : Colors.green,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: FractionallySizedBox(
-                            alignment: Alignment.bottomCenter,
-                            heightFactor: percentage,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: (isCurrentMonth ? Colors.blue : Colors.green).withOpacity(0.8),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
-                        ),
+                    return PieChartSectionData(
+                      value: carbonValue.toDouble(),
+                      title: '${data['month'].toString().split('-')[1]}\n$percentage%',
+                      radius: 80,
+                      titleStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        data['month'].toString().split('-')[1],
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      Text(
-                        '$carbonValue',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: isCurrentMonth ? Colors.blue : Colors.green,
-                        ),
-                      ),
-                    ],
-                  );
-                }).toList(),
+                      color: isCurrentMonth ? Colors.blue : Colors.green,
+                    );
+                  }).toList(),
+                  sectionsSpace: 2,
+                  centerSpaceRadius: 40,
+                ),
               ),
+            ),
+            const SizedBox(height: 16),
+            // Legend
+            Wrap(
+              spacing: 16,
+              runSpacing: 8,
+              children: _monthlyCarbonData!.map((data) {
+                final isCurrentMonth = data['isCurrentMonth'] as bool;
+                final carbonValue = data['carbonValue'] as int;
+                final month = data['month'].toString().split('-')[1];
+
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: isCurrentMonth ? Colors.blue : Colors.green,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '$month: $carbonValue g CO₂',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
+                );
+              }).toList(),
             ),
           ],
         ),

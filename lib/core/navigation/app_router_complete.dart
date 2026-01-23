@@ -98,7 +98,6 @@ class AppRoutes {
   // Additional Pages
   static const String quizResults = '/quiz-results';
   static const String quizSettings = '/quiz-settings';
-  static const String welcome = '/welcome';
   static const String rewardsMain = '/rewards-main';
   static const String notifications = '/notifications';
   static const String spectatorMode = '/spectator-mode';
@@ -403,12 +402,7 @@ class RouteConfig {
       showInDrawer: true,
       order: 18,
     ),
-    AppRoutes.welcome: const RouteMetadata(
-      title: 'Hoşgeldin',
-      icon: Icons.waving_hand,
-      category: NavigationCategory.mainApp,
-      order: 19,
-    ),
+    // Welcome page removed to streamline onboarding
     AppRoutes.rewardsMain: const RouteMetadata(
       title: 'Ödül Ana Sayfası',
       icon: Icons.stars,
@@ -535,7 +529,6 @@ class AppRouterComplete {
       // Additional Pages
       AppRoutes.quizResults => _buildProtectedRoute(_buildPlaceholderPage('Quiz Sonuçları'), settings),
       AppRoutes.quizSettings => _buildProtectedRoute(_buildPlaceholderPage('Quiz Ayarları'), settings),
-      AppRoutes.welcome => _buildRoute(_buildPlaceholderPage('Hoşgeldin')),
       AppRoutes.rewardsMain => _buildProtectedRoute(_buildPlaceholderPage('Ödül Ana Sayfası'), settings),
       AppRoutes.rewardsShop => _buildProtectedRoute(_buildPlaceholderPage('Ödül Mağazası'), settings),
       AppRoutes.notifications => _buildProtectedRoute(_buildPlaceholderPage('Bildirimler'), settings),
