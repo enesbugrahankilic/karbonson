@@ -191,6 +191,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
                         SlideTransition(
                           position: _slideAnimation,
                           child: Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
                                 'Hoşgeldin!',

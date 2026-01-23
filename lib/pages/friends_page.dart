@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:qr_code_scanner/qr_code_scanner.dart';
 import '../widgets/page_templates.dart';
 import '../services/firestore_service.dart';
 import '../models/user_data.dart';
@@ -7,6 +8,113 @@ import '../models/game_board.dart';
 import '../widgets/user_qr_code_widget.dart';
 import '../theme/design_system.dart';
 import '../theme/theme_colors.dart';
+
+/// QR Code Scanner Page for adding friends
+class QRScannerPage extends StatefulWidget {
+  final Function(String) onQRCodeScanned;
+
+  const QRScannerPage({super.key, required this.onQRCodeScanned});
+
+  @override
+  State<QRScannerPage> createState() => _QRScannerPageState();
+}
+
+class _QRScannerPageState extends State<QRScannerPage> {
+  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+  QRViewController? controller;
+  bool _isProcessing = false;
+
+  @override
+  void dispose() {
+    controller?.dispose();
+    super.dispose();
+  }
+
+  void _onQRViewCreated(QRViewController controller) {
+    this.controller = controller;
+    controller.scannedDataStream.listen((scanData) {
+      if (!_isProcessing && scanData.code != null) {
+        _isProcessing = true;
+        _processQRCode(scanData.code!);
+      }
+    });
+  }
+
+  Future<void> _processQRCode(String code) async {
+    try {
+      // QR code should contain user ID
+      final userId = code.trim();
+
+      if (userId.isNotEmpty) {
+        // Call the callback
+        widget.onQRCodeScanned(userId);
+
+        // Show success message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('QR kod başarıyla tarandı!')),
+          );
+        }
+
+        // Go back
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Geçersiz QR kod')),
+          );
+          _isProcessing = false;
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('QR kod işlenirken hata: $e')),
+        );
+        _isProcessing = false;
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('QR Kod Tara'),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: QRView(
+              key: qrKey,
+              onQRViewCreated: _onQRViewCreated,
+              overlay: QrScannerOverlayShape(
+                borderColor: Colors.blue,
+                borderRadius: 10,
+                borderLength: 30,
+                borderWidth: 10,
+                cutOutSize: MediaQuery.of(context).size.width * 0.8,
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(16),
+            color: Colors.black,
+            child: const Text(
+              'Arkadaşınızın QR kodunu tarayın',
+              style: TextStyle(color: Colors.white, fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class FriendsPage extends StatefulWidget {
    final String? userNickname;
@@ -190,9 +298,33 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
   }
 
   void _showQRScanner() {
-    // TODO: Implement QR scanner
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('QR tarayıcı yakında eklenecek')),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => QRScannerPage(
+          onQRCodeScanned: (userId) async {
+            try {
+              // Get user data by ID
+              final userData = await _firestoreService.getUserProfile(userId);
+              if (userData != null) {
+                // Send friend request
+                await _sendFriendRequest(userData.uid, userData.nickname);
+              } else {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Kullanıcı bulunamadı')),
+                  );
+                }
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Hata: $e')),
+                );
+              }
+            }
+          },
+        ),
+      ),
     );
   }
 
@@ -317,6 +449,7 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
           );
         }
       }
+      
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -186,42 +186,39 @@ class AuthenticationStateService extends ChangeNotifier {
       }
 
       if (user != null) {
-        // Try to refresh token first to ensure validity
-        final tokenRefreshed = await refreshTokenIfNeeded();
+        // Check if user has email (indicates real account vs anonymous)
+        final hasEmail = user.email != null && user.email!.isNotEmpty;
 
-        if (tokenRefreshed) {
-          // Check if user has email (indicates real account vs anonymous)
-          final hasEmail = user.email != null && user.email!.isNotEmpty;
+        if (hasEmail) {
+          // User has email account, set as authenticated
+          final nickname = await _profileService.getCurrentNickname() ??
+              user.email!.split('@')[0] ??
+              'Kullanıcı';
 
-          if (hasEmail) {
-            // User has email account, set as authenticated
-            final nickname = await _profileService.getCurrentNickname() ??
-                user.email!.split('@')[0] ??
-                'Kullanıcı';
+          await setAuthenticatedUser(
+            nickname: nickname,
+            uid: user.uid,
+          );
 
-            await setAuthenticatedUser(
-              nickname: nickname,
-              uid: user.uid,
-            );
+          if (kDebugMode) {
+            debugPrint(
+                'AuthenticationStateService: Authenticated user restored from persistent session: $nickname (${user.uid})');
+          }
 
+          // Try to refresh token in background (don't fail if it doesn't work)
+          try {
+            await refreshTokenIfNeeded();
+          } catch (e) {
             if (kDebugMode) {
-              debugPrint(
-                  'AuthenticationStateService: Authenticated user restored from persistent session: $nickname (${user.uid})');
-            }
-          } else {
-            // Anonymous user, clear authentication state
-            clearAuthenticationState();
-            if (kDebugMode) {
-              debugPrint(
-                  'AuthenticationStateService: Anonymous user detected, clearing auth state');
+              debugPrint('AuthenticationStateService: Token refresh failed, but keeping user authenticated: $e');
             }
           }
         } else {
-          // Token refresh failed, clear state
+          // Anonymous user, clear authentication state
           clearAuthenticationState();
           if (kDebugMode) {
             debugPrint(
-                'AuthenticationStateService: Token refresh failed, clearing auth state');
+                'AuthenticationStateService: Anonymous user detected, clearing auth state');
           }
         }
       } else {

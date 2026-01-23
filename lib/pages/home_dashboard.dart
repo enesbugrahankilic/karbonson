@@ -886,6 +886,12 @@ class _HomeDashboardState extends State<HomeDashboard>
     );
   }
 
+  void _showLoginRequiredMessage(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Bu özelliği kullanmak için giriş yapın')),
+    );
+  }
+
   void _showQuickMenu(BuildContext context) {
     final menuItems = QuickMenuBuilder.buildCompleteMenu(
       onQuizTap: () {
@@ -973,6 +979,28 @@ class _HomeDashboardState extends State<HomeDashboard>
       achievementCount: _userAchievements.length,
       notificationCount: null, // Bildirim sayısı dinamik olarak güncellenmeli
     );
+
+    // If user data is not loaded, modify menu items to show login required
+    final updatedItems = _userData == null ? menuItems.map((item) {
+      return QuickMenuItem(
+        id: item.id,
+        title: item.title,
+        subtitle: 'Giriş yapın',
+        icon: item.icon,
+        color: item.color,
+        gradientStart: item.gradientStart,
+        gradientEnd: item.gradientEnd,
+        onTap: () {
+          Navigator.pop(context);
+          _showLoginRequiredMessage(context);
+        },
+        isNew: item.isNew,
+        badge: item.badge,
+        badgeCount: item.badgeCount,
+        category: item.category,
+        isFeatured: item.isFeatured,
+      );
+    }).toList() : menuItems;
 
     // Full screen overlay dialog
     showGeneralDialog(
@@ -1164,7 +1192,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                             vertical: 8,
                           ),
                           child: QuickMenuGrid(
-                            items: menuItems,
+                            items: updatedItems,
                             columns: columns,
                             spacing: isSmallScreen ? 10 : 14,
                             showScrollbar: true,
@@ -2072,6 +2100,38 @@ class _HomeDashboardState extends State<HomeDashboard>
                         subtitle: '${_userProgress?.totalDuels ?? 0} düello',
                         color: Colors.purple,
                       ),
+                      _buildStatCard(
+                        context,
+                        icon: Icons.eco,
+                        title: 'Çevre Puanı',
+                        value: '${_userProgress?.totalPoints ?? 0}',
+                        subtitle: 'Toplam puan',
+                        color: Colors.green,
+                      ),
+                      _buildStatCard(
+                        context,
+                        icon: Icons.emoji_events,
+                        title: 'Başarılar',
+                        value: '${_userAchievements.length}',
+                        subtitle: 'Kazanılan rozet',
+                        color: Colors.orange,
+                      ),
+                      _buildStatCard(
+                        context,
+                        icon: Icons.quiz,
+                        title: 'Çözülen Quiz',
+                        value: '${_userProgress?.completedQuizzes ?? 0}',
+                        subtitle: 'Toplam quiz',
+                        color: ThemeColors.getPrimaryButtonColor(context),
+                      ),
+                      _buildStatCard(
+                        context,
+                        icon: Icons.calendar_today,
+                        title: 'Günlük Görev',
+                        value: '${_dailyChallenges.length}',
+                        subtitle: 'Aktif görev',
+                        color: Colors.blue,
+                      ),
                     ],
                   ),
                   SizedBox(height: DesignSystem.spacingM),
@@ -2558,76 +2618,279 @@ class _HomeDashboardState extends State<HomeDashboard>
             ),
           ),
           Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(
-                isSmallScreen ? DesignSystem.spacingM : DesignSystem.spacingL),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.indigo,
-                  Colors.purple,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: ThemeColors.getCardBackground(context),
               borderRadius: BorderRadius.circular(DesignSystem.radiusL),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.indigo.withOpacity( 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+                  color: Colors.black.withOpacity( 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
-            child: InkWell(
-              onTap: () => Navigator.of(context).pushNamed(AppRoutes.spectatorMode),
-              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+            child: Padding(
+              padding: EdgeInsets.all(isSmallScreen
+                  ? DesignSystem.spacingS
+                  : DesignSystem.spacingM),
               child: Column(
                 children: [
-                  Icon(
-                    Icons.visibility,
-                    size: isSmallScreen ? 48.0 : 64.0,
-                    color: Colors.white,
+                  // Live Games Header
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity( 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.live_tv,
+                          color: Colors.red,
+                          size: 20,
+                        ),
+                      ),
+                      SizedBox(width: DesignSystem.spacingM),
+                      Expanded(
+                        child: Text(
+                          'Canlı Oyunlar',
+                          style: TextStyle(
+                            color: ThemeColors.getText(context),
+                            fontSize: isSmallScreen ? 16.0 : 18.0,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity( 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          'CANLI',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: DesignSystem.spacingM),
-                  Text(
-                    'İzleyici Modu',
-                    style: TextStyle(
-                      color: ThemeColors.getTextOnColoredBackground(context),
-                      fontSize: isSmallScreen ? 18.0 : 22.0,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
+
+                  // Live Games List (Mock data for now)
+                  _buildLiveGameItem(
+                    context,
+                    player1: 'Ahmet K.',
+                    player2: 'Mehmet Y.',
+                    gameType: 'Düello',
+                    spectators: 12,
+                    timeRemaining: '2:34',
+                    isSmallScreen: isSmallScreen,
                   ),
                   SizedBox(height: DesignSystem.spacingS),
-                  Text(
-                    'Canlı oyunları izle',
-                    style: TextStyle(
-                      color: ThemeColors.getTextOnColoredBackground(context).withOpacity( 0.9),
-                      fontSize: isSmallScreen ? 14.0 : 16.0,
-                    ),
-                    textAlign: TextAlign.center,
+                  _buildLiveGameItem(
+                    context,
+                    player1: 'Ayşe D.',
+                    player2: 'Fatma S.',
+                    gameType: 'Takım Oyunu',
+                    spectators: 8,
+                    timeRemaining: '5:12',
+                    isSmallScreen: isSmallScreen,
                   ),
+                  SizedBox(height: DesignSystem.spacingS),
+                  _buildLiveGameItem(
+                    context,
+                    player1: 'Ali V.',
+                    player2: 'Can B.',
+                    gameType: 'Düello',
+                    spectators: 15,
+                    timeRemaining: '1:58',
+                    isSmallScreen: isSmallScreen,
+                  ),
+
                   SizedBox(height: DesignSystem.spacingM),
+
+                  // Spectator Mode Button
                   Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: DesignSystem.spacingM,
-                      vertical: DesignSystem.spacingS,
-                    ),
+                    width: double.infinity,
+                    padding: EdgeInsets.all(
+                        isSmallScreen ? DesignSystem.spacingM : DesignSystem.spacingL),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity( 0.2),
-                      borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.indigo,
+                          Colors.purple,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.indigo.withOpacity( 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
-                    child: Text(
-                      'İzle',
-                      style: TextStyle(
-                        color: ThemeColors.getTextOnColoredBackground(context),
-                        fontSize: isSmallScreen ? 14.0 : 16.0,
-                        fontWeight: FontWeight.w500,
+                    child: InkWell(
+                      onTap: () => Navigator.of(context).pushNamed(AppRoutes.spectatorMode),
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.visibility,
+                            size: isSmallScreen ? 48.0 : 64.0,
+                            color: Colors.white,
+                          ),
+                          SizedBox(height: DesignSystem.spacingM),
+                          Text(
+                            'İzleyici Moduna Geç',
+                            style: TextStyle(
+                              color: ThemeColors.getTextOnColoredBackground(context),
+                              fontSize: isSmallScreen ? 18.0 : 22.0,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: DesignSystem.spacingS),
+                          Text(
+                            'Canlı oyunları izle ve öğren',
+                            style: TextStyle(
+                              color: ThemeColors.getTextOnColoredBackground(context).withOpacity( 0.9),
+                              fontSize: isSmallScreen ? 14.0 : 16.0,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: DesignSystem.spacingM),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: DesignSystem.spacingM,
+                              vertical: DesignSystem.spacingS,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity( 0.2),
+                              borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                            ),
+                            child: Text(
+                              'İzlemeye Başla',
+                              style: TextStyle(
+                                color: ThemeColors.getTextOnColoredBackground(context),
+                                fontSize: isSmallScreen ? 14.0 : 16.0,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLiveGameItem(
+    BuildContext context, {
+    required String player1,
+    required String player2,
+    required String gameType,
+    required int spectators,
+    required String timeRemaining,
+    required bool isSmallScreen,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(isSmallScreen ? 12.0 : 16.0),
+      decoration: BoxDecoration(
+        color: ThemeColors.getCardBackground(context).withOpacity( 0.5),
+        borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+        border: Border.all(
+          color: Colors.red.withOpacity( 0.2),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          // Players
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$player1 vs $player2',
+                  style: TextStyle(
+                    color: ThemeColors.getText(context),
+                    fontSize: isSmallScreen ? 14.0 : 16.0,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  gameType,
+                  style: TextStyle(
+                    color: ThemeColors.getSecondaryText(context),
+                    fontSize: isSmallScreen ? 12.0 : 14.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Spectators & Time
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.remove_red_eye,
+                    color: Colors.red,
+                    size: 14,
+                  ),
+                  SizedBox(width: 4),
+                  Text(
+                    '$spectators',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 2),
+              Text(
+                timeRemaining,
+                style: TextStyle(
+                  color: ThemeColors.getSecondaryText(context),
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+
+          SizedBox(width: DesignSystem.spacingM),
+
+          // Watch Button
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity( 0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              'İzle',
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

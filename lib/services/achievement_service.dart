@@ -272,8 +272,8 @@ class AchievementService {
   /// Create daily challenges for the day
   List<DailyChallenge> _createDailyChallenges(DateTime date) {
     final challenges = <DailyChallenge>[];
-    final random = DateTime.now().millisecond % 4;
-    
+    final random = DateTime.now().millisecond % 6; // Increased for more variety
+
     // Base challenges - always include these
     challenges.addAll([
       DailyChallenge(
@@ -307,89 +307,137 @@ class AchievementService {
         icon: '⚔️',
       ),
     ]);
-    
-    // Variable challenges based on day
-    switch (random) {
-      case 0:
-        challenges.add(
-          DailyChallenge(
-            id: 'daily_social_${date.millisecondsSinceEpoch}',
-            title: 'Sosyal Bağ',
-            description: 'Bugün 1 arkadaş ekle',
-            type: ChallengeType.social,
-            targetValue: 1,
-            currentValue: 0,
-            rewardPoints: 15,
-            rewardType: RewardType.points,
-            date: date,
-            isCompleted: false,
-            expiresAt: date.add(const Duration(days: 1)),
-            difficulty: ChallengeDifficulty.easy,
-            icon: '👥',
-          ),
-        );
-        break;
-      case 1:
-        challenges.add(
-          DailyChallenge(
-            id: 'daily_multiplayer_${date.millisecondsSinceEpoch}',
-            title: 'Takım Ruhu',
-            description: 'Bugün 1 çok oyunculu maç kazan',
-            type: ChallengeType.multiplayer,
-            targetValue: 1,
-            currentValue: 0,
-            rewardPoints: 40,
-            rewardType: RewardType.points,
-            date: date,
-            isCompleted: false,
-            expiresAt: date.add(const Duration(days: 1)),
-            difficulty: ChallengeDifficulty.medium,
-            icon: '🤝',
-          ),
-        );
-        break;
-      case 2:
-        challenges.add(
-          DailyChallenge(
-            id: 'daily_speed_${date.millisecondsSinceEpoch}',
-            title: 'Hız Testi',
-            description: 'Bir soruyu 10 saniyede cevapla',
-            type: ChallengeType.special,
-            targetValue: 1,
-            currentValue: 0,
-            rewardPoints: 30,
-            rewardType: RewardType.feature,
-            rewardItem: 'hint_system',
-            date: date,
-            isCompleted: false,
-            expiresAt: date.add(const Duration(days: 1)),
-            difficulty: ChallengeDifficulty.hard,
-            icon: '⚡',
-          ),
-        );
-        break;
-      case 3:
-        challenges.add(
-          DailyChallenge(
-            id: 'daily_perfect_${date.millisecondsSinceEpoch}',
-            title: 'Mükemmeliyet',
-            description: 'Bir quizde %80+ doğruluk oranı yakala',
-            type: ChallengeType.quiz,
-            targetValue: 1,
-            currentValue: 0,
-            rewardPoints: 60,
-            rewardType: RewardType.avatar,
-            rewardItem: 'star_avatar',
-            date: date,
-            isCompleted: false,
-            expiresAt: date.add(const Duration(days: 1)),
-            difficulty: ChallengeDifficulty.hard,
-            icon: '💎',
-          ),
-        );
-        break;
-    }
-    
+
+    // Add 2-3 random challenges for more variety
+    final randomChallenges = [
+      DailyChallenge(
+        id: 'daily_social_${date.millisecondsSinceEpoch}',
+        title: 'Sosyal Bağ',
+        description: 'Bugün 1 arkadaş ekle',
+        type: ChallengeType.social,
+        targetValue: 1,
+        currentValue: 0,
+        rewardPoints: 15,
+        rewardType: RewardType.points,
+        date: date,
+        isCompleted: false,
+        expiresAt: date.add(const Duration(days: 1)),
+        difficulty: ChallengeDifficulty.easy,
+        icon: '👥',
+      ),
+      DailyChallenge(
+        id: 'daily_multiplayer_${date.millisecondsSinceEpoch}',
+        title: 'Takım Ruhu',
+        description: 'Bugün 1 çok oyunculu maç kazan',
+        type: ChallengeType.multiplayer,
+        targetValue: 1,
+        currentValue: 0,
+        rewardPoints: 40,
+        rewardType: RewardType.points,
+        date: date,
+        isCompleted: false,
+        expiresAt: date.add(const Duration(days: 1)),
+        difficulty: ChallengeDifficulty.medium,
+        icon: '🤝',
+      ),
+      DailyChallenge(
+        id: 'daily_speed_${date.millisecondsSinceEpoch}',
+        title: 'Hız Testi',
+        description: 'Bir soruyu 10 saniyede cevapla',
+        type: ChallengeType.special,
+        targetValue: 1,
+        currentValue: 0,
+        rewardPoints: 30,
+        rewardType: RewardType.feature,
+        rewardItem: 'hint_system',
+        date: date,
+        isCompleted: false,
+        expiresAt: date.add(const Duration(days: 1)),
+        difficulty: ChallengeDifficulty.hard,
+        icon: '⚡',
+      ),
+      DailyChallenge(
+        id: 'daily_perfect_${date.millisecondsSinceEpoch}',
+        title: 'Mükemmeliyet',
+        description: 'Bir quizde %80+ doğruluk oranı yakala',
+        type: ChallengeType.quiz,
+        targetValue: 1,
+        currentValue: 0,
+        rewardPoints: 60,
+        rewardType: RewardType.avatar,
+        rewardItem: 'star_avatar',
+        date: date,
+        isCompleted: false,
+        expiresAt: date.add(const Duration(days: 1)),
+        difficulty: ChallengeDifficulty.hard,
+        icon: '💎',
+      ),
+      DailyChallenge(
+        id: 'daily_streak_${date.millisecondsSinceEpoch}',
+        title: 'Seri Devam',
+        description: '7 günlük giriş serini koru',
+        type: ChallengeType.streak,
+        targetValue: 1,
+        currentValue: 0,
+        rewardPoints: 75,
+        rewardType: RewardType.points,
+        date: date,
+        isCompleted: false,
+        expiresAt: date.add(const Duration(days: 1)),
+        difficulty: ChallengeDifficulty.medium,
+        icon: '🔥',
+      ),
+      DailyChallenge(
+        id: 'daily_carbon_${date.millisecondsSinceEpoch}',
+        title: 'Çevre Dostu',
+        description: 'Karbon ayak izini hesapla',
+        type: ChallengeType.energy,
+        targetValue: 1,
+        currentValue: 0,
+        rewardPoints: 20,
+        rewardType: RewardType.points,
+        date: date,
+        isCompleted: false,
+        expiresAt: date.add(const Duration(days: 1)),
+        difficulty: ChallengeDifficulty.easy,
+        icon: '🌱',
+      ),
+      DailyChallenge(
+        id: 'daily_explore_${date.millisecondsSinceEpoch}',
+        title: 'Keşif',
+        description: 'Uygulamada 3 farklı bölüm keşfet',
+        type: ChallengeType.social,
+        targetValue: 3,
+        currentValue: 0,
+        rewardPoints: 35,
+        rewardType: RewardType.points,
+        date: date,
+        isCompleted: false,
+        expiresAt: date.add(const Duration(days: 1)),
+        difficulty: ChallengeDifficulty.easy,
+        icon: '🔍',
+      ),
+      DailyChallenge(
+        id: 'daily_share_${date.millisecondsSinceEpoch}',
+        title: 'Paylaş',
+        description: 'Skorunu arkadaşlarınla paylaş',
+        type: ChallengeType.social,
+        targetValue: 1,
+        currentValue: 0,
+        rewardPoints: 25,
+        rewardType: RewardType.points,
+        date: date,
+        isCompleted: false,
+        expiresAt: date.add(const Duration(days: 1)),
+        difficulty: ChallengeDifficulty.easy,
+        icon: '📤',
+      ),
+    ];
+
+    // Shuffle and pick 2-3 random challenges
+    randomChallenges.shuffle();
+    challenges.addAll(randomChallenges.take(3));
+
     return challenges;
   }
 

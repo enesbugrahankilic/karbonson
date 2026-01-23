@@ -266,41 +266,57 @@ class QuizLogic {
       {AppLanguage? language, String? category, DifficultyLevel? difficulty}) {
     // Use provided language or default to current language
     final selectedLanguage = language ?? _currentLanguage;
-    
+
     // Use provided difficulty or default to current difficulty
     final selectedDifficulty = difficulty ?? _currentDifficulty;
 
-    // Get questions by difficulty from database
-    var allAvailableQuestions =
+    // Get questions by difficulty from database (all categories)
+    final allQuestionsByDifficulty =
         QuestionsDatabase.getQuestionsByDifficulty(selectedLanguage, selectedDifficulty);
 
-    // Filter by category if specified
+    // Separate category-specific and other questions
+    List<Question> categoryQuestions = [];
+    List<Question> otherQuestions = [];
+
     if (category != null && category != 'Tümü') {
-      allAvailableQuestions = allAvailableQuestions
+      // Split questions by category
+      categoryQuestions = allQuestionsByDifficulty
           .where((q) => q.category == category)
           .toList();
+      otherQuestions = allQuestionsByDifficulty
+          .where((q) => q.category != category)
+          .toList();
+    } else {
+      // If no category specified, all questions are "other"
+      otherQuestions = List.from(allQuestionsByDifficulty);
     }
 
     // Clear answered questions for new session to ensure variety
     _answeredQuestions.clear();
 
     // Filter out already used questions to prevent duplicates
-    var availableQuestions = allAvailableQuestions
+    var availableCategoryQuestions = categoryQuestions
+        .where((q) =>
+            !_usedQuestionIds.contains(_getQuestionId(q, selectedLanguage)))
+        .toList();
+    var availableOtherQuestions = otherQuestions
         .where((q) =>
             !_usedQuestionIds.contains(_getQuestionId(q, selectedLanguage)))
         .toList();
 
     // If we've used too many questions, reset the used set for this language
-    if (availableQuestions.length < count) {
+    if (availableCategoryQuestions.length + availableOtherQuestions.length < count) {
       _usedQuestionIds.clear();
-      availableQuestions = allAvailableQuestions;
+      availableCategoryQuestions = categoryQuestions;
+      availableOtherQuestions = otherQuestions;
     }
 
     // Separate questions by wrong answer categories for weighted selection
     final wrongCategoryQuestions = <Question>[];
     final otherCategoryQuestions = <Question>[];
 
-    for (var q in availableQuestions) {
+    // Check category questions for wrong answers
+    for (var q in availableCategoryQuestions) {
       if (_wrongAnswerCategories.containsKey(q.category) &&
           _wrongAnswerCategories[q.category]! > 0) {
         wrongCategoryQuestions.add(q);
@@ -309,20 +325,27 @@ class QuizLogic {
       }
     }
 
-    // Calculate how many questions to select from each group
-    // Ensure we don't request more than available
-    final safeCount = count.clamp(1, availableQuestions.isEmpty ? 1 : availableQuestions.length);
-    final wrongCategoryCount = (safeCount * 0.6).round(); // 60% from wrong categories
-    final otherCategoryCount = safeCount - wrongCategoryCount; // 40% from other categories
+    // Check other questions for wrong answers
+    for (var q in availableOtherQuestions) {
+      if (_wrongAnswerCategories.containsKey(q.category) &&
+          _wrongAnswerCategories[q.category]! > 0) {
+        wrongCategoryQuestions.add(q);
+      } else {
+        otherCategoryQuestions.add(q);
+      }
+    }
 
     questions = [];
     final selectedIds = <String>{};
 
-    // First, select from wrong answer categories (if available)
-    if (wrongCategoryQuestions.isNotEmpty) {
-      wrongCategoryQuestions.shuffle(_random);
-      for (var q in wrongCategoryQuestions) {
-        if (questions.length >= wrongCategoryCount) break;
+    // First priority: Category-specific questions (if category selected)
+    if (categoryQuestions.isNotEmpty) {
+      // Shuffle category questions
+      availableCategoryQuestions.shuffle(_random);
+
+      // Add as many category questions as possible
+      for (var q in availableCategoryQuestions) {
+        if (questions.length >= count) break;
         final qid = _getQuestionId(q, selectedLanguage);
         if (!selectedIds.contains(qid)) {
           questions.add(q);
@@ -333,11 +356,17 @@ class QuizLogic {
       }
     }
 
-    // Then fill remaining slots with other categories
-    if (otherCategoryQuestions.isNotEmpty) {
-      otherCategoryQuestions.shuffle(_random);
-      for (var q in otherCategoryQuestions) {
-        if (questions.length >= safeCount) break;
+    // Second priority: Fill remaining slots with other categories
+    if (questions.length < count) {
+      // Combine remaining wrong and other category questions
+      final remainingQuestions = [...wrongCategoryQuestions, ...otherCategoryQuestions]
+          .where((q) => !selectedIds.contains(_getQuestionId(q, selectedLanguage)))
+          .toList();
+
+      remainingQuestions.shuffle(_random);
+
+      for (var q in remainingQuestions) {
+        if (questions.length >= count) break;
         final qid = _getQuestionId(q, selectedLanguage);
         if (!selectedIds.contains(qid)) {
           questions.add(q);
@@ -348,44 +377,31 @@ class QuizLogic {
       }
     }
 
-    // If still need more questions, add from all available (allow duplicates if necessary)
-    if (questions.length < safeCount) {
-      var allQuestions = List<Question>.from(allAvailableQuestions);
-      allQuestions.shuffle(_random);
+    // If still need more questions, allow duplicates from all available questions
+    if (questions.length < count) {
+      final allAvailable = List<Question>.from(allQuestionsByDifficulty);
+      allAvailable.shuffle(_random);
 
-      for (var q in allQuestions) {
-        if (questions.length >= safeCount) break;
+      for (var q in allAvailable) {
+        if (questions.length >= count) break;
         final qid = _getQuestionId(q, selectedLanguage);
         if (!selectedIds.contains(qid)) {
           questions.add(q);
           _answeredQuestions.add(q.text);
           _usedQuestionIds.add(qid);
           selectedIds.add(qid);
+        } else {
+          // Allow duplicate in extreme edge case
+          questions.add(q);
+          _answeredQuestions.add(q.text);
         }
       }
     }
 
-    // FINAL GUARANTEE: Ensure exactly 'count' questions
-    // If still less, fill with first available questions (duplicates allowed in edge case)
-    while (questions.length < safeCount && availableQuestions.isNotEmpty) {
-      final q = availableQuestions[questions.length % availableQuestions.length];
-      final qid = _getQuestionId(q, selectedLanguage);
-      if (!selectedIds.contains(qid)) {
-        questions.add(q);
-        _answeredQuestions.add(q.text);
-        _usedQuestionIds.add(qid);
-        selectedIds.add(qid);
-      } else {
-        // Add anyway to reach target count (edge case)
-        questions.add(q);
-        _answeredQuestions.add(q.text);
-      }
-    }
-
-    // If somehow we have more than count, truncate
-    if (questions.length > safeCount) {
-      questions = questions.take(safeCount).toList();
-      final int removeCount = _answeredQuestions.length - safeCount;
+    // Ensure we have exactly 'count' questions
+    if (questions.length > count) {
+      questions = questions.take(count).toList();
+      final int removeCount = _answeredQuestions.length - count;
       if (removeCount > 0) {
         _answeredQuestions.removeRange(0, removeCount);
       }
@@ -393,7 +409,7 @@ class QuizLogic {
 
     // Debug log for verification
     if (kDebugMode) {
-      debugPrint('✅ _selectRandomQuestionsByDifficulty: Requested=$count, Actual=${questions.length}');
+      debugPrint('✅ _selectRandomQuestionsByDifficulty: Requested=$count, Actual=${questions.length}, Category=$category');
     }
   }
 

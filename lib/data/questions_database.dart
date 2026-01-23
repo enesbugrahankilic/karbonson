@@ -3,6 +3,13 @@ import '../models/question.dart';
 
 import '../enums/app_language.dart';
 import 'additional_questions.dart';
+import 'energy_questions_expansion.dart';
+import 'water_questions_expansion_part2.dart';
+import 'water_questions_expansion_part3.dart';
+import 'forest_questions_expansion.dart';
+import 'recycling_questions_expansion.dart';
+import 'transportation_questions_expansion.dart';
+import 'consumption_questions_expansion.dart';
 
 class QuestionsDatabase {
   static final Map<AppLanguage, List<Question>> _questionsByLanguage = {
@@ -617,6 +624,13 @@ class QuestionsDatabase {
     // ✅ Ek soruları da ekle
     if (language == AppLanguage.turkish) {
       baseQuestions.addAll(AdditionalQuestions.getAllAdditionalQuestions());
+      baseQuestions.addAll(EnergyQuestionsExpansion.getTurkishEnergyQuestions());
+      baseQuestions.addAll(WaterQuestionsExpansionPart2.getTurkishWaterQuestionsPart2());
+      baseQuestions.addAll(WaterQuestionsExpansionPart3.getTurkishWaterQuestionsPart3());
+      baseQuestions.addAll(ForestQuestionsExpansion.getTurkishForestQuestions());
+      baseQuestions.addAll(RecyclingQuestionsExpansion.getTurkishRecyclingQuestions());
+      baseQuestions.addAll(TransportationQuestionsExpansion.getTurkishTransportationQuestions());
+      baseQuestions.addAll(ConsumptionQuestionsExpansion.getTurkishConsumptionQuestions());
     }
 
     return baseQuestions;

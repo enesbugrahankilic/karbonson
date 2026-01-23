@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '../services/firestore_service.dart';
 import '../services/friendship_service.dart';
+import '../services/leaderboard_category_service.dart';
+import '../models/leaderboard_category.dart';
 import '../widgets/leaderboard_item.dart';
 import '../widgets/page_templates.dart';
 
@@ -21,6 +23,7 @@ class _LeaderboardPageState extends State<LeaderboardPage>
     with TickerProviderStateMixin {
   final FirestoreService _firestoreService = FirestoreService();
   final FriendshipService _friendshipService = FriendshipService();
+  final LeaderboardCategoryService _categoryService = LeaderboardCategoryService();
   final firebase_auth.FirebaseAuth _auth = firebase_auth.FirebaseAuth.instance;
   late TabController _tabController;
 
@@ -33,7 +36,8 @@ class _LeaderboardPageState extends State<LeaderboardPage>
   // Loading states
   bool _isLoading = true;
 
-  // Category data - dynamically loaded
+  // Dynamic category data
+  List<LeaderboardCategory> _categories = [];
   Map<String, List<Map<String, dynamic>>> _categoryData = {};
   bool _isLoadingCategories = true;
 
@@ -78,31 +82,46 @@ class _LeaderboardPageState extends State<LeaderboardPage>
     }
   }
 
-  /// Load category-specific leaderboard data from Firestore
+  /// Load dynamic category-specific leaderboard data from Firestore
   Future<void> _loadCategoryData() async {
     setState(() => _isLoadingCategories = true);
-    
-    try {
-      // Load all categories in parallel
-      final results = await Future.wait([
-        _firestoreService.getQuizMastersLeaderboard(),
-        _firestoreService.getDuelChampionsLeaderboard(),
-        _firestoreService.getSocialButterfliesLeaderboard(),
-        _firestoreService.getStreakKingsLeaderboard(),
-      ]);
 
-      _categoryData = {
-        'quiz_masters': _formatCategoryLeaderboard(results[0], 'quizCount'),
-        'duel_champions': _formatCategoryLeaderboard(results[1], 'duelWins'),
-        'social_butterflies': _formatCategoryLeaderboard(results[2], 'friendCount'),
-        'streak_kings': _formatCategoryLeaderboard(results[3], 'longestStreak'),
-      };
-      
+    try {
+      // Load enabled categories
+      _categories = await _categoryService.getEnabledCategories();
+
+      // Load data for each category in parallel
+      final categoryFutures = _categories.map((category) async {
+        List<Map<String, dynamic>> data;
+        switch (category.id) {
+          case 'quiz_masters':
+            data = await _firestoreService.getQuizMastersLeaderboard();
+            break;
+          case 'duel_champions':
+            data = await _firestoreService.getDuelChampionsLeaderboard();
+            break;
+          case 'social_butterflies':
+            data = await _firestoreService.getSocialButterfliesLeaderboard();
+            break;
+          case 'streak_kings':
+            data = await _firestoreService.getStreakKingsLeaderboard();
+            break;
+          default:
+            // For custom categories, we could implement dynamic loading
+            data = [];
+            break;
+        }
+        return MapEntry(category.id, _formatCategoryLeaderboard(data, category.sortField));
+      });
+
+      final results = await Future.wait(categoryFutures);
+      _categoryData = Map.fromEntries(results);
+
       if (kDebugMode) {
-        debugPrint('✅ Category data loaded: ${_categoryData.keys.join(', ')}');
+        debugPrint('✅ Dynamic category data loaded: ${_categoryData.keys.join(', ')}');
       }
     } catch (e) {
-      if (kDebugMode) debugPrint('🚨 Error loading category data: $e');
+      if (kDebugMode) debugPrint('🚨 Error loading dynamic category data: $e');
     } finally {
       setState(() => _isLoadingCategories = false);
     }
@@ -331,50 +350,24 @@ class _LeaderboardPageState extends State<LeaderboardPage>
       return const Center(child: CircularProgressIndicator());
     }
 
-    // Show different categories with dynamic data from Firestore
+    // Show dynamic categories with data from Firestore
     return ListView(
       padding: const EdgeInsets.all(16),
-      children: [
-        _buildCategoryCard(
-          'Quiz Uzmanları',
-          'En çok quiz tamamlayanlar',
-          Icons.quiz,
-          Colors.blue,
-          _categoryData['quiz_masters'] ?? [],
-          'quizCount',
-          'quiz',
-        ),
-        const SizedBox(height: 16),
-        _buildCategoryCard(
-          'Düello Şampiyonları',
-          'En çok düello kazananlar',
-          Icons.sports_esports,
-          Colors.red,
-          _categoryData['duel_champions'] ?? [],
-          'duelWins',
-          'duel',
-        ),
-        const SizedBox(height: 16),
-        _buildCategoryCard(
-          'Sosyal Kelebekler',
-          'En çok arkadaş edinenler',
-          Icons.people,
-          Colors.green,
-          _categoryData['social_butterflies'] ?? [],
-          'friendCount',
-          'social',
-        ),
-        const SizedBox(height: 16),
-        _buildCategoryCard(
-          'Seri Kralları',
-          'En uzun seri yakalayanlar',
-          Icons.local_fire_department,
-          Colors.orange,
-          _categoryData['streak_kings'] ?? [],
-          'longestStreak',
-          'streak',
-        ),
-      ],
+      children: _categories.map((category) {
+        final data = _categoryData[category.id] ?? [];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: _buildCategoryCard(
+            category.name,
+            category.description,
+            category.icon,
+            category.color,
+            data,
+            category.sortField,
+            category.categoryType,
+          ),
+        );
+      }).toList(),
     );
   }
 

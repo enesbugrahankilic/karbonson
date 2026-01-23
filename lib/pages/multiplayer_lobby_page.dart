@@ -8,6 +8,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firestore_service.dart';
 import '../services/authentication_state_service.dart';
 import '../services/profile_service.dart';
+import '../services/leaderboard_category_service.dart';
+import '../models/leaderboard_category.dart';
+import '../core/navigation/app_router_complete.dart';
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../widgets/copy_to_clipboard_widget.dart';
@@ -32,11 +35,12 @@ class MultiplayerLobbyPage extends StatefulWidget {
 }
 
 class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
-     with TickerProviderStateMixin {
-   final FirestoreService _firestoreService = FirestoreService();
-   final AuthenticationStateService _authStateService =
-       AuthenticationStateService();
-   final ProfileService _profileService = ProfileService();
+      with TickerProviderStateMixin {
+    final FirestoreService _firestoreService = FirestoreService();
+    final AuthenticationStateService _authStateService =
+        AuthenticationStateService();
+    final ProfileService _profileService = ProfileService();
+    final LeaderboardCategoryService _categoryService = LeaderboardCategoryService();
 
    // Enhanced animation controllers for staggered entrance
    late AnimationController _fadeController;
@@ -52,6 +56,11 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
    int _totalGames = 0;
    int _duelWins = 0;
    String? _createdRoomCode;
+
+   // Leaderboard data
+   List<LeaderboardCategory> _lobbyCategories = [];
+   Map<String, List<Map<String, dynamic>>> _lobbyCategoryData = {};
+   bool _isLoadingLeaderboard = true;
 
    @override
    void initState() {
@@ -95,6 +104,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
      }
 
      _loadUserData();
+     _loadLobbyLeaderboard();
      if (widget.preSharedRoomCode != null && widget.preSharedRoomCode!.isNotEmpty) {
        WidgetsBinding.instance.addPostFrameCallback((_) => _joinDuelRoom(widget.preSharedRoomCode!));
      }
@@ -142,6 +152,73 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
 
    Future<String> _getPlayerId() async => await _authStateService.getGamePlayerId();
    Future<String> _getPlayerNickname() async => await _authStateService.getGameNickname();
+
+   Future<void> _loadLobbyLeaderboard() async {
+     setState(() => _isLoadingLeaderboard = true);
+
+     try {
+       // Load lobby categories (limited to 4 for display)
+       _lobbyCategories = await _categoryService.getLobbyCategories(limit: 4);
+
+       // Load data for each category in parallel
+       final categoryFutures = _lobbyCategories.map((category) async {
+         List<Map<String, dynamic>> data;
+         switch (category.id) {
+           case 'quiz_masters':
+             data = await _firestoreService.getQuizMastersLeaderboard(limit: 10);
+             break;
+           case 'duel_champions':
+             data = await _firestoreService.getDuelChampionsLeaderboard(limit: 10);
+             break;
+           case 'social_butterflies':
+             data = await _firestoreService.getSocialButterfliesLeaderboard(limit: 10);
+             break;
+           case 'streak_kings':
+             data = await _firestoreService.getStreakKingsLeaderboard(limit: 10);
+             break;
+           default:
+             data = [];
+             break;
+         }
+         return MapEntry(category.id, _formatLobbyCategoryLeaderboard(data, category.sortField));
+       });
+
+       final results = await Future.wait(categoryFutures);
+       _lobbyCategoryData = Map.fromEntries(results);
+
+       if (kDebugMode) {
+         debugPrint('✅ Lobby leaderboard data loaded: ${_lobbyCategoryData.keys.join(', ')}');
+       }
+     } catch (e) {
+       if (kDebugMode) debugPrint('🚨 Error loading lobby leaderboard: $e');
+     } finally {
+       if (mounted) setState(() => _isLoadingLeaderboard = false);
+     }
+   }
+
+   List<Map<String, dynamic>> _formatLobbyCategoryLeaderboard(
+     List<Map<String, dynamic>> data,
+     String sortField,
+   ) {
+     final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
+     final topThree = data.take(3).toList();
+
+     return topThree.asMap().entries.map((entry) {
+       final index = entry.key;
+       final user = entry.value;
+       final sortValue = user[sortField] as int? ?? 0;
+
+       return {
+         'rank': index + 1,
+         'userId': user['uid'] ?? '',
+         'displayName': user['nickname'] ?? 'Anonim',
+         'avatar': user['avatarUrl'] ?? '🎯',
+         'score': user['score'] as int? ?? 0,
+         'sortValue': sortValue,
+         'isCurrentUser': user['uid'] == currentUserUid,
+       };
+     }).toList();
+   }
 
    Future<void> _createDuelRoom() async {
      setState(() => _isCreatingRoom = true);
@@ -508,6 +585,14 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
              FadeTransition(
                opacity: _cardControllers.length > 3 ? _cardControllers[3] : _fadeController,
                child: _buildHowToPlaySection(context, false),
+             ),
+
+             const SizedBox(height: 24),
+
+             // Leaderboard Section
+             FadeTransition(
+               opacity: _cardControllers.length > 3 ? _cardControllers[3] : _fadeController,
+               child: _buildLeaderboardSection(context, false),
              ),
 
              const SizedBox(height: 20),
@@ -1083,6 +1168,184 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
                ),
              ],
            ),
+         ),
+       ),
+     );
+   }
+
+   Widget _buildLeaderboardSection(BuildContext context, bool isSmallScreen) {
+     return DesignSystem.card(
+       context,
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+           Padding(
+             padding: EdgeInsets.all(DesignSystem.spacingM),
+             child: Row(
+               children: [
+                 Container(
+                   padding: const EdgeInsets.all(DesignSystem.spacingS),
+                   decoration: BoxDecoration(
+                     color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1),
+                     shape: BoxShape.circle,
+                   ),
+                   child: Icon(
+                     Icons.leaderboard,
+                     color: ThemeColors.getPrimaryButtonColor(context),
+                     size: 20,
+                   ),
+                 ),
+                 SizedBox(width: DesignSystem.spacingM),
+                 Expanded(
+                   child: Text(
+                     'Lider Tablosu',
+                     style: DesignSystem.getTitleMedium(context).copyWith(
+                       color: ThemeColors.getText(context),
+                       fontWeight: FontWeight.w700,
+                     ),
+                   ),
+                 ),
+                 TextButton(
+                   onPressed: () => Navigator.of(context).pushNamed(AppRoutes.leaderboard),
+                   child: Text(
+                     'Tümü',
+                     style: DesignSystem.getLabelLarge(context).copyWith(
+                       color: ThemeColors.getPrimaryButtonColor(context),
+                       fontWeight: FontWeight.w600,
+                     ),
+                   ),
+                 ),
+               ],
+             ),
+           ),
+           if (_isLoadingLeaderboard)
+             Padding(
+               padding: const EdgeInsets.all(DesignSystem.spacingL),
+               child: Center(child: DesignSystem.modernProgressIndicator(context)),
+             )
+           else if (_lobbyCategories.isEmpty)
+             Padding(
+               padding: const EdgeInsets.all(DesignSystem.spacingL),
+               child: Center(
+                 child: Text(
+                   'Lider tablosu verisi yükleniyor...',
+                   style: DesignSystem.getBodyMedium(context).copyWith(
+                     color: ThemeColors.getSecondaryText(context),
+                   ),
+                 ),
+               ),
+             )
+           else
+             Padding(
+               padding: EdgeInsets.symmetric(horizontal: DesignSystem.spacingM),
+               child: Column(
+                 children: _lobbyCategories.map((category) {
+                   final data = _lobbyCategoryData[category.id] ?? [];
+                   return Padding(
+                     padding: const EdgeInsets.only(bottom: DesignSystem.spacingM),
+                     child: _buildLobbyCategoryCard(context, category, data, isSmallScreen),
+                   );
+                 }).toList(),
+               ),
+             ),
+           SizedBox(height: DesignSystem.spacingM),
+         ],
+       ),
+     );
+   }
+
+   Widget _buildLobbyCategoryCard(
+     BuildContext context,
+     LeaderboardCategory category,
+     List<Map<String, dynamic>> data,
+     bool isSmallScreen,
+   ) {
+     return InkWell(
+       onTap: () => Navigator.of(context).pushNamed(AppRoutes.leaderboard),
+       borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+       child: Container(
+         padding: EdgeInsets.all(DesignSystem.spacingM),
+         decoration: BoxDecoration(
+           color: category.color.withValues(alpha: 0.05),
+           borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+           border: Border.all(
+             color: category.color.withValues(alpha: 0.2),
+             width: 1,
+           ),
+         ),
+         child: Column(
+           crossAxisAlignment: CrossAxisAlignment.start,
+           children: [
+             Row(
+               children: [
+                 Icon(category.icon, color: category.color, size: 20),
+                 SizedBox(width: DesignSystem.spacingS),
+                 Expanded(
+                   child: Text(
+                     category.name,
+                     style: DesignSystem.getBodyLarge(context).copyWith(
+                       color: category.color,
+                       fontWeight: FontWeight.w600,
+                     ),
+                   ),
+                 ),
+                 if (data.isNotEmpty)
+                   Text(
+                     '${data[0]['sortValue'] ?? 0}',
+                     style: DesignSystem.getTitleMedium(context).copyWith(
+                       color: category.color,
+                       fontWeight: FontWeight.w700,
+                     ),
+                   ),
+               ],
+             ),
+             SizedBox(height: DesignSystem.spacingS),
+             if (data.isNotEmpty)
+               Row(
+                 children: data.map((player) {
+                   final rank = player['rank'] as int;
+                   return Expanded(
+                     child: Container(
+                       margin: const EdgeInsets.only(right: 4),
+                       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+                       decoration: BoxDecoration(
+                         color: rank == 1
+                             ? Colors.amber.withValues(alpha: 0.2)
+                             : ThemeColors.getCardBackground(context),
+                         borderRadius: BorderRadius.circular(DesignSystem.radiusS),
+                       ),
+                       child: Column(
+                         children: [
+                           Text(
+                             '#$rank',
+                             style: DesignSystem.getBodySmall(context).copyWith(
+                               color: rank == 1 ? Colors.amber : ThemeColors.getSecondaryText(context),
+                               fontWeight: FontWeight.w600,
+                             ),
+                           ),
+                           SizedBox(height: 2),
+                           Text(
+                             player['displayName']?.substring(0, 3) ?? '???',
+                             style: DesignSystem.getBodySmall(context).copyWith(
+                               color: ThemeColors.getText(context),
+                               fontWeight: FontWeight.w500,
+                             ),
+                             overflow: TextOverflow.ellipsis,
+                           ),
+                         ],
+                       ),
+                     ),
+                   );
+                 }).toList(),
+               )
+             else
+               Text(
+                 'Henüz veri yok',
+                 style: DesignSystem.getBodySmall(context).copyWith(
+                   color: ThemeColors.getSecondaryText(context),
+                 ),
+               ),
+           ],
          ),
        ),
      );

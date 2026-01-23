@@ -94,8 +94,28 @@ class CarbonAIRecommendationService {
   }) async {
     try {
       final tasks = <Map<String, dynamic>>[];
-      
-      // Task 1: Based on high carbon value
+
+      // Base tasks - always include some
+      tasks.addAll([
+        {
+          'id': 'carbon_observation',
+          'title': 'Karbon Gözlemi',
+          'description': 'Sınıfında enerji tüketim kaynaklarını tanımla (5 adet).',
+          'reward': 30,
+          'difficulty': 'easy',
+          'category': 'carbon',
+        },
+        {
+          'id': 'carbon_share_report',
+          'title': 'Rapor Paylaş',
+          'description': 'Karbon raporunu arkadaşlarınla paylaş.',
+          'reward': 25,
+          'difficulty': 'easy',
+          'category': 'carbon',
+        },
+      ]);
+
+      // Task based on high carbon value
       if (carbonData.carbonValue > 2000) {
         tasks.add({
           'id': 'carbon_energy_quiz',
@@ -106,18 +126,8 @@ class CarbonAIRecommendationService {
           'category': 'carbon',
         });
       }
-      
-      // Task 2: Observation task
-      tasks.add({
-        'id': 'carbon_observation',
-        'title': 'Karbon Gözlemi',
-        'description': 'Sınıfında enerji tüketim kaynaklarını tanımla (5 adet).',
-        'reward': 30,
-        'difficulty': 'easy',
-        'category': 'carbon',
-      });
-      
-      // Task 3: Plant-related if applicable
+
+      // Plant-related task if applicable
       if (!carbonData.hasPlants && carbonData.classLevel <= 10) {
         tasks.add({
           'id': 'carbon_plant_proposal',
@@ -128,17 +138,120 @@ class CarbonAIRecommendationService {
           'category': 'carbon',
         });
       }
-      
-      // Task 4: Sharing task
-      tasks.add({
-        'id': 'carbon_share_report',
-        'title': 'Rapor Paylaş',
-        'description': 'Karbon raporunu arkadaşlarınla paylaş.',
-        'reward': 25,
-        'difficulty': 'easy',
-        'category': 'carbon',
-      });
-      
+
+      // Random additional tasks based on class level and orientation
+      final randomTasks = <Map<String, dynamic>>[];
+
+      if (userData.classLevel != null) {
+        switch (userData.classLevel) {
+          case 9:
+            randomTasks.addAll([
+              {
+                'id': 'carbon_9_energy_audit',
+                'title': 'Enerji Denetimi',
+                'description': '9. sınıf için sınıfın enerji kullanımını incele.',
+                'reward': 35,
+                'difficulty': 'easy',
+                'category': 'carbon',
+              },
+              {
+                'id': 'carbon_9_recycling',
+                'title': 'Geri Dönüşüm Projesi',
+                'description': 'Sınıfınızda geri dönüşüm kutusu oluştur.',
+                'reward': 45,
+                'difficulty': 'medium',
+                'category': 'carbon',
+              },
+            ]);
+            break;
+          case 10:
+            randomTasks.addAll([
+              {
+                'id': 'carbon_10_lab_safety',
+                'title': 'Laboratuvar Güvenliği',
+                'description': 'Laboratuvardaki atık yönetimi prosedürlerini öğren.',
+                'reward': 40,
+                'difficulty': 'medium',
+                'category': 'carbon',
+              },
+              {
+                'id': 'carbon_10_measurement',
+                'title': 'Karbon Ölçümü',
+                'description': 'Sınıfın haftalık enerji tüketimini ölç.',
+                'reward': 50,
+                'difficulty': 'hard',
+                'category': 'carbon',
+              },
+            ]);
+            break;
+          case 11:
+            randomTasks.addAll([
+              {
+                'id': 'carbon_11_renewable',
+                'title': 'Yenilenebilir Enerji',
+                'description': 'Yenilenebilir enerji kaynakları hakkında araştırma yap.',
+                'reward': 55,
+                'difficulty': 'medium',
+                'category': 'carbon',
+              },
+              {
+                'id': 'carbon_11_efficiency',
+                'title': 'Verimlilik Analizi',
+                'description': 'Sınıf cihazlarının enerji verimliliğini değerlendir.',
+                'reward': 45,
+                'difficulty': 'hard',
+                'category': 'carbon',
+              },
+            ]);
+            break;
+          case 12:
+            randomTasks.addAll([
+              {
+                'id': 'carbon_12_project',
+                'title': 'Karbon Projesi',
+                'description': 'Karbon nötralizasyon projesi hazırla.',
+                'reward': 70,
+                'difficulty': 'hard',
+                'category': 'carbon',
+              },
+              {
+                'id': 'carbon_12_presentation',
+                'title': 'Sunum Hazırla',
+                'description': 'Çevre bilinci sunumu hazırla ve arkadaşlarına sun.',
+                'reward': 60,
+                'difficulty': 'medium',
+                'category': 'carbon',
+              },
+            ]);
+            break;
+        }
+      }
+
+      // Orientation-based tasks
+      if (carbonData.classOrientation.name == 'north') {
+        randomTasks.add({
+          'id': 'carbon_north_lighting',
+          'title': 'Işık Optimizasyonu',
+          'description': 'Kuzey yönlü sınıf için doğal ışık kullanımını optimize et.',
+          'reward': 35,
+          'difficulty': 'easy',
+          'category': 'carbon',
+        });
+      } else {
+        randomTasks.add({
+          'id': 'carbon_south_shading',
+          'title': 'Gölgeleme Sistemi',
+          'description': 'Güney yönlü sınıf için ısıyı azaltacak çözümler öner.',
+          'reward': 40,
+          'difficulty': 'medium',
+          'category': 'carbon',
+        });
+      }
+
+      // Shuffle and add 2-3 random tasks
+      randomTasks.shuffle();
+      tasks.addAll(randomTasks.take(3));
+
       return tasks;
     } catch (e) {
       print('Error generating micro tasks: $e');

@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:uuid/uuid.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/game_board.dart';
 import '../services/firestore_service.dart';
 import 'board_game_page.dart';
@@ -101,17 +103,6 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
           });
 
           _showRoomDetailsDialog(room, customAccessCode);
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => BoardGamePage.multiplayer(
-                userNickname: widget.userNickname,
-                roomId: room.id,
-                playerId: playerId,
-              ),
-            ),
-          );
         } else {
           if (kDebugMode) debugPrint('Failed to join the created room');
           ScaffoldMessenger.of(context).showSnackBar(
@@ -305,13 +296,42 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
                 ],
               ),
             ),
+            const SizedBox(height: DesignSystem.spacingM),
+            Text(
+              'Arkadaşlarınızı davet etmek için paylaşın:',
+              style: DesignSystem.getBodyMedium(context),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: DesignSystem.spacingS),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildShareButton(
+                  icon: Icons.share,
+                  label: 'Paylaş',
+                  onPressed: () => _shareRoomCode(room, accessCode),
+                ),
+                const SizedBox(width: DesignSystem.spacingS),
+                _buildShareButton(
+                  icon: Icons.message,
+                  label: 'WhatsApp',
+                  onPressed: () => _shareViaWhatsApp(room, accessCode),
+                ),
+                const SizedBox(width: DesignSystem.spacingS),
+                _buildShareButton(
+                  icon: Icons.email,
+                  label: 'E-posta',
+                  onPressed: () => _shareViaEmail(room, accessCode),
+                ),
+              ],
+            ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              _showFriendInviteDialog(); // Show friend invite dialog after room creation
+              _navigateToGame(room, accessCode);
             },
             style: TextButton.styleFrom(
               backgroundColor: Colors.green.shade100,
@@ -320,16 +340,16 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.person_add, size: 18, color: Colors.green),
+                const Icon(Icons.play_arrow, size: 18, color: Colors.green),
                 const SizedBox(width: 4),
-                Text('Arkadaş Davet Et',
+                Text('Oyuna Başla',
                     style: TextStyle(color: Colors.green.shade700)),
               ],
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Tamam', style: TextStyle(color: Colors.blue)),
+            child: const Text('Daha Sonra', style: TextStyle(color: Colors.blue)),
           ),
         ],
       ),
@@ -704,6 +724,130 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
           ),
         ),
       ],
+    );
+  }
+
+  /// Paylaşım butonu widget'ı
+  Widget _buildShareButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.blue,
+        elevation: 2,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
+  }
+
+  /// Genel paylaşım
+  Future<void> _shareRoomCode(GameRoom room, String accessCode) async {
+    final shareText = '''
+🎮 Karbonson Oyun Odası!
+
+Oda Sahibi: ${room.hostNickname}
+Oda Kodu: ${room.roomCode}
+Erişim Kodu: $accessCode
+
+Arkadaşınla birlikte çevre bilincini artıracak eğlenceli bir oyun oyna!
+
+#Karbonson #ÇevreBilinci
+    ''';
+
+    try {
+      await Share.share(shareText);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Paylaşım hatası: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Paylaşım sırasında hata oluştu')),
+      );
+    }
+  }
+
+  /// WhatsApp ile paylaşım
+  Future<void> _shareViaWhatsApp(GameRoom room, String accessCode) async {
+    final message = '''
+🎮 Karbonson Oyun Odası!
+
+Oda Sahibi: ${room.hostNickname}
+Oda Kodu: ${room.roomCode}
+Erişim Kodu: $accessCode
+
+Arkadaşınla birlikte çevre bilincini artıracak eğlenceli bir oyun oyna!
+
+#Karbonson #ÇevreBilinci
+    ''';
+
+    final whatsappUrl = 'whatsapp://send?text=${Uri.encodeComponent(message)}';
+
+    try {
+      if (await canLaunchUrl(Uri.parse(whatsappUrl))) {
+        await launchUrl(Uri.parse(whatsappUrl));
+      } else {
+        // WhatsApp yüklü değilse genel paylaşım
+        await _shareRoomCode(room, accessCode);
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('WhatsApp paylaşım hatası: $e');
+      await _shareRoomCode(room, accessCode);
+    }
+  }
+
+  /// E-posta ile paylaşım
+  Future<void> _shareViaEmail(GameRoom room, String accessCode) async {
+    final subject = 'Karbonson Oyun Daveti - ${room.hostNickname}';
+    final body = '''
+Merhaba!
+
+${room.hostNickname} seni Karbonson oyun odasına davet ediyor!
+
+Oda Bilgileri:
+- Oda Sahibi: ${room.hostNickname}
+- Oda Kodu: ${room.roomCode}
+- Erişim Kodu: $accessCode
+
+Uygulamada "Odaya Katıl" bölümüne gidip erişim kodunu girerek oyuna katılabilirsin.
+
+Birlikte çevre bilincini artıracak eğlenceli bir oyun oynayalım!
+
+#Karbonson #ÇevreBilinci
+    ''';
+
+    final emailUrl = 'mailto:?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}';
+
+    try {
+      if (await canLaunchUrl(Uri.parse(emailUrl))) {
+        await launchUrl(Uri.parse(emailUrl));
+      } else {
+        // E-posta uygulaması yoksa genel paylaşım
+        await _shareRoomCode(room, accessCode);
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('E-posta paylaşım hatası: $e');
+      await _shareRoomCode(room, accessCode);
+    }
+  }
+
+  /// Oyuna geçiş
+  void _navigateToGame(GameRoom room, String accessCode) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BoardGamePage.multiplayer(
+          userNickname: widget.userNickname,
+          roomId: room.id,
+          playerId: const Uuid().v4(), // Host için yeni player ID
+        ),
+      ),
     );
   }
 }

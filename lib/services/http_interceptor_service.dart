@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:flutter/material.dart';
 import '../core/navigation/navigation_service.dart';
+import 'authentication_state_service.dart';
 
 /// HTTP İstemci wrapper'ı, 401/403 hatalarını global olarak handle eder
 /// Çözüm: Token yoksa login sayfasına redirect
@@ -77,17 +78,32 @@ class HttpInterceptorClient extends http.BaseClient {
   /// 401 durumunda çalışacak handler
   static Future<void> _handleUnauthorized() async {
     try {
-      // Firebase'den çıkış yap
-      await FirebaseAuth.instance.signOut();
-      if (kDebugMode) {
-        debugPrint('🚪 User signed out due to unauthorized access');
+      // Import AuthenticationStateService
+      final authService = AuthenticationStateService();
+
+      // Only sign out if user was previously authenticated
+      // This prevents unnecessary logouts for anonymous users or during initial load
+      if (authService.isAuthenticated) {
+        // Firebase'den çıkış yap
+        await FirebaseAuth.instance.signOut();
+
+        // Clear authentication state
+        authService.clearAuthenticationState();
+
+        if (kDebugMode) {
+          debugPrint('🚪 User signed out due to unauthorized access (was authenticated)');
+        }
+
+        // Callback'i çağır (login sayfasına redirect)
+        _onUnauthorized?.call();
+
+        // Fallback: navigationService üzerinden login'e git
+        NavigationService().navigateTo('/login');
+      } else {
+        if (kDebugMode) {
+          debugPrint('🚪 Ignoring 401 - user was not authenticated');
+        }
       }
-
-      // Callback'i çağır (login sayfasına redirect)
-      _onUnauthorized?.call();
-
-      // Fallback: navigationService üzerinden login'e git
-      NavigationService().navigateTo('/login');
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Error handling unauthorized: $e');
