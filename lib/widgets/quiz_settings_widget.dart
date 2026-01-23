@@ -555,7 +555,7 @@ class _QuizSettingsWidgetState extends State<QuizSettingsWidget>
             offset: const Offset(0, 8),
           ),
           BoxShadow(
-            color: Colors.white.withValues(alpha: 0.1),
+            color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, -4),
           ),

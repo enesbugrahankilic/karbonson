@@ -185,23 +185,52 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
   }
 
   Future<void> _saveQuizScore() async {
-    try {
-      // FirestoreService kullanarak skoru kaydet
-      final firestoreService = FirestoreService();
-      final user = FirebaseAuth.instance.currentUser;
+    const maxRetries = 3;
+    int retryCount = 0;
 
-      if (user != null) {
-        final nickname = user.displayName ?? user.email?.split('@')[0] ?? 'Oyuncu';
-        final result = await firestoreService.saveUserScore(nickname, widget.score);
+    while (retryCount < maxRetries) {
+      try {
+        // FirestoreService kullanarak skoru kaydet
+        final firestoreService = FirestoreService();
+        final user = FirebaseAuth.instance.currentUser;
 
-        if (result != 'Skor kaydedildi!') {
-          debugPrint('Skor kaydetme uyarısı: $result');
+        if (user != null) {
+          final nickname = user.displayName ?? user.email?.split('@')[0] ?? 'Oyuncu';
+          final result = await firestoreService.saveUserScore(nickname, widget.score);
+
+          if (result == 'Skor kaydedildi!' || result.contains('güncellendi')) {
+            debugPrint('Skor başarıyla kaydedildi: ${widget.score}');
+            return; // Başarılı, çık
+          } else {
+            debugPrint('Skor kaydetme uyarısı: $result');
+            // Bazı durumlarda uyarı olsa da başarılı sayabiliriz
+            return;
+          }
         } else {
-          debugPrint('Skor başarıyla kaydedildi: ${widget.score}');
+          debugPrint('Kullanıcı oturumu bulunamadı');
+          return;
         }
+      } catch (e) {
+        retryCount++;
+        debugPrint('Skor kaydetme hatası (deneme $retryCount/$maxRetries): $e');
+
+        if (retryCount >= maxRetries) {
+          // Son deneme başarısız, kullanıcıya göster
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Skor kaydedilirken sorun oluştu. Daha sonra tekrar dene.'),
+                backgroundColor: Colors.orange,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+          return;
+        }
+
+        // Retry öncesi bekle
+        await Future.delayed(Duration(seconds: retryCount));
       }
-    } catch (e) {
-      debugPrint('Skor kaydetme hatası: $e');
     }
   }
 
@@ -634,7 +663,7 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
         Expanded(
           child: ElevatedButton.icon(
             onPressed: _navigateToHome,
-            icon: const Icon(Icons.home, color: Colors.white),
+            icon: Icon(Icons.home, color: ThemeColors.getTextOnColoredBackground(context)),
             label: const Text('Ana Sayfa'),
             style: ElevatedButton.styleFrom(
               backgroundColor: ThemeColors.getPrimaryButtonColor(context),

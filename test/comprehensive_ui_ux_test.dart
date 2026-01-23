@@ -194,7 +194,7 @@ void main() {
     group('Quiz Sayfası UI Testleri', () {
       testWidgets('Quiz sayfası soru ve cevapları doğru gösteriyor',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(QuizPage(quizLogic: quizLogic)));
+        await tester.pumpWidget(createTestApp(const QuizPage()));
 
         // Soru metni
         expect(find.byType(Text), findsWidgets);
@@ -208,14 +208,14 @@ void main() {
 
       testWidgets('Quiz progress indicator çalışıyor',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(QuizPage(quizLogic: quizLogic)));
+        await tester.pumpWidget(createTestApp(const QuizPage()));
 
         // Progress bar ara
         expect(find.byType(LinearProgressIndicator), findsOneWidget);
       });
 
       testWidgets('Answer selection çalışıyor', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(QuizPage(quizLogic: quizLogic)));
+        await tester.pumpWidget(createTestApp(const QuizPage()));
 
         // Bir cevap seçeneğine tıkla
         final options = find.byType(GestureDetector);

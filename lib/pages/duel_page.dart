@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/question.dart';
+import '../data/questions_database.dart';
+import '../enums/app_language.dart';
 import '../widgets/page_templates.dart';
 
 class DuelPage extends StatefulWidget {
@@ -14,19 +15,21 @@ class DuelPage extends StatefulWidget {
 }
 
 class _DuelPageState extends State<DuelPage> with TickerProviderStateMixin {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   late AnimationController _answerAnimationController;
-  
+   
   int _playerScore = 0;
   final int _opponentScore = 0;
   bool _isAnswered = false;
   String? _selectedAnswer;
   int _questionNumber = 0;
-  final int _totalQuestions = 10;
+  int _totalQuestions = 0;
+  List<Question> _questions = [];
 
   @override
   void initState() {
     super.initState();
+    _questions = QuestionsDatabase.getRandomQuestions(AppLanguage.turkish, 10);
+    _totalQuestions = _questions.length;
     _answerAnimationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -208,17 +211,12 @@ class _DuelPageState extends State<DuelPage> with TickerProviderStateMixin {
 
   Future<Question?> _getNextQuestion() async {
     try {
-      final snapshot = await _firestore
-          .collection('questions')
-          .limit(1)
-          .get();
-
-      if (snapshot.docs.isNotEmpty) {
-        return Question.fromMap(snapshot.docs.first.data());
+      if (_questionNumber < _questions.length) {
+        return _questions[_questionNumber];
       }
       return null;
     } catch (e) {
-      debugPrint('Error fetching question: $e');
+      debugPrint('Error getting question: $e');
       return null;
     }
   }

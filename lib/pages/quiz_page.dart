@@ -525,10 +525,11 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                   if (isCompleted)
                     ElevatedButton.icon(
                       onPressed: () => Navigator.pop(context, score),
-                      icon: const Icon(Icons.check_circle, color: Colors.white),
-                      label: const Text('Bitir',
+                      icon: Icon(Icons.check_circle, color: ThemeColors.getTextOnColoredBackground(context)),
+                      label: Text('Bitir',
                           style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
+                              fontSize: 16, fontWeight: FontWeight.bold,
+                              color: ThemeColors.getTextOnColoredBackground(context))),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: ThemeColors.getSuccessColor(context),
                         padding: const EdgeInsets.symmetric(
@@ -674,6 +675,11 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
               onBackPressed: () => _confirmExit(context),
               actions: [
                 IconButton(
+                  icon: const Icon(Icons.settings),
+                  onPressed: () => _showCategorySelection(),
+                  tooltip: 'Ayarlar',
+                ),
+                IconButton(
                   icon: const Icon(Icons.exit_to_app),
                   onPressed: () => _confirmExit(context),
                   tooltip: 'Çık',
@@ -764,10 +770,10 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
               backgroundColor: Colors.transparent,
               elevation: 0,
               centerTitle: true,
-              title: const Text(
+              title: Text(
                 'Kaydediliyor...',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: ThemeColors.getTextOnColoredBackground(context),
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
@@ -793,7 +799,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                       Text(
                         'Quiz sonucunuz kaydediliyor...',
                         style: DesignSystem.getTitleMedium(context).copyWith(
-                          color: Colors.white,
+                          color: ThemeColors.getTextOnColoredBackground(context),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -801,7 +807,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                       Text(
                         'Lütfen bekleyin',
                         style: DesignSystem.getBodyMedium(context).copyWith(
-                          color: Colors.white.withValues(alpha: 0.8),
+                          color: ThemeColors.getSecondaryTextOnColoredBackground(context),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -821,10 +827,10 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
               backgroundColor: Colors.transparent,
               elevation: 0,
               centerTitle: true,
-              title: const Text(
+              title: Text(
                 'Hata',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: ThemeColors.getTextOnColoredBackground(context),
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
@@ -910,7 +916,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                                 children: [
                                   ElevatedButton.icon(
                                     onPressed: () => Navigator.pop(context, state.score),
-                                    icon: const Icon(Icons.home, color: Colors.white),
+                                    icon: Icon(Icons.home, color: ThemeColors.getTextOnColoredBackground(context)),
                                     label: const Text('Ana Sayfaya Dön'),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.grey,
@@ -924,7 +930,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                                     onPressed: () {
                                       context.read<QuizBloc>().add(const RetryQuizCompletion());
                                     },
-                                    icon: const Icon(Icons.refresh, color: Colors.white),
+                                    icon: Icon(Icons.refresh, color: ThemeColors.getTextOnColoredBackground(context)),
                                     label: const Text('Tekrar Dene'),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: ThemeColors.getPrimaryButtonColor(context),

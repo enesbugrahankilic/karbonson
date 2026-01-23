@@ -190,7 +190,7 @@ class _ProfileContentState extends State<ProfileContent>
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: ThemeColors.getPrimaryButtonColor(context),
-                foregroundColor: Colors.white,
+                foregroundColor: ThemeColors.getTextOnColoredBackground(context),
               ),
               child: const Text('Tekrar Dene'),
             ),
@@ -433,14 +433,14 @@ class _ProfileContentState extends State<ProfileContent>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3),
+                    color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.3),
                     width: 4,
                   ),
                 ),
               ),
               CircleAvatar(
                 radius: isSmallScreen ? 40 : 48,
-                backgroundColor: Colors.white.withValues(alpha: 0.2),
+                backgroundColor: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.15),
                 backgroundImage: userData.profilePictureUrl != null
                     ? (userData.profilePictureUrl!.startsWith('assets/')
                         ? AssetImage(userData.profilePictureUrl!) as ImageProvider
@@ -452,7 +452,7 @@ class _ProfileContentState extends State<ProfileContent>
                             ? currentNickname[0].toUpperCase()
                             : 'U',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: ThemeColors.getTextOnColoredBackground(context),
                           fontSize: isSmallScreen ? 24 : 28,
                           fontWeight: FontWeight.w700,
                         ),
@@ -467,7 +467,7 @@ class _ProfileContentState extends State<ProfileContent>
                   decoration: BoxDecoration(
                     color: ThemeColors.getPrimaryButtonColor(context),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+                    border: Border.all(color: ThemeColors.getTextOnColoredBackground(context), width: 2),
                   ),
                   child: Icon(
                     Icons.camera_alt,
@@ -488,7 +488,7 @@ class _ProfileContentState extends State<ProfileContent>
               Text(
                 currentNickname.isNotEmpty ? currentNickname : 'Kullanıcı',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: ThemeColors.getTextOnColoredBackground(context),
                   fontSize: isSmallScreen ? 20 : 24,
                   fontWeight: FontWeight.w700,
                 ),
@@ -497,7 +497,7 @@ class _ProfileContentState extends State<ProfileContent>
               const SizedBox(width: 8),
               Icon(
                 Icons.edit,
-                color: Colors.white.withValues(alpha: 0.7),
+                color: ThemeColors.getSecondaryTextOnColoredBackground(context),
                 size: isSmallScreen ? 16 : 18,
               ),
             ],
@@ -507,13 +507,13 @@ class _ProfileContentState extends State<ProfileContent>
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.copy, size: 16, color: Colors.white.withValues(alpha: 0.8)),
+            Icon(Icons.copy, size: 16, color: ThemeColors.getSecondaryTextOnColoredBackground(context)),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 'UID: ${userData.uid.substring(0, 8)}...',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: ThemeColors.getSecondaryTextOnColoredBackground(context),
                   fontSize: isSmallScreen ? 12 : 14,
                   fontFamily: 'monospace',
                 ),
@@ -535,13 +535,13 @@ class _ProfileContentState extends State<ProfileContent>
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   'Kopyala',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: ThemeColors.getTextOnColoredBackground(context),
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
                   ),
@@ -550,9 +550,9 @@ class _ProfileContentState extends State<ProfileContent>
             ),
           ],
         ),
-      ],
-    );
-  }
+  ],
+);
+}
 
   Widget _buildGameStatistics(BuildContext context, UserData userData) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -700,7 +700,7 @@ class _ProfileContentState extends State<ProfileContent>
                       Text(
                         'Oyun Uzmanı',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: ThemeColors.getTextOnColoredBackground(context),
                           fontSize: isSmallScreen ? 18 : 20,
                           fontWeight: FontWeight.w700,
                         ),
@@ -709,7 +709,7 @@ class _ProfileContentState extends State<ProfileContent>
                       Text(
                         '${userData.totalGamesPlayed} oyun oynandı',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
+                          color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.8),
                           fontSize: isSmallScreen ? 12 : 14,
                         ),
                       ),
@@ -718,7 +718,7 @@ class _ProfileContentState extends State<ProfileContent>
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(Icons.games, color: Colors.white, size: isSmallScreen ? 24 : 28),
@@ -735,14 +735,14 @@ class _ProfileContentState extends State<ProfileContent>
                       Text(
                         'Kazanma Oranı',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
+                          color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.8),
                           fontSize: isSmallScreen ? 10 : 12,
                         ),
                       ),
                       Text(
                         '%${(userData.winRate * 100).round()}',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: ThemeColors.getTextOnColoredBackground(context),
                           fontSize: isSmallScreen ? 10 : 12,
                           fontWeight: FontWeight.w600,
                         ),

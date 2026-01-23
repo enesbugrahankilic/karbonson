@@ -276,31 +276,30 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         
         // Send completion event to backend
         final userId = FirebaseAuth.instance.currentUser?.uid;
-        String? errorMessage;
-        
+        bool backendSuccess = false;
+
         if (userId != null) {
-          final backendSuccess = await GameCompletionService().sendQuizCompletion(
+          backendSuccess = await GameCompletionService().sendQuizCompletion(
             score: newScore,
             totalQuestions: currentState.questions.length,
             correctAnswers: correctAnswersList.where((a) => a).length,
             timeSpentSeconds: 0, // Will be calculated on the page side
-            category: currentState.questions.isNotEmpty 
-                ? currentState.questions[0].category 
+            category: currentState.questions.isNotEmpty
+                ? currentState.questions[0].category
                 : 'General',
-            difficulty: currentState.currentLanguage == AppLanguage.turkish 
-                ? 'medium' 
+            difficulty: currentState.currentLanguage == AppLanguage.turkish
+                ? 'medium'
                 : 'medium',
             answers: newAnswers,
             correctAnswersList: correctAnswersList,
           );
-          
-          // Even if backend fails, data is saved to offline queue
-          // So we can show success if offline
-          if (!backendSuccess) {
-            errorMessage = 'Veriler kaydedilirken hata oluştu. Lütfen internet bağlantınızı kontrol edin.';
-          }
-        } else {
-          errorMessage = 'Kullanıcı girişi yapılmamış.';
+        }
+
+        // Even if backend fails, data is saved to offline queue
+        // So we can show success if offline
+        if (!backendSuccess && userId != null) {
+          // Could emit an error state here if needed, but for now we continue
+          // since offline queue handles the data
         }
         
         // Always show completion (data is either in Firestore or offline queue)

@@ -570,10 +570,10 @@ class _SpectatorModePageState extends State<SpectatorModePage>
                                           context),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
-                                    child: const Text(
+                                    child: Text(
                                       'SIRA',
                                       style: TextStyle(
-                                        color: Colors.white,
+                                        color: ThemeColors.getTextOnColoredBackground(context),
                                         fontSize: 10,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -887,15 +887,15 @@ class _SpectatorModePageState extends State<SpectatorModePage>
                       ),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.play_arrow, color: Colors.white, size: 16),
-                        SizedBox(width: 4),
+                        const Icon(Icons.play_arrow, color: Colors.white, size: 16),
+                        const SizedBox(width: 4),
                         Text(
                           'İzle',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: ThemeColors.getTextOnColoredBackground(context),
                             fontWeight: FontWeight.bold,
                           ),
                         ),

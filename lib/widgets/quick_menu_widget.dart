@@ -251,7 +251,7 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
             label: 'Puan',
             color: Colors.amber,
           ),
-          Container(width: 1, height: 30, color: Colors.white.withValues(alpha: 0.2)),
+          Container(width: 1, height: 30, color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.2)),
           _buildStatItem(
             context,
             icon: Icons.emoji_events,
@@ -417,7 +417,7 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
                 child: Icon(
                   item.icon,
                   size: 90,
-                  color: Colors.white.withValues(alpha: 0.08),
+                  color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.08),
                 ),
               ),
               
@@ -441,10 +441,10 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
                         ),
                       ],
                     ),
-                    child: const Text(
+                    child: Text(
                       '★ ÖNE ÇIKAN',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: ThemeColors.getTextOnColoredBackground(context),
                         fontSize: 8,
                         fontWeight: FontWeight.bold,
                       ),
@@ -470,10 +470,10 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
                         ),
                       ],
                     ),
-                    child: const Text(
+                    child: Text(
                       'YENİ',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: ThemeColors.getTextOnColoredBackground(context),
                         fontSize: 8,
                         fontWeight: FontWeight.bold,
                       ),
@@ -495,7 +495,7 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
@@ -549,7 +549,7 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
                           Text(
                             item.subtitle!,
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.85),
+                              color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.85),
                               fontSize: 11,
                             ),
                             maxLines: 2,
@@ -778,7 +778,7 @@ class QuickMenuGrid extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -803,7 +803,7 @@ class QuickMenuGrid extends StatelessWidget {
               Text(
                 item.subtitle!,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.8),
                   fontSize: 10,
                 ),
                 textAlign: TextAlign.center,
@@ -837,6 +837,10 @@ class QuickMenuBuilder {
     required VoidCallback onProfileTap,
     required VoidCallback onNotificationsTap,
     required VoidCallback onCarbonFootprintTap,
+    VoidCallback? onQuizResultsTap,
+    VoidCallback? onQuizSettingsTap,
+    VoidCallback? onWelcomeTap,
+    VoidCallback? onRewardsMainTap,
     int? friendRequestCount,
     int? dailyChallengeCount,
     int? achievementCount,
@@ -1039,6 +1043,60 @@ class QuickMenuBuilder {
         onTap: onProfileTap,
         category: 'tools',
       ),
+
+      // Additional pages integration
+      if (onQuizResultsTap != null)
+        QuickMenuItem(
+          id: 'quiz_results',
+          title: 'Quiz Sonuçları',
+          subtitle: 'Geçmiş performansın',
+          icon: Icons.bar_chart,
+          color: Colors.teal,
+          gradientStart: Colors.teal.shade400,
+          gradientEnd: Colors.teal.shade700,
+          onTap: onQuizResultsTap,
+          category: 'tools',
+          isNew: true,
+        ),
+
+      if (onQuizSettingsTap != null)
+        QuickMenuItem(
+          id: 'quiz_settings',
+          title: 'Quiz Ayarları',
+          subtitle: 'Kişiselleştirme',
+          icon: Icons.tune,
+          color: Colors.indigo,
+          gradientStart: Colors.indigo.shade400,
+          gradientEnd: Colors.indigo.shade700,
+          onTap: onQuizSettingsTap,
+          category: 'tools',
+        ),
+
+      if (onWelcomeTap != null)
+        QuickMenuItem(
+          id: 'welcome',
+          title: 'Hoşgeldin',
+          subtitle: 'Uygulama turu',
+          icon: Icons.waving_hand,
+          color: Colors.lime,
+          gradientStart: Colors.lime.shade400,
+          gradientEnd: Colors.lime.shade700,
+          onTap: onWelcomeTap,
+          category: 'tools',
+        ),
+
+      if (onRewardsMainTap != null)
+        QuickMenuItem(
+          id: 'rewards_main',
+          title: 'Ödül Ana Sayfası',
+          subtitle: 'Tüm ödüller',
+          icon: Icons.stars,
+          color: Colors.deepOrange,
+          gradientStart: Colors.deepOrange.shade400,
+          gradientEnd: Colors.deepOrange.shade700,
+          onTap: onRewardsMainTap,
+          category: 'tools',
+        ),
     ];
   }
 

@@ -13,6 +13,7 @@ import '../services/firestore_service.dart';
 import '../services/friend_suggestion_service.dart';
 import '../services/notification_service.dart';
 import '../models/friend_suggestion.dart';
+import '../theme/theme_colors.dart';
 
 class QRCodeScannerWidget extends StatefulWidget {
   final Function(bool isScanning)? onScanStateChanged;
@@ -357,18 +358,18 @@ class _QRCodeScannerWidgetState extends State<QRCodeScannerWidget> {
                   if (_isProcessing)
                     Container(
                       color: Colors.black54,
-                      child: const Center(
+                      child: Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            CircularProgressIndicator(
+                            const CircularProgressIndicator(
                               color: Colors.white,
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             Text(
                               'İşleniyor...',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: ThemeColors.getTextOnColoredBackground(context),
                                 fontSize: 18,
                               ),
                             ),

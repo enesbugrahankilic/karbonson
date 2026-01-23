@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/design_system.dart';
+import '../theme/theme_colors.dart';
 import '../widgets/page_templates.dart';
 import 'profile_page.dart';
+import 'how_to_play_page.dart';
 
 class WelcomePage extends StatefulWidget {
   final String userName;
@@ -73,15 +76,39 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
     super.dispose();
   }
 
-  void _continueToApp() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => widget.isGuest
-            ? const GuestHomePage()
-            : const ProfilePage(),
-      ),
-    );
+  void _continueToApp() async {
+    if (widget.isGuest) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const GuestHomePage(),
+        ),
+      );
+      return;
+    }
+
+    // Check if user has seen How to Play
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenHowToPlay = prefs.getBool('hasSeenHowToPlay') ?? false;
+
+    if (!hasSeenHowToPlay) {
+      // First time user, show How to Play
+      await prefs.setBool('hasSeenHowToPlay', true);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HowToPlayPage(),
+        ),
+      );
+    } else {
+      // Returning user, go to Profile
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ProfilePage(),
+        ),
+      );
+    }
   }
 
   void _skipWelcome() {
@@ -188,7 +215,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
                                   color: Colors.white.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(DesignSystem.radiusL),
                                   border: Border.all(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: ThemeColors.getTextOnColoredBackground(context).withOpacity(0.2),
                                     width: 1,
                                   ),
                                 ),
@@ -338,7 +365,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
         color: Colors.white.withOpacity(0.08),
         borderRadius: BorderRadius.circular(DesignSystem.radiusM),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: ThemeColors.getTextOnColoredBackground(context).withOpacity(0.1),
           width: 1,
         ),
       ),

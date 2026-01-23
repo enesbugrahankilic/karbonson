@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../services/firebase_auth_service.dart';
+import '../theme/theme_colors.dart';
 
 class FirebaseConfigValidator extends StatefulWidget {
   final Widget child;
@@ -234,15 +235,15 @@ class _FirebaseConfigValidatorState extends State<FirebaseConfigValidator> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: const Center(
+        child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
               Text(
                 'Firebase yapılandırması kontrol ediliyor...',
-                style: TextStyle(fontSize: 16, color: Colors.white),
+                style: TextStyle(fontSize: 16, color: ThemeColors.getTextOnColoredBackground(context)),
               ),
             ],
           ),

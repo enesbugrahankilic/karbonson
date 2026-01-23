@@ -6,6 +6,7 @@ import 'package:audioplayers/audioplayers.dart';
 import '../models/loot_box.dart';
 import '../models/loot_box_reward.dart';
 import '../utils/loot_box_animations.dart';
+import '../theme/theme_colors.dart';
 
 /// Loot box opening dialog widget
 class LootBoxOpeningDialog extends StatefulWidget {
@@ -227,7 +228,7 @@ class _LootBoxOpeningDialogState extends State<LootBoxOpeningDialog>
                               Text(
                                 widget.reward.reward.rewardText,
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: ThemeColors.getTextOnColoredBackground(context),
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
                                   shadows: [
@@ -308,7 +309,7 @@ class _LootBoxOpeningDialogState extends State<LootBoxOpeningDialog>
               right: 16,
               child: IconButton(
                 onPressed: widget.onClose,
-                icon: const Icon(Icons.close, color: Colors.white),
+                icon: Icon(Icons.close, color: ThemeColors.getTextOnColoredBackground(context)),
                 style: IconButton.styleFrom(
                   backgroundColor: Colors.black.withValues(alpha: 0.5),
                 ),

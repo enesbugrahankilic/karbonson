@@ -284,12 +284,12 @@ class _TwoFactorAuthPageState extends State<TwoFactorAuthPage>
                       color: Colors.white,
                     ),
                     const SizedBox(height: 24),
-                    const Text(
+                    Text(
                       'İki Adımlı Doğrulama',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: ThemeColors.getTextOnColoredBackground(context),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -298,7 +298,7 @@ class _TwoFactorAuthPageState extends State<TwoFactorAuthPage>
                       'Hesabınızı güvence altına almak için SMS ile doğrulama yapın',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.white.withValues(alpha:  0.8),
+                        color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha:  0.8),
                       ),
                       textAlign: TextAlign.center,
                     ),

@@ -38,10 +38,10 @@ import 'services/session_management_service.dart';
 void main() {
   // Run the app inside a guarded zone; call ensureInitialized and runApp
   // from inside the same zone to avoid "Zone mismatch" errors.
-  runZonedGuarded(() {
+  runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
 
-    // Initialize analytics first for crash reporting
+    // Initialize analytics (Firebase will be initialized in AppRoot)
     AnalyticsService().initialize();
 
     // Forward Flutter framework errors into the current zone so runZonedGuarded can catch them
@@ -108,25 +108,21 @@ class _AppRootState extends State<AppRoot> {
     });
 
     try {
-      // Initialize Firebase safely (web uses options; native uses platform files)
+      // Initialize Firebase with proper options for all platforms
       if (kDebugMode) {
         debugPrint('AppRoot: initializing Firebase (kIsWeb=$kIsWeb)');
       }
-      if (kIsWeb) {
+      try {
         await Firebase.initializeApp(
             options: DefaultFirebaseOptions.currentPlatform);
-      } else {
-        try {
-          await Firebase.initializeApp();
-        } on FirebaseException catch (fe) {
-          if (fe.code == 'duplicate-app') {
-            if (kDebugMode) {
-              debugPrint(
-                  'AppRoot: duplicate-app during Firebase.initializeApp - ignoring.');
-            }
-          } else {
-            rethrow;
+      } on FirebaseException catch (fe) {
+        if (fe.code == 'duplicate-app') {
+          if (kDebugMode) {
+            debugPrint(
+                'AppRoot: duplicate-app during Firebase.initializeApp - ignoring.');
           }
+        } else {
+          rethrow;
         }
       }
 
@@ -389,12 +385,26 @@ class _Karbon2AppState extends State<Karbon2App> {
 
   Future<void> _determineInitialRoute() async {
     try {
-      // Start at login page - authentication handled in login flow
-      setState(() {
-        _initialRoute = AppRoutes.login;
-      });
-      if (kDebugMode) {
-        debugPrint('main: Starting at login page');
+      // Check authentication state to determine initial route
+      final authStateService = AuthenticationStateService();
+      final isAuthenticated = authStateService.isAuthenticated;
+
+      if (isAuthenticated) {
+        // User is authenticated, go to home
+        setState(() {
+          _initialRoute = AppRoutes.home;
+        });
+        if (kDebugMode) {
+          debugPrint('main: User authenticated, starting at home page');
+        }
+      } else {
+        // User not authenticated, go to login
+        setState(() {
+          _initialRoute = AppRoutes.login;
+        });
+        if (kDebugMode) {
+          debugPrint('main: User not authenticated, starting at login page');
+        }
       }
     } catch (e) {
       if (kDebugMode) {

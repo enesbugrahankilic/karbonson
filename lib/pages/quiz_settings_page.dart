@@ -152,6 +152,30 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _loadSavedSettings();
+  }
+
+  Future<void> _loadSavedSettings() async {
+    try {
+      final hasSettings = await QuizSettingsService().hasQuizSettings();
+      if (hasSettings) {
+        final settings = await QuizSettingsService().getQuizSettings();
+        if (settings != null && mounted) {
+          setState(() {
+            _selectedCategory = settings.category ?? 'Tümü';
+            _selectedDifficulty = settings.difficulty ?? DifficultyLevel.medium;
+            _selectedLanguage = settings.language;
+          });
+        }
+      }
+    } catch (e) {
+      // Ignore errors, use defaults
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: StandardAppBar(
@@ -220,7 +244,7 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
             label: 'Geri git',
             child: IconButton(
               onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              icon: Icon(Icons.arrow_back, color: ThemeColors.getTextOnColoredBackground(context)),
               iconSize: 28,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints.tightFor(

@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import '../provides/language_provider.dart';
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
-import '../core/navigation/app_router.dart';
+import '../core/navigation/app_router_complete.dart';
 import '../widgets/home_button.dart';
 import '../widgets/language_selector_button.dart';
 import '../widgets/quick_menu_widget.dart';
@@ -23,6 +23,7 @@ import '../models/user_progress.dart';
 import '../models/daily_challenge.dart';
 import '../models/user_data.dart';
 import '../models/user_activity.dart';
+import 'tutorial_page.dart';
 
 class HomeDashboard extends StatefulWidget {
   const HomeDashboard({super.key});
@@ -170,11 +171,30 @@ class _HomeDashboardState extends State<HomeDashboard>
     try {
       final prefs = await SharedPreferences.getInstance();
       final hasSeenTutorial = prefs.getBool('hasSeenTutorialAfterLogin') ?? false;
-      
-      if (!hasSeenTutorial && mounted) {
+      final hasSeenWelcome = prefs.getBool('hasSeenWelcomePage') ?? false;
+
+      if (!hasSeenWelcome && mounted) {
+        // Mark as seen
+        await prefs.setBool('hasSeenWelcomePage', true);
+
+        // Show welcome page first
+        if (mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => Scaffold(
+                appBar: AppBar(title: const Text('Hoşgeldin')),
+                body: const Center(
+                  child: Text('Hoşgeldiniz! Uygulamayı keşfetmeye başlayın.'),
+                ),
+              ),
+              fullscreenDialog: true,
+            ),
+          );
+        }
+      } else if (!hasSeenTutorial && mounted) {
         // Mark as seen
         await prefs.setBool('hasSeenTutorialAfterLogin', true);
-        
+
         // Show tutorial page
         if (mounted) {
           Navigator.of(context).push(
@@ -452,6 +472,15 @@ class _HomeDashboardState extends State<HomeDashboard>
                               child: _buildRecentActivitySection(context),
                             ),
 
+                            SizedBox(height: isSmallScreen ? 20.0 : 24.0),
+
+                            // Carbon Footprint Widget
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: isSmallScreen ? 16.0 : 20.0),
+                              child: _buildCarbonFootprintWidget(context),
+                            ),
+
                             SizedBox(height: 20.0),
                           ]),
                         ),
@@ -513,7 +542,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                       ? Text(
                           displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: ThemeColors.getTextOnColoredBackground(context),
                             fontSize: isSmallScreen ? 18.0 : 22.0,
                             fontWeight: FontWeight.w600,
                           ),
@@ -922,6 +951,22 @@ class _HomeDashboardState extends State<HomeDashboard>
       onCarbonFootprintTap: () {
         Navigator.pop(context);
         Navigator.of(context).pushNamed(AppRoutes.carbonFootprint);
+      },
+      onQuizResultsTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.quizResults);
+      },
+      onQuizSettingsTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.quizSettings);
+      },
+      onWelcomeTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.welcome);
+      },
+      onRewardsMainTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed(AppRoutes.rewardsMain);
       },
       friendRequestCount: 3, // Bu değer dinamik olarak güncellenmeli
       dailyChallengeCount: _dailyChallenges.length,
@@ -1560,7 +1605,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                   Text(
                     'Çevre Bilgisi Quiz\'i',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: ThemeColors.getTextOnColoredBackground(context),
                       fontSize: isSmallScreen ? 18.0 : 22.0,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1570,7 +1615,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                   Text(
                     'Çevre bilincini artır, puan kazan!',
                     style: TextStyle(
-                      color: Colors.white.withOpacity( 0.9),
+                      color: ThemeColors.getTextOnColoredBackground(context).withOpacity( 0.9),
                       fontSize: isSmallScreen ? 14.0 : 16.0,
                     ),
                     textAlign: TextAlign.center,
@@ -1588,7 +1633,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                     child: Text(
                       'Şimdi Başlat',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: ThemeColors.getTextOnColoredBackground(context),
                         fontSize: isSmallScreen ? 14.0 : 16.0,
                         fontWeight: FontWeight.w500,
                       ),
@@ -2196,7 +2241,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                         Text(
                           'Hızlı Düello',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: ThemeColors.getTextOnColoredBackground(context),
                             fontSize: isSmallScreen ? 18.0 : 22.0,
                             fontWeight: FontWeight.w600,
                           ),
@@ -2206,7 +2251,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                         Text(
                           'Arkadaşınla hızlı yarış!',
                           style: TextStyle(
-                            color: Colors.white.withOpacity( 0.9),
+                            color: ThemeColors.getTextOnColoredBackground(context).withOpacity( 0.9),
                             fontSize: isSmallScreen ? 14.0 : 16.0,
                           ),
                           textAlign: TextAlign.center,
@@ -2224,7 +2269,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                           child: Text(
                             'Başlat',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: ThemeColors.getTextOnColoredBackground(context),
                               fontSize: isSmallScreen ? 14.0 : 16.0,
                               fontWeight: FontWeight.w500,
                             ),
@@ -2272,7 +2317,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                         Text(
                           'Oda Oluştur',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: ThemeColors.getTextOnColoredBackground(context),
                             fontSize: isSmallScreen ? 18.0 : 22.0,
                             fontWeight: FontWeight.w600,
                           ),
@@ -2282,7 +2327,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                         Text(
                           'Kalıcı düello odası',
                           style: TextStyle(
-                            color: Colors.white.withOpacity( 0.9),
+                            color: ThemeColors.getTextOnColoredBackground(context).withOpacity( 0.9),
                             fontSize: isSmallScreen ? 14.0 : 16.0,
                           ),
                           textAlign: TextAlign.center,
@@ -2300,7 +2345,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                           child: Text(
                             'Oluştur',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: ThemeColors.getTextOnColoredBackground(context),
                               fontSize: isSmallScreen ? 14.0 : 16.0,
                               fontWeight: FontWeight.w500,
                             ),
@@ -2391,7 +2436,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                             Text(
                               'Takım Oyunu',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: ThemeColors.getTextOnColoredBackground(context),
                                 fontSize: isSmallScreen ? 18.0 : 22.0,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -2401,7 +2446,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                             Text(
                               '4 kişiye kadar oyna!',
                               style: TextStyle(
-                                color: Colors.white.withOpacity( 0.9),
+                                color: ThemeColors.getTextOnColoredBackground(context).withOpacity( 0.9),
                                 fontSize: isSmallScreen ? 14.0 : 16.0,
                               ),
                               textAlign: TextAlign.left,
@@ -2421,7 +2466,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                         child: Text(
                           'Oyna',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: ThemeColors.getTextOnColoredBackground(context),
                             fontSize: isSmallScreen ? 14.0 : 16.0,
                             fontWeight: FontWeight.w500,
                           ),
@@ -2548,7 +2593,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                   Text(
                     'İzleyici Modu',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: ThemeColors.getTextOnColoredBackground(context),
                       fontSize: isSmallScreen ? 18.0 : 22.0,
                       fontWeight: FontWeight.w600,
                     ),
@@ -2558,7 +2603,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                   Text(
                     'Canlı oyunları izle',
                     style: TextStyle(
-                      color: Colors.white.withOpacity( 0.9),
+                      color: ThemeColors.getTextOnColoredBackground(context).withOpacity( 0.9),
                       fontSize: isSmallScreen ? 14.0 : 16.0,
                     ),
                     textAlign: TextAlign.center,
@@ -2576,7 +2621,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                     child: Text(
                       'İzle',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: ThemeColors.getTextOnColoredBackground(context),
                         fontSize: isSmallScreen ? 14.0 : 16.0,
                         fontWeight: FontWeight.w500,
                       ),
@@ -2728,7 +2773,7 @@ class _HomeDashboardState extends State<HomeDashboard>
           color: Colors.white.withOpacity( 0.1),
           borderRadius: BorderRadius.circular(DesignSystem.radiusM),
           border: Border.all(
-            color: Colors.white.withOpacity( 0.2),
+            color: ThemeColors.getTextOnColoredBackground(context).withOpacity( 0.2),
             width: 1,
           ),
         ),
@@ -2774,6 +2819,116 @@ class _HomeDashboardState extends State<HomeDashboard>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCarbonFootprintWidget(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
+    return Container(
+      margin: const EdgeInsets.all(DesignSystem.spacingM),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: isSmallScreen
+                    ? DesignSystem.spacingS
+                    : DesignSystem.spacingM,
+                vertical: DesignSystem.spacingS),
+            child: Text(
+              '🌱 Çevre Bilinci',
+              style: DesignSystem.getTitleLarge(context).copyWith(
+                color: Colors.white,
+                fontSize: isSmallScreen ? 18.0 : 22.0,
+                fontWeight: FontWeight.w700,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withOpacity( 0.3),
+                    offset: const Offset(0, 2),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(
+                isSmallScreen ? DesignSystem.spacingM : DesignSystem.spacingL),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.green.shade400,
+                  Colors.green.shade600,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.green.withOpacity( 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: InkWell(
+              onTap: () => Navigator.of(context).pushNamed(AppRoutes.carbonFootprint),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.eco,
+                    size: isSmallScreen ? 48.0 : 64.0,
+                    color: Colors.white,
+                  ),
+                  SizedBox(height: DesignSystem.spacingM),
+                  Text(
+                    'Karbon Ayak İzini Hesapla',
+                    style: TextStyle(
+                      color: ThemeColors.getTextOnColoredBackground(context),
+                      fontSize: isSmallScreen ? 18.0 : 22.0,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: DesignSystem.spacingS),
+                  Text(
+                    'Çevreye duyarlılığını ölç, iyileştirme önerileri al!',
+                    style: TextStyle(
+                      color: ThemeColors.getTextOnColoredBackground(context).withOpacity( 0.9),
+                      fontSize: isSmallScreen ? 14.0 : 16.0,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: DesignSystem.spacingM),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: DesignSystem.spacingM,
+                      vertical: DesignSystem.spacingS,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity( 0.2),
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                    ),
+                    child: Text(
+                      'Hemen Başla',
+                      style: TextStyle(
+                        color: ThemeColors.getTextOnColoredBackground(context),
+                        fontSize: isSmallScreen ? 14.0 : 16.0,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -3255,7 +3410,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                             borderRadius:
                                 BorderRadius.circular(DesignSystem.radiusM),
                             border: Border.all(
-                              color: Colors.white.withOpacity( 0.2),
+                              color: ThemeColors.getTextOnColoredBackground(context).withOpacity( 0.2),
                               width: 1,
                             ),
                           ),

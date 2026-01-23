@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../services/profile_service.dart';
 import '../services/authentication_state_service.dart';
 import '../theme/design_system.dart';
+import '../theme/theme_colors.dart';
 import '../widgets/page_templates.dart';
 import 'register_page.dart';
 import 'welcome_page.dart';
@@ -271,7 +272,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                       Text(
                         'Çevre Dostu Quiz Uygulaması',
                         style: DesignSystem.getBodyMedium(context).copyWith(
-                          color: Colors.white.withValues(alpha: 0.95),
+                          color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.95),
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                           letterSpacing: 0.3,

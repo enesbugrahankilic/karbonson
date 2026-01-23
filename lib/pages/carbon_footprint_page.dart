@@ -684,39 +684,73 @@ class _CarbonFootprintPageState extends State<CarbonFootprintPage>
     try {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$format raporu indiriliyor: ${_userClassCarbonData!.classIdentifier}'),
+          content: Text('$format raporu hazırlanıyor: ${_userClassCarbonData!.classIdentifier}'),
           duration: const Duration(seconds: 2),
         ),
       );
 
+      // Prepare report data
+      final reportData = _reportService.createReportDisplayData(
+        _userClassCarbonData!,
+        averageCarbon: _averageCarbon,
+        allClassLevelData: _classLevelData,
+      );
+
+      final reportContent = {
+        'sınıf': reportData['classIdentifier'],
+        'karbon_değeri': reportData['carbonValue'],
+        'ortalama': reportData['averageCarbon'],
+        'durum': reportData['status'],
+        'öneri': reportData['recommendation'],
+        'tarih': DateTime.now().toIso8601String(),
+        'format': format,
+      };
+
       // Generate report based on format
       if (format == 'pdf') {
-        // TODO: Implement PDF download using pdf package
-        // For now, showing a placeholder
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('PDF indirme şu anda hazırlanıyor...'),
-            duration: Duration(seconds: 2),
-          ),
-        );
+        // Simple text-based PDF simulation - in real app use pdf package
+        final pdfContent = '''
+KARBON AYAK İZİ RAPORU
+
+Sınıf: ${reportData['classIdentifier']}
+Karbon Değeri: ${reportData['carbonValue']} g CO₂
+Ortalama: ${reportData['averageCarbon']} g CO₂
+Durum: ${reportData['status']}
+
+Öneri: ${reportData['recommendation']}
+
+Oluşturulma Tarihi: ${DateTime.now().toString()}
+        '''.trim();
+
+        // For now, copy to clipboard as simulation
+        // In real app, generate actual PDF file
+        await _saveReportToFile('carbon_report_${_userClassCarbonData!.classIdentifier}.txt', pdfContent);
+
       } else if (format == 'xlsx') {
-        // TODO: Implement Excel download using xlsxsheet package
-        // For now, showing a placeholder
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Excel indirme şu anda hazırlanıyor...'),
-            duration: Duration(seconds: 2),
-          ),
-        );
+        // Simple CSV format as Excel simulation
+        final csvContent = '''
+Sınıf,Karbon Değeri (g CO₂),Ortalama (g CO₂),Durum,Öneri,Tarih
+${reportData['classIdentifier']},${reportData['carbonValue']},${reportData['averageCarbon']},"${reportData['status']}","${reportData['recommendation']}",${DateTime.now().toIso8601String()}
+        '''.trim();
+
+        await _saveReportToFile('carbon_report_${_userClassCarbonData!.classIdentifier}.csv', csvContent);
+
       } else if (format == 'png') {
-        // TODO: Implement PNG download using image package
-        // For now, showing a placeholder
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Görüntü indirme şu anda hazırlanıyor...'),
-            duration: Duration(seconds: 2),
-          ),
-        );
+        // For PNG, we'll save the summary as text
+        final pngContent = '''
+🌱 KARBON AYAK İZİ RAPORU 🌱
+
+📚 Sınıf: ${reportData['classIdentifier']}
+🌡️ Karbon: ${reportData['carbonValue']} g CO₂
+📊 Ortalama: ${reportData['averageCarbon']} g CO₂
+📈 Durum: ${reportData['status']}
+
+💡 Öneri: ${reportData['recommendation']}
+
+📅 Tarih: ${DateTime.now().toString().split(' ')[0]}
+        '''.trim();
+
+        await _saveReportToFile('carbon_report_${_userClassCarbonData!.classIdentifier}.txt', pngContent);
       }
 
       // Show success message
@@ -735,6 +769,47 @@ class _CarbonFootprintPageState extends State<CarbonFootprintPage>
           duration: const Duration(seconds: 3),
         ),
       );
+    }
+  }
+
+  Future<void> _saveReportToFile(String fileName, String content) async {
+    try {
+      // For web/mobile compatibility, we'll use a simple approach
+      // In a real app, you'd use path_provider and file operations
+      // For now, we'll just show the content in a dialog
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Rapor Hazır: $fileName'),
+            content: SingleChildScrollView(
+              child: Text(content),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Kapat'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  // In real app, save to file system
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Rapor cihazınıza kaydedildi (simülasyon)'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  Navigator.pop(context);
+                },
+                child: const Text('Kaydet'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Dosya kaydetme hatası: $e');
     }
   }
 

@@ -813,7 +813,7 @@ class PointWalletCard extends StatelessWidget {
                     Text(
                       'Karbon Puanı',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
+                        color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.9),
                         fontSize: 14,
                       ),
                     ),
@@ -836,7 +836,7 @@ class PointWalletCard extends StatelessWidget {
                           child: Text(
                             'KP',
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.8),
+                              color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.8),
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                             ),

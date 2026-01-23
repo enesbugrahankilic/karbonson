@@ -94,6 +94,15 @@ class AppRoutes {
 
   // Debug Routes
   static const String uidDebug = '/uid-debug';
+
+  // Additional Pages
+  static const String quizResults = '/quiz-results';
+  static const String quizSettings = '/quiz-settings';
+  static const String welcome = '/welcome';
+  static const String rewardsMain = '/rewards-main';
+  static const String notifications = '/notifications';
+  static const String spectatorMode = '/spectator-mode';
+  static const String carbonFootprint = '/carbon-footprint';
 }
 
 /// Navigation categories for organizing routes
@@ -376,6 +385,62 @@ class RouteConfig {
       category: NavigationCategory.debug,
       order: 1,
     ),
+
+    // Additional Pages
+    AppRoutes.quizResults: const RouteMetadata(
+      title: 'Quiz Sonuçları',
+      icon: Icons.bar_chart,
+      category: NavigationCategory.mainApp,
+      requiresAuth: true,
+      showInDrawer: true,
+      order: 17,
+    ),
+    AppRoutes.quizSettings: const RouteMetadata(
+      title: 'Quiz Ayarları',
+      icon: Icons.tune,
+      category: NavigationCategory.mainApp,
+      requiresAuth: true,
+      showInDrawer: true,
+      order: 18,
+    ),
+    AppRoutes.welcome: const RouteMetadata(
+      title: 'Hoşgeldin',
+      icon: Icons.waving_hand,
+      category: NavigationCategory.mainApp,
+      order: 19,
+    ),
+    AppRoutes.rewardsMain: const RouteMetadata(
+      title: 'Ödül Ana Sayfası',
+      icon: Icons.stars,
+      category: NavigationCategory.mainApp,
+      requiresAuth: true,
+      showInDrawer: true,
+      order: 20,
+    ),
+    AppRoutes.notifications: const RouteMetadata(
+      title: 'Bildirimler',
+      icon: Icons.notifications,
+      category: NavigationCategory.mainApp,
+      requiresAuth: true,
+      showInDrawer: true,
+      order: 21,
+    ),
+    AppRoutes.spectatorMode: const RouteMetadata(
+      title: 'İzleyici Modu',
+      icon: Icons.visibility,
+      category: NavigationCategory.mainApp,
+      requiresAuth: true,
+      showInDrawer: true,
+      order: 22,
+    ),
+    AppRoutes.carbonFootprint: const RouteMetadata(
+      title: 'Karbon Ayak İzi',
+      icon: Icons.eco,
+      category: NavigationCategory.mainApp,
+      requiresAuth: true,
+      showInDrawer: true,
+      order: 23,
+    ),
   };
 }
 
@@ -466,7 +531,17 @@ class AppRouterComplete {
       AppRoutes.settings => _buildProtectedRoute(SettingsPage(), settings),
       AppRoutes.passwordChange => _buildProtectedRoute(_buildPlaceholderPage('Şifre Değiştir'), settings),
       AppRoutes.newPassword => _buildProtectedRoute(_buildPlaceholderPage('Yeni Şifre'), settings),
-      
+
+      // Additional Pages
+      AppRoutes.quizResults => _buildProtectedRoute(_buildPlaceholderPage('Quiz Sonuçları'), settings),
+      AppRoutes.quizSettings => _buildProtectedRoute(_buildPlaceholderPage('Quiz Ayarları'), settings),
+      AppRoutes.welcome => _buildRoute(_buildPlaceholderPage('Hoşgeldin')),
+      AppRoutes.rewardsMain => _buildProtectedRoute(_buildPlaceholderPage('Ödül Ana Sayfası'), settings),
+      AppRoutes.rewardsShop => _buildProtectedRoute(_buildPlaceholderPage('Ödül Mağazası'), settings),
+      AppRoutes.notifications => _buildProtectedRoute(_buildPlaceholderPage('Bildirimler'), settings),
+      AppRoutes.spectatorMode => _buildProtectedRoute(_buildPlaceholderPage('İzleyici Modu'), settings),
+      AppRoutes.carbonFootprint => _buildProtectedRoute(_buildPlaceholderPage('Karbon Ayak İzi'), settings),
+
       // Default route
       _ => _buildRoute(LoginPage()),
     };

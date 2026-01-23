@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/page_templates.dart';
 import '../theme/theme_colors.dart';
+import 'profile_page.dart';
 
 class HowToPlayPage extends StatelessWidget {
   HowToPlayPage({super.key});
@@ -82,6 +83,8 @@ class HowToPlayPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             _buildTipsSection(),
+            const SizedBox(height: 32),
+            _buildContinueButton(context),
           ],
         ),
       ),
@@ -188,6 +191,49 @@ class HowToPlayPage extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(child: Text(text)),
         ],
+      ),
+    );
+  }
+
+  Widget _buildContinueButton(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfilePage(),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ThemeColors.getPrimaryButtonColor(context),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.arrow_forward, size: 24),
+                SizedBox(width: 12),
+                Text(
+                  'Başla',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -297,7 +297,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
               child: Text(
                 displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: ThemeColors.getTextOnColoredBackground(context),
                   fontSize: isSmallScreen ? 18.0 : 22.0,
                   fontWeight: FontWeight.w600,
                 ),
@@ -666,7 +666,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
             Text(
               'Çevre Bilgisi Quiz\'i',
               style: TextStyle(
-                color: Colors.white,
+                color: ThemeColors.getTextOnColoredBackground(context),
                 fontSize: headerTextSize,
                 fontWeight: FontWeight.w600,
               ),
@@ -678,7 +678,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
             Text(
               'Çevre bilincini artır, puan kazan!',
               style: TextStyle(
-                color: Colors.white.withValues(alpha:  0.9),
+                color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha:  0.9),
                 fontSize: bodyTextSize,
               ),
               textAlign: TextAlign.center,
@@ -692,13 +692,13 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                 vertical: isSmallScreen ? 8.0 : 10.0,
               ),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha:  0.2),
+                color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha:  0.2),
                 borderRadius: BorderRadius.circular(isSmallScreen ? 16.0 : 20.0),
               ),
               child: Text(
                 'Şimdi Başlat',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: ThemeColors.getTextOnColoredBackground(context),
                   fontSize: isSmallScreen ? 14.0 : 16.0,
                   fontWeight: FontWeight.w500,
                 ),
@@ -854,7 +854,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
               color: ThemeColors.getCardBackground(context).withValues(alpha:  0.9),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               border: Border.all(
-                color: Colors.white.withValues(alpha:  0.3),
+                color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha:  0.3),
                 width: 1,
               ),
             ),
@@ -1110,7 +1110,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                       child: Text(
                         'Quiz Teması Seç',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: ThemeColors.getTextOnColoredBackground(context),
                           fontWeight: FontWeight.w700,
                           fontSize: 20,
                         ),
@@ -1124,7 +1124,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                 Text(
                   'Hangi çevre temasında yarışmak istersiniz?',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha:  0.9),
+                    color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha:  0.9),
                     fontSize: 16,
                   ),
                   textAlign: TextAlign.center,
@@ -1141,10 +1141,10 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha:  0.1),
+                            color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha:  0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Colors.white.withValues(alpha:  0.2),
+                              color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha:  0.2),
                               width: 1,
                             ),
                           ),
@@ -1175,7 +1175,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                                         Text(
                                           theme['name'] as String,
                                           style: TextStyle(
-                                            color: Colors.white,
+                                            color: ThemeColors.getTextOnColoredBackground(context),
                                             fontWeight: FontWeight.w600,
                                             fontSize: 16,
                                           ),
@@ -1186,7 +1186,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                                         Text(
                                           theme['description'] as String,
                                           style: TextStyle(
-                                            color: Colors.white.withValues(alpha:  0.7),
+                                            color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha:  0.7),
                                             fontSize: 14,
                                           ),
                                           maxLines: 2,
@@ -1235,7 +1235,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                         child: Text(
                           'Bu temayı hatırla (sonraki quiz\'lerde otomatik seçilsin)',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha:  0.9),
+                            color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha:  0.9),
                             fontSize: 14,
                           ),
                           maxLines: 2,
@@ -1254,7 +1254,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                   child: Text(
                     'İptal',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha:  0.7),
+                      color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha:  0.7),
                     ),
                   ),
                 ),
@@ -1325,7 +1325,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                     child: Text(
                       'Quiz Tamamlandı!',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: ThemeColors.getTextOnColoredBackground(context),
                         fontWeight: FontWeight.w700,
                         fontSize: 20,
                       ),
@@ -1349,7 +1349,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                     Text(
                       '$score/15',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: ThemeColors.getTextOnColoredBackground(context),
                         fontWeight: FontWeight.w800,
                         fontSize: 32,
                       ),
@@ -1362,7 +1362,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                               ? 'Güzel! Daha fazla öğrenebilirsiniz.'
                               : 'Çalışmaya devam edin, çevre bilinciniz artacak!',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha:  0.9),
+                        color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha:  0.9),
                         fontSize: 16,
                       ),
                       textAlign: TextAlign.center,
@@ -1384,7 +1384,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                       child: Text(
                         'Ana Sayfa',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha:  0.7),
+                          color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha:  0.7),
                         ),
                       ),
                     ),
@@ -1400,7 +1400,7 @@ class _HomeDashboardOptimizedState extends State<HomeDashboardOptimized>
                         child: Text(
                           'Tema Değiştir',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha:  0.9),
+                            color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha:  0.9),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

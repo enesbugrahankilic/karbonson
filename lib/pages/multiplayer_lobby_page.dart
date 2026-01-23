@@ -656,7 +656,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
                Container(
                  padding: const EdgeInsets.all(DesignSystem.spacingM),
                  decoration: BoxDecoration(
-                   color: Colors.white.withValues(alpha: 0.2),
+                   color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.2),
                    shape: BoxShape.circle,
                  ),
                  child: Icon(
@@ -832,7 +832,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
                Container(
                  padding: const EdgeInsets.all(DesignSystem.spacingL),
                  decoration: BoxDecoration(
-                   color: Colors.white.withValues(alpha: 0.2),
+                   color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.2),
                    shape: BoxShape.circle,
                  ),
                  child: _isCreatingRoom
@@ -892,7 +892,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
                Container(
                  padding: const EdgeInsets.all(DesignSystem.spacingL),
                  decoration: BoxDecoration(
-                   color: Colors.white.withValues(alpha: 0.2),
+                   color: ThemeColors.getTextOnColoredBackground(context).withValues(alpha: 0.2),
                    shape: BoxShape.circle,
                  ),
                  child: _isJoiningRoom

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import '../services/game_invitation_service.dart';
 import 'copy_to_clipboard_widget.dart';
+import '../theme/theme_colors.dart';
 
 class FriendInviteDialog extends StatefulWidget {
   final String roomId;
@@ -151,10 +152,10 @@ class _FriendInviteDialogState extends State<FriendInviteDialog> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Arkadaş Davet Et',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: ThemeColors.getTextOnColoredBackground(context),
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),

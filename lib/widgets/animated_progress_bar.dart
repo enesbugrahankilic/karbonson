@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math' as math;
+import '../theme/theme_colors.dart';
 
 class AnimatedProgressBar extends StatefulWidget {
   final double value;
@@ -572,10 +573,10 @@ class _AchievementProgressWidgetState extends State<AchievementProgressWidget>
           color: widget.color,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Text(
+        child: Text(
           'TAMAM',
           style: TextStyle(
-            color: Colors.white,
+            color: ThemeColors.getTextOnColoredBackground(context),
             fontSize: 10,
             fontWeight: FontWeight.bold,
           ),

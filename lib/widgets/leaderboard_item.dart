@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../provides/language_provider.dart';
 import '../services/app_localizations.dart';
+import '../theme/theme_colors.dart';
 
 class LeaderboardItem extends StatelessWidget {
   final String username;
@@ -61,7 +62,7 @@ class LeaderboardItem extends StatelessWidget {
             child: Text(
               rank.toString(),
               style: TextStyle(
-                color: Colors.white,
+                color: ThemeColors.getTextOnColoredBackground(context),
                 fontWeight: FontWeight.bold,
                 fontSize: isSmallScreen ? 12 : 14,
               ),
