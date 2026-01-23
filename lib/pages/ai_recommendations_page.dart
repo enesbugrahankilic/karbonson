@@ -10,7 +10,7 @@ import '../services/profile_service.dart';
 import '../widgets/page_templates.dart';
 
 class AIRecommendationsPage extends StatefulWidget {
-  const AIRecommendationsPage({super.key});
+  AIRecommendationsPage({super.key});
 
   @override
   State<AIRecommendationsPage> createState() => _AIRecommendationsPageState();

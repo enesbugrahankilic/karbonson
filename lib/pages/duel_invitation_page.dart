@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../widgets/page_templates.dart';
+import '../widgets/quiz_layout.dart';
+import '../theme/design_system.dart';
 import 'duel_page.dart';
 
 class DuelInvitationPage extends StatefulWidget {
-  const DuelInvitationPage({super.key});
+  DuelInvitationPage({super.key});
 
   @override
   State<DuelInvitationPage> createState() => _DuelInvitationPageState();
@@ -50,26 +51,24 @@ class _DuelInvitationPageState extends State<DuelInvitationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: StandardAppBar(
-        title: const Text('Düello Davetleri'),
-        onBackPressed: () => Navigator.pop(context),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadInvitations,
-            tooltip: 'Yenile',
-          ),
-        ],
-      ),
-      body: PageBody(
-        scrollable: true,
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _invitations.isEmpty
-                ? _buildEmptyState()
-                : _buildInvitationsList(),
-      ),
+    return QuizLayout(
+      title: 'Düello Davetleri',
+      subtitle: 'Gelen davetlerinizi yönetin',
+      showBackButton: true,
+      onBackPressed: () => Navigator.pop(context),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.refresh),
+          onPressed: _loadInvitations,
+          tooltip: 'Yenile',
+        ),
+      ],
+      scrollable: true,
+      child: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _invitations.isEmpty
+              ? _buildEmptyState()
+              : _buildInvitationsList(),
     );
   }
 
@@ -89,14 +88,15 @@ class _DuelInvitationPageState extends State<DuelInvitationPage> {
 
   Widget _buildInvitationsList() {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.zero,
       itemCount: _invitations.length,
       itemBuilder: (context, index) {
         final invitation = _invitations[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 16),
+        return Container(
+          margin: const EdgeInsets.only(bottom: DesignSystem.spacingM),
+          decoration: DesignSystem.getCardDecoration(context),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(DesignSystem.spacingM),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../services/quiz_logic.dart';
+import '../services/quiz_settings_service.dart';
 import '../provides/quiz_bloc.dart';
 import '../widgets/custom_question_card.dart';
 import '../theme/theme_colors.dart';
@@ -10,11 +11,10 @@ import '../theme/design_system.dart';
 import '../theme/app_theme.dart';
 import '../models/question.dart';
 import '../widgets/page_templates.dart';
+import '../enums/app_language.dart';
 
 class QuizPage extends StatefulWidget {
-  final QuizLogic quizLogic;
-
-  const QuizPage({super.key, required this.quizLogic});
+  const QuizPage({super.key});
 
   @override
   State<QuizPage> createState() => _QuizPageState();
@@ -86,12 +86,60 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         }
         // Start time tracking
         _quizStartTime = DateTime.now();
+        
+        // ✅ Ayarları kaydet
+        _saveQuizSettings();
+        
         context.read<QuizBloc>().add(LoadQuiz(
             category: passedCategory == 'Tümü' ? null : passedCategory,
             difficulty: passedDifficulty ?? _selectedDifficulty,
             questionCount: _selectedQuestionCount));
       } else {
-        // Show category selection dialog
+        // ✅ Kaydedilmiş ayarlar varsa, doğrudan quiz'e başla
+        _loadAndApplySavedSettings();
+      }
+    }
+  }
+
+  /// ✅ Ayarları localStorage'ta kaydet
+  Future<void> _saveQuizSettings() async {
+    final settings = QuizSettings(
+      category: _selectedCategory,
+      difficulty: _selectedDifficulty,
+      language: AppLanguage.turkish, // Mevcut dil
+      mode: 'normal',
+    );
+    await QuizSettingsService().saveQuizSettings(settings);
+  }
+
+  /// ✅ Kaydedilmiş ayarları yükle ve uygula
+  Future<void> _loadAndApplySavedSettings() async {
+    try {
+      final hasSettings = await QuizSettingsService().shouldUseStoredSettings();
+      
+      if (hasSettings) {
+        final settings = await QuizSettingsService().getQuizSettings();
+        if (settings != null && mounted) {
+          _selectedCategory = settings.category ?? 'Tümü';
+          _selectedDifficulty = settings.difficulty ?? DifficultyLevel.medium;
+          _selectedQuestionCount = 15; // Default
+          _quizStartTime = DateTime.now();
+          
+          // Doğrudan quiz'e başla, ayar ekranını gösterme
+          context.read<QuizBloc>().add(LoadQuiz(
+              category: _selectedCategory == 'Tümü' ? null : _selectedCategory,
+              difficulty: _selectedDifficulty,
+              questionCount: _selectedQuestionCount));
+          return;
+        }
+      }
+      
+      // Kaydedilmiş ayar yoksa, ayar ekranını göster
+      if (mounted) {
+        _showCategorySelection();
+      }
+    } catch (e) {
+      if (mounted) {
         _showCategorySelection();
       }
     }
@@ -250,7 +298,11 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () {
+                          // İptal edilmesinde bile son seçilen ayarları kaydet
+                          _saveQuizSettings();
+                          Navigator.of(context).pop();
+                        },
                         child: const Text('İptal'),
                       ),
                       const SizedBox(width: DesignSystem.spacingM),
@@ -266,6 +318,8 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                             );
                             return;
                           }
+                          // Başlama butonunda da ayarları kaydet
+                          _saveQuizSettings();
                           Navigator.of(context).pop({
                             'category': _selectedCategory,
                             'difficulty': _selectedDifficulty,
@@ -415,10 +469,10 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                 vertical: DesignSystem.spacingS,
               ),
               decoration: BoxDecoration(
-                color: ThemeColors.getSuccessColor(context).withOpacity(0.15),
+                color: ThemeColors.getSuccessColor(context).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                 border: Border.all(
-                  color: ThemeColors.getSuccessColor(context).withOpacity(0.3),
+                  color: ThemeColors.getSuccessColor(context).withValues(alpha: 0.3),
                 ),
               ),
               child: Row(
@@ -443,7 +497,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                   Container(
                     width: 1,
                     height: 40,
-                    color: ThemeColors.getBorder(context).withOpacity(0.3),
+                    color: ThemeColors.getBorder(context).withValues(alpha: 0.3),
                   ),
                   Column(
                     children: [
@@ -466,7 +520,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                     Container(
                       width: 1,
                       height: 40,
-                      color: ThemeColors.getBorder(context).withOpacity(0.3),
+                      color: ThemeColors.getBorder(context).withValues(alpha: 0.3),
                     ),
                   if (isCompleted)
                     ElevatedButton.icon(
@@ -546,6 +600,63 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                                 : _selectedCategory));
                       },
                       child: const Text('Tekrar Dene'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        // ✅ Handle QuizNoQuestionsAvailable state
+        if (state is QuizNoQuestionsAvailable) {
+          return Scaffold(
+            appBar: StandardAppBar(
+              title: const Text('Soru Bulunamadı'),
+              onBackPressed: () => Navigator.pop(context),
+            ),
+            body: PageBody(
+              scrollable: true,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.search_off,
+                      size: 80,
+                      color: ThemeColors.getWarningColor(context),
+                    ),
+                    const SizedBox(height: DesignSystem.spacingL),
+                    Text(
+                      'Soru Bulunamadı',
+                      textAlign: TextAlign.center,
+                      style: DesignSystem.getTitleMedium(context),
+                    ),
+                    const SizedBox(height: DesignSystem.spacingM),
+                    Text(
+                      state.message,
+                      textAlign: TextAlign.center,
+                      style: DesignSystem.getBodyMedium(context).copyWith(
+                        color: ThemeColors.getSecondaryText(context),
+                      ),
+                    ),
+                    const SizedBox(height: DesignSystem.spacingL),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () => _showCategorySelection(),
+                          icon: const Icon(Icons.edit),
+                          label: const Text('Ayarları Değiştir'),
+                        ),
+                        const SizedBox(height: DesignSystem.spacingM),
+                        OutlinedButton.icon(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.arrow_back),
+                          label: const Text('Geri Dön'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -690,7 +801,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                       Text(
                         'Lütfen bekleyin',
                         style: DesignSystem.getBodyMedium(context).copyWith(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -747,15 +858,15 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                Colors.red.withOpacity(0.1),
-                                Colors.red.withOpacity(0.05),
+                                Colors.red.withValues(alpha: 0.1),
+                                Colors.red.withValues(alpha: 0.05),
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             borderRadius: BorderRadius.circular(DesignSystem.radiusL),
                             border: Border.all(
-                              color: Colors.red.withOpacity(0.3),
+                              color: Colors.red.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Column(

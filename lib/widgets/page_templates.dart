@@ -1,11 +1,12 @@
-// lib/widgets/page_templates.dart
-// Sayfa şablonları - Tüm sayfalar için consistent design
+// Apple Quality Page Templates - Premium & Refined Design System
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
+import '../theme/apple_design_system.dart';
 
-/// Standart sayfa AppBar'ı
+/// Premium AppBar - Apple Quality Header
 class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget title;
   final VoidCallback? onBackPressed;
@@ -13,32 +14,54 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showBackButton;
   final Color? backgroundColor;
   final PreferredSizeWidget? bottom;
+  final double elevation;
 
   const StandardAppBar({
-    Key? key,
+    super.key,
     required this.title,
     this.onBackPressed,
     this.actions,
     this.showBackButton = true,
     this.backgroundColor,
     this.bottom,
-  }) : super(key: key);
+    this.elevation = 0.5,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return AppBar(
       leading: showBackButton
           ? IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: onBackPressed ?? () => Navigator.pop(context),
+              icon: Icon(
+                Icons.arrow_back_ios_rounded,
+                size: 20,
+                color: ThemeColors.getText(context),
+              ),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                onBackPressed?.call();
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                }
+              },
+              splashRadius: 24,
             )
           : null,
-      title: title,
+      title: DefaultTextStyle(
+        style: AppleDesignSystem.title2.copyWith(
+          color: ThemeColors.getText(context),
+        ),
+        child: title,
+      ),
       backgroundColor: backgroundColor ?? ThemeColors.getCardBackground(context),
-      elevation: 1,
+      elevation: elevation,
+      shadowColor: isDark ? Colors.black26 : Colors.black12,
       actions: actions,
       centerTitle: false,
       bottom: bottom,
+      surfaceTintColor: Colors.transparent,
     );
   }
 
@@ -48,22 +71,24 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
       : Size.fromHeight(kToolbarHeight + bottom!.preferredSize.height);
 }
 
-/// Responsive page body
+/// Premium Page Body - Responsive & Smooth
 class PageBody extends StatelessWidget {
   final Widget child;
   final bool scrollable;
   final EdgeInsets padding;
   final Color? backgroundColor;
   final double maxWidth;
+  final ScrollPhysics? scrollPhysics;
 
   const PageBody({
-    Key? key,
+    super.key,
     required this.child,
     this.scrollable = true,
     this.padding = const EdgeInsets.all(16.0),
     this.backgroundColor,
     this.maxWidth = 1200.0,
-  }) : super(key: key);
+    this.scrollPhysics,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +106,9 @@ class PageBody extends StatelessWidget {
       color: backgroundColor ?? ThemeColors.getBackground(context),
       child: scrollable
           ? SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
+              physics: scrollPhysics ?? const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
               child: content,
             )
           : content,
@@ -89,80 +116,153 @@ class PageBody extends StatelessWidget {
   }
 }
 
-/// Standart list item
-class StandardListItem extends StatelessWidget {
+/// Premium List Item - Apple Style with Haptic Feedback
+class StandardListItem extends StatefulWidget {
   final String title;
   final String? subtitle;
   final Widget? leading;
   final Widget? trailing;
   final VoidCallback? onTap;
   final Color? backgroundColor;
+  final EdgeInsets padding;
+  final bool showDivider;
 
   const StandardListItem({
-    Key? key,
+    super.key,
     required this.title,
     this.subtitle,
     this.leading,
     this.trailing,
     this.onTap,
     this.backgroundColor,
-  }) : super(key: key);
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    this.showDivider = true,
+  });
+
+  @override
+  State<StandardListItem> createState() => _StandardListItemState();
+}
+
+class _StandardListItemState extends State<StandardListItem>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4.0),
-      decoration: BoxDecoration(
-        color: backgroundColor ?? ThemeColors.getCardBackground(context),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: ListTile(
-        leading: leading,
-        title: Text(
-          title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+    return Column(
+      children: [
+        GestureDetector(
+          onTapDown: (_) {
+            _animationController.forward();
+            HapticFeedback.lightImpact();
+          },
+          onTapCancel: () {
+            _animationController.reverse();
+          },
+          onTap: () {
+            _animationController.reverse();
+            widget.onTap?.call();
+          },
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 1.0, end: 0.98)
+                .animate(_animationController),
+            child: Container(
+              color: widget.backgroundColor ?? Colors.transparent,
+              padding: widget.padding,
+              child: Row(
+                children: [
+                  if (widget.leading != null)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: widget.leading!,
+                    ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          widget.title,
+                          style: AppleDesignSystem.body1.copyWith(
+                            color: ThemeColors.getSecondaryText(context),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        if (widget.subtitle != null) ...[
+                          SizedBox(height: AppleDesignSystem.spacing4),
+                          Text(
+                            widget.subtitle!,
+                            style: AppleDesignSystem.caption1.copyWith(
+                              color: ThemeColors.getSecondaryText(context),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  if (widget.trailing != null)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12),
+                      child: widget.trailing!,
+                    ),
+                ],
+              ),
+            ),
+          ),
         ),
-        subtitle: subtitle != null
-            ? Text(
-                subtitle!,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              )
-            : null,
-        trailing: trailing,
-        onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      ),
+        if (widget.showDivider)
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppleDesignSystem.spacing16,
+            ),
+            child: AppleDesignSystem.smoothDivider(),
+          ),
+      ],
     );
   }
 }
 
-/// Standart section header
+/// Premium Section Header - Apple Style
 class SectionHeader extends StatelessWidget {
   final String title;
   final Widget? action;
+  final EdgeInsets padding;
 
   const SectionHeader({
-    Key? key,
+    super.key,
     required this.title,
     this.action,
-  }) : super(key: key);
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: padding,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            style: AppleDesignSystem.title2.copyWith(
+              color: ThemeColors.getText(context),
+              fontWeight: FontWeight.w600,
+            ),
           ),
           if (action != null) action!,
         ],
@@ -178,11 +278,11 @@ class ButtonGroup extends StatelessWidget {
   final MainAxisAlignment mainAxisAlignment;
 
   const ButtonGroup({
-    Key? key,
+    super.key,
     required this.buttons,
     this.direction = Axis.horizontal,
     this.mainAxisAlignment = MainAxisAlignment.spaceEvenly,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -230,13 +330,13 @@ class InfoCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const InfoCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.value,
     this.icon,
     this.color,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -289,10 +389,10 @@ class ResponsiveGridItem extends StatelessWidget {
   final double minWidth;
 
   const ResponsiveGridItem({
-    Key? key,
+    super.key,
     required this.child,
     this.minWidth = 150,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -304,3 +404,4 @@ class ResponsiveGridItem extends StatelessWidget {
     );
   }
 }
+

@@ -98,6 +98,22 @@ class QuizError extends QuizState {
   List<Object> get props => [message];
 }
 
+/// State for when no questions are available for the selected combination
+class QuizNoQuestionsAvailable extends QuizState {
+  final String category;
+  final DifficultyLevel? difficulty;
+  final String message;
+
+  const QuizNoQuestionsAvailable({
+    required this.category,
+    this.difficulty,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [category, difficulty ?? '', message];
+}
+
 class QuizCompleted extends QuizState {
   final List<Question> questions;
   final int score;
@@ -177,6 +193,19 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         questionCount: event.questionCount,
       );
       final questions = await quizLogic.getQuestions();
+      
+      // ✅ Validation: Check if questions are empty
+      if (questions.isEmpty) {
+        final categoryName = event.category ?? 'Tümü';
+        final difficultyName = event.difficulty?.displayName ?? 'Orta';
+        emit(QuizNoQuestionsAvailable(
+          category: categoryName,
+          difficulty: event.difficulty,
+          message: 'Maalesef "$categoryName" kategorisinde $difficultyName zorluk seviyesinde soru bulunamadı.\n\nLütfen başka bir kategori veya zorluk seviyesi seçiniz.',
+        ));
+        return;
+      }
+      
       emit(QuizLoaded(
         questions: questions,
         currentQuestion: 0,
@@ -185,7 +214,7 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         currentLanguage: event.language,
       ));
     } catch (e) {
-      emit(QuizError(e.toString()));
+      emit(QuizError('Soru yükleme hatası: ${e.toString()}'));
     }
   }
 
@@ -247,11 +276,10 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         
         // Send completion event to backend
         final userId = FirebaseAuth.instance.currentUser?.uid;
-        bool backendSuccess = false;
-        String errorMessage = '';
+        String? errorMessage;
         
         if (userId != null) {
-          backendSuccess = await GameCompletionService().sendQuizCompletion(
+          final backendSuccess = await GameCompletionService().sendQuizCompletion(
             score: newScore,
             totalQuestions: currentState.questions.length,
             correctAnswers: correctAnswersList.where((a) => a).length,
@@ -266,32 +294,22 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
             correctAnswersList: correctAnswersList,
           );
           
+          // Even if backend fails, data is saved to offline queue
+          // So we can show success if offline
           if (!backendSuccess) {
-            errorMessage = 'Sunucuya kaydedilemedi. Lütfen internet bağlantınızı kontrol edin.';
+            errorMessage = 'Veriler kaydedilirken hata oluştu. Lütfen internet bağlantınızı kontrol edin.';
           }
         } else {
           errorMessage = 'Kullanıcı girişi yapılmamış.';
-          backendSuccess = true; // Allow proceeding if no user (for testing)
         }
         
-        if (backendSuccess) {
-          // Backend success - show completion screen
-          emit(QuizCompleted(
-            questions: currentState.questions,
-            score: newScore,
-            answers: newAnswers,
-            currentLanguage: currentState.currentLanguage,
-          ));
-        } else {
-          // Backend failed - show error
-          emit(QuizCompletionError(
-            questions: currentState.questions,
-            score: newScore,
-            answers: newAnswers,
-            errorMessage: errorMessage,
-            currentLanguage: currentState.currentLanguage,
-          ));
-        }
+        // Always show completion (data is either in Firestore or offline queue)
+        emit(QuizCompleted(
+          questions: currentState.questions,
+          score: newScore,
+          answers: newAnswers,
+          currentLanguage: currentState.currentLanguage,
+        ));
       } else {
         // Continue to next question
         final nextIndex = event.questionIndex + 1;

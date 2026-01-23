@@ -10,6 +10,7 @@ import '../provides/profile_bloc.dart';
 import '../services/profile_service.dart';
 import '../services/profile_picture_service.dart';
 import '../services/nickname_service.dart';
+import '../services/carbon_footprint_service.dart';
 import '../theme/theme_colors.dart';
 import '../core/navigation/app_router.dart';
 import '../widgets/page_templates.dart';
@@ -23,13 +24,13 @@ class ProfilePage extends StatelessWidget {
       create: (context) => ProfileBloc(
         profileService: ProfileService(),
       )..add(const LoadProfile('')),
-      child: const ProfileContent(),
+      child: ProfileContent(),
     );
   }
 }
 
 class ProfileContent extends StatefulWidget {
-  const ProfileContent({super.key});
+  ProfileContent({super.key});
 
   @override
   State<ProfileContent> createState() => _ProfileContentState();
@@ -223,7 +224,7 @@ class _ProfileContentState extends State<ProfileContent>
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.3),
+                color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -295,8 +296,77 @@ class _ProfileContentState extends State<ProfileContent>
           if (userData.classLevel != null) ...[
             const SizedBox(height: 12),
             _buildInfoRow(context, 'Sınıf', '${userData.classLevel}. Sınıf ${userData.classSection ?? ''}', Icons.school),
+            const SizedBox(height: 12),
+            _buildCarbonDataButton(context, userData.classLevel!, userData.classSection ?? ''),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildCarbonDataButton(BuildContext context, int classLevel, String classSection) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).pushNamed(
+          '/carbon-footprint',
+          arguments: {'classLevel': classLevel, 'classSection': classSection},
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              ThemeColors.getSuccessColor(context).withValues(alpha: 0.1),
+              ThemeColors.getInfoColor(context).withValues(alpha: 0.1),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: ThemeColors.getSuccessColor(context).withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: ThemeColors.getSuccessColor(context).withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.eco, color: ThemeColors.getSuccessColor(context), size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Karbon Ölçümü',
+                    style: TextStyle(
+                      color: ThemeColors.getSecondaryText(context),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Sınıfınızın karbon ayak izini görüntüle',
+                    style: TextStyle(
+                      color: ThemeColors.getText(context),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios, color: ThemeColors.getPrimaryButtonColor(context), size: 16),
+          ],
+        ),
       ),
     );
   }
@@ -307,7 +377,7 @@ class _ProfileContentState extends State<ProfileContent>
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: (color ?? ThemeColors.getPrimaryButtonColor(context)).withOpacity(0.1),
+            color: (color ?? ThemeColors.getPrimaryButtonColor(context)).withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: color ?? ThemeColors.getPrimaryButtonColor(context), size: 20),
@@ -363,14 +433,14 @@ class _ProfileContentState extends State<ProfileContent>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                     width: 4,
                   ),
                 ),
               ),
               CircleAvatar(
                 radius: isSmallScreen ? 40 : 48,
-                backgroundColor: Colors.white.withOpacity(0.2),
+                backgroundColor: Colors.white.withValues(alpha: 0.2),
                 backgroundImage: userData.profilePictureUrl != null
                     ? (userData.profilePictureUrl!.startsWith('assets/')
                         ? AssetImage(userData.profilePictureUrl!) as ImageProvider
@@ -427,7 +497,7 @@ class _ProfileContentState extends State<ProfileContent>
               const SizedBox(width: 8),
               Icon(
                 Icons.edit,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 size: isSmallScreen ? 16 : 18,
               ),
             ],
@@ -437,13 +507,13 @@ class _ProfileContentState extends State<ProfileContent>
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.copy, size: 16, color: Colors.white.withOpacity(0.8)),
+            Icon(Icons.copy, size: 16, color: Colors.white.withValues(alpha: 0.8)),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 'UID: ${userData.uid.substring(0, 8)}...',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                   fontSize: isSmallScreen ? 12 : 14,
                   fontFamily: 'monospace',
                 ),
@@ -465,7 +535,7 @@ class _ProfileContentState extends State<ProfileContent>
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -546,10 +616,10 @@ class _ProfileContentState extends State<ProfileContent>
       decoration: BoxDecoration(
         color: ThemeColors.getCardBackground(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -561,7 +631,7 @@ class _ProfileContentState extends State<ProfileContent>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: isSmallScreen ? 20 : 24),
@@ -604,8 +674,8 @@ class _ProfileContentState extends State<ProfileContent>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                ThemeColors.getPrimaryButtonColor(context).withOpacity(0.8),
-                ThemeColors.getAccentButtonColor(context).withOpacity(0.8),
+                ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.8),
+                ThemeColors.getAccentButtonColor(context).withValues(alpha: 0.8),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -613,7 +683,7 @@ class _ProfileContentState extends State<ProfileContent>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.3),
+                color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               ),
@@ -639,7 +709,7 @@ class _ProfileContentState extends State<ProfileContent>
                       Text(
                         '${userData.totalGamesPlayed} oyun oynandı',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           fontSize: isSmallScreen ? 12 : 14,
                         ),
                       ),
@@ -648,7 +718,7 @@ class _ProfileContentState extends State<ProfileContent>
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(Icons.games, color: Colors.white, size: isSmallScreen ? 24 : 28),
@@ -665,7 +735,7 @@ class _ProfileContentState extends State<ProfileContent>
                       Text(
                         'Kazanma Oranı',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           fontSize: isSmallScreen ? 10 : 12,
                         ),
                       ),
@@ -682,7 +752,7 @@ class _ProfileContentState extends State<ProfileContent>
                   const SizedBox(height: 8),
                   LinearProgressIndicator(
                     value: userData.winRate,
-                    backgroundColor: Colors.white.withOpacity(0.3),
+                    backgroundColor: Colors.white.withValues(alpha: 0.3),
                     valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                     minHeight: 6,
                   ),
@@ -758,10 +828,10 @@ class _ProfileContentState extends State<ProfileContent>
       decoration: BoxDecoration(
         color: ThemeColors.getCardBackground(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -773,7 +843,7 @@ class _ProfileContentState extends State<ProfileContent>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: isSmallScreen ? 20 : 24),
@@ -892,8 +962,8 @@ class _ProfileContentState extends State<ProfileContent>
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: game.isWin
-                  ? ThemeColors.getSuccessColor(context).withOpacity(0.1)
-                  : ThemeColors.getErrorColor(context).withOpacity(0.1),
+                  ? ThemeColors.getSuccessColor(context).withValues(alpha: 0.1)
+                  : ThemeColors.getErrorColor(context).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(

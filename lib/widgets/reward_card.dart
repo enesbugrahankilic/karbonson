@@ -102,13 +102,13 @@ class _ModernRewardCardState extends State<ModernRewardCard>
             boxShadow: widget.isUnlocked
                 ? [
                     BoxShadow(
-                      color: rarityColor.withOpacity(0.3),
+                      color: rarityColor.withValues(alpha: 0.3),
                       blurRadius: 20,
                       spreadRadius: 2,
                       offset: const Offset(0, 8),
                     ),
                     BoxShadow(
-                      color: rarityColor.withOpacity(0.1),
+                      color: rarityColor.withValues(alpha: 0.1),
                       blurRadius: 40,
                       spreadRadius: 5,
                       offset: const Offset(0, 16),
@@ -119,7 +119,7 @@ class _ModernRewardCardState extends State<ModernRewardCard>
               color: widget.isSelected
                   ? rarityColor
                   : widget.isUnlocked
-                      ? rarityColor.withOpacity(0.5)
+                      ? rarityColor.withValues(alpha: 0.5)
                       : Colors.transparent,
               width: widget.isSelected ? 3 : widget.isUnlocked ? 1.5 : 0,
             ),
@@ -141,7 +141,7 @@ class _ModernRewardCardState extends State<ModernRewardCard>
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: widget.isUnlocked
-              ? Colors.white.withOpacity(0.1)
+              ? Colors.white.withValues(alpha: 0.1)
               : ThemeColors.getCardBackground(context),
         ),
         child: Column(
@@ -212,8 +212,8 @@ class _ModernRewardCardState extends State<ModernRewardCard>
           end: Alignment.bottomRight,
           colors: widget.isUnlocked
               ? [
-                  rarityColor.withOpacity(0.3),
-                  rarityColor.withOpacity(0.1),
+                  rarityColor.withValues(alpha: 0.3),
+                  rarityColor.withValues(alpha: 0.1),
                 ]
               : [Colors.grey[300]!, Colors.grey[200]!],
         ),
@@ -224,7 +224,7 @@ class _ModernRewardCardState extends State<ModernRewardCard>
         boxShadow: widget.isUnlocked
             ? [
                 BoxShadow(
-                  color: rarityColor.withOpacity(0.5),
+                  color: rarityColor.withValues(alpha: 0.5),
                   blurRadius: 15,
                   spreadRadius: 2,
                 ),
@@ -267,7 +267,7 @@ class _ModernRewardCardState extends State<ModernRewardCard>
               _getTypeIcon(),
               size: 14,
               color: widget.isUnlocked
-                  ? Colors.white.withOpacity(0.8)
+                  ? Colors.white.withValues(alpha: 0.8)
                   : Colors.grey[600],
             ),
             const SizedBox(width: 4),
@@ -276,7 +276,7 @@ class _ModernRewardCardState extends State<ModernRewardCard>
               style: TextStyle(
                 fontSize: 12,
                 color: widget.isUnlocked
-                    ? Colors.white.withOpacity(0.8)
+                    ? Colors.white.withValues(alpha: 0.8)
                     : Colors.grey[600],
               ),
             ),
@@ -290,9 +290,9 @@ class _ModernRewardCardState extends State<ModernRewardCard>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.2),
+        color: Colors.green.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.green.withOpacity(0.5)),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.5)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -344,9 +344,9 @@ class _ModernRewardCardState extends State<ModernRewardCard>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.1),
+        color: statusColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: statusColor.withOpacity(0.3)),
+        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -371,7 +371,7 @@ class _ModernRewardCardState extends State<ModernRewardCard>
       widget.rewardItem.description,
       style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: widget.isUnlocked
-                ? Colors.white.withOpacity(0.85)
+                ? Colors.white.withValues(alpha: 0.85)
                 : Colors.grey[600],
           ),
       maxLines: 2,
@@ -389,9 +389,9 @@ class _ModernRewardCardState extends State<ModernRewardCard>
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: (widget.isUnlocked
-                ? Colors.black.withOpacity(0.1)
+                ? Colors.black.withValues(alpha: 0.1)
                 : ThemeColors.getCardBackgroundLight(context))
-            .withOpacity(0.5),
+            .withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -405,7 +405,7 @@ class _ModernRewardCardState extends State<ModernRewardCard>
                 style: TextStyle(
                   fontSize: 11,
                   color: widget.isUnlocked
-                      ? Colors.white.withOpacity(0.8)
+                      ? Colors.white.withValues(alpha: 0.8)
                       : Colors.grey[600],
                 ),
               ),
@@ -425,7 +425,7 @@ class _ModernRewardCardState extends State<ModernRewardCard>
             child: LinearProgressIndicator(
               value: progress.progressPercentage.clamp(0.0, 1.0),
               backgroundColor:
-                  widget.isUnlocked ? Colors.white.withOpacity(0.2) : Colors.grey[300],
+                  widget.isUnlocked ? Colors.white.withValues(alpha: 0.2) : Colors.grey[300],
               valueColor: AlwaysStoppedAnimation<Color>(
                 progress.status == RewardUnlockStatus.locked
                     ? Colors.grey[400]!
@@ -516,7 +516,7 @@ class _ModernRewardCardState extends State<ModernRewardCard>
               height: 48,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: rarityColor.withOpacity(0.2),
+                color: rarityColor.withValues(alpha: 0.2),
                 border: Border.all(color: rarityColor, width: 2),
               ),
               child: Center(
@@ -576,9 +576,9 @@ class _ModernRewardCardState extends State<ModernRewardCard>
 
   List<Color> _getGradientColors(Color baseColor) {
     return [
-      baseColor.withOpacity(0.3),
-      baseColor.withOpacity(0.1),
-      baseColor.withOpacity(0.05),
+      baseColor.withValues(alpha: 0.3),
+      baseColor.withValues(alpha: 0.1),
+      baseColor.withValues(alpha: 0.05),
     ];
   }
 
@@ -705,7 +705,7 @@ class _RewardFilterChipState extends State<RewardFilterChip>
             boxShadow: widget.isSelected
                 ? [
                     BoxShadow(
-                      color: color.withOpacity(0.4),
+                      color: color.withValues(alpha: 0.4),
                       blurRadius: 10,
                       spreadRadius: 1,
                       offset: const Offset(0, 4),
@@ -778,7 +778,7 @@ class PointWalletCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.amber.withOpacity(0.4),
+              color: Colors.amber.withValues(alpha: 0.4),
               blurRadius: 20,
               spreadRadius: 3,
               offset: const Offset(0, 8),
@@ -789,7 +789,7 @@ class PointWalletCard extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
           ),
           child: Row(
             children: [
@@ -797,7 +797,7 @@ class PointWalletCard extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                 ),
                 child: const Icon(
                   Icons.diamond,
@@ -813,7 +813,7 @@ class PointWalletCard extends StatelessWidget {
                     Text(
                       'Karbon Puanı',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         fontSize: 14,
                       ),
                     ),
@@ -836,7 +836,7 @@ class PointWalletCard extends StatelessWidget {
                           child: Text(
                             'KP',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withValues(alpha: 0.8),
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                             ),
@@ -852,7 +852,7 @@ class PointWalletCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
@@ -951,7 +951,7 @@ class RewardEmptyState extends StatelessWidget {
 
 /// Shimmer loading effect for reward cards
 class RewardCardShimmer extends StatelessWidget {
-  const RewardCardShimmer({super.key});
+  RewardCardShimmer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -1148,10 +1148,10 @@ class RewardInventorySummary extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: color.withOpacity(0.3),
+          color: color.withValues(alpha: 0.3),
           width: 1,
         ),
       ),

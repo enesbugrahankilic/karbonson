@@ -3,7 +3,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/theme_colors.dart';
 
 class TutorialPage extends StatefulWidget {
-  const TutorialPage({super.key});
+  final bool isFirstLogin;
+  
+  const TutorialPage({
+    super.key,
+    this.isFirstLogin = false,
+  });
 
   @override
   State<TutorialPage> createState() => _TutorialPageState();
@@ -84,7 +89,12 @@ class _TutorialPageState extends State<TutorialPage> {
 
     if (!mounted) return;
 
-    Navigator.of(context).pushReplacementNamed('/home');
+    if (widget.isFirstLogin) {
+      // Close tutorial and return to home
+      Navigator.of(context).pop();
+    } else {
+      Navigator.of(context).pushReplacementNamed('/home');
+    }
   }
 
   @override

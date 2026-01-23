@@ -51,7 +51,7 @@ class LootBoxColors {
   static List<Color> getRarityGradient(LootBoxRarity rarity) {
     final baseColor = getRarityColor(rarity);
     final glowColor = getRarityGlowColor(rarity);
-    return [baseColor.withOpacity(0.3), baseColor, glowColor];
+    return [baseColor.withValues(alpha: 0.3), baseColor, glowColor];
   }
 }
 
@@ -260,7 +260,7 @@ class _ParticleWidgetState extends State<ParticleWidget>
       _particles.add(Particle(
         position: center,
         velocity: Offset(cos(angle) * speed, sin(angle) * speed),
-        color: color.withOpacity(_random.nextDouble() * 0.5 + 0.5),
+        color: color.withValues(alpha: _random.nextDouble() * 0.5 + 0.5),
         size: _random.nextDouble() * 8 + 4,
         opacity: 1.0,
         rotation: _random.nextDouble() * 2 * pi,
@@ -342,7 +342,7 @@ class ParticlePainter extends CustomPainter {
       canvas.rotate(particle.rotation);
 
       final paint = Paint()
-        ..color = particle.color.withOpacity(particle.opacity)
+        ..color = particle.color.withValues(alpha: particle.opacity)
         ..style = PaintingStyle.fill;
 
       switch (particleType) {
@@ -505,12 +505,12 @@ class _GlowWidgetState extends State<GlowWidget> with TickerProviderStateMixin {
             borderRadius: widget.borderRadius,
             boxShadow: [
               BoxShadow(
-                color: widget.glowColor.withOpacity(0.6 * intensity),
+                color: widget.glowColor.withValues(alpha: 0.6 * intensity),
                 blurRadius: widget.blurRadius,
                 spreadRadius: 2 * intensity,
               ),
               BoxShadow(
-                color: widget.glowColor.withOpacity(0.3 * intensity),
+                color: widget.glowColor.withValues(alpha: 0.3 * intensity),
                 blurRadius: widget.blurRadius * 2,
                 spreadRadius: 4 * intensity,
               ),
@@ -573,7 +573,7 @@ class _ShimmerWidgetState extends State<ShimmerWidget>
             return LinearGradient(
               colors: [
                 Colors.transparent,
-                widget.shimmerColor.withOpacity(widget.intensity),
+                widget.shimmerColor.withValues(alpha: widget.intensity),
                 Colors.transparent,
               ],
               stops: const [0.0, 0.5, 1.0],
@@ -629,9 +629,9 @@ class RarityBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.5), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.5), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -801,8 +801,8 @@ class _ConfettiWidgetState extends State<ConfettiWidget>
     for (int i = 0; i < widget.particleCount; i++) {
       final colors = [
         baseColor,
-        baseColor.withOpacity(0.7),
-        baseColor.withOpacity(0.5),
+        baseColor.withValues(alpha: 0.7),
+        baseColor.withValues(alpha: 0.5),
         Colors.white,
         LootBoxColors.legendary, // Gold accents
       ];
@@ -900,7 +900,7 @@ class _ConfettiPainter extends CustomPainter {
       canvas.rotate(particle.rotation);
 
       final paint = Paint()
-        ..color = particle.color.withOpacity(particle.opacity)
+        ..color = particle.color.withValues(alpha: particle.opacity)
         ..style = PaintingStyle.fill;
 
       switch (particle.shape) {
@@ -1027,7 +1027,7 @@ class _RingBurstPainter extends CustomPainter {
       final strokeWidth = 4 * (1 - ringProgress) + 1;
 
       final paint = Paint()
-        ..color = color.withOpacity((1 - ringProgress) * 0.6)
+        ..color = color.withValues(alpha: (1 - ringProgress) * 0.6)
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth;
 
@@ -1119,10 +1119,10 @@ class _LootBoxOpeningDialogState extends State<LootBoxOpeningDialog>
         width: MediaQuery.of(context).size.width * 0.9,
         height: MediaQuery.of(context).size.height * 0.8,
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.8),
+          color: Colors.black.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: LootBoxColors.getRarityColor(widget.lootBox.rarity).withOpacity(0.5),
+            color: LootBoxColors.getRarityColor(widget.lootBox.rarity).withValues(alpha: 0.5),
             width: 2,
           ),
         ),
@@ -1178,7 +1178,7 @@ class _LootBoxOpeningDialogState extends State<LootBoxOpeningDialog>
                             width: 120,
                             height: 120,
                             decoration: BoxDecoration(
-                              color: LootBoxColors.getRarityColor(widget.lootBox.rarity).withOpacity(0.2),
+                              color: LootBoxColors.getRarityColor(widget.lootBox.rarity).withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: LootBoxColors.getRarityColor(widget.lootBox.rarity),
@@ -1215,7 +1215,7 @@ class _LootBoxOpeningDialogState extends State<LootBoxOpeningDialog>
                                   width: 100,
                                   height: 100,
                                   decoration: BoxDecoration(
-                                    color: LootBoxColors.getRarityColor(widget.reward.reward.rarity).withOpacity(0.2),
+                                    color: LootBoxColors.getRarityColor(widget.reward.reward.rarity).withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(15),
                                     border: Border.all(
                                       color: LootBoxColors.getRarityColor(widget.reward.reward.rarity),
@@ -1265,8 +1265,8 @@ class _LootBoxOpeningDialogState extends State<LootBoxOpeningDialog>
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 decoration: BoxDecoration(
                                   color: widget.reward.isNew
-                                      ? Colors.green.withOpacity(0.2)
-                                      : Colors.orange.withOpacity(0.2),
+                                      ? Colors.green.withValues(alpha: 0.2)
+                                      : Colors.orange.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
                                     color: widget.reward.isNew ? Colors.green : Colors.orange,
@@ -1319,7 +1319,7 @@ class _LootBoxOpeningDialogState extends State<LootBoxOpeningDialog>
                 onPressed: widget.onClose,
                 icon: const Icon(Icons.close, color: Colors.white),
                 style: IconButton.styleFrom(
-                  backgroundColor: Colors.black.withOpacity(0.5),
+                  backgroundColor: Colors.black.withValues(alpha: 0.5),
                 ),
               ),
             ),

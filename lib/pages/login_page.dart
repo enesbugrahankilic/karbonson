@@ -7,9 +7,10 @@ import '../theme/design_system.dart';
 import '../widgets/page_templates.dart';
 import 'register_page.dart';
 import 'welcome_page.dart';
+import 'forgot_password_page.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+   const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -159,9 +160,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   }
 
   void _navigateToForgotPassword() {
-    // TODO: Implement forgot password functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Şifre sıfırlama özelliği yakında eklenecek')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ForgotPasswordPage(),
+      ),
     );
   }
 
@@ -208,20 +211,20 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                           gradient: LinearGradient(
                             colors: [
                               Theme.of(context).primaryColor,
-                              Theme.of(context).primaryColor.withOpacity(0.6),
+                              Theme.of(context).primaryColor.withValues(alpha: 0.6),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Theme.of(context).primaryColor.withOpacity(0.4),
+                              color: Theme.of(context).primaryColor.withValues(alpha: 0.4),
                               blurRadius: 30,
                               offset: const Offset(0, 15),
                               spreadRadius: 2,
                             ),
                             BoxShadow(
-                              color: Theme.of(context).primaryColor.withOpacity(0.2),
+                              color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
                               blurRadius: 60,
                               offset: const Offset(0, 30),
                               spreadRadius: 5,
@@ -241,7 +244,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         shaderCallback: (bounds) => LinearGradient(
                           colors: [
                             Colors.white,
-                            Colors.white.withOpacity(0.95),
+                            Colors.white.withValues(alpha: 0.95),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -254,7 +257,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                             letterSpacing: 1.2,
                             shadows: [
                               Shadow(
-                                color: Colors.black.withOpacity(0.25),
+                                color: Colors.black.withValues(alpha: 0.25),
                                 offset: const Offset(0, 3),
                                 blurRadius: 6,
                               ),
@@ -268,7 +271,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                       Text(
                         'Çevre Dostu Quiz Uygulaması',
                         style: DesignSystem.getBodyMedium(context).copyWith(
-                          color: Colors.white.withOpacity(0.95),
+                          color: Colors.white.withValues(alpha: 0.95),
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                           letterSpacing: 0.3,
@@ -281,7 +284,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                       Text(
                         'Bilgi ile Gezegeni Koru',
                         style: DesignSystem.getBodySmall(context).copyWith(
-                          color: Colors.white.withOpacity(0.75),
+                          color: Colors.white.withValues(alpha: 0.75),
                           fontSize: 13,
                           fontStyle: FontStyle.italic,
                           letterSpacing: 0.2,
@@ -376,7 +379,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         // Divider
                         Row(
                           children: [
-                            Expanded(child: Divider(color: Colors.grey.withOpacity(0.3))),
+                            Expanded(child: Divider(color: Colors.grey.withValues(alpha: 0.3))),
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 12),
                               child: Text(
@@ -388,7 +391,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 ),
                               ),
                             ),
-                            Expanded(child: Divider(color: Colors.grey.withOpacity(0.3))),
+                            Expanded(child: Divider(color: Colors.grey.withValues(alpha: 0.3))),
                           ],
                         ),
 
@@ -398,10 +401,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).primaryColor.withOpacity(0.08),
+                            color: Theme.of(context).primaryColor.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                             border: Border.all(
-                              color: Theme.of(context).primaryColor.withOpacity(0.15),
+                              color: Theme.of(context).primaryColor.withValues(alpha: 0.15),
                               width: 1,
                             ),
                           ),
@@ -420,7 +423,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 onPressed: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => const RegisterPage()),
+                                    MaterialPageRoute(builder: (context) => RegisterPage()),
                                   );
                                 },
                                 style: TextButton.styleFrom(
@@ -449,10 +452,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         Container(
                           padding: const EdgeInsets.all(11),
                           decoration: BoxDecoration(
-                            color: Colors.amber.withOpacity(0.08),
+                            color: Colors.amber.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                             border: Border.all(
-                              color: Colors.amber.withOpacity(0.2),
+                              color: Colors.amber.withValues(alpha: 0.2),
                               width: 1.5,
                             ),
                           ),
@@ -499,10 +502,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.08),
+        color: Colors.red.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(DesignSystem.radiusM),
         border: Border.all(
-          color: Colors.red.withOpacity(0.3),
+          color: Colors.red.withValues(alpha: 0.3),
           width: 1.5,
         ),
       ),
@@ -511,7 +514,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.15),
+              color: Colors.red.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -546,7 +549,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         hintText: 'ornek@email.com',
         prefixIcon: Icon(
           Icons.email_outlined,
-          color: Theme.of(context).primaryColor.withOpacity(0.7),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.7),
         ),
       ),
       keyboardType: TextInputType.emailAddress,
@@ -568,13 +571,13 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         hintText: 'Şifrenizi girin',
         prefixIcon: Icon(
           Icons.lock_outlined,
-          color: Theme.of(context).primaryColor.withOpacity(0.7),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.7),
         ),
         suffixIcon: IconButton(
           onPressed: () => setState(() => _showPassword = !_showPassword),
           icon: Icon(
             _showPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-            color: Theme.of(context).primaryColor.withOpacity(0.6),
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.6),
           ),
         ),
       ),
@@ -600,7 +603,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 ? [Colors.grey[400]!, Colors.grey[500]!]
                 : [
                     Theme.of(context).primaryColor,
-                    Theme.of(context).primaryColor.withOpacity(0.8),
+                    Theme.of(context).primaryColor.withValues(alpha: 0.8),
                   ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -609,7 +612,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               ? null
               : [
                   BoxShadow(
-                    color: Theme.of(context).primaryColor.withOpacity(0.3),
+                    color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
                     blurRadius: 16,
                     offset: const Offset(0, 8),
                     spreadRadius: 2,

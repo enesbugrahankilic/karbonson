@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import '../services/game_invitation_service.dart';
 
 class GameInvitationList extends StatefulWidget {
-  const GameInvitationList({super.key});
+  GameInvitationList({super.key});
 
   @override
   State<GameInvitationList> createState() => _GameInvitationListState();

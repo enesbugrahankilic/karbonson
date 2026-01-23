@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../services/firebase_2fa_service.dart';
 import '../theme/theme_colors.dart';
+import '../widgets/page_templates.dart';
 import '../widgets/phone_input_widget.dart';
 
 /// Result class for 2FA operations
@@ -41,7 +42,7 @@ class TwoFactorAuthResult {
 }
 
 class TwoFactorAuthSetupPage extends StatefulWidget {
-  const TwoFactorAuthSetupPage({super.key});
+  TwoFactorAuthSetupPage({super.key});
 
   @override
   State<TwoFactorAuthSetupPage> createState() => _TwoFactorAuthSetupPageState();
@@ -495,18 +496,8 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'İki Faktörlü Doğrulama',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+      appBar: StandardAppBar(
+        title: Text('İki Faktörlü Doğrulama'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -514,7 +505,6 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage>
           ),
           if (!_isLoading)
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, color: Colors.white),
               onSelected: (value) {
                 switch (value) {
                   case 'help':
@@ -550,23 +540,15 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage>
             ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: ThemeColors.getGradientColors(context),
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20.0),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 500),
-                child: Column(
-                  children: [
+      body: PageBody(
+        scrollable: true,
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
                     _buildHeaderCard(),
                     const SizedBox(height: 20),
                     _buildSecurityStatusCard(),
@@ -583,9 +565,7 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage>
                       const SizedBox(height: 20),
                       _buildAdvancedOptionsCard(),
                     ],
-                  ],
-                ),
-              ),
+              ],
             ),
           ),
         ),
@@ -674,13 +654,13 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage>
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: _is2FAEnabled
-                    ? Colors.green.withOpacity( 0.1)
-                    : Colors.orange.withOpacity( 0.1),
+                    ? Colors.green.withValues(alpha:  0.1)
+                    : Colors.orange.withValues(alpha:  0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: _is2FAEnabled
-                      ? Colors.green.withOpacity( 0.3)
-                      : Colors.orange.withOpacity( 0.3),
+                      ? Colors.green.withValues(alpha:  0.3)
+                      : Colors.orange.withValues(alpha:  0.3),
                 ),
               ),
               child: Column(
@@ -886,10 +866,10 @@ class _TwoFactorAuthSetupPageState extends State<TwoFactorAuthSetupPage>
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity( 0.1),
+                    color: Colors.green.withValues(alpha:  0.1),
                     borderRadius: BorderRadius.circular(12),
                     border:
-                        Border.all(color: Colors.green.withOpacity( 0.3)),
+                        Border.all(color: Colors.green.withValues(alpha:  0.3)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

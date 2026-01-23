@@ -9,7 +9,7 @@ import '../theme/design_system.dart';
 import '../widgets/page_templates.dart';
 
 class EmailVerificationPage extends StatefulWidget {
-  const EmailVerificationPage({super.key});
+  EmailVerificationPage({super.key});
 
   @override
   State<EmailVerificationPage> createState() => _EmailVerificationPageState();
@@ -190,10 +190,10 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.08),
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                 border: Border.all(
-                  color: Theme.of(context).primaryColor.withOpacity(0.2),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
                 ),
               ),
               child: Column(
@@ -257,9 +257,9 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: Colors.amber.withOpacity(0.08),
+                  color: Colors.amber.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                  border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                  border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
@@ -285,9 +285,9 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.08),
+                  color: Colors.green.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                  border: Border.all(color: Colors.green.withOpacity(0.3)),
+                  border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   children: [

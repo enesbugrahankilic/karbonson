@@ -185,7 +185,7 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
-        backgroundColor: Colors.black.withOpacity(0.7),
+        backgroundColor: Colors.black.withValues(alpha: 0.7),
         child: Container(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -377,7 +377,7 @@ class _BiometricSetupWidgetState extends State<BiometricSetupWidget> {
 
 /// Biyometri kurulum durumu göstergecisi
 class BiometricSetupStatus extends StatelessWidget {
-  const BiometricSetupStatus({super.key});
+  BiometricSetupStatus({super.key});
 
   @override
   Widget build(BuildContext context) {

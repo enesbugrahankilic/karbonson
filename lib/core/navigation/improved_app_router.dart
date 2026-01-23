@@ -22,7 +22,6 @@ import '../../pages/ai_recommendations_page.dart';
 import '../../pages/achievement_page.dart';
 import '../../pages/daily_challenge_page.dart';
 import '../../services/authentication_state_service.dart';
-import '../../services/quiz_logic.dart';
 import '../../services/comprehensive_2fa_service.dart';
 
 /// Improved route names with categorization
@@ -117,13 +116,13 @@ class ImprovedAppRouter {
   /// Handle authentication routes
   static PageRoute<dynamic> _handleAuthRoute(RouteSettings settings) {
     return switch (settings.name) {
-      AppRoutesV2.authLogin => _createRoute(const LoginPage()),
-      AppRoutesV2.authRegister => _createRoute(const RegisterPageRefactored()),
-      AppRoutesV2.authEmailVerify => _createRoute(const EmailVerificationPage()),
-      AppRoutesV2.authForgotPassword => _createRoute(const ForgotPasswordPage()),
-      AppRoutesV2.auth2FASetup => _createRoute(const TwoFactorAuthSetupPage()),
+      AppRoutesV2.authLogin => _createRoute(LoginPage()),
+      AppRoutesV2.authRegister => _createRoute(RegisterPageRefactored()),
+      AppRoutesV2.authEmailVerify => _createRoute(EmailVerificationPage()),
+      AppRoutesV2.authForgotPassword => _createRoute(ForgotPasswordPage()),
+      AppRoutesV2.auth2FASetup => _createRoute(TwoFactorAuthSetupPage()),
       AppRoutesV2.auth2FAVerify => _buildComprehensive2FAVerification(settings),
-      AppRoutesV2.authTutorial => _createRoute(const TutorialPage()),
+      AppRoutesV2.authTutorial => _createRoute(TutorialPage()),
       _ => _createRoute(_buildErrorPage('Bilinmeyen Auth Sayfası', '')),
     };
   }
@@ -131,16 +130,16 @@ class ImprovedAppRouter {
   /// Handle main app routes
   static PageRoute<dynamic> _handleAppRoute(RouteSettings settings) {
     return switch (settings.name) {
-      AppRoutesV2.appHome => _createRoute(const HomeDashboard()),
-      AppRoutesV2.appQuiz => _createRoute(QuizPage(quizLogic: QuizLogic())),
-      AppRoutesV2.appDailyChallenge => _createRoute(const DailyChallengePage()),
-      AppRoutesV2.appAIRecommendations => _createRoute(const AIRecommendationsPage()),
-      AppRoutesV2.appBoardGame => _createRoute(const BoardGamePage()),
-      AppRoutesV2.appDuel => _createRoute(const DuelPage()),
-      AppRoutesV2.appDuelInvite => _createRoute(const DuelInvitationPage()),
+      AppRoutesV2.appHome => _createRoute(HomeDashboard()),
+      AppRoutesV2.appQuiz => _createRoute(const QuizPage()),
+      AppRoutesV2.appDailyChallenge => _createRoute(DailyChallengePage()),
+      AppRoutesV2.appAIRecommendations => _createRoute(AIRecommendationsPage()),
+      AppRoutesV2.appBoardGame => _createRoute(BoardGamePage()),
+      AppRoutesV2.appDuel => _createRoute(DuelPage()),
+      AppRoutesV2.appDuelInvite => _createRoute(DuelInvitationPage()),
       AppRoutesV2.appFriends => _createRoute(FriendsPage(userNickname: settings.arguments as String? ?? 'User')),
-      AppRoutesV2.appMultiplayerLobby => _createRoute(const SizedBox()),
-      AppRoutesV2.appRoomManagement => _createRoute(const SizedBox()),
+      AppRoutesV2.appMultiplayerLobby => _createRoute(SizedBox()),
+      AppRoutesV2.appRoomManagement => _createRoute(SizedBox()),
       _ => _createRoute(_buildErrorPage('Bilinmeyen App Sayfası', '')),
     };
   }
@@ -148,9 +147,9 @@ class ImprovedAppRouter {
   /// Handle user routes
   static PageRoute<dynamic> _handleUserRoute(RouteSettings settings) {
     return switch (settings.name) {
-      AppRoutesV2.userProfile => _createRoute(const ProfilePage()),
-      AppRoutesV2.userSettings => _createRoute(const SettingsPage()),
-      AppRoutesV2.userAchievements => _createRoute(const AchievementPage()),
+      AppRoutesV2.userProfile => _createRoute(ProfilePage()),
+      AppRoutesV2.userSettings => _createRoute(SettingsPage()),
+      AppRoutesV2.userAchievements => _createRoute(AchievementPage()),
       _ => _createRoute(_buildErrorPage('Bilinmeyen Kullanıcı Sayfası', '')),
     };
   }
@@ -158,12 +157,12 @@ class ImprovedAppRouter {
   /// Handle legacy routes (backward compatibility)
   static PageRoute<dynamic> _handleLegacyRoute(RouteSettings settings) {
     return switch (settings.name) {
-      AppRoutesV2.home => _createRoute(const HomeDashboard()),
-      AppRoutesV2.login => _createRoute(const LoginPage()),
-      AppRoutesV2.register => _createRoute(const RegisterPageRefactored()),
-      AppRoutesV2.quiz => _createRoute(QuizPage(quizLogic: QuizLogic())),
-      AppRoutesV2.profile => _createRoute(const ProfilePage()),
-      AppRoutesV2.settings => _createRoute(const SettingsPage()),
+      AppRoutesV2.home => _createRoute(HomeDashboard()),
+      AppRoutesV2.login => _createRoute(LoginPage()),
+      AppRoutesV2.register => _createRoute(RegisterPageRefactored()),
+      AppRoutesV2.quiz => _createRoute(const QuizPage()),
+      AppRoutesV2.profile => _createRoute(ProfilePage()),
+      AppRoutesV2.settings => _createRoute(SettingsPage()),
       _ => _createRoute(_buildErrorPage('Sayfa Bulunamadı', 'İstenen rota tanımlanmamış')),
     };
   }

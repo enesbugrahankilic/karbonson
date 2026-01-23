@@ -17,6 +17,7 @@ import 'provides/ai_bloc.dart';
 import 'services/ai_service.dart';
 import 'services/quiz_logic.dart';
 import 'services/profile_service.dart';
+import 'services/http_interceptor_service.dart';
 import 'firebase_options.dart';
 import 'services/authentication_state_service.dart';
 import 'services/firebase_auth_service.dart';
@@ -268,6 +269,21 @@ class _AppRootState extends State<AppRoot> {
         if (kDebugMode) debugPrint('$st');
       }
 
+      // ✅ Initialize HTTP interceptor for global 401/403 handling
+      try {
+        if (kDebugMode) debugPrint('AppRoot: initializing HttpInterceptorClient');
+        HttpInterceptorClient.setUnauthorizedCallback(() {
+          if (kDebugMode) debugPrint('🚪 Unauthorized - redirecting to login');
+          NavigationService().navigateTo('/login');
+        });
+        if (kDebugMode) debugPrint('AppRoot: HttpInterceptorClient initialized');
+      } catch (e, st) {
+        if (kDebugMode) {
+          debugPrint('AppRoot: HttpInterceptorClient init failed: $e');
+        }
+        if (kDebugMode) debugPrint('$st');
+      }
+
       setState(() => _initializing = false);
     } catch (e, st) {
       if (kDebugMode) debugPrint('AppRoot: initialization error: $e');
@@ -373,20 +389,20 @@ class _Karbon2AppState extends State<Karbon2App> {
 
   Future<void> _determineInitialRoute() async {
     try {
-      // Always start at home - authentication checks will be handled in the home page
+      // Start at login page - authentication handled in login flow
       setState(() {
-        _initialRoute = AppRoutes.home;
+        _initialRoute = AppRoutes.login;
       });
       if (kDebugMode) {
-        debugPrint('main: Starting at home - authentication handled in home page');
+        debugPrint('main: Starting at login page');
       }
     } catch (e) {
       if (kDebugMode) {
         debugPrint('main: Error determining initial route: $e');
       }
-      // Default to home on error
+      // Default to login on error
       setState(() {
-        _initialRoute = AppRoutes.home;
+        _initialRoute = AppRoutes.login;
       });
     } finally {
       setState(() {

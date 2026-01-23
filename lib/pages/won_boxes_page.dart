@@ -25,7 +25,7 @@ enum SortOption {
 
 /// Kazanılan Kutular Sayfası - Açılmamış kutuların listelendiği ekran
 class WonBoxesPage extends StatefulWidget {
-  const WonBoxesPage({super.key});
+  WonBoxesPage({super.key});
 
   @override
   State<WonBoxesPage> createState() => _WonBoxesPageState();
@@ -362,7 +362,7 @@ class _WonBoxesPageState extends State<WonBoxesPage> with TickerProviderStateMix
         _applyFilters();
         Navigator.of(context).pop();
       },
-      selectedColor: Colors.blue.withOpacity(0.2),
+      selectedColor: Colors.blue.withValues(alpha: 0.2),
       checkmarkColor: Colors.blue,
     );
   }
@@ -379,7 +379,7 @@ class _WonBoxesPageState extends State<WonBoxesPage> with TickerProviderStateMix
         _applyFilters();
         Navigator.of(context).pop();
       },
-      selectedColor: LootBoxColors.getRarityColor(rarity ?? LootBoxRarity.common).withOpacity(0.2),
+      selectedColor: LootBoxColors.getRarityColor(rarity ?? LootBoxRarity.common).withValues(alpha: 0.2),
       checkmarkColor: LootBoxColors.getRarityColor(rarity ?? LootBoxRarity.common),
     );
   }
@@ -403,7 +403,7 @@ class _WonBoxesPageState extends State<WonBoxesPage> with TickerProviderStateMix
           Navigator.of(context).pop();
         }
       },
-      selectedColor: Colors.green.withOpacity(0.2),
+      selectedColor: Colors.green.withValues(alpha: 0.2),
       checkmarkColor: Colors.green,
     );
   }
@@ -615,7 +615,7 @@ class _WonBoxesPageState extends State<WonBoxesPage> with TickerProviderStateMix
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: LootBoxColors.getRarityColor(box.rarity).withOpacity(0.3),
+          color: LootBoxColors.getRarityColor(box.rarity).withValues(alpha: 0.3),
           width: 2,
         ),
       ),
@@ -689,7 +689,7 @@ class _WonBoxesPageState extends State<WonBoxesPage> with TickerProviderStateMix
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: rarityColor.withOpacity(0.3),
+          color: rarityColor.withValues(alpha: 0.3),
           width: 2,
         ),
       ),
@@ -709,8 +709,8 @@ class _WonBoxesPageState extends State<WonBoxesPage> with TickerProviderStateMix
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      rarityColor.withOpacity(0.3),
-                      rarityColor.withOpacity(0.1),
+                      rarityColor.withValues(alpha: 0.3),
+                      rarityColor.withValues(alpha: 0.1),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(12),
@@ -748,8 +748,8 @@ class _WonBoxesPageState extends State<WonBoxesPage> with TickerProviderStateMix
                             ),
                             decoration: BoxDecoration(
                               color: box.expiresAt!.difference(DateTime.now()).inDays < 3
-                                  ? Colors.orange.withOpacity(0.2)
-                                  : Colors.grey.withOpacity(0.2),
+                                  ? Colors.orange.withValues(alpha: 0.2)
+                                  : Colors.grey.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -789,7 +789,7 @@ class _WonBoxesPageState extends State<WonBoxesPage> with TickerProviderStateMix
                 icon: const Icon(Icons.open_in_new, size: 18),
                 label: const Text('Aç'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: rarityColor.withOpacity(0.1),
+                  backgroundColor: rarityColor.withValues(alpha: 0.1),
                   foregroundColor: rarityColor,
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),

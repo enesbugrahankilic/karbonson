@@ -221,7 +221,7 @@ class _ProfilePictureChangeDialogState
                   minHeight: 8,
                   backgroundColor: Colors.grey[200],
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    Colors.blue.withOpacity(0.8),
+                    Colors.blue.withValues(alpha: 0.8),
                   ),
                 ),
               ),
@@ -289,7 +289,7 @@ class _ProfilePictureChangeDialogState
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
+              color: Colors.red.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -432,7 +432,7 @@ class _ProfilePictureChangeDialogState
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
+              color: Colors.green.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -565,7 +565,7 @@ class _ProfilePictureChangeDialogState
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(

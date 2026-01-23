@@ -35,7 +35,7 @@ class ErrorWidget extends StatelessWidget {
             Text(
               message,
               style: AppTheme.textTheme.bodyLarge?.copyWith(
-                color: AppTheme.colors.onSurface.withOpacity(0.7),
+                color: AppTheme.colors.onSurface.withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.center,
             ),
@@ -271,14 +271,14 @@ class EmptyStateWidget extends StatelessWidget {
               Icon(
                 icon!,
                 size: 64,
-                color: AppTheme.colors.onSurface.withOpacity( 0.4),
+                color: AppTheme.colors.onSurface.withValues(alpha:  0.4),
               ),
               const SizedBox(height: 16),
             ],
             Text(
               message,
               style: AppTheme.textTheme.bodyLarge?.copyWith(
-                color: AppTheme.colors.onSurface.withOpacity(0.7),
+                color: AppTheme.colors.onSurface.withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.center,
             ),

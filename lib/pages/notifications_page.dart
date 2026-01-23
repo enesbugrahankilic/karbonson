@@ -17,7 +17,7 @@ import '../widgets/page_templates.dart';
 import '../theme/theme_colors.dart';
 
 class NotificationsPage extends StatefulWidget {
-  const NotificationsPage({super.key});
+  NotificationsPage({super.key});
 
   @override
   State<NotificationsPage> createState() => _NotificationsPageState();
@@ -325,17 +325,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
         decoration: BoxDecoration(
           color: notification.isRead
               ? ThemeColors.getCardBackground(context)
-              : ThemeColors.getPrimaryButtonColor(context).withOpacity(0.05),
+              : ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: notification.isRead
                 ? ThemeColors.getBorder(context)
-                : ThemeColors.getPrimaryButtonColor(context).withOpacity(0.2),
+                : ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.2),
             width: 1,
           ),
           boxShadow: notification.isRead ? null : [
             BoxShadow(
-              color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
+              color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -346,7 +346,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           leading: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: _getNotificationColor(notification.type).withOpacity(0.1),
+              color: _getNotificationColor(notification.type).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -381,14 +381,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   Icon(
                     Icons.access_time,
                     size: 14,
-                    color: ThemeColors.getSecondaryText(context).withOpacity(0.7),
+                    color: ThemeColors.getSecondaryText(context).withValues(alpha: 0.7),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     DateTimeParser.formatRelativeTime(notification.createdAt, context),
                     style: TextStyle(
                       fontSize: 12,
-                      color: ThemeColors.getSecondaryText(context).withOpacity(0.7),
+                      color: ThemeColors.getSecondaryText(context).withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -543,7 +543,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 },
                                 avatar: const Icon(Icons.list, size: 18),
                                 backgroundColor: ThemeColors.getCardBackground(context),
-                                selectedColor: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
+                                selectedColor: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -567,7 +567,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 },
                                 avatar: const Icon(Icons.mark_email_unread, size: 18),
                                 backgroundColor: ThemeColors.getCardBackground(context),
-                                selectedColor: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
+                                selectedColor: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1),
                               ),
                             ),
                           ],
@@ -583,10 +583,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
+                          color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.2),
+                            color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.2),
                           ),
                         ),
                         child: Row(

@@ -278,7 +278,7 @@ class _LoginDialogState extends State<LoginDialog> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const ForgotPasswordPage(),
+                              builder: (context) => ForgotPasswordPage(),
                             ),
                           );
                         },

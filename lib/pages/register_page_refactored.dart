@@ -6,11 +6,12 @@ import '../services/registration_service.dart';
 import '../services/error_feedback_service.dart';
 import '../widgets/custom_form_field.dart';
 import '../theme/theme_colors.dart';
+import '../widgets/page_templates.dart';
 import 'login_page.dart';
 import 'profile_page.dart';
 
 class RegisterPageRefactored extends StatefulWidget {
-  const RegisterPageRefactored({super.key});
+  RegisterPageRefactored({super.key});
 
   @override
   State<RegisterPageRefactored> createState() => _RegisterPageRefactoredState();
@@ -126,7 +127,7 @@ class _RegisterPageRefactoredState extends State<RegisterPageRefactored> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const ProfilePage(),
+        builder: (context) => ProfilePage(),
       ),
     );
   }
@@ -208,7 +209,7 @@ class _RegisterPageRefactoredState extends State<RegisterPageRefactored> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const LoginPage(),
+        builder: (context) => LoginPage(),
       ),
     );
   }
@@ -225,44 +226,15 @@ class _RegisterPageRefactoredState extends State<RegisterPageRefactored> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: _buildAppBar(),
-      body: _buildBody(),
-    );
-  }
-
-  /// Build the app bar
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      centerTitle: true,
-      title: Text(
-        'Kayıt Ol',
-        style: TextStyle(color: ThemeColors.getAppBarText(context)),
+      appBar: StandardAppBar(
+        title: Text('Kayıt Ol'),
       ),
-      iconTheme: IconThemeData(color: ThemeColors.getAppBarIcon(context)),
-    );
-  }
-
-  /// Build the main body
-  Widget _buildBody() {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFe0f7fa), Color(0xFF4CAF50)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: SafeArea(
+      body: PageBody(
+        scrollable: true,
         child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 500),
-              child: _buildRegistrationCard(),
-            ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: _buildRegistrationCard(),
           ),
         ),
       ),

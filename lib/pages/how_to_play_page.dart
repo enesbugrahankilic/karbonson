@@ -4,7 +4,7 @@ import '../widgets/page_templates.dart';
 import '../theme/theme_colors.dart';
 
 class HowToPlayPage extends StatelessWidget {
-  const HowToPlayPage({super.key});
+  HowToPlayPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +123,7 @@ class HowToPlayPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 28),

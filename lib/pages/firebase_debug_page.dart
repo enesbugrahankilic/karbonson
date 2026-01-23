@@ -139,31 +139,22 @@ class _FirebaseDebugPageState extends State<FirebaseDebugPage>
     return Scaffold(
       appBar: AppBar(
         title: const Text('🔧 Firebase Debug'),
-        centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
             Tab(text: 'Health Check', icon: Icon(Icons.healing)),
             Tab(text: 'Watcher Mode', icon: Icon(Icons.visibility)),
-            Tab(text: 'Debug Info', icon: Icon(Icons.bug_report)),
+            Tab(text: 'Debug Info', icon: Icon(Icons.bug_report))
           ],
         ),
       ),
-      body: Container(
-        decoration: DesignSystem.getPageContainerDecoration(context),
-        child: TabBarView(
-          controller: _tabController,
-          children: [
-            // Health Check Tab
-            _buildHealthCheckTab(),
-
-            // Watcher Mode Tab
-            _buildWatcherModeTab(),
-
-            // Debug Info Tab
-            _buildDebugInfoTab(),
-          ],
-        ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildHealthCheckTab(),
+          _buildWatcherModeTab(),
+          _buildDebugInfoTab()
+        ],
       ),
     );
   }
@@ -175,151 +166,300 @@ class _FirebaseDebugPageState extends State<FirebaseDebugPage>
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Health Check Button
-            SizedBox(
-              height: 56,
-              child: ElevatedButton.icon(
-                onPressed: _isChecking ? null : _performHealthCheck,
-                icon: _isChecking
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.refresh),
-                label: const Text('Run Health Check'),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Recovery Button
-            if (_healthReport != null && !_healthReport!.isHealthy)
-              SizedBox(
-                height: 56,
-                child: ElevatedButton.icon(
-                  onPressed: _isChecking ? null : _attemptRecovery,
-                  icon: const Icon(Icons.settings_backup_restore),
-                  label: const Text('Attempt Recovery'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                  ),
-                ),
-              ),
-
-            if (_healthReport != null && !_healthReport!.isHealthy)
-              const SizedBox(height: 16),
-
-            // Status Card
-            if (_healthReport != null)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: _getStatusColor(_healthReport!.status).withOpacity(0.1),
-                  border: Border.all(
-                    color: _getStatusColor(_healthReport!.status),
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          _getStatusIcon(_healthReport!.status),
-                          color: _getStatusColor(_healthReport!.status),
-                          size: 32,
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Status: ${_healthReport!.status.name.toUpperCase()}',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'Response: ${_healthReport!.responseTime.inMilliseconds}ms',
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    if (_healthReport!.issues.isNotEmpty) ...[
-                      Text(
-                        'Issues (${_healthReport!.issues.length})',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ..._healthReport!.issues
-                          .map((issue) => Padding(
-                            padding: const EdgeInsets.only(left: 16, bottom: 8),
-                            child: Text('• $issue'),
-                          ))
-                          .toList(),
-                      const SizedBox(height: 16),
-                    ],
-                    if (_healthReport!.recommendations.isNotEmpty) ...[
-                      Text(
-                        'Recommendations',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ..._healthReport!.recommendations
-                          .map((rec) => Padding(
-                            padding: const EdgeInsets.only(left: 16, bottom: 8),
-                            child: Text('✓ $rec'),
-                          ))
-                          .toList(),
-                    ],
-                  ],
-                ),
-              ),
-
-            const SizedBox(height: 20),
-
-            // Details
-            if (_healthReport != null)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Details',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ..._buildDetailItems(_healthReport!.details),
-                  ],
-                ),
-              ),
-          ],
+          children: _buildHealthCheckChildren(),
         ),
       ),
     );
+  }
+
+  List<Widget> _buildHealthCheckChildren() {
+    final children = <Widget>[];
+
+    // Health Check Button
+    children.add(
+      SizedBox(
+        height: 56,
+        child: ElevatedButton.icon(
+          onPressed: _isChecking ? null : _performHealthCheck,
+          icon: _isChecking
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.refresh),
+          label: const Text('Run Health Check'),
+        ),
+      ),
+    );
+
+    children.add(const SizedBox(height: 20));
+
+    // Recovery Button
+    if (_healthReport != null && !_healthReport!.isHealthy) {
+      children.add(
+        SizedBox(
+          height: 56,
+          child: ElevatedButton.icon(
+            onPressed: _isChecking ? null : _attemptRecovery,
+            icon: const Icon(Icons.settings_backup_restore),
+            label: const Text('Attempt Recovery'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+            ),
+          ),
+        ),
+      );
+
+      children.add(const SizedBox(height: 16));
+    }
+
+    // Status Card
+    if (_healthReport != null) {
+      children.add(
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: _getStatusColor(_healthReport!.status).withValues(alpha: 0.1),
+            border: Border.all(
+              color: _getStatusColor(_healthReport!.status),
+              width: 2,
+            ),
+            borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: _buildStatusCardChildren(),
+          ),
+        ),
+      );
+
+      children.add(const SizedBox(height: 20));
+
+      // Details
+      children.add(
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+            border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Details',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ..._buildDetailItems(_healthReport!.details),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return children;
+  }
+
+  List<Widget> _buildStatusCardChildren() {
+    final children = <Widget>[];
+
+    children.add(
+      Row(
+        children: [
+          Icon(
+            _getStatusIcon(_healthReport!.status),
+            color: _getStatusColor(_healthReport!.status),
+            size: 32,
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Status: ${_healthReport!.status.name.toUpperCase()}',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                'Response: ${_healthReport!.responseTime.inMilliseconds}ms',
+                style: const TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    children.add(const SizedBox(height: 16));
+
+    if (_healthReport!.issues.isNotEmpty) {
+      children.add(
+        Text(
+          'Issues (${_healthReport!.issues.length})',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.red,
+          ),
+        ),
+      );
+
+      children.add(const SizedBox(height: 8));
+
+      children.addAll(
+        _healthReport!.issues.map(
+          (issue) => Padding(
+            padding: const EdgeInsets.only(left: 16, bottom: 8),
+            child: Text('• $issue'),
+          ),
+        ),
+      );
+
+      children.add(const SizedBox(height: 16));
+    }
+
+    if (_healthReport!.recommendations.isNotEmpty) {
+      children.add(
+        Text(
+          'Recommendations',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.green,
+          ),
+        ),
+      );
+
+      children.add(const SizedBox(height: 8));
+
+      children.addAll(
+        _healthReport!.recommendations.map(
+          (rec) => Padding(
+            padding: const EdgeInsets.only(left: 16, bottom: 8),
+            child: Text('✓ $rec'),
+          ),
+        ),
+      );
+    }
+
+    return children;
+  }
+
+  List<Widget> _buildWatcherChildren() {
+    final children = <Widget>[];
+
+    children.add(
+      SizedBox(
+        height: 56,
+        child: ElevatedButton.icon(
+          onPressed: _toggleWatcherMode,
+          icon: Icon(_isWatcherEnabled ? Icons.visibility_off : Icons.visibility),
+          label: Text(_isWatcherEnabled ? 'Disable Watcher' : 'Enable Watcher'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: _isWatcherEnabled ? Colors.red : Colors.green,
+          ),
+        ),
+      ),
+    );
+
+    children.add(const SizedBox(height: 20));
+
+    if (_isWatcherEnabled) {
+      children.add(
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.green.withValues(alpha: 0.1),
+            border: Border.all(color: Colors.green),
+            borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.green),
+                  SizedBox(width: 12),
+                  Text(
+                    'Watcher Mode Active',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Session: ${_watcherService.currentSession?.sessionId}',
+                style: const TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      children.add(const SizedBox(height: 20));
+
+      if (_watcherStats != null) {
+        children.add(
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.blue.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+              border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Statistics',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ..._buildStatisticItems(_watcherStats!),
+              ],
+            ),
+          ),
+        );
+      }
+    } else {
+      children.add(
+        Center(
+          child: Column(
+            children: [
+              const SizedBox(height: 40),
+              Icon(
+                Icons.visibility_off,
+                size: 64,
+                color: Colors.grey.withValues(alpha: 0.5),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Watcher Mode Disabled',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return children;
   }
 
   Widget _buildWatcherModeTab() {
@@ -329,108 +469,49 @@ class _FirebaseDebugPageState extends State<FirebaseDebugPage>
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Toggle Button
-            SizedBox(
-              height: 56,
-              child: ElevatedButton.icon(
-                onPressed: _toggleWatcherMode,
-                icon: Icon(_isWatcherEnabled ? Icons.visibility_off : Icons.visibility),
-                label: Text(_isWatcherEnabled ? 'Disable Watcher' : 'Enable Watcher'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _isWatcherEnabled ? Colors.red : Colors.green,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            if (_isWatcherEnabled) ...[
-              // Status
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  border: Border.all(color: Colors.green),
-                  borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.check_circle, color: Colors.green),
-                        SizedBox(width: 12),
-                        Text(
-                          'Watcher Mode Active',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Session: ${_watcherService.currentSession?.sessionId}',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Statistics
-              if (_watcherStats != null)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                    border: Border.all(color: Colors.blue.withOpacity(0.2)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Statistics',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      ..._buildStatisticItems(_watcherStats!),
-                    ],
-                  ),
-                ),
-            ] else
-              Center(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 40),
-                    Icon(
-                      Icons.visibility_off,
-                      size: 64,
-                      color: Colors.grey.withOpacity(0.5),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Watcher Mode Disabled',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
+          children: _buildWatcherChildren(),
         ),
       ),
     );
+  }
+
+  List<Widget> _buildDebugChildren() {
+    final children = <Widget>[];
+
+    if (_debugInfo == null) {
+      children.add(
+        const Center(
+          child: Text('Run health check first to see debug info'),
+        ),
+      );
+    } else {
+      children.add(
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+            border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Debug Information',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ..._buildDebugItems(_debugInfo!),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return children;
   }
 
   Widget _buildDebugInfoTab() {
@@ -440,41 +521,13 @@ class _FirebaseDebugPageState extends State<FirebaseDebugPage>
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (_debugInfo == null)
-              const Center(
-                child: Text('Run health check first to see debug info'),
-              )
-            else
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Debug Information',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ..._buildDebugItems(_debugInfo!),
-                  ],
-                ),
-              ),
-          ],
+          children: _buildDebugChildren(),
         ),
       ),
     );
   }
 
-  List<Widget> _buildDetailItems(Map<String, dynamic> details) {
+  Iterable<Widget> _buildDetailItems(Map<String, dynamic> details) {
     return details.entries.map((entry) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 8),
@@ -483,7 +536,7 @@ class _FirebaseDebugPageState extends State<FirebaseDebugPage>
           style: const TextStyle(fontSize: 12, fontFamily: 'Courier'),
         ),
       );
-    }).toList();
+    });
   }
 
   List<Widget> _buildStatisticItems(Map<String, dynamic> stats) {
@@ -523,7 +576,7 @@ class _FirebaseDebugPageState extends State<FirebaseDebugPage>
     }).toList();
   }
 
-  List<Widget> _buildDebugItems(Map<String, dynamic> debug) {
+  Iterable<Widget> _buildDebugItems(Map<String, dynamic> debug) {
     return debug.entries.map((entry) {
       final value = entry.value;
       if (value is List) {
@@ -545,7 +598,7 @@ class _FirebaseDebugPageState extends State<FirebaseDebugPage>
                   padding: const EdgeInsets.only(left: 16, bottom: 4),
                   child: Text('• $item', style: const TextStyle(fontSize: 12)),
                 );
-              }).toList(),
+              }),
             ],
           ),
         );
@@ -571,7 +624,7 @@ class _FirebaseDebugPageState extends State<FirebaseDebugPage>
                     style: const TextStyle(fontSize: 12),
                   ),
                 );
-              }).toList(),
+              }),
             ],
           ),
         );
@@ -580,7 +633,7 @@ class _FirebaseDebugPageState extends State<FirebaseDebugPage>
         padding: const EdgeInsets.only(bottom: 8),
         child: Text('${entry.key}: $value'),
       );
-    }).toList();
+    });
   }
 
   IconData _getStatusIcon(FirebaseHealthStatus status) {

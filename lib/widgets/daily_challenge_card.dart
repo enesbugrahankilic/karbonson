@@ -108,8 +108,8 @@ class _DailyChallengeCardState extends State<DailyChallengeCard>
                   gradient: isCompleted
                       ? LinearGradient(
                           colors: [
-                            _getCardColor().withOpacity( 0.8),
-                            _getCardColor().withOpacity( 0.6),
+                            _getCardColor().withValues(alpha:  0.8),
+                            _getCardColor().withValues(alpha:  0.6),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -185,7 +185,7 @@ class _DailyChallengeCardState extends State<DailyChallengeCard>
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.red.withOpacity( 0.1),
+                          color: Colors.red.withValues(alpha:  0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -203,7 +203,7 @@ class _DailyChallengeCardState extends State<DailyChallengeCard>
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.green.withOpacity( 0.1),
+                          color: Colors.green.withValues(alpha:  0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
@@ -245,7 +245,7 @@ class _DailyChallengeCardState extends State<DailyChallengeCard>
       return Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: Colors.green.withOpacity( 0.2),
+          color: Colors.green.withValues(alpha:  0.2),
           shape: BoxShape.circle,
         ),
         child: const Icon(
@@ -258,7 +258,7 @@ class _DailyChallengeCardState extends State<DailyChallengeCard>
       return Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: Colors.red.withOpacity( 0.2),
+          color: Colors.red.withValues(alpha:  0.2),
           shape: BoxShape.circle,
         ),
         child: const Icon(
@@ -271,7 +271,7 @@ class _DailyChallengeCardState extends State<DailyChallengeCard>
       return Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: Colors.orange.withOpacity( 0.2),
+          color: Colors.orange.withValues(alpha:  0.2),
           shape: BoxShape.circle,
         ),
         child: const Icon(

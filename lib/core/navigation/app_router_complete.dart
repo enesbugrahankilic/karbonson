@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import '../../services/authentication_state_service.dart';
 import '../../services/comprehensive_2fa_service.dart';
-import '../../services/quiz_logic.dart';
 
 // Authentication Pages
 import '../../pages/login_page.dart';
@@ -415,36 +414,36 @@ class AppRouterComplete {
 
     // Handle authentication routes
     return switch (routeName) {
-      AppRoutes.login => _buildRoute(const LoginPage()),
-      AppRoutes.register => _buildRoute(const RegisterPage()),
-      AppRoutes.registerRefactored => _buildRoute(const RegisterPageRefactored()),
-      AppRoutes.tutorial => _buildRoute(const TutorialPage()),
-      AppRoutes.forgotPassword => _buildRoute(const ForgotPasswordPage()),
-      AppRoutes.forgotPasswordEnhanced => _buildRoute(const ForgotPasswordPageEnhanced()),
-      AppRoutes.emailVerification => _buildRoute(const EmailVerificationPage()),
-      AppRoutes.emailVerificationRedirect => _buildRoute(const EmailVerificationRedirectPage()),
+      AppRoutes.login => _buildRoute(LoginPage()),
+      AppRoutes.register => _buildRoute(RegisterPage()),
+      AppRoutes.registerRefactored => _buildRoute(RegisterPageRefactored()),
+      AppRoutes.tutorial => _buildRoute(TutorialPage()),
+      AppRoutes.forgotPassword => _buildRoute(ForgotPasswordPage()),
+      AppRoutes.forgotPasswordEnhanced => _buildRoute(ForgotPasswordPageEnhanced()),
+      AppRoutes.emailVerification => _buildRoute(EmailVerificationPage()),
+      AppRoutes.emailVerificationRedirect => _buildRoute(EmailVerificationRedirectPage()),
       
       // 2FA Routes
       AppRoutes.twoFactorAuth => _buildRoute(TwoFactorAuthPage(userId: settings.arguments as String? ?? '')),
-      AppRoutes.twoFactorAuthSetup => _buildRoute(const TwoFactorAuthSetupPage()),
+      AppRoutes.twoFactorAuthSetup => _buildRoute(TwoFactorAuthSetupPage()),
       AppRoutes.twoFactorAuthVerification => _buildRoute(TwoFactorAuthVerificationPage(
         authResult: settings.arguments ?? _createDefaultAuthResult(),
       )),
-      AppRoutes.enhanced2FASetup => _buildRoute(const EnhancedTwoFactorAuthSetupPage()),
+      AppRoutes.enhanced2FASetup => _buildRoute(EnhancedTwoFactorAuthSetupPage()),
       AppRoutes.enhanced2FAVerification => _buildRoute(EnhancedTwoFactorAuthVerificationPage(
         authResult: settings.arguments ?? _createDefaultAuthResult(),
       )),
-      AppRoutes.comprehensive2FASetup => _buildRoute(const ComprehensiveTwoFactorAuthSetupPage()),
+      AppRoutes.comprehensive2FASetup => _buildRoute(ComprehensiveTwoFactorAuthSetupPage()),
       AppRoutes.comprehensive2FAVerification => _buildComprehensive2FAVerification(settings),
       
       // Main App Routes
-      AppRoutes.home => _buildProtectedRoute(const HomeDashboard(), settings),
-      AppRoutes.quiz => _buildRoute(QuizPage(quizLogic: QuizLogic())),
+      AppRoutes.home => _buildProtectedRoute(HomeDashboard(), settings),
+      AppRoutes.quiz => _buildRoute(const QuizPage()),
       AppRoutes.boardGame => _buildRoute(BoardGamePage(
         userNickname: settings.arguments is String ? settings.arguments as String : 'Player',
       )),
-      AppRoutes.duel => _buildProtectedRoute(const DuelPage(), settings),
-      AppRoutes.duelInvitation => _buildProtectedRoute(const DuelInvitationPage(), settings),
+      AppRoutes.duel => _buildProtectedRoute(DuelPage(), settings),
+      AppRoutes.duelInvitation => _buildProtectedRoute(DuelInvitationPage(), settings),
       AppRoutes.multiplayerLobby => _buildProtectedRoute(MultiplayerLobbyPage(
         userNickname: settings.arguments is String ? settings.arguments as String : 'Player',
       ), settings),
@@ -454,22 +453,22 @@ class AppRouterComplete {
       AppRoutes.friends => _buildProtectedRoute(FriendsPage(
         userNickname: settings.arguments is String ? settings.arguments as String : 'Player',
       ), settings),
-      AppRoutes.leaderboard => _buildRoute(const LeaderboardPage()),
-      AppRoutes.dailyChallenge => _buildProtectedRoute(const DailyChallengePage(), settings),
-      AppRoutes.achievement => _buildProtectedRoute(const AchievementPage(), settings),
-      AppRoutes.achievementsGallery => _buildProtectedRoute(const AchievementsGalleryPage(), settings),
-      AppRoutes.aiRecommendations => _buildProtectedRoute(const AIRecommendationsPage(), settings),
-      AppRoutes.rewardsShop => _buildProtectedRoute(const RewardsShopPage(), settings),
-      AppRoutes.howToPlay => _buildRoute(const HowToPlayPage()),
-      AppRoutes.profile => _buildProtectedRoute(const ProfilePage(), settings),
+      AppRoutes.leaderboard => _buildRoute(LeaderboardPage()),
+      AppRoutes.dailyChallenge => _buildProtectedRoute(DailyChallengePage(), settings),
+      AppRoutes.achievement => _buildProtectedRoute(AchievementPage(), settings),
+      AppRoutes.achievementsGallery => _buildProtectedRoute(AchievementsGalleryPage(), settings),
+      AppRoutes.aiRecommendations => _buildProtectedRoute(AIRecommendationsPage(), settings),
+      AppRoutes.rewardsShop => _buildProtectedRoute(RewardsShopPage(), settings),
+      AppRoutes.howToPlay => _buildRoute(HowToPlayPage()),
+      AppRoutes.profile => _buildProtectedRoute(ProfilePage(), settings),
       
       // User Routes
-      AppRoutes.settings => _buildProtectedRoute(const SettingsPage(), settings),
+      AppRoutes.settings => _buildProtectedRoute(SettingsPage(), settings),
       AppRoutes.passwordChange => _buildProtectedRoute(_buildPlaceholderPage('Şifre Değiştir'), settings),
       AppRoutes.newPassword => _buildProtectedRoute(_buildPlaceholderPage('Yeni Şifre'), settings),
       
       // Default route
-      _ => _buildRoute(const LoginPage()),
+      _ => _buildRoute(LoginPage()),
     };
   }
 

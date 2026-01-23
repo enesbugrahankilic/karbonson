@@ -189,7 +189,7 @@ class GlobalErrorStates {
             Icon(
               icon ?? Icons.inbox_outlined,
               size: 80,
-              color: iconColor ?? ThemeColors.getSecondaryText(context).withOpacity(0.5),
+              color: iconColor ?? ThemeColors.getSecondaryText(context).withValues(alpha: 0.5),
             ),
             const SizedBox(height: DesignSystem.spacingL),
 

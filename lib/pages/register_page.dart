@@ -15,7 +15,7 @@ import '../widgets/carbon_class_selection_widget.dart';
 import 'profile_page.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+  RegisterPage({super.key});
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -298,7 +298,7 @@ class _RegisterPageState extends State<RegisterPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => const ProfilePage(),
+              builder: (context) => ProfilePage(),
             ),
           );
         }
@@ -371,7 +371,7 @@ class _RegisterPageState extends State<RegisterPage> {
         title: const Text('Kayıt Ol'),
         onBackPressed: () => Navigator.pop(context),
         actions: [
-          const LanguageSelectorButton(),
+          LanguageSelectorButton(),
         ],
       ),
       body: PageBody(

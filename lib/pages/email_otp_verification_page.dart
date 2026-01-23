@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/email_otp_service.dart';
+import '../widgets/page_templates.dart';
 
 
 class EmailOtpVerificationPage extends StatefulWidget {
@@ -106,16 +107,14 @@ class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: StandardAppBar(
         title: const Text('E-posta Doğrulama'),
-        elevation: 0,
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+      body: PageBody(
+        scrollable: true,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
               const SizedBox(height: 40),
               const Icon(
                 Icons.email_outlined,
@@ -188,8 +187,7 @@ class _EmailOtpVerificationPageState extends State<EmailOtpVerificationPage> {
                       : 'Kodu yeniden gönder',
                 ),
               ),
-            ],
-          ),
+          ],
         ),
       ),
     );

@@ -8,7 +8,7 @@ import '../widgets/achievement_card.dart';
 import '../widgets/page_templates.dart';
 
 class AchievementsGalleryPage extends StatefulWidget {
-  const AchievementsGalleryPage({super.key});
+  AchievementsGalleryPage({super.key});
 
   @override
   State<AchievementsGalleryPage> createState() => _AchievementsGalleryPageState();
@@ -241,7 +241,7 @@ class AchievementDetailSheet extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity( 0.1),
+            color: Colors.black.withValues(alpha:  0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -260,7 +260,7 @@ class AchievementDetailSheet extends StatelessWidget {
                   height: 60,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: _getRarityColor().withOpacity(0.2),
+                    color: _getRarityColor().withValues(alpha: 0.2),
                     border: Border.all(
                       color: _getRarityColor(),
                       width: 2,
@@ -292,7 +292,7 @@ class AchievementDetailSheet extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: _getRarityColor().withOpacity(0.1),
+                          color: _getRarityColor().withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -379,7 +379,7 @@ class AchievementDetailSheet extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: _getRarityColor().withOpacity(0.05),
+              color: _getRarityColor().withValues(alpha: 0.05),
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(20),
                 bottomRight: Radius.circular(20),

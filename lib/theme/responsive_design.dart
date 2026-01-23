@@ -182,7 +182,7 @@ class ResponsiveDesign {
       elevation: DesignSystem.elevationS,
       shape: Border(
         bottom: BorderSide(
-          color: ThemeColors.getBorder(context).withOpacity( 0.1),
+          color: ThemeColors.getBorder(context).withValues(alpha:  0.1),
           width: 1,
         ),
       ),

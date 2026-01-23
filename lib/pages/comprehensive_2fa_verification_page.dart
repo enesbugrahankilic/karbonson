@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/comprehensive_2fa_service.dart';
 import '../theme/theme_colors.dart';
+import '../widgets/page_templates.dart';
 
 /// Comprehensive 2FA verification page supporting multiple verification methods
 class Comprehensive2FAVerificationPage extends StatefulWidget {
@@ -412,53 +413,31 @@ class _Comprehensive2FAVerificationPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: _cancelVerification,
-          tooltip: 'Geri',
-        ),
-        title: const Text(
-          'İki Faktörlü Doğrulama',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+      appBar: StandardAppBar(
+        title: const Text('İki Faktörlü Doğrulama'),
+        onBackPressed: _cancelVerification,
         actions: [
           IconButton(
-            icon: const Icon(Icons.help_outline, color: Colors.white),
+            icon: const Icon(Icons.help_outline),
             onPressed: _showHelpDialog,
             tooltip: 'Yardım',
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: ThemeColors.getGradientColors(context),
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeController,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 0.1),
-                end: Offset.zero,
-              ).animate(_slideController),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20.0),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
-                  child: Column(
-                    children: [
+      body: PageBody(
+        scrollable: true,
+        child: FadeTransition(
+          opacity: _fadeController,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.1),
+              end: Offset.zero,
+            ).animate(_slideController),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 500),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
                       _buildHeaderCard(),
                       const SizedBox(height: 20),
                       _buildMethodSelector(),
@@ -474,9 +453,7 @@ class _Comprehensive2FAVerificationPageState
                       _buildSecurityInfo(),
                       const SizedBox(height: 16),
                       _buildCancelButton(),
-                    ],
-                  ),
-                ),
+                ],
               ),
             ),
           ),

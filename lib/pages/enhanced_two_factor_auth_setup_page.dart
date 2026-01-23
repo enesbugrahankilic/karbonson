@@ -7,10 +7,11 @@ import 'package:flutter/services.dart';
 import '../services/enhanced_firebase_2fa_service.dart';
 import '../services/profile_service.dart';
 import '../theme/theme_colors.dart';
+import '../widgets/page_templates.dart';
 import '../widgets/phone_input_widget.dart';
 
 class EnhancedTwoFactorAuthSetupPage extends StatefulWidget {
-  const EnhancedTwoFactorAuthSetupPage({super.key});
+  EnhancedTwoFactorAuthSetupPage({super.key});
 
   @override
   State<EnhancedTwoFactorAuthSetupPage> createState() =>
@@ -441,18 +442,8 @@ class _EnhancedTwoFactorAuthSetupPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'Güvenlik Merkezi',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+      appBar: StandardAppBar(
+        title: const Text('Güvenlik Merkezi'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -460,23 +451,15 @@ class _EnhancedTwoFactorAuthSetupPageState
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: ThemeColors.getGradientColors(context),
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: Column(
-                  children: [
+      body: PageBody(
+        scrollable: true,
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
                     _buildHeader(),
                     const SizedBox(height: 20),
                     _buildSecurityStatus(),
@@ -489,9 +472,7 @@ class _EnhancedTwoFactorAuthSetupPageState
                       _build2FAEnabledView()
                     else
                       _build2FASetupForm(),
-                  ],
-                ),
-              ),
+              ],
             ),
           ),
         ),

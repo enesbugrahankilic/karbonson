@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../theme/theme_colors.dart';
+import '../widgets/page_templates.dart';
 
 /// Email Verification Redirect Page for unverified users
 /// Shown after password reset when user's email is not verified
 class EmailVerificationRedirectPage extends StatefulWidget {
-  const EmailVerificationRedirectPage({super.key});
+  EmailVerificationRedirectPage({super.key});
 
   @override
   State<EmailVerificationRedirectPage> createState() => _EmailVerificationRedirectPageState();
@@ -63,34 +64,27 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: ThemeColors.getGradientColors(context),
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
-                  child: Card(
-                    elevation: 8,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    color: ThemeColors.getContainerBackground(context),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
+      appBar: StandardAppBar(
+        title: const Text('E-posta Doğrulama'),
+      ),
+      body: PageBody(
+        scrollable: true,
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              color: ThemeColors.getContainerBackground(context),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                           // Header with animation
                           AnimatedBuilder(
                             animation: _animationController,
@@ -130,10 +124,10 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.blue.withOpacity( 0.1),
+                              color: Colors.blue.withValues(alpha:  0.1),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: Colors.blue.withOpacity( 0.3),
+                                color: Colors.blue.withValues(alpha:  0.3),
                               ),
                             ),
                             child: Column(
@@ -207,10 +201,7 @@ class _EmailVerificationRedirectPageState extends State<EmailVerificationRedirec
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  ],
                 ),
               ),
             ),

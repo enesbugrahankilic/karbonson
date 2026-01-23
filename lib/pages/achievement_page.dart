@@ -3,14 +3,13 @@
 
 import 'package:flutter/material.dart';
 import '../services/achievement_service.dart';
-import '../services/real_time_progress_service.dart';
 import '../models/achievement.dart';
 import '../models/user_progress.dart';
 import '../widgets/achievement_card.dart';
-import '../widgets/page_templates.dart';
+import '../widgets/quiz_layout.dart';
 
 class AchievementPage extends StatefulWidget {
-  const AchievementPage({super.key});
+  AchievementPage({super.key});
 
   @override
   State<AchievementPage> createState() => _AchievementPageState();
@@ -19,10 +18,6 @@ class AchievementPage extends StatefulWidget {
 class _AchievementPageState extends State<AchievementPage>
     with TickerProviderStateMixin {
   late TabController _tabController;
-
-  // Class and section filters
-  int? _selectedClassLevel;
-  String? _selectedClassSection;
 
   @override
   void initState() {
@@ -38,65 +33,66 @@ class _AchievementPageState extends State<AchievementPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: StandardAppBar(
-        title: const Text('Başarımlar'),
-        onBackPressed: () => Navigator.pop(context),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Material(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            child: TabBar(
-              controller: _tabController,
-              tabs: const [
-                Tab(text: 'Tümü'),
-                Tab(text: 'Kazanılan'),
-                Tab(text: 'Kazanılmamış'),
-              ],
-            ),
-          ),
-        ),
-      ),
-      body: PageBody(
-        scrollable: true,
-        child: StreamBuilder<UserProgress>(
-          stream: AchievementService().progressStream,
-          builder: (context, progressSnapshot) {
-            if (progressSnapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
+    return QuizLayout(
+      title: 'Başarımlar',
+      subtitle: 'Kazanılan ve kazanılmamış başarımları görüntüle',
+      showBackButton: true,
+      onBackPressed: () => Navigator.pop(context),
+      scrollable: true,
+      child: StreamBuilder<UserProgress>(
+        stream: AchievementService().progressStream,
+        builder: (context, progressSnapshot) {
+          if (progressSnapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            final progress = progressSnapshot.data;
-            if (progress == null) {
-              return const Center(child: Text('İlerleme verisi yüklenemedi'));
-            }
+          final progress = progressSnapshot.data;
+          if (progress == null) {
+            return const Center(child: Text('İlerleme verisi yüklenemedi'));
+          }
 
-            return StreamBuilder<List<Achievement>>(
-              stream: AchievementService().achievementsStream,
-              builder: (context, achievementsSnapshot) {
-                if (achievementsSnapshot.connectionState ==
-                    ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                final allAchievements = achievementsSnapshot.data ?? [];
-                final unlockedAchievements =
-                    allAchievements.where((a) => a.unlockedAt != null).toList();
-                final lockedAchievements =
-                    allAchievements.where((a) => a.unlockedAt == null).toList();
-
-                return TabBarView(
+          return Column(
+            children: [
+              Material(
+                color: Colors.transparent,
+                child: TabBar(
                   controller: _tabController,
-                  children: [
-                    _buildAchievementList(allAchievements, progress),
-                    _buildAchievementList(unlockedAchievements, progress),
-                    _buildAchievementList(lockedAchievements, progress),
+                  tabs: const [
+                    Tab(text: 'Tümü'),
+                    Tab(text: 'Kazanılan'),
+                    Tab(text: 'Kazanılmamış'),
                   ],
-                );
-              },
-            );
-          },
-        ),
+                ),
+              ),
+              Expanded(
+                child: StreamBuilder<List<Achievement>>(
+                  stream: AchievementService().achievementsStream,
+                  builder: (context, achievementsSnapshot) {
+                    if (achievementsSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    final allAchievements = achievementsSnapshot.data ?? [];
+                    final unlockedAchievements =
+                        allAchievements.where((a) => a.unlockedAt != null).toList();
+                    final lockedAchievements =
+                        allAchievements.where((a) => a.unlockedAt == null).toList();
+
+                    return TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildAchievementList(allAchievements, progress),
+                        _buildAchievementList(unlockedAchievements, progress),
+                        _buildAchievementList(lockedAchievements, progress),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

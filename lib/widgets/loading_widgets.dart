@@ -60,7 +60,7 @@ class LoadingShimmer extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: AppTheme.colors.surfaceContainerHighest.withOpacity(0.3),
+        color: AppTheme.colors.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: borderRadius,
       ),
       child: const CircularProgressIndicator(

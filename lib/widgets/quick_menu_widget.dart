@@ -173,11 +173,11 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.2),
+                color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                    color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.2),
+                    color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -229,15 +229,15 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            ThemeColors.getPrimaryButtonColor(context).withOpacity(0.15),
-            ThemeColors.getAccentButtonColor(context).withOpacity(0.1),
+            ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.15),
+            ThemeColors.getAccentButtonColor(context).withValues(alpha: 0.1),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.2),
+          color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -251,7 +251,7 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
             label: 'Puan',
             color: Colors.amber,
           ),
-          Container(width: 1, height: 30, color: Colors.white.withOpacity(0.2)),
+          Container(width: 1, height: 30, color: Colors.white.withValues(alpha: 0.2)),
           _buildStatItem(
             context,
             icon: Icons.emoji_events,
@@ -259,7 +259,7 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
             label: 'Seviye',
             color: Colors.purple,
           ),
-          Container(width: 1, height: 30, color: Colors.white.withOpacity(0.2)),
+          Container(width: 1, height: 30, color: Colors.white.withValues(alpha: 0.2)),
           _buildStatItem(
             context,
             icon: Icons.local_fire_department,
@@ -322,7 +322,7 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
           decoration: BoxDecoration(
             color: index == activeIndex
                 ? ThemeColors.getPrimaryButtonColor(context)
-                : Colors.white.withOpacity(0.3),
+                : Colors.white.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(4),
           ),
         ),
@@ -391,18 +391,18 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
             ),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: item.color.withOpacity(item.isFeatured ? 0.8 : 0.5),
+              color: item.color.withValues(alpha: item.isFeatured ? 0.8 : 0.5),
               width: item.isFeatured ? 3 : 2,
             ),
             boxShadow: [
               BoxShadow(
-                color: item.color.withOpacity(0.4),
+                color: item.color.withValues(alpha: 0.4),
                 blurRadius: item.isFeatured ? 20 : 15,
                 offset: const Offset(0, 8),
               ),
               if (item.isFeatured)
                 BoxShadow(
-                  color: item.color.withOpacity(0.2),
+                  color: item.color.withValues(alpha: 0.2),
                   blurRadius: 30,
                   offset: const Offset(0, 15),
                 ),
@@ -417,7 +417,7 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
                 child: Icon(
                   item.icon,
                   size: 90,
-                  color: Colors.white.withOpacity(0.08),
+                  color: Colors.white.withValues(alpha: 0.08),
                 ),
               ),
               
@@ -435,7 +435,7 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.amber.withOpacity(0.5),
+                          color: Colors.amber.withValues(alpha: 0.5),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -464,7 +464,7 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.red.withOpacity(0.5),
+                          color: Colors.red.withValues(alpha: 0.5),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -495,11 +495,11 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 5,
                                 offset: const Offset(0, 2),
                               ),
@@ -549,7 +549,7 @@ class _QuickMenuWidgetState extends State<QuickMenuWidget> with TickerProviderSt
                           Text(
                             item.subtitle!,
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.85),
+                              color: Colors.white.withValues(alpha: 0.85),
                               fontSize: 11,
                             ),
                             maxLines: 2,
@@ -613,12 +613,12 @@ class CompactQuickMenu extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(itemSize * 0.3),
               border: Border.all(
-                color: item.color.withOpacity(0.6),
+                color: item.color.withValues(alpha: 0.6),
                 width: 2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: item.color.withOpacity(0.4),
+                  color: item.color.withValues(alpha: 0.4),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -756,18 +756,18 @@ class QuickMenuGrid extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [item.gradientStart.withOpacity(0.8), item.gradientEnd.withOpacity(0.8)],
+            colors: [item.gradientStart.withValues(alpha: 0.8), item.gradientEnd.withValues(alpha: 0.8)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: item.color.withOpacity(0.5),
+            color: item.color.withValues(alpha: 0.5),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: item.color.withOpacity(0.3),
+              color: item.color.withValues(alpha: 0.3),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -778,7 +778,7 @@ class QuickMenuGrid extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -803,7 +803,7 @@ class QuickMenuGrid extends StatelessWidget {
               Text(
                 item.subtitle!,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                   fontSize: 10,
                 ),
                 textAlign: TextAlign.center,

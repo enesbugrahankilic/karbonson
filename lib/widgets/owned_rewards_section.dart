@@ -199,7 +199,7 @@ class _OwnedRewardsSectionState extends State<OwnedRewardsSection> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
+              color: Colors.green.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
@@ -265,10 +265,10 @@ class _OwnedRewardsSectionState extends State<OwnedRewardsSection> {
         width: 80,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: _getRarityColor(reward.rarity).withOpacity(0.1),
+          color: _getRarityColor(reward.rarity).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: _getRarityColor(reward.rarity).withOpacity(0.3),
+            color: _getRarityColor(reward.rarity).withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -405,7 +405,7 @@ class _OwnedRewardsSectionState extends State<OwnedRewardsSection> {
                 trailing: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: _getRarityColor(reward.rarity).withOpacity(0.2),
+                    color: _getRarityColor(reward.rarity).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -460,7 +460,7 @@ class RewardDetailSheet extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -479,7 +479,7 @@ class RewardDetailSheet extends StatelessWidget {
                   height: 60,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: _getRarityColor().withOpacity(0.2),
+                    color: _getRarityColor().withValues(alpha: 0.2),
                     border: Border.all(color: _getRarityColor(), width: 2),
                   ),
                   child: Center(
@@ -503,7 +503,7 @@ class RewardDetailSheet extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: _getRarityColor().withOpacity(0.1),
+                          color: _getRarityColor().withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -555,7 +555,7 @@ class RewardDetailSheet extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
+                    color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -577,7 +577,7 @@ class RewardDetailSheet extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: _getRarityColor().withOpacity(0.05),
+              color: _getRarityColor().withValues(alpha: 0.05),
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(20),
                 bottomRight: Radius.circular(20),

@@ -45,7 +45,7 @@ class _DailyTaskCardState extends State<DailyTaskCard> {
       borderColor = Colors.red.shade300;
       progressColor = Colors.red;
     } else {
-      cardColor = _getDifficultyColor(challenge.difficulty).withOpacity(0.1);
+      cardColor = _getDifficultyColor(challenge.difficulty).withValues(alpha: 0.1);
       borderColor = _getDifficultyColor(challenge.difficulty);
       progressColor = _getDifficultyColor(challenge.difficulty);
     }
@@ -74,8 +74,8 @@ class _DailyTaskCardState extends State<DailyTaskCard> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: isCompleted
-                          ? Colors.green.withOpacity(0.2)
-                          : borderColor.withOpacity(0.2),
+                          ? Colors.green.withValues(alpha: 0.2)
+                          : borderColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -264,7 +264,7 @@ class _DailyTaskCardState extends State<DailyTaskCard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: _getTypeColor(type).withOpacity(0.2),
+        color: _getTypeColor(type).withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -324,7 +324,7 @@ class _DailyTaskCardState extends State<DailyTaskCard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: _getDifficultyColor(difficulty).withOpacity(0.2),
+        color: _getDifficultyColor(difficulty).withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -444,7 +444,7 @@ class _DailyTaskCardState extends State<DailyTaskCard> {
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.5),
+        color: Colors.white.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(

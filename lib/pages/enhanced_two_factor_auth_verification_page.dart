@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../services/enhanced_firebase_2fa_service.dart';
 import '../theme/theme_colors.dart';
+import '../widgets/page_templates.dart';
 
 class EnhancedTwoFactorAuthVerificationPage extends StatefulWidget {
   final TwoFactorAuthResult authResult;
@@ -321,49 +322,27 @@ class _EnhancedTwoFactorAuthVerificationPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: _cancelVerification,
-        ),
-        title: const Text(
-          'Güvenlik Doğrulaması',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+      appBar: StandardAppBar(
+        title: const Text('Güvenlik Doğrulaması'),
+        onBackPressed: _cancelVerification,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: ThemeColors.getGradientColors(context),
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 450),
-                  child: Card(
-                    elevation: 12,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
+      body: PageBody(
+        scrollable: true,
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 450),
+            child: Card(
+              elevation: 12,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                           _buildHeader(),
                           const SizedBox(height: 24),
 
@@ -395,10 +374,7 @@ class _EnhancedTwoFactorAuthVerificationPageState
 
                           // Cancel button
                           _buildCancelButton(),
-                        ],
-                      ),
-                    ),
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -423,7 +399,7 @@ class _EnhancedTwoFactorAuthVerificationPageState
                   color: Theme.of(context)
                       .colorScheme
                       .primary
-                      .withOpacity( 0.1),
+                      .withValues(alpha:  0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

@@ -158,12 +158,12 @@ class _LootBoxWidgetState extends State<LootBoxWidget>
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: _rarityGlowColor.withOpacity(0.6 * glowIntensity),
+              color: _rarityGlowColor.withValues(alpha: 0.6 * glowIntensity),
               blurRadius: 30 * glowIntensity,
               spreadRadius: 5 * glowIntensity,
             ),
             BoxShadow(
-              color: _rarityGlowColor.withOpacity(0.3 * glowIntensity),
+              color: _rarityGlowColor.withValues(alpha: 0.3 * glowIntensity),
               blurRadius: 50 * glowIntensity,
               spreadRadius: 10 * glowIntensity,
             ),
@@ -185,18 +185,18 @@ class _LootBoxWidgetState extends State<LootBoxWidget>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            _rarityColor.withOpacity(0.3),
-            _rarityColor.withOpacity(0.1),
+            _rarityColor.withValues(alpha: 0.3),
+            _rarityColor.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _rarityColor.withOpacity(0.8),
+          color: _rarityColor.withValues(alpha: 0.8),
           width: 3,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -220,7 +220,7 @@ class _LootBoxWidgetState extends State<LootBoxWidget>
                 Text(
                   widget.lootBox.boxTypeName.split(' ').first,
                   style: TextStyle(
-                    color: _rarityColor.withOpacity(0.8),
+                    color: _rarityColor.withValues(alpha: 0.8),
                     fontSize: widget.size * 0.1,
                     fontWeight: FontWeight.bold,
                   ),
@@ -272,7 +272,7 @@ class _LootBoxWidgetState extends State<LootBoxWidget>
     return Positioned.fill(
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.5),
+          color: Colors.black.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Center(
@@ -328,7 +328,7 @@ class _ShimmerPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color.withOpacity(0.3 * (0.5 + progress * 0.5))
+      ..color = color.withValues(alpha: 0.3 * (0.5 + progress * 0.5))
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
 
@@ -477,7 +477,7 @@ class _LootBoxOpenButtonState extends State<LootBoxOpenButton>
                       borderRadius: BorderRadius.circular(25),
                       boxShadow: [
                         BoxShadow(
-                          color: rarityColor.withOpacity(0.5 * glow),
+                          color: rarityColor.withValues(alpha: 0.5 * glow),
                           blurRadius: 30 * glow,
                           spreadRadius: 10,
                         ),
@@ -494,8 +494,8 @@ class _LootBoxOpenButtonState extends State<LootBoxOpenButton>
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        rarityColor.withOpacity(0.4),
-                        rarityColor.withOpacity(0.2),
+                        rarityColor.withValues(alpha: 0.4),
+                        rarityColor.withValues(alpha: 0.2),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(20),
@@ -587,7 +587,7 @@ class LootBoxListItem extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: rarityColor.withOpacity(0.3),
+          color: rarityColor.withValues(alpha: 0.3),
           width: 2,
         ),
       ),
@@ -607,8 +607,8 @@ class LootBoxListItem extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      rarityColor.withOpacity(0.3),
-                      rarityColor.withOpacity(0.1),
+                      rarityColor.withValues(alpha: 0.3),
+                      rarityColor.withValues(alpha: 0.1),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(12),

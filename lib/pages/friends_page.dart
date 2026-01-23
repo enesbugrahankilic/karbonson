@@ -9,9 +9,9 @@ import '../theme/design_system.dart';
 import '../theme/theme_colors.dart';
 
 class FriendsPage extends StatefulWidget {
-  final String userNickname;
+   final String? userNickname;
 
-  const FriendsPage({super.key, required this.userNickname});
+   const FriendsPage({super.key, this.userNickname});
 
   @override
   State<FriendsPage> createState() => _FriendsPageState();
@@ -115,7 +115,7 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
     try {
       final success = await _firestoreService.sendFriendRequest(
         _currentUserId,
-        widget.userNickname,
+        widget.userNickname ?? 'Kullanıcı',
         targetUserId,
         targetNickname,
       );
@@ -208,9 +208,9 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
         child: Container(
           constraints: const BoxConstraints(maxWidth: 400, maxHeight: 600),
           child: UserQRCodeWidget(
-            userId: user.uid,
-            nickname: widget.userNickname,
-          ),
+             userId: user.uid,
+             nickname: widget.userNickname ?? 'Kullanıcı',
+           ),
         ),
       ),
     );
@@ -233,7 +233,7 @@ class _FriendsPageState extends State<FriendsPage> with TickerProviderStateMixin
                   Container(
                     padding: const EdgeInsets.all(DesignSystem.spacingS),
                     decoration: BoxDecoration(
-                      color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
+                      color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(Icons.person_add, color: ThemeColors.getPrimaryButtonColor(context), size: 24),

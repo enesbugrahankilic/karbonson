@@ -48,7 +48,6 @@ import '../../pages/two_factor_auth_page.dart';
 import '../../pages/spectator_mode_page.dart';
 import '../../pages/carbon_footprint_page.dart';
 import '../../services/authentication_state_service.dart';
-import '../../services/quiz_logic.dart';
 
 /// Route names constants for better maintainability
 class AppRoutes {
@@ -129,23 +128,23 @@ class AppRouter {
     switch (settings.name) {
       // Authentication routes
       case AppRoutes.login:
-        return _createRoute(const LoginPage());
+        return _createRoute(LoginPage());
       case AppRoutes.tutorial:
-        return _createRoute(const TutorialPage());
+        return _createRoute(TutorialPage());
       case AppRoutes.register:
-        return _createRoute(const RegisterPage());
+        return _createRoute(RegisterPage());
       case AppRoutes.registerRefactored:
-        return _createRoute(const RegisterPageRefactored());
+        return _createRoute(RegisterPageRefactored());
       case AppRoutes.emailVerification:
-        return _createRoute(const EmailVerificationPage());
+        return _createRoute(EmailVerificationPage());
       case AppRoutes.forgotPassword:
-        return _createRoute(const ForgotPasswordPage());
+        return _createRoute(ForgotPasswordPage());
       case AppRoutes.forgotPasswordEnhanced:
-        return _createRoute(const ForgotPasswordPageEnhanced());
+        return _createRoute(ForgotPasswordPageEnhanced());
 
       // 2FA routes
       case AppRoutes.twoFactorAuthSetup:
-        return _createRoute(const TwoFactorAuthSetupPage());
+        return _createRoute(TwoFactorAuthSetupPage());
       case AppRoutes.twoFactorAuthVerification:
         // For 2FA verification, we need to provide a default auth result for development
         // In production, this should come from the login flow
@@ -153,13 +152,13 @@ class AppRouter {
         return _createRoute(
             TwoFactorAuthVerificationPage(authResult: authResult));
       case AppRoutes.enhanced2FASetup:
-        return _createRoute(const EnhancedTwoFactorAuthSetupPage());
+        return _createRoute(EnhancedTwoFactorAuthSetupPage());
       case AppRoutes.enhanced2FAVerification:
         final authResult = settings.arguments ?? _createDefaultAuthResult();
         return _createRoute(
             EnhancedTwoFactorAuthVerificationPage(authResult: authResult));
       case AppRoutes.comprehensive2FASetup:
-        return _createRoute(const ComprehensiveTwoFactorAuthSetupPage());
+        return _createRoute(ComprehensiveTwoFactorAuthSetupPage());
       case AppRoutes.comprehensive2FAVerification:
         final arguments = settings.arguments as Map<String, dynamic>? ?? {};
         return _createRoute(Comprehensive2FAVerificationPage(
@@ -170,9 +169,9 @@ class AppRouter {
 
       // Main app routes
       case AppRoutes.home:
-        return _createRoute(const HomeDashboard());
+        return _createRoute(HomeDashboard());
       case AppRoutes.profile:
-        return _createProtectedRoute(const ProfilePage(), settings);
+        return _createProtectedRoute(ProfilePage(), settings);
       case AppRoutes.boardGame:
         return _createRoute(BoardGamePage(
           userNickname: settings.arguments is String
@@ -180,9 +179,7 @@ class AppRouter {
               : 'Player',
         ));
       case AppRoutes.quiz:
-        return _createRoute(QuizPage(
-          quizLogic: QuizLogic(),
-        ));
+        return _createRoute(const QuizPage());
       case AppRoutes.quizSettings:
         return _createRoute(QuizSettingsPage(
           onStartQuiz: ({
@@ -213,7 +210,7 @@ class AppRouter {
           correctAnswers: args['correctAnswers'] ?? 0,
         ));
       case AppRoutes.leaderboard:
-        return _createRoute(const LeaderboardPage());
+        return _createRoute(LeaderboardPage());
       case AppRoutes.friends:
         return _createRoute(FriendsPage(
           userNickname: settings.arguments is String
@@ -229,36 +226,36 @@ class AppRouter {
       case AppRoutes.duel:
         return _createRoute(const DuelPage());
       case AppRoutes.duelInvitation:
-        return _createRoute(const DuelInvitationPage());
+        return _createRoute(DuelInvitationPage());
       case AppRoutes.roomManagement:
         final userNickname = settings.arguments is String
             ? settings.arguments as String
             : 'Player';
         return _createRoute(RoomManagementPage(userNickname: userNickname));
       case AppRoutes.settings:
-        return _createRoute(const SettingsPage());
+        return _createRoute(SettingsPage());
       case AppRoutes.aiRecommendations:
-        return _createRoute(const AIRecommendationsPage());
+        return _createRoute(AIRecommendationsPage());
       case AppRoutes.achievement:
-        return _createRoute(const AchievementPage());
+        return _createRoute(AchievementPage());
       case AppRoutes.dailyChallenge:
-        return _createRoute(const DailyChallengePage());
+        return _createRoute(DailyChallengePage());
       case AppRoutes.dailyTasks:
-        return _createRoute(const DailyChallengePage());
+        return _createRoute(DailyChallengePage());
 
       // Extended app routes
       case AppRoutes.achievementsGallery:
-        return _createRoute(const AchievementsGalleryPage());
+        return _createRoute(AchievementsGalleryPage());
       case AppRoutes.rewards:
-        return _createRoute(const RewardsMainPage());
+        return _createRoute(RewardsMainPage());
       case AppRoutes.rewardsShop:
-        return _createRoute(const RewardsShopPage());
+        return _createRoute(RewardsShopPage());
       case AppRoutes.wonBoxes:
-        return _createRoute(const WonBoxesPage());
+        return _createRoute(WonBoxesPage());
       case AppRoutes.notifications:
-        return _createProtectedRoute(const NotificationsPage(), settings);
+        return _createProtectedRoute(NotificationsPage(), settings);
       case AppRoutes.howToPlay:
-        return _createRoute(const HowToPlayPage());
+        return _createRoute(HowToPlayPage());
       case AppRoutes.emailOtpVerification:
         return _createRoute(EmailOtpVerificationPage(
           email: settings.arguments is String ? settings.arguments as String : '',
@@ -266,27 +263,27 @@ class AppRouter {
           onVerify: (otp) {},
         ));
       case AppRoutes.emailVerificationRedirect:
-        return _createRoute(const EmailVerificationRedirectPage());
+        return _createRoute(EmailVerificationRedirectPage());
       case AppRoutes.enhancedEmailVerificationRedirect:
-        return _createRoute(const EmailVerificationRedirectPage());
+        return _createRoute(EmailVerificationRedirectPage());
       case AppRoutes.spamSafePasswordReset:
-        return _createRoute(const ForgotPasswordPageEnhanced());
+        return _createRoute(ForgotPasswordPageEnhanced());
       case AppRoutes.passwordResetInformation:
-        return _createRoute(const EmailVerificationPage());
+        return _createRoute(EmailVerificationPage());
       case AppRoutes.passwordChange:
-        return _createRoute(const ForgotPasswordPage());
+        return _createRoute(ForgotPasswordPage());
       case AppRoutes.newPassword:
-        return _createRoute(const ForgotPasswordPage());
+        return _createRoute(ForgotPasswordPage());
       case AppRoutes.twoFactorAuthPage:
         return _createRoute(TwoFactorAuthPage(
           userId: settings.arguments is String ? settings.arguments as String : '',
         ));
       case AppRoutes.tutorialPage:
-        return _createRoute(const TutorialPage());
+        return _createRoute(TutorialPage());
 
       // Spectator Mode
       case AppRoutes.spectatorMode:
-        return _createRoute(const SpectatorModePage());
+        return _createRoute(SpectatorModePage());
 
       // Carbon Footprint
       case AppRoutes.carbonFootprint:
@@ -295,13 +292,13 @@ class AppRouter {
       // Debug routes (only in debug mode)
       case AppRoutes.uidDebug:
         if (kDebugMode) {
-          return _createRoute(const LoginPage());
+          return _createRoute(LoginPage());
         }
-        return _createRoute(const LoginPage());
+        return _createRoute(LoginPage());
 
       default:
         // Default route
-        return _createRoute(const LoginPage());
+        return _createRoute(LoginPage());
     }
   }
 

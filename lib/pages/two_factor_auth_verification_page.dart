@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firebase_2fa_service.dart';
 import '../theme/theme_colors.dart';
+import '../widgets/page_templates.dart';
 
 class TwoFactorAuthVerificationPage extends StatefulWidget {
   final TwoFactorAuthResult authResult;
@@ -316,47 +317,25 @@ class _TwoFactorAuthVerificationPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: _cancelVerification,
-        ),
-        title: const Text(
-          'İki Faktörlü Doğrulama',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+      appBar: StandardAppBar(
+        title: Text('İki Faktörlü Doğrulama'),
+        onBackPressed: _cancelVerification,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: ThemeColors.getGradientColors(context),
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
+      body: PageBody(
+        scrollable: true,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Card(
+            elevation: 12,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
               padding: const EdgeInsets.all(24.0),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 400),
-                child: Card(
-                  elevation: 12,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
                         // Security icon
                         Container(
                           width: 80,
@@ -365,7 +344,7 @@ class _TwoFactorAuthVerificationPageState
                             color: Theme.of(context)
                                 .colorScheme
                                 .primary
-                                .withOpacity( 0.1),
+                                .withValues(alpha:  0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -517,10 +496,7 @@ class _TwoFactorAuthVerificationPageState
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
+                ],
               ),
             ),
           ),

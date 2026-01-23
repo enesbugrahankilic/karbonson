@@ -2,6 +2,7 @@
 // Redesigned Quiz Settings Page - Wide Widgets with Scrollable Layout
 import 'package:flutter/material.dart';
 import '../models/question.dart';
+import '../services/quiz_settings_service.dart';
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
 import '../enums/app_language.dart';
@@ -268,7 +269,7 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
           Container(
             padding: const EdgeInsets.all(DesignSystem.spacingS),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(DesignSystem.radiusM),
             ),
             child: Icon(icon, color: Colors.white, size: 24),
@@ -319,23 +320,23 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
                   gradient: isSelected
                       ? LinearGradient(
                           colors: [
-                            color.withOpacity(0.9),
-                            color.withOpacity(0.7),
+                            color.withValues(alpha: 0.9),
+                            color.withValues(alpha: 0.7),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         )
                       : null,
-                  color: isSelected ? null : Colors.white.withOpacity(0.1),
+                  color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(DesignSystem.radiusL),
                   border: Border.all(
-                    color: isSelected ? color : Colors.white.withOpacity(0.2),
+                    color: isSelected ? color : Colors.white.withValues(alpha: 0.2),
                     width: isSelected ? 3 : 1.5,
                   ),
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: color.withOpacity(0.5),
+                            color: color.withValues(alpha: 0.5),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           ),
@@ -351,8 +352,8 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? Colors.white.withOpacity(0.25)
-                              : color.withOpacity(0.2),
+                              ? Colors.white.withValues(alpha: 0.25)
+                              : color.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -380,7 +381,7 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
                         '${category['questionCount']} soru',
                         style: TextStyle(
                           color: isSelected
-                              ? Colors.white.withOpacity(0.8)
+                              ? Colors.white.withValues(alpha: 0.8)
                               : Colors.white60,
                           fontSize: 11,
                         ),
@@ -426,23 +427,23 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
                 gradient: isSelected
                     ? LinearGradient(
                         colors: [
-                          color.withOpacity(0.9),
-                          color.withOpacity(0.7),
+                          color.withValues(alpha: 0.9),
+                          color.withValues(alpha: 0.7),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       )
                     : null,
-                color: isSelected ? null : Colors.white.withOpacity(0.08),
+                color: isSelected ? null : Colors.white.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(DesignSystem.radiusL),
                 border: Border.all(
-                  color: isSelected ? color : Colors.white.withOpacity(0.15),
+                  color: isSelected ? color : Colors.white.withValues(alpha: 0.15),
                   width: isSelected ? 2.5 : 1,
                 ),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: color.withOpacity(0.4),
+                          color: color.withValues(alpha: 0.4),
                           blurRadius: 12,
                           offset: const Offset(0, 6),
                         ),
@@ -457,8 +458,8 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? Colors.white.withOpacity(0.25)
-                            : color.withOpacity(0.2),
+                            ? Colors.white.withValues(alpha: 0.25)
+                            : color.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -485,7 +486,7 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
                             difficulty['description'] as String,
                             style: TextStyle(
                               color: isSelected
-                                  ? Colors.white.withOpacity(0.9)
+                                  ? Colors.white.withValues(alpha: 0.9)
                                   : Colors.white70,
                               fontSize: 13,
                             ),
@@ -509,7 +510,7 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
                           difficulty['time'] as String,
                           style: TextStyle(
                             color: isSelected
-                                ? Colors.white.withOpacity(0.8)
+                                ? Colors.white.withValues(alpha: 0.8)
                                 : Colors.white60,
                             fontSize: 13,
                           ),
@@ -555,23 +556,23 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
                 gradient: isSelected
                     ? LinearGradient(
                         colors: [
-                          color.withOpacity(0.9),
-                          color.withOpacity(0.7),
+                          color.withValues(alpha: 0.9),
+                          color.withValues(alpha: 0.7),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       )
                     : null,
-                color: isSelected ? null : Colors.white.withOpacity(0.08),
+                color: isSelected ? null : Colors.white.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(DesignSystem.radiusL),
                 border: Border.all(
-                  color: isSelected ? color : Colors.white.withOpacity(0.15),
+                  color: isSelected ? color : Colors.white.withValues(alpha: 0.15),
                   width: isSelected ? 2.5 : 1,
                 ),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: color.withOpacity(0.4),
+                          color: color.withValues(alpha: 0.4),
                           blurRadius: 12,
                           offset: const Offset(0, 6),
                         ),
@@ -631,7 +632,7 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
                             option['label'] as String,
                             style: TextStyle(
                               color: isSelected
-                                  ? Colors.white.withOpacity(0.9)
+                                  ? Colors.white.withValues(alpha: 0.9)
                                   : Colors.white70,
                               fontSize: 14,
                             ),
@@ -646,8 +647,8 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
                       ),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? Colors.white.withOpacity(0.2)
-                            : color.withOpacity(0.15),
+                            ? Colors.white.withValues(alpha: 0.2)
+                            : color.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                       ),
                       child: Row(
@@ -708,23 +709,23 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
                 gradient: isSelected
                     ? LinearGradient(
                         colors: [
-                          color.withOpacity(0.9),
-                          color.withOpacity(0.7),
+                          color.withValues(alpha: 0.9),
+                          color.withValues(alpha: 0.7),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       )
                     : null,
-                color: isSelected ? null : Colors.white.withOpacity(0.08),
+                color: isSelected ? null : Colors.white.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(DesignSystem.radiusL),
                 border: Border.all(
-                  color: isSelected ? color : Colors.white.withOpacity(0.15),
+                  color: isSelected ? color : Colors.white.withValues(alpha: 0.15),
                   width: isSelected ? 2.5 : 1,
                 ),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: color.withOpacity(0.4),
+                          color: color.withValues(alpha: 0.4),
                           blurRadius: 12,
                           offset: const Offset(0, 6),
                         ),
@@ -739,8 +740,8 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? Colors.white.withOpacity(0.25)
-                            : color.withOpacity(0.2),
+                            ? Colors.white.withValues(alpha: 0.25)
+                            : color.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Text(
@@ -766,7 +767,7 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
                             language['description'] as String,
                             style: TextStyle(
                               color: isSelected
-                                  ? Colors.white.withOpacity(0.9)
+                                  ? Colors.white.withValues(alpha: 0.9)
                                   : Colors.white70,
                               fontSize: 13,
                             ),
@@ -821,7 +822,7 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: ThemeColors.getSuccessColor(context).withOpacity(0.2),
+                  color: ThemeColors.getSuccessColor(context).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                 ),
                 child: Icon(
@@ -876,10 +877,10 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
           Container(
             padding: const EdgeInsets.all(DesignSystem.spacingM),
             decoration: BoxDecoration(
-              color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.15),
+              color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(DesignSystem.radiusM),
               border: Border.all(
-                color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.3),
+                color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.3),
               ),
             ),
             child: Row(
@@ -919,7 +920,7 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.15),
+            color: color.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(DesignSystem.radiusS),
           ),
           child: Icon(icon, color: color, size: 20),
@@ -980,7 +981,17 @@ class _QuizSettingsPageState extends State<QuizSettingsPage> {
     );
   }
 
-  void _startQuiz() {
+  void _startQuiz() async {
+    // ✅ Ayarları kaydet
+    final settings = QuizSettings(
+      category: _selectedCategory,
+      difficulty: _selectedDifficulty,
+      language: _selectedLanguage,
+      mode: 'normal',
+    );
+    await QuizSettingsService().saveQuizSettings(settings);
+    
+    // Callback'i çağır
     widget.onStartQuiz(
       category: _selectedCategory,
       difficulty: _selectedDifficulty,

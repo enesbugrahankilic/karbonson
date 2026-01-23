@@ -186,7 +186,7 @@ class _AnimatedProgressBarState extends State<AnimatedProgressBar>
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: defaultProgressColor.withOpacity(0.3),
+                                  color: defaultProgressColor.withValues(alpha: 0.3),
                                   blurRadius: 4,
                                   offset: const Offset(0, 2),
                                 ),
@@ -199,7 +199,7 @@ class _AnimatedProgressBarState extends State<AnimatedProgressBar>
                           _ShimmerEffect(
                             progress: progress,
                             color: widget.shimmerColor ??
-                                defaultProgressColor.withOpacity(0.3),
+                                defaultProgressColor.withValues(alpha: 0.3),
                             animationController: _animationController,
                           ),
                       ],
@@ -297,9 +297,9 @@ class _ShimmerEffectState extends State<_ShimmerEffect> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    widget.color.withOpacity(0),
-                    widget.color.withOpacity(0.5),
-                    widget.color.withOpacity(0),
+                    widget.color.withValues(alpha: 0),
+                    widget.color.withValues(alpha: 0.5),
+                    widget.color.withValues(alpha: 0),
                   ],
                   stops: const [0, 0.5, 1],
                 ),
@@ -443,8 +443,8 @@ class _AchievementProgressWidgetState extends State<AchievementProgressWidget>
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        widget.color.withOpacity(0.1),
-                        widget.color.withOpacity(0.05),
+                        widget.color.withValues(alpha: 0.1),
+                        widget.color.withValues(alpha: 0.05),
                       ],
                     )
                   : null,
@@ -543,12 +543,12 @@ class _AchievementProgressWidgetState extends State<AchievementProgressWidget>
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: isCompleted
-            ? widget.color.withOpacity(0.2)
+            ? widget.color.withValues(alpha: 0.2)
             : Colors.grey.shade200,
         boxShadow: isCompleted
             ? [
                 BoxShadow(
-                  color: widget.color.withOpacity(0.4),
+                  color: widget.color.withValues(alpha: 0.4),
                   blurRadius: 10,
                   spreadRadius: 2,
                 ),
@@ -620,7 +620,7 @@ class RealTimeProgressPanel extends StatelessWidget {
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: color.withOpacity(0.3)),
+        side: BorderSide(color: color.withValues(alpha: 0.3)),
       ),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -630,8 +630,8 @@ class RealTimeProgressPanel extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              color.withOpacity(0.1),
-              color.withOpacity(0.05),
+              color.withValues(alpha: 0.1),
+              color.withValues(alpha: 0.05),
             ],
           ),
         ),
@@ -716,7 +716,7 @@ class RealTimeProgressPanel extends StatelessWidget {
           height: 32,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: color.withOpacity(0.2),
+            color: color.withValues(alpha: 0.2),
           ),
           child: Center(
             child: Text(

@@ -503,6 +503,11 @@ class ProfileService {
     return getUserProfile();
   }
 
+  /// Get user data - alias for getUserProfile for compatibility
+  Future<user_model.UserData?> getUserData(String userId) async {
+    return getUserProfile();
+  }
+
   /// Cache nickname to local storage (for fallback purposes)
   Future<void> cacheNickname(String nickname) async {
     // This is a stub for compatibility - in a fully dynamic system,

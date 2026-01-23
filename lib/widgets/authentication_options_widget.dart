@@ -150,7 +150,7 @@ class _AuthenticationOptionsWidgetState
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              ThemeColors.getPrimaryButtonColor(context).withOpacity( 0.1),
+              ThemeColors.getPrimaryButtonColor(context).withValues(alpha:  0.1),
               ThemeColors.getCardBackground(context),
             ],
           ),

@@ -2,6 +2,7 @@
 import '../models/question.dart';
 
 import '../enums/app_language.dart';
+import 'additional_questions.dart';
 
 class QuestionsDatabase {
   static final Map<AppLanguage, List<Question>> _questionsByLanguage = {
@@ -610,8 +611,15 @@ class QuestionsDatabase {
   };
 
   static List<Question> getQuestions(AppLanguage language) {
-    return List.from(_questionsByLanguage[language] ??
+    final baseQuestions = List<Question>.from(_questionsByLanguage[language] ??
         _questionsByLanguage[AppLanguage.turkish]!);
+
+    // ✅ Ek soruları da ekle
+    if (language == AppLanguage.turkish) {
+      baseQuestions.addAll(AdditionalQuestions.getAllAdditionalQuestions());
+    }
+
+    return baseQuestions;
   }
 
   static List<Question> getAllQuestions() {

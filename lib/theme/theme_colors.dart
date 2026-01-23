@@ -11,8 +11,8 @@ class ThemeColors {
 
   static Color getSecondaryText(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white.withOpacity( 0.8)
-        : Colors.black.withOpacity( 0.7);
+        ? Colors.white.withValues(alpha:  0.8)
+        : Colors.black.withValues(alpha:  0.7);
   }
 
   static Color getCardBackground(BuildContext context) {
@@ -60,7 +60,7 @@ class ThemeColors {
   static Color getShadow(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
         ? Colors.black26
-        : Colors.black.withOpacity( 0.1);
+        : Colors.black.withValues(alpha:  0.1);
   }
 
   static List<Color> getGradientColors(BuildContext context) {
@@ -184,8 +184,8 @@ class ThemeColors {
 
   static Color getIconColor(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white.withOpacity( 0.8)
-        : Colors.black.withOpacity( 0.7);
+        ? Colors.white.withValues(alpha:  0.8)
+        : Colors.black.withValues(alpha:  0.7);
   }
 
   static Color getInputFieldBackground(BuildContext context) {
@@ -212,19 +212,19 @@ class ThemeColors {
 
   static Color getGameBoardCardBackground(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.grey[800]!.withOpacity( 0.95)
-        : Colors.white.withOpacity( 0.97);
+        ? Colors.grey[800]!.withValues(alpha:  0.95)
+        : Colors.white.withValues(alpha:  0.97);
   }
 
   static Color getGameBoardBackground(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.green.shade800.withOpacity( 0.3)
+        ? Colors.green.shade800.withValues(alpha:  0.3)
         : Colors.green.shade50;
   }
 
   static Color getPlayerInfoCardBackground(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.grey[800]!.withOpacity( 0.95)
+        ? Colors.grey[800]!.withValues(alpha:  0.95)
         : Color.fromRGBO(255, 255, 255, 0.97);
   }
 
@@ -236,20 +236,20 @@ class ThemeColors {
 
   static Color getStatsCardText(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white.withOpacity( 0.8)
-        : Colors.black.withOpacity( 0.7);
+        ? Colors.white.withValues(alpha:  0.8)
+        : Colors.black.withValues(alpha:  0.7);
   }
 
   static Color getHistoryCardBackground(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.grey[800]!.withOpacity( 0.9)
-        : Colors.white.withOpacity( 0.9);
+        ? Colors.grey[800]!.withValues(alpha:  0.9)
+        : Colors.white.withValues(alpha:  0.9);
   }
 
   static Color getEmptyStateText(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white.withOpacity( 0.8)
-        : Colors.black.withOpacity( 0.6);
+        ? Colors.white.withValues(alpha:  0.8)
+        : Colors.black.withValues(alpha:  0.6);
   }
 
   static Color getGameTimeText(BuildContext context) {
@@ -345,14 +345,14 @@ class ThemeColors {
   // Modern color utilities for enhanced design
   static Color getOverlayColor(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.black.withOpacity( 0.6)
-        : Colors.black.withOpacity( 0.4);
+        ? Colors.black.withValues(alpha:  0.6)
+        : Colors.black.withValues(alpha:  0.4);
   }
 
   static Color getGlassBackground(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white.withOpacity( 0.05)
-        : Colors.white.withOpacity( 0.8);
+        ? Colors.white.withValues(alpha:  0.05)
+        : Colors.white.withValues(alpha:  0.8);
   }
 
   static Color getNeumorphismLight(BuildContext context) {
@@ -395,14 +395,14 @@ class ThemeColors {
   // Interactive states
   static Color getInteractiveHover(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white.withOpacity( 0.08)
-        : Colors.black.withOpacity( 0.04);
+        ? Colors.white.withValues(alpha:  0.08)
+        : Colors.black.withValues(alpha:  0.04);
   }
 
   static Color getInteractivePressed(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white.withOpacity( 0.12)
-        : Colors.black.withOpacity( 0.08);
+        ? Colors.white.withValues(alpha:  0.12)
+        : Colors.black.withValues(alpha:  0.08);
   }
 
   static Color getFocusRing(BuildContext context) {
@@ -417,7 +417,7 @@ class ThemeColors {
     if (Theme.of(context).brightness == Brightness.dark) {
       return [
         BoxShadow(
-          color: Colors.black.withOpacity( 0.3 * elevation),
+          color: Colors.black.withValues(alpha: 0.3 * elevation),
           blurRadius: 8 * elevation,
           offset: Offset(0, 4 * elevation),
         ),
@@ -425,16 +425,131 @@ class ThemeColors {
     } else {
       return [
         BoxShadow(
-          color: Colors.black.withOpacity( 0.1 * elevation),
+          color: Colors.black.withValues(alpha: 0.1 * elevation),
           blurRadius: 6 * elevation,
           offset: Offset(0, 2 * elevation),
         ),
         BoxShadow(
-          color: Colors.black.withOpacity( 0.05 * elevation),
+          color: Colors.black.withValues(alpha: 0.05 * elevation),
           blurRadius: 12 * elevation,
           offset: Offset(0, 8 * elevation),
         ),
       ];
     }
+  }
+
+  // ===========================================================================
+  // TEXT COLORS FOR COLORED/GRADIENT BACKGROUNDS
+  // ===========================================================================
+
+  /// Get text color that works well on colored/gradient backgrounds
+  /// For light theme: returns dark color for better contrast
+  /// For dark theme: returns white for visibility on dark backgrounds
+  static Color getTextOnColoredBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : const Color(0xFF1A1A1A);
+  }
+
+  /// Get secondary text color for colored/gradient backgrounds
+  static Color getSecondaryTextOnColoredBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white.withValues(alpha: 0.8)
+        : const Color(0xFF4A4A4A);
+  }
+
+  /// Get tertiary text color for colored/gradient backgrounds
+  static Color getTertiaryTextOnColoredBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white.withValues(alpha: 0.6)
+        : const Color(0xFF6A6A6A);
+  }
+
+  /// Get icon color that works well on colored/gradient backgrounds
+  static Color getIconOnColoredBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : const Color(0xFF2E7D32);
+  }
+
+  /// Get primary text color - primary choice for all text
+  static Color getPrimaryText(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : Colors.black87;
+  }
+
+  /// Get secondary text color - for subtitles, descriptions
+  static Color getSecondaryTextColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white70
+        : Colors.black54;
+  }
+
+  /// Get disabled text color
+  static Color getDisabledTextColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white38
+        : Colors.black26;
+  }
+
+  /// Get accent text color for highlighting important text
+  static Color getAccentTextColor(BuildContext context) {
+    return const Color(0xFF4CAF50);
+  }
+
+  /// Get text color for success states
+  static Color getSuccessTextColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFF81C784)
+        : const Color(0xFF2E7D32);
+  }
+
+  /// Get text color for warning states
+  static Color getWarningTextColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFFFFB74D)
+        : const Color(0xFFE65100);
+  }
+
+  /// Get text color for error states
+  static Color getErrorTextColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFFEF9A9A)
+        : const Color(0xFFC62828);
+  }
+
+  /// Get text color for info states
+  static Color getInfoTextColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFF90CAF9)
+        : const Color(0xFF1565C0);
+  }
+
+  /// Check if we need to use light text based on background color luminance
+  /// Use this for custom colored backgrounds
+  static bool shouldUseLightText(Color backgroundColor) {
+    final luminance = backgroundColor.computeLuminance();
+    return luminance < 0.5;
+  }
+
+  /// Get appropriate text color based on background color
+  static Color getTextForBackground(BuildContext context, Color backgroundColor) {
+    if (shouldUseLightText(backgroundColor)) {
+      return Colors.white;
+    }
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.black87
+        : Colors.black87;
+  }
+
+  /// Get appropriate secondary text color based on background color
+  static Color getSecondaryTextForBackground(BuildContext context, Color backgroundColor) {
+    if (shouldUseLightText(backgroundColor)) {
+      return Colors.white70;
+    }
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white70
+        : Colors.black54;
   }
 }

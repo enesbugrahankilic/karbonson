@@ -282,42 +282,42 @@ void main() {
 
     group('Quiz UX Iyileştirmeleri', () {
       testWidgets('Quiz progress açık', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(QuizPage(quizLogic: quizLogic)));
+        await tester.pumpWidget(createTestApp(const QuizPage()));
 
         // Progress göstergesi
         expect(find.byType(LinearProgressIndicator), findsWidgets);
       });
 
       testWidgets('Soru metni okunur', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(QuizPage(quizLogic: quizLogic)));
+        await tester.pumpWidget(createTestApp(const QuizPage()));
 
         // Soru text'i
         expect(find.byType(Text), findsWidgets);
       });
 
       testWidgets('Cevap seçenekleri clear', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(QuizPage(quizLogic: quizLogic)));
+        await tester.pumpWidget(createTestApp(const QuizPage()));
 
         // Cevap seçenekleri
         expect(find.byType(GestureDetector), findsWidgets);
       });
 
       testWidgets('Timer gösteriliyor', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(QuizPage(quizLogic: quizLogic)));
+        await tester.pumpWidget(createTestApp(const QuizPage()));
 
         // Timer widget
         expect(find.byType(Text), findsWidgets);
       });
 
       testWidgets('Skip seçeneği mevcut', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(QuizPage(quizLogic: quizLogic)));
+        await tester.pumpWidget(createTestApp(const QuizPage()));
 
         // Skip butonu
         expect(find.byType(TextButton), findsWidgets);
       });
 
       testWidgets('İpucu sistemi var', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(QuizPage(quizLogic: quizLogic)));
+        await tester.pumpWidget(createTestApp(const QuizPage()));
 
         // Hint button
         expect(find.byType(IconButton), findsWidgets);

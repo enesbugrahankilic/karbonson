@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/page_templates.dart';
 
 class ComprehensiveTwoFactorAuthSetupPage extends StatefulWidget {
-  const ComprehensiveTwoFactorAuthSetupPage({super.key});
+  ComprehensiveTwoFactorAuthSetupPage({super.key});
 
   @override
   State<ComprehensiveTwoFactorAuthSetupPage> createState() =>

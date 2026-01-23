@@ -536,7 +536,7 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
                 label: const Text('Özel Kod ile Oluştur'),
                 style: DesignSystem.getTextButtonStyle(context).copyWith(
                   backgroundColor: WidgetStateProperty.all(
-                    ThemeColors.getSecondaryButtonColor(context).withOpacity(0.1),
+                    ThemeColors.getSecondaryButtonColor(context).withValues(alpha: 0.1),
                   ),
                   foregroundColor: WidgetStateProperty.all(
                     ThemeColors.getSecondaryButtonColor(context),
@@ -592,7 +592,7 @@ class _RoomManagementPageState extends State<RoomManagementPage> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: DesignSystem.spacingM),
-              const GameInvitationList(),
+              GameInvitationList(),
             ],
           ),
         ),

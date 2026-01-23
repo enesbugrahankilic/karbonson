@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../services/firebase_auth_service.dart';
 
 class FirebaseConfigChecker extends StatefulWidget {
-  const FirebaseConfigChecker({super.key});
+  FirebaseConfigChecker({super.key});
 
   @override
   State<FirebaseConfigChecker> createState() => _FirebaseConfigCheckerState();

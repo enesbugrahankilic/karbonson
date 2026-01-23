@@ -708,8 +708,8 @@ class AppTheme {
     final brightness = Theme.of(context).brightness;
     return getSemanticTextStyle(context, 'body').copyWith(
       color: brightness == Brightness.dark
-          ? Colors.white.withOpacity( 0.38)
-          : Colors.black.withOpacity( 0.38),
+          ? Colors.white.withValues(alpha:  0.38)
+          : Colors.black.withValues(alpha:  0.38),
     );
   }
 }

@@ -4,12 +4,11 @@ import 'package:uuid/uuid.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/spectator_service.dart';
 import '../theme/theme_colors.dart';
-import '../theme/design_system.dart';
-import '../widgets/page_templates.dart';
+import '../widgets/quiz_layout.dart';
 
 /// Spectator Mode Page - Watch live games and interact with other spectators
 class SpectatorModePage extends StatefulWidget {
-  const SpectatorModePage({super.key});
+  SpectatorModePage({super.key});
 
   @override
   State<SpectatorModePage> createState() => _SpectatorModePageState();
@@ -31,7 +30,6 @@ class _SpectatorModePageState extends State<SpectatorModePage>
   // Active game watching state
   LiveGameState? _currentGameState;
   List<SpectatorChatMessage> _chatMessages = [];
-  List<EmojiReaction> _reactions = [];
   List<Spectator> _spectators = [];
   String? _watchingGameId;
 
@@ -176,9 +174,8 @@ class _SpectatorModePageState extends State<SpectatorModePage>
       _reactionsSubscription =
           _spectatorService.reactionsStream.listen((reactions) {
         if (mounted) {
-          setState(() {
-            _reactions = reactions;
-          });
+          // Reactions handled internally by the service
+          setState(() {});
         }
       });
 
@@ -229,7 +226,6 @@ class _SpectatorModePageState extends State<SpectatorModePage>
         _currentGameState = null;
         _watchingGameId = null;
         _chatMessages = [];
-        _reactions = [];
         _spectators = [];
       });
 
@@ -288,27 +284,33 @@ class _SpectatorModePageState extends State<SpectatorModePage>
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
 
-    return Scaffold(
-      appBar: StandardAppBar(
-        title: Text(
-          _currentGameState != null
-              ? '${_currentGameState!.hostNickname}\'nin Oyunu'
-              : 'İzleyici Modu',
-        ),
-        onBackPressed: () => Navigator.pop(context),
-        actions: [
-          if (_currentGameState != null)
-            IconButton(
-              icon: const Icon(Icons.exit_to_app),
-              tooltip: 'İzlemeden Çık',
-              onPressed: _leaveGame,
-            ),
-        ],
-        bottom: _currentGameState == null
-            ? PreferredSize(
-                preferredSize: const Size.fromHeight(48.0),
-                child: Material(
-                  color: Theme.of(context).scaffoldBackgroundColor,
+    final title = _currentGameState != null
+        ? '${_currentGameState!.hostNickname}\'nin Oyunu'
+        : 'İzleyici Modu';
+    final subtitle = _currentGameState != null
+        ? 'Canlı oyunu izle ve diğer izleyicilerle etkileşim kur'
+        : 'Canlı oyunları izle veya kayıtlı oyunları tekrar izle';
+
+    return QuizLayout(
+      title: title,
+      subtitle: subtitle,
+      showBackButton: true,
+      onBackPressed: () => Navigator.pop(context),
+      actions: [
+        if (_currentGameState != null)
+          IconButton(
+            icon: const Icon(Icons.exit_to_app),
+            tooltip: 'İzlemeden Çık',
+            onPressed: _leaveGame,
+          ),
+      ],
+      scrollable: true,
+      child: _currentGameState != null
+          ? _buildWatchingView(context, isSmallScreen)
+          : Column(
+              children: [
+                Material(
+                  color: Colors.transparent,
                   child: TabBar(
                     controller: _tabController,
                     labelColor: ThemeColors.getPrimaryButtonColor(context),
@@ -320,15 +322,11 @@ class _SpectatorModePageState extends State<SpectatorModePage>
                     ],
                   ),
                 ),
-              )
-            : null,
-      ),
-      body: PageBody(
-        scrollable: true,
-        child: _currentGameState != null
-          ? _buildWatchingView(context, isSmallScreen)
-          : _buildGameListView(context, isSmallScreen),
-      ),
+                Expanded(
+                  child: _buildGameListView(context, isSmallScreen),
+                ),
+              ],
+            ),
     );
   }
 
@@ -365,8 +363,8 @@ class _SpectatorModePageState extends State<SpectatorModePage>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
-            ThemeColors.getAccentButtonColor(context).withOpacity(0.05),
+            ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1),
+            ThemeColors.getAccentButtonColor(context).withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -403,7 +401,7 @@ class _SpectatorModePageState extends State<SpectatorModePage>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.purple.withOpacity(0.2),
+                  color: Colors.purple.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -431,7 +429,7 @@ class _SpectatorModePageState extends State<SpectatorModePage>
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: ThemeColors.getPrimaryButtonColor(context)
-                    .withOpacity(0.2),
+                    .withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -482,7 +480,7 @@ class _SpectatorModePageState extends State<SpectatorModePage>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -517,7 +515,7 @@ class _SpectatorModePageState extends State<SpectatorModePage>
                   decoration: BoxDecoration(
                     color: isCurrentPlayer
                         ? ThemeColors.getPrimaryButtonColor(context)
-                            .withOpacity(0.2)
+                            .withValues(alpha: 0.2)
                         : ThemeColors.getCardBackground(context),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
@@ -738,7 +736,7 @@ class _SpectatorModePageState extends State<SpectatorModePage>
         gradient: LinearGradient(
           colors: [
             ThemeColors.getCardBackground(context),
-            ThemeColors.getCardBackground(context).withOpacity(0.95),
+            ThemeColors.getCardBackground(context).withValues(alpha: 0.95),
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -822,8 +820,8 @@ class _SpectatorModePageState extends State<SpectatorModePage>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.green.withOpacity(0.1),
-                Colors.teal.withOpacity(0.05),
+                Colors.green.withValues(alpha: 0.1),
+                Colors.teal.withValues(alpha: 0.05),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -841,7 +839,7 @@ class _SpectatorModePageState extends State<SpectatorModePage>
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.2),
+                          color: Colors.green.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -944,7 +942,7 @@ class _SpectatorModePageState extends State<SpectatorModePage>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.2),
+                      color: Colors.green.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -1022,7 +1020,7 @@ class _SpectatorModePageState extends State<SpectatorModePage>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.2),
+                color: Colors.blue.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: const Icon(

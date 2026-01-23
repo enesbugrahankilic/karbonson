@@ -11,7 +11,7 @@ import '../widgets/leaderboard_item.dart';
 import '../widgets/page_templates.dart';
 
 class LeaderboardPage extends StatefulWidget {
-  const LeaderboardPage({super.key});
+  LeaderboardPage({super.key});
 
   @override
   State<LeaderboardPage> createState() => _LeaderboardPageState();

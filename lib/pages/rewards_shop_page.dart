@@ -15,7 +15,7 @@ import '../theme/theme_colors.dart';
 import '../widgets/page_templates.dart';
 
 class RewardsShopPage extends StatefulWidget {
-  const RewardsShopPage({super.key});
+  RewardsShopPage({super.key});
 
   @override
   State<RewardsShopPage> createState() => _RewardsShopPageState();
@@ -595,7 +595,7 @@ class _RewardsShopPageState extends State<RewardsShopPage>
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: Theme.of(context).primaryColor, size: 20),
@@ -613,7 +613,7 @@ class _RewardsShopPageState extends State<RewardsShopPage>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
@@ -674,7 +674,7 @@ class _RewardsShopPageState extends State<RewardsShopPage>
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: color, size: 20),
@@ -692,7 +692,7 @@ class _RewardsShopPageState extends State<RewardsShopPage>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
@@ -738,7 +738,7 @@ class _RewardUnlockedDialog extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: _getRarityColor().withOpacity(0.3),
+              color: _getRarityColor().withValues(alpha: 0.3),
               blurRadius: 30,
               spreadRadius: 5,
             ),
@@ -762,11 +762,11 @@ class _RewardUnlockedDialog extends StatelessWidget {
                 height: 100,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _getRarityColor().withOpacity(0.2),
+                  color: _getRarityColor().withValues(alpha: 0.2),
                   border: Border.all(color: _getRarityColor(), width: 3),
                   boxShadow: [
                     BoxShadow(
-                      color: _getRarityColor().withOpacity(0.5),
+                      color: _getRarityColor().withValues(alpha: 0.5),
                       blurRadius: 20,
                       spreadRadius: 5,
                     ),
@@ -811,7 +811,7 @@ class _RewardUnlockedDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
-                color: _getRarityColor().withOpacity(0.1),
+                color: _getRarityColor().withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(

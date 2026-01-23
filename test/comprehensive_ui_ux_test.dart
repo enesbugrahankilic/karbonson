@@ -113,7 +113,7 @@ void main() {
     group('Register Sayfası UI Testleri', () {
       testWidgets('Register sayfası tüm gerekli alanları içeriyor',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const RegisterPage()));
+        await tester.pumpWidget(createTestApp(RegisterPage()));
 
         // Tüm input alanları kontrol
         expect(find.byType(TextFormField), findsAtLeastNWidgets(3)); // email, password, confirm
@@ -126,7 +126,7 @@ void main() {
       });
 
       testWidgets('Form validation çalışıyor', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const RegisterPage()));
+        await tester.pumpWidget(createTestApp(RegisterPage()));
 
         final registerButton = find.widgetWithText(ElevatedButton, 'Kayıt Ol');
         await tester.tap(registerButton);
@@ -138,7 +138,7 @@ void main() {
 
       testWidgets('Password strength indicator var mı',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const RegisterPage()));
+        await tester.pumpWidget(createTestApp(RegisterPage()));
 
         // Password gücü göstergesi ara
         expect(find.byType(LinearProgressIndicator), findsWidgets);
@@ -314,7 +314,7 @@ void main() {
     group('Leaderboard Sayfası UI Testleri', () {
       testWidgets('Leaderboard listesi doğru gösteriliyor',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const LeaderboardPage()));
+        await tester.pumpWidget(createTestApp(LeaderboardPage()));
 
         // Liste öğeleri
         expect(find.byType(ListView), findsOneWidget);
@@ -328,7 +328,7 @@ void main() {
 
       testWidgets('Ranking badge öğeleri var mı',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const LeaderboardPage()));
+        await tester.pumpWidget(createTestApp(LeaderboardPage()));
 
         // Medal/Trophy ikonları ara
         expect(find.byIcon(Icons.emoji_events), findsWidgets);
@@ -338,7 +338,7 @@ void main() {
     group('Friends Sayfası UI Testleri', () {
       testWidgets('Friends sayfası arkadaş listesini gösteriyor',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const FriendsPage(userNickname: 'test_user')));
+        await tester.pumpWidget(createTestApp(FriendsPage(userNickname: 'test_user')));
 
         // Arkadaş listesi
         expect(find.byType(ListView), findsWidgets);
@@ -352,7 +352,7 @@ void main() {
 
       testWidgets('Arkadaş ekleme işlevi çalışıyor',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const FriendsPage(userNickname: 'test_user')));
+        await tester.pumpWidget(createTestApp(FriendsPage(userNickname: 'test_user')));
 
         // Arkadaş ekleme butonuna tıkla
         final addButton = find.byIcon(Icons.person_add);
@@ -369,7 +369,7 @@ void main() {
     group('Achievement Sayfası UI Testleri', () {
       testWidgets('Achievement sayfası tab sistemi ile çalışıyor',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const AchievementPage()));
+        await tester.pumpWidget(createTestApp(AchievementPage()));
 
         // Tab bar kontrol
         expect(find.byType(TabBar), findsOneWidget);
@@ -385,7 +385,7 @@ void main() {
 
       testWidgets('Achievement kartları doğru render ediliyor',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const AchievementPage()));
+        await tester.pumpWidget(createTestApp(AchievementPage()));
 
         // Achievement kartları yükleniyor kontrolü
         expect(find.byType(CircularProgressIndicator), findsWidgets);
@@ -395,7 +395,7 @@ void main() {
     group('Notifications Sayfası UI Testleri', () {
       testWidgets('Notifications sayfası filtre sistemi ile çalışıyor',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const NotificationsPage()));
+        await tester.pumpWidget(createTestApp(NotificationsPage()));
 
         // Filter chip'ler
         expect(find.byType(FilterChip), findsWidgets);
@@ -407,7 +407,7 @@ void main() {
 
       testWidgets('Notification öğeleri doğru gösteriliyor',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const NotificationsPage()));
+        await tester.pumpWidget(createTestApp(NotificationsPage()));
 
         // Loading durumunda progress indicator
         expect(find.byType(CircularProgressIndicator), findsWidgets);
@@ -415,7 +415,7 @@ void main() {
 
       testWidgets('Mark all as read butonu çalışıyor',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const NotificationsPage()));
+        await tester.pumpWidget(createTestApp(NotificationsPage()));
 
         // Mark all butonu (eğer unread varsa)
         final markAllButton = find.byIcon(Icons.done_all);
@@ -432,7 +432,7 @@ void main() {
     group('Spectator Mode Sayfası UI Testleri', () {
       testWidgets('Spectator mode tab sistemi çalışıyor',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const SpectatorModePage()));
+        await tester.pumpWidget(createTestApp(SpectatorModePage()));
 
         // Tab bar kontrol
         expect(find.byType(TabBar), findsOneWidget);
@@ -444,7 +444,7 @@ void main() {
 
       testWidgets('Active games listesi gösteriliyor',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const SpectatorModePage()));
+        await tester.pumpWidget(createTestApp(SpectatorModePage()));
 
         // Loading durumunda
         expect(find.byType(CircularProgressIndicator), findsWidgets);
@@ -452,7 +452,7 @@ void main() {
 
       testWidgets('Emoji reactions panel var mı',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const SpectatorModePage()));
+        await tester.pumpWidget(createTestApp(SpectatorModePage()));
 
         // Emoji butonları ara (watching modunda)
         // Bu test için mock data gerekebilir
@@ -467,7 +467,7 @@ void main() {
     group('Settings Sayfası UI Testleri', () {
       testWidgets('Settings sayfası tüm seçenekleri içeriyor',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const SettingsPage()));
+        await tester.pumpWidget(createTestApp(SettingsPage()));
 
         // Switch/Toggle kontroller
         expect(find.byType(Switch), findsWidgets);
@@ -480,7 +480,7 @@ void main() {
       });
 
       testWidgets('Tema değişikliği çalışıyor', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const SettingsPage()));
+        await tester.pumpWidget(createTestApp(SettingsPage()));
 
         // Tema switch'i ara ve tıkla
         final themeSwitch = find.byType(Switch);
@@ -495,7 +495,7 @@ void main() {
 
       testWidgets('Dil ayarı değiştirilebiliyor',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const SettingsPage()));
+        await tester.pumpWidget(createTestApp(SettingsPage()));
 
         // Dil dropdown'u ara
         final languageDropdown = find.byType(DropdownButton);
@@ -517,7 +517,7 @@ void main() {
       testWidgets('QR kod widget doğru render ediliyor',
           (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp(
-          const UserQRCodeWidget(
+          UserQRCodeWidget(
             userId: 'test_user_id',
             nickname: 'Test User',
           ),
@@ -533,7 +533,7 @@ void main() {
       testWidgets('Share butonları çalışıyor',
           (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp(
-          const UserQRCodeWidget(
+          UserQRCodeWidget(
             userId: 'test_user_id',
             nickname: 'Test User',
           ),
@@ -773,7 +773,7 @@ void main() {
       });
 
       testWidgets('Liste scroll performansı', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const LeaderboardPage()));
+        await tester.pumpWidget(createTestApp(LeaderboardPage()));
 
         // Scroll işlemi
         await tester.fling(find.byType(ListView), const Offset(0, -500), 3000);
@@ -783,7 +783,7 @@ void main() {
       });
 
       testWidgets('Widget rebuild performansı', (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const SettingsPage()));
+        await tester.pumpWidget(createTestApp(SettingsPage()));
 
         // Birkaç rebuild simülasyonu
         for (int i = 0; i < 5; i++) {
@@ -827,7 +827,7 @@ void main() {
 
       testWidgets('Settings değişiklikleri uygulanıyor',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createTestApp(const SettingsPage()));
+        await tester.pumpWidget(createTestApp(SettingsPage()));
 
         // Tema değişikliği
         final themeSwitch = find.byType(Switch);

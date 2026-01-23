@@ -9,6 +9,7 @@ import '../services/email_otp_service.dart';
 import '../widgets/phone_number_validation_dialog.dart';
 import '../services/phone_number_validator.dart';
 import '../theme/theme_colors.dart';
+import '../widgets/page_templates.dart';
 
 class TwoFactorAuthPage extends StatefulWidget {
   final String userId;
@@ -263,41 +264,19 @@ class _TwoFactorAuthPageState extends State<TwoFactorAuthPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: _cancelVerification,
-        ),
-        title: const Text(
-          'SMS Doğrulama',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+      appBar: StandardAppBar(
+        title: Text('SMS Doğrulama'),
+        onBackPressed: _cancelVerification,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: ThemeColors.getGradientColors(context),
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
+      body: PageBody(
+        scrollable: true,
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
                     // Header
                     const Icon(
                       Icons.security,
@@ -319,7 +298,7 @@ class _TwoFactorAuthPageState extends State<TwoFactorAuthPage>
                       'Hesabınızı güvence altına almak için SMS ile doğrulama yapın',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.white.withOpacity( 0.8),
+                        color: Colors.white.withValues(alpha:  0.8),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -331,9 +310,7 @@ class _TwoFactorAuthPageState extends State<TwoFactorAuthPage>
                     ] else ...[
                       _buildCodeVerificationSection(),
                     ],
-                  ],
-                ),
-              ),
+              ],
             ),
           ),
         ),

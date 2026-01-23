@@ -10,9 +10,9 @@ import '../services/authentication_state_service.dart';
 import '../services/profile_service.dart';
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
-import '../widgets/page_templates.dart';
 import '../widgets/copy_to_clipboard_widget.dart';
 import '../widgets/user_qr_code_widget.dart';
+import '../widgets/quiz_layout.dart';
 import '../utils/firebase_logger.dart';
 import 'duel_page.dart';
 import 'spectator_mode_page.dart';
@@ -173,7 +173,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
                  child: Container(
                    padding: const EdgeInsets.all(8),
                    decoration: BoxDecoration(
-                     color: Colors.white.withOpacity(0.2),
+                     color: Colors.white.withValues(alpha: 0.2),
                      borderRadius: BorderRadius.circular(DesignSystem.radiusS),
                    ),
                    child: const Icon(Icons.copy, size: 16, color: Colors.white),
@@ -276,7 +276,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
                Container(
                  padding: const EdgeInsets.all(DesignSystem.spacingS),
                  decoration: BoxDecoration(
-                   color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
+                   color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1),
                    shape: BoxShape.circle,
                  ),
                  child: Icon(Icons.login, color: ThemeColors.getPrimaryButtonColor(context), size: 24),
@@ -359,7 +359,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
                Container(
                  padding: const EdgeInsets.all(DesignSystem.spacingS),
                  decoration: BoxDecoration(
-                   color: ThemeColors.getSuccessColor(context).withOpacity(0.1),
+                   color: ThemeColors.getSuccessColor(context).withValues(alpha: 0.1),
                    shape: BoxShape.circle,
                  ),
                  child: Icon(Icons.help_outline, color: ThemeColors.getSuccessColor(context), size: 24),
@@ -403,7 +403,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
          Container(
            padding: const EdgeInsets.all(DesignSystem.spacingS),
            decoration: BoxDecoration(
-             color: ThemeColors.getSuccessColor(context).withOpacity(0.1),
+             color: ThemeColors.getSuccessColor(context).withValues(alpha: 0.1),
              shape: BoxShape.circle,
            ),
            child: Icon(icon, color: ThemeColors.getSuccessColor(context), size: 20),
@@ -425,49 +425,46 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
    Widget build(BuildContext context) {
      // Show loading indicator while fetching user data
      if (_isLoading) {
-       return Scaffold(
-         appBar: StandardAppBar(
-           title: const Text('Çok Oyunculu Lobi'),
-           onBackPressed: () => Navigator.pop(context),
-         ),
-         body: PageBody(
-           scrollable: true,
-           child: Center(
-             child: Column(
-               mainAxisAlignment: MainAxisAlignment.center,
-               children: [
-                 DesignSystem.modernProgressIndicator(context),
-                 const SizedBox(height: 16),
-                 Text(
-                   'Yükleniyor...',
-                   style: DesignSystem.getBodyLarge(context).copyWith(
-                     color: ThemeColors.getSecondaryText(context),
-                   ),
+       return QuizLayout(
+         title: 'Çok Oyunculu Lobi',
+         subtitle: 'Oyuncu verisi yükleniyor',
+         showBackButton: true,
+         onBackPressed: () => Navigator.pop(context),
+         scrollable: true,
+         child: Center(
+           child: Column(
+             mainAxisAlignment: MainAxisAlignment.center,
+             children: [
+               DesignSystem.modernProgressIndicator(context),
+               const SizedBox(height: 16),
+               Text(
+                 'Yükleniyor...',
+                 style: DesignSystem.getBodyLarge(context).copyWith(
+                   color: ThemeColors.getSecondaryText(context),
                  ),
-               ],
-             ),
+               ),
+             ],
            ),
          ),
        );
      }
 
-     return Scaffold(
-       appBar: StandardAppBar(
-         title: const Text('Çok Oyunculu Lobi'),
-         onBackPressed: () => Navigator.pop(context),
-         actions: [
-           IconButton(
-             onPressed: _showHowToPlayDialog,
-             icon: const Icon(Icons.help_outline),
-             tooltip: 'Nasıl Oynanır?',
-           ),
-         ],
-       ),
-       body: PageBody(
-         scrollable: true,
-         child: Column(
-           crossAxisAlignment: CrossAxisAlignment.stretch,
-           children: [
+     return QuizLayout(
+       title: 'Çok Oyunculu Lobi',
+       subtitle: 'Arkadaşlarıyla düello yap veya odalar oluştur',
+       showBackButton: true,
+       onBackPressed: () => Navigator.pop(context),
+       actions: [
+         IconButton(
+           onPressed: _showHowToPlayDialog,
+           icon: const Icon(Icons.help_outline),
+           tooltip: 'Nasıl Oynanır?',
+         ),
+       ],
+       scrollable: true,
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.stretch,
+         children: [
              // User Profile Section
              SlideTransition(
                position: Tween<Offset>(
@@ -516,131 +513,137 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
              const SizedBox(height: 20),
            ],
          ),
-       ),
      );
    }
 
-   Widget _buildUserProfileSection(BuildContext context, bool isSmallScreen) {
-     return DesignSystem.glassCard(
-       context,
-       padding: EdgeInsets.all(isSmallScreen ? DesignSystem.spacingL : DesignSystem.spacingXl),
-       child: Row(
-         children: [
-           // Avatar with enhanced styling
-           Container(
-             decoration: BoxDecoration(
-               shape: BoxShape.circle,
-               gradient: LinearGradient(
-                 colors: [
-                   ThemeColors.getPrimaryButtonColor(context).withOpacity(0.3),
-                   ThemeColors.getAccentButtonColor(context).withOpacity(0.3),
-                 ],
-               ),
-               boxShadow: ThemeColors.getModernShadow(context, elevation: 0.5),
-             ),
-             child: CircleAvatar(
-               radius: isSmallScreen ? 32.0 : 36.0,
-               backgroundColor: Colors.transparent,
-               backgroundImage: _userAvatarUrl != null ? NetworkImage(_userAvatarUrl!) : null,
-               child: _userAvatarUrl == null
-                   ? Text(
-                       _userNickname?.isNotEmpty == true ? _userNickname![0].toUpperCase() : 'O',
-                       style: TextStyle(
-                         color: Colors.white,
-                         fontSize: isSmallScreen ? 24.0 : 28.0,
-                         fontWeight: FontWeight.w700,
-                         shadows: [
-                           Shadow(
-                             color: Colors.black.withOpacity(0.3),
-                             offset: const Offset(0, 2),
-                             blurRadius: 4,
-                           ),
-                         ],
-                       ),
-                     )
-                   : null,
-             ),
-           ),
-           SizedBox(width: DesignSystem.spacingL),
-           Expanded(
-             child: Column(
-               crossAxisAlignment: CrossAxisAlignment.start,
-               children: [
-                 Text(
-                   _userNickname ?? 'Oyuncu',
-                   style: DesignSystem.getTitleLarge(context).copyWith(
-                     color: Colors.white,
-                     fontWeight: FontWeight.w700,
-                     shadows: [
-                       Shadow(
-                         color: Colors.black.withOpacity(0.3),
-                         offset: const Offset(0, 2),
-                         blurRadius: 4,
-                       ),
-                     ],
-                   ),
-                   maxLines: 1,
-                   overflow: TextOverflow.ellipsis,
-                 ),
-                 SizedBox(height: DesignSystem.spacingS),
-                 Row(
-                   children: [
-                     Icon(
-                       Icons.emoji_events,
-                       color: Colors.amber,
-                       size: 16,
-                     ),
-                     SizedBox(width: DesignSystem.spacingXs),
-                     Text(
-                       '$_duelWins galibiyet',
-                       style: DesignSystem.getBodySmall(context).copyWith(
-                         color: Colors.white.withOpacity(0.9),
-                       ),
-                     ),
-                     SizedBox(width: DesignSystem.spacingM),
-                     Icon(
-                       Icons.gamepad,
-                       color: Colors.white.withOpacity(0.7),
-                       size: 16,
-                     ),
-                     SizedBox(width: DesignSystem.spacingXs),
-                     Text(
-                       '$_totalGames oyun',
-                       style: DesignSystem.getBodySmall(context).copyWith(
-                         color: Colors.white.withOpacity(0.9),
-                       ),
-                     ),
-                   ],
-                 ),
-               ],
-             ),
-           ),
-           // Time display with modern styling
-           Container(
-             padding: EdgeInsets.symmetric(
-               horizontal: DesignSystem.spacingM,
-               vertical: DesignSystem.spacingS,
-             ),
-             decoration: BoxDecoration(
-               color: Colors.white.withOpacity(0.15),
-               borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-               border: Border.all(
-                 color: Colors.white.withOpacity(0.2),
-                 width: 1,
-               ),
-             ),
-             child: Text(
-               '${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}',
-               style: DesignSystem.getLabelLarge(context).copyWith(
-                 color: Colors.white,
-                 fontWeight: FontWeight.w600,
-               ),
-             ),
-           ),
-         ],
-       ),
-     );
-   }
+  Widget _buildUserProfileSection(BuildContext context, bool isSmallScreen) {
+    // Determine text colors based on theme
+    final brightness = Theme.of(context).brightness;
+    final isDarkTheme = brightness == Brightness.dark;
+    final primaryTextColor = isDarkTheme ? Colors.white : const Color(0xFF1A1A1A);
+    final secondaryTextColor = isDarkTheme ? Colors.white.withValues(alpha: 0.9) : const Color(0xFF4A4A4A);
+    final shadowColor = Colors.black.withValues(alpha: 0.3);
+    
+    return DesignSystem.glassCard(
+      context,
+      padding: EdgeInsets.all(isSmallScreen ? DesignSystem.spacingL : DesignSystem.spacingXl),
+      child: Row(
+        children: [
+          // Avatar with enhanced styling
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.3),
+                  ThemeColors.getAccentButtonColor(context).withValues(alpha: 0.3),
+                ],
+              ),
+              boxShadow: ThemeColors.getModernShadow(context, elevation: 0.5),
+            ),
+            child: CircleAvatar(
+              radius: isSmallScreen ? 32.0 : 36.0,
+              backgroundColor: Colors.transparent,
+              backgroundImage: _userAvatarUrl != null ? NetworkImage(_userAvatarUrl!) : null,
+              child: _userAvatarUrl == null
+                  ? Text(
+                      _userNickname?.isNotEmpty == true ? _userNickname![0].toUpperCase() : 'O',
+                      style: TextStyle(
+                        color: primaryTextColor,
+                        fontSize: isSmallScreen ? 24.0 : 28.0,
+                        fontWeight: FontWeight.w700,
+                        shadows: [
+                          Shadow(
+                            color: shadowColor,
+                            offset: const Offset(0, 2),
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                    )
+                  : null,
+            ),
+          ),
+          SizedBox(width: DesignSystem.spacingL),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _userNickname ?? 'Oyuncu',
+                  style: DesignSystem.getTitleLarge(context).copyWith(
+                    color: primaryTextColor,
+                    fontWeight: FontWeight.w700,
+                    shadows: [
+                      Shadow(
+                        color: shadowColor,
+                        offset: const Offset(0, 2),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: DesignSystem.spacingS),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.emoji_events,
+                      color: Colors.amber,
+                      size: 16,
+                    ),
+                    SizedBox(width: DesignSystem.spacingXs),
+                    Text(
+                      '$_duelWins galibiyet',
+                      style: DesignSystem.getBodySmall(context).copyWith(
+                        color: secondaryTextColor,
+                      ),
+                    ),
+                    SizedBox(width: DesignSystem.spacingM),
+                    Icon(
+                      Icons.gamepad,
+                      color: isDarkTheme ? Colors.white.withValues(alpha: 0.7) : const Color(0xFF6A6A6A),
+                      size: 16,
+                    ),
+                    SizedBox(width: DesignSystem.spacingXs),
+                    Text(
+                      '$_totalGames oyun',
+                      style: DesignSystem.getBodySmall(context).copyWith(
+                        color: secondaryTextColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // Time display with modern styling
+          Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: DesignSystem.spacingM,
+              vertical: DesignSystem.spacingS,
+            ),
+            decoration: BoxDecoration(
+              color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+              border: Border.all(
+                color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              '${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}',
+              style: DesignSystem.getLabelLarge(context).copyWith(
+                color: ThemeColors.getSuccessColor(context),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
    Widget _buildRoomCreatedCard(BuildContext context, bool isSmallScreen) {
      return DesignSystem.card(
@@ -653,7 +656,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
                Container(
                  padding: const EdgeInsets.all(DesignSystem.spacingM),
                  decoration: BoxDecoration(
-                   color: Colors.white.withOpacity(0.2),
+                   color: Colors.white.withValues(alpha: 0.2),
                    shape: BoxShape.circle,
                  ),
                  child: Icon(
@@ -678,7 +681,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
                      Text(
                        'Arkadaşlarınızla paylaşın',
                        style: DesignSystem.getBodyMedium(context).copyWith(
-                         color: Colors.white.withOpacity(0.9),
+                         color: Colors.white.withValues(alpha: 0.9),
                        ),
                      ),
                    ],
@@ -690,7 +693,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
            Container(
              padding: const EdgeInsets.all(DesignSystem.spacingL),
              decoration: BoxDecoration(
-               color: Colors.white.withOpacity(0.15),
+               color: Colors.white.withValues(alpha: 0.15),
                borderRadius: BorderRadius.circular(DesignSystem.radiusM),
              ),
              child: Row(
@@ -719,7 +722,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
                    child: Container(
                      padding: const EdgeInsets.all(DesignSystem.spacingS),
                      decoration: BoxDecoration(
-                       color: Colors.white.withOpacity(0.2),
+                       color: Colors.white.withValues(alpha: 0.2),
                        borderRadius: BorderRadius.circular(DesignSystem.radiusS),
                      ),
                      child: Icon(
@@ -763,6 +766,12 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
    }
 
    Widget _buildMainActionsSection(BuildContext context, bool isSmallScreen) {
+     // Determine text colors based on theme
+     final brightness = Theme.of(context).brightness;
+     final isDarkTheme = brightness == Brightness.dark;
+     final textColor = isDarkTheme ? Colors.white : const Color(0xFF1A1A1A);
+     final shadowColor = Colors.black.withValues(alpha: 0.3);
+     
      return Column(
        crossAxisAlignment: CrossAxisAlignment.start,
        children: [
@@ -774,12 +783,12 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
            child: Text(
              'Oyun Seçenekleri',
              style: DesignSystem.getTitleLarge(context).copyWith(
-               color: Colors.white,
+               color: textColor,
                fontSize: isSmallScreen ? 20.0 : 24.0,
                fontWeight: FontWeight.w800,
                shadows: [
                  Shadow(
-                   color: Colors.black.withOpacity(0.3),
+                   color: shadowColor,
                    offset: const Offset(0, 2),
                    blurRadius: 4,
                  ),
@@ -810,7 +819,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
              gradient: LinearGradient(
                colors: [
                  ThemeColors.getSuccessColor(context),
-                 ThemeColors.getSuccessColor(context).withOpacity(0.8),
+                 ThemeColors.getSuccessColor(context).withValues(alpha: 0.8),
                ],
                begin: Alignment.topLeft,
                end: Alignment.bottomRight,
@@ -823,7 +832,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
                Container(
                  padding: const EdgeInsets.all(DesignSystem.spacingL),
                  decoration: BoxDecoration(
-                   color: Colors.white.withOpacity(0.2),
+                   color: Colors.white.withValues(alpha: 0.2),
                    shape: BoxShape.circle,
                  ),
                  child: _isCreatingRoom
@@ -847,7 +856,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
                Text(
                  'Arkadaşlarını davet et',
                  style: DesignSystem.getBodySmall(context).copyWith(
-                   color: Colors.white.withOpacity(0.9),
+                   color: Colors.white.withValues(alpha: 0.9),
                  ),
                  textAlign: TextAlign.center,
                ),
@@ -870,7 +879,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
              gradient: LinearGradient(
                colors: [
                  ThemeColors.getInfoColor(context),
-                 ThemeColors.getInfoColor(context).withOpacity(0.8),
+                 ThemeColors.getInfoColor(context).withValues(alpha: 0.8),
                ],
                begin: Alignment.topLeft,
                end: Alignment.bottomRight,
@@ -883,7 +892,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
                Container(
                  padding: const EdgeInsets.all(DesignSystem.spacingL),
                  decoration: BoxDecoration(
-                   color: Colors.white.withOpacity(0.2),
+                   color: Colors.white.withValues(alpha: 0.2),
                    shape: BoxShape.circle,
                  ),
                  child: _isJoiningRoom
@@ -907,7 +916,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
                Text(
                  'Kod ile katıl',
                  style: DesignSystem.getBodySmall(context).copyWith(
-                   color: Colors.white.withOpacity(0.9),
+                   color: Colors.white.withValues(alpha: 0.9),
                  ),
                  textAlign: TextAlign.center,
                ),
@@ -947,7 +956,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
                      ThemeColors.getAccentButtonColor(context),
                      () => Navigator.push(
                        context,
-                       MaterialPageRoute(builder: (context) => const SpectatorModePage()),
+                       MaterialPageRoute(builder: (context) => SpectatorModePage()),
                      ),
                    ),
                  ),
@@ -985,10 +994,10 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
        child: Container(
          padding: EdgeInsets.all(isSmallScreen ? DesignSystem.spacingM : DesignSystem.spacingL),
          decoration: BoxDecoration(
-           color: color.withOpacity(0.1),
+           color: color.withValues(alpha: 0.1),
            borderRadius: BorderRadius.circular(DesignSystem.radiusM),
            border: Border.all(
-             color: color.withOpacity(0.3),
+             color: color.withValues(alpha: 0.3),
              width: 1,
            ),
          ),
@@ -1029,7 +1038,7 @@ class _MultiplayerLobbyPageState extends State<MultiplayerLobbyPage>
                Container(
                  padding: const EdgeInsets.all(DesignSystem.spacingM),
                  decoration: BoxDecoration(
-                   color: ThemeColors.getSuccessColor(context).withOpacity(0.1),
+                   color: ThemeColors.getSuccessColor(context).withValues(alpha: 0.1),
                    shape: BoxShape.circle,
                  ),
                  child: Icon(

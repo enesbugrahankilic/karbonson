@@ -6,6 +6,7 @@ import '../services/firebase_auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/error_feedback_service.dart';
 import '../theme/theme_colors.dart';
+import '../widgets/page_templates.dart';
 import 'email_verification_redirect_page.dart';
 
 /// Enhanced Forgot Password Page with optimized UX and comprehensive error handling
@@ -15,7 +16,7 @@ import 'email_verification_redirect_page.dart';
 /// 3. Ön Kontroller (Pre-checks): Email validation + connectivity check
 /// 4. Geri Bildirim (Feedback): Loading overlay + Snackbar/Toast feedback
 class ForgotPasswordPageEnhanced extends StatefulWidget {
-  const ForgotPasswordPageEnhanced({super.key});
+  ForgotPasswordPageEnhanced({super.key});
 
   @override
   State<ForgotPasswordPageEnhanced> createState() =>
@@ -280,7 +281,7 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity( 0.2),
+                    color: Colors.black.withValues(alpha:  0.2),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -316,7 +317,7 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
                   SizedBox(
                     width: 200,
                     child: LinearProgressIndicator(
-                      backgroundColor: Colors.grey.withOpacity( 0.3),
+                      backgroundColor: Colors.grey.withValues(alpha:  0.3),
                       valueColor: AlwaysStoppedAnimation<Color>(
                         ThemeColors.getGreen(context),
                       ),
@@ -339,34 +340,27 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: ThemeColors.getGradientColors(context),
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
-                  child: Card(
-                    elevation: 8,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    color: ThemeColors.getContainerBackground(context),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
+      appBar: StandardAppBar(
+        title: Text('Şifre Sıfırla'),
+      ),
+      body: PageBody(
+        scrollable: true,
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              color: ThemeColors.getContainerBackground(context),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                           // Header with enhanced animation
                           AnimatedBuilder(
                             animation: _animationController,
@@ -407,10 +401,10 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.red.withOpacity( 0.1),
+                                color: Colors.red.withValues(alpha:  0.1),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                    color: Colors.red.withOpacity( 0.3)),
+                                    color: Colors.red.withValues(alpha:  0.3)),
                               ),
                               child: Row(
                                 children: [
@@ -603,10 +597,7 @@ class _ForgotPasswordPageEnhancedState extends State<ForgotPasswordPageEnhanced>
                               textAlign: TextAlign.center,
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  ],
                 ),
               ),
             ),

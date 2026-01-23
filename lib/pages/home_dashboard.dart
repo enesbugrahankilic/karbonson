@@ -125,6 +125,11 @@ class _HomeDashboardState extends State<HomeDashboard>
 
     // Load user data
     _loadUserData();
+    
+    // Check and show tutorial if first login
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndShowTutorialIfFirstLogin();
+    });
   }
 
   @override
@@ -158,6 +163,31 @@ class _HomeDashboardState extends State<HomeDashboard>
     await prefs.setBool('rememberTheme', remember);
     _lastSelectedTheme = theme;
     _rememberTheme = remember;
+  }
+
+  /// Check if this is first login and show tutorial
+  Future<void> _checkAndShowTutorialIfFirstLogin() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenTutorial = prefs.getBool('hasSeenTutorialAfterLogin') ?? false;
+      
+      if (!hasSeenTutorial && mounted) {
+        // Mark as seen
+        await prefs.setBool('hasSeenTutorialAfterLogin', true);
+        
+        // Show tutorial page
+        if (mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => TutorialPage(isFirstLogin: true),
+              fullscreenDialog: true,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error checking tutorial status: $e');
+    }
   }
 
   /// Load user data from services
@@ -302,7 +332,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                             ),
                           ),
                         ),
-                        const LanguageSelectorButton(),
+                        LanguageSelectorButton(),
                       ],
                     ),
                   ),

@@ -110,10 +110,10 @@ class _LootBoxOpeningDialogState extends State<LootBoxOpeningDialog>
         width: MediaQuery.of(context).size.width * 0.9,
         height: MediaQuery.of(context).size.height * 0.8,
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.8),
+          color: Colors.black.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: LootBoxColors.getRarityColor(widget.lootBox.rarity).withOpacity(0.5),
+            color: LootBoxColors.getRarityColor(widget.lootBox.rarity).withValues(alpha: 0.5),
             width: 2,
           ),
         ),
@@ -169,7 +169,7 @@ class _LootBoxOpeningDialogState extends State<LootBoxOpeningDialog>
                             width: 120,
                             height: 120,
                             decoration: BoxDecoration(
-                              color: LootBoxColors.getRarityColor(widget.lootBox.rarity).withOpacity(0.2),
+                              color: LootBoxColors.getRarityColor(widget.lootBox.rarity).withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: LootBoxColors.getRarityColor(widget.lootBox.rarity),
@@ -206,7 +206,7 @@ class _LootBoxOpeningDialogState extends State<LootBoxOpeningDialog>
                                   width: 100,
                                   height: 100,
                                   decoration: BoxDecoration(
-                                    color: LootBoxColors.getRarityColor(widget.reward.reward.rarity).withOpacity(0.2),
+                                    color: LootBoxColors.getRarityColor(widget.reward.reward.rarity).withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(15),
                                     border: Border.all(
                                       color: LootBoxColors.getRarityColor(widget.reward.reward.rarity),
@@ -256,8 +256,8 @@ class _LootBoxOpeningDialogState extends State<LootBoxOpeningDialog>
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 decoration: BoxDecoration(
                                   color: widget.reward.isNew
-                                      ? Colors.green.withOpacity(0.2)
-                                      : Colors.orange.withOpacity(0.2),
+                                      ? Colors.green.withValues(alpha: 0.2)
+                                      : Colors.orange.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
                                     color: widget.reward.isNew ? Colors.green : Colors.orange,
@@ -310,7 +310,7 @@ class _LootBoxOpeningDialogState extends State<LootBoxOpeningDialog>
                 onPressed: widget.onClose,
                 icon: const Icon(Icons.close, color: Colors.white),
                 style: IconButton.styleFrom(
-                  backgroundColor: Colors.black.withOpacity(0.5),
+                  backgroundColor: Colors.black.withValues(alpha: 0.5),
                 ),
               ),
             ),

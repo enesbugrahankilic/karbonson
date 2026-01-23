@@ -217,19 +217,57 @@ class GameCompletionService {
     }
   }
 
-  /// Firestore'a event gönder
+  /// Firestore'a event gönder - retry mekanizması ve offline support ile
   Future<bool> _sendToFirestore(Map<String, dynamic> data, String collection) async {
     try {
-      await _firestore.collection(collection).add({
-        ...data,
-        'createdAt': FieldValue.serverTimestamp(),
-        'devicePlatform': defaultTargetPlatform.name.toString(),
-      });
-      return true;
+      // Retry mekanizması: 3 kez dene, her deneme arasında 1 saniye bekle
+      int retryCount = 0;
+      const maxRetries = 3;
+      const retryDelay = Duration(seconds: 1);
+
+      while (retryCount < maxRetries) {
+        try {
+          await _firestore.collection(collection).add({
+            ...data,
+            'createdAt': FieldValue.serverTimestamp(),
+            'devicePlatform': defaultTargetPlatform.name.toString(),
+          }).timeout(const Duration(seconds: 10));
+          
+          if (kDebugMode) {
+            debugPrint('✅ Firestore write successful for $collection');
+          }
+          return true;
+        } catch (e) {
+          retryCount++;
+          if (retryCount < maxRetries) {
+            if (kDebugMode) {
+              debugPrint('⚠️ Firestore retry $retryCount/$maxRetries for $collection: $e');
+            }
+            await Future.delayed(retryDelay);
+          } else {
+            throw e;
+          }
+        }
+      }
+      
+      return false;
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('❌ Firestore error for $collection: $e');
+        debugPrint('❌ Firestore error for $collection after retries: $e');
       }
+      
+      // Save to offline queue even if failed
+      try {
+        await _addToQueue(jsonEncode(data));
+        if (kDebugMode) {
+          debugPrint('✅ Data saved to offline queue: $collection');
+        }
+      } catch (queueError) {
+        if (kDebugMode) {
+          debugPrint('❌ Error adding to queue: $queueError');
+        }
+      }
+      
       return false;
     }
   }

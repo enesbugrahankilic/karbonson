@@ -12,7 +12,7 @@ import '../theme/theme_colors.dart';
 
 
 class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
+  SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -474,7 +474,7 @@ class SettingsPage extends StatelessWidget {
                 Navigator.of(context).pop(); // Close dialog
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => const TwoFactorAuthSetupPage(),
+                    builder: (context) => TwoFactorAuthSetupPage(),
                   ),
                 );
               },

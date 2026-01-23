@@ -13,10 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/loot_box.dart';
-import '../models/daily_challenge.dart';
 import '../services/loot_box_service.dart';
 import '../services/daily_task_event_service.dart';
-import '../services/enhanced_reward_service.dart';
 import '../services/firestore_service.dart';
 import '../theme/theme_colors.dart';
 import '../theme/design_system.dart';
@@ -24,7 +22,7 @@ import '../theme/app_theme.dart';
 import '../widgets/loot_box_widget.dart';
 import '../utils/loot_box_animations.dart';
 import '../core/navigation/app_router.dart';
-import '../widgets/page_templates.dart';
+import '../widgets/quiz_layout.dart';
 
 /// Class to handle all animations for QuizResultsPage
 class QuizAnimations {
@@ -135,13 +133,10 @@ class QuizResultsPage extends StatefulWidget {
 class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderStateMixin {
   final LootBoxService _lootBoxService = LootBoxService();
   final DailyTaskEventService _dailyTaskService = DailyTaskEventService();
-  final EnhancedRewardService _rewardService = EnhancedRewardService();
 
   List<UserLootBox> _rewardBoxes = [];
-  bool _isLoading = true;
   bool _dailyTasksUpdated = false;
   bool _rewardsGranted = false;
-  String? _errorMessage;
 
   // Carbon footprint calculation
   double _carbonFootprint = 0.0;
@@ -186,11 +181,6 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
       ]);
     } catch (e) {
       debugPrint('Error initializing services: $e');
-      if (mounted) {
-        setState(() {
-          _errorMessage = 'Servisler başlatılamadı: $e';
-        });
-      }
     }
   }
 
@@ -238,11 +228,6 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
       }
     } catch (e) {
       debugPrint('Error granting rewards: $e');
-      if (mounted) {
-        setState(() {
-          _errorMessage = 'Ödüller verilemedi: $e';
-        });
-      }
     }
   }
 
@@ -347,23 +332,22 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: StandardAppBar(
-        title: const Text('Quiz Sonuçları'),
-        onBackPressed: () => Navigator.pop(context),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.home),
-            onPressed: _navigateToHome,
-            tooltip: 'Ana Sayfaya Dön',
-          ),
-        ],
-      ),
-      body: PageBody(
-        scrollable: true,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+    return QuizLayout(
+      title: 'Quiz Sonuçları',
+      subtitle: 'Tebrikler! Başarıyla tamamladınız',
+      showBackButton: true,
+      onBackPressed: () => Navigator.pop(context),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.home),
+          onPressed: _navigateToHome,
+          tooltip: 'Ana Sayfaya Dön',
+        ),
+      ],
+      scrollable: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
             _buildCelebrationOverlay(),
             const SizedBox(height: DesignSystem.spacingXl),
             _buildScoreDisplay(),
@@ -377,7 +361,6 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
             _buildNavigationButtons(),
           ],
         ),
-      ),
     );
   }
 
@@ -412,15 +395,15 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  ThemeColors.getSuccessColor(context).withOpacity(0.2),
-                  ThemeColors.getSuccessColor(context).withOpacity(0.1),
+                  ThemeColors.getSuccessColor(context).withValues(alpha: 0.2),
+                  ThemeColors.getSuccessColor(context).withValues(alpha: 0.1),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(DesignSystem.radiusL),
               border: Border.all(
-                color: ThemeColors.getSuccessColor(context).withOpacity(0.3),
+                color: ThemeColors.getSuccessColor(context).withValues(alpha: 0.3),
               ),
             ),
             child: Column(
@@ -474,15 +457,15 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Colors.green.withOpacity(0.2),
-              Colors.green.withOpacity(0.1),
+              Colors.green.withValues(alpha: 0.2),
+              Colors.green.withValues(alpha: 0.1),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(DesignSystem.radiusL),
           border: Border.all(
-            color: Colors.green.withOpacity(0.3),
+            color: Colors.green.withValues(alpha: 0.3),
           ),
         ),
         child: Column(
@@ -524,7 +507,7 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
                 vertical: DesignSystem.spacingS,
               ),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.2),
+                color: Colors.green.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(DesignSystem.radiusM),
               ),
               child: Text(
@@ -585,7 +568,7 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
                 Container(
                   padding: const EdgeInsets.all(DesignSystem.spacingXl),
                   decoration: BoxDecoration(
-                    color: ThemeColors.getCardBackground(context).withOpacity(0.5),
+                    color: ThemeColors.getCardBackground(context).withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(DesignSystem.radiusM),
                   ),
                   child: Column(
@@ -618,10 +601,10 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
     return Container(
       padding: const EdgeInsets.all(DesignSystem.spacingM),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
+        color: Colors.blue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(DesignSystem.radiusM),
         border: Border.all(
-          color: Colors.blue.withOpacity(0.3),
+          color: Colors.blue.withValues(alpha: 0.3),
         ),
       ),
       child: Row(
@@ -705,7 +688,7 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(DesignSystem.radiusL),
               side: BorderSide(
-                color: LootBoxColors.getRarityColor(box.rarity).withOpacity(0.3),
+                color: LootBoxColors.getRarityColor(box.rarity).withValues(alpha: 0.3),
                 width: 2,
               ),
             ),

@@ -5,12 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../services/connectivity_service.dart';
 import '../theme/theme_colors.dart';
 import '../services/email_otp_service.dart';
+import '../widgets/page_templates.dart';
 import 'email_otp_verification_page.dart';
 
 /// Forgot Password Page with comprehensive email validation and auto-population
 /// Supports automatic email pre-filling from FirebaseAuth.currentUser?.email
 class ForgotPasswordPage extends StatefulWidget {
-  const ForgotPasswordPage({super.key});
+  ForgotPasswordPage({super.key});
 
   @override
   State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
@@ -411,9 +412,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity( 0.1),
+                  color: Colors.blue.withValues(alpha:  0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue.withOpacity( 0.3)),
+                  border: Border.all(color: Colors.blue.withValues(alpha:  0.3)),
                 ),
                 child: Column(
                   children: [
@@ -473,34 +474,29 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: ThemeColors.getGradientColors(context),
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
-                  child: Card(
-                    elevation: 8,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    color: ThemeColors.getContainerBackground(context),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
+      appBar: StandardAppBar(
+        title: const Text('Şifremi Unuttum'),
+        onBackPressed: () => Navigator.pop(context),
+      ),
+      body: PageBody(
+        scrollable: true,
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 500),
+              child: Card(
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                color: ThemeColors.getContainerBackground(context),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
                           // Header
                           Icon(
                             Icons.lock_reset,
@@ -532,10 +528,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.red.withOpacity( 0.1),
+                                color: Colors.red.withValues(alpha:  0.1),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                    color: Colors.red.withOpacity( 0.3)),
+                                    color: Colors.red.withValues(alpha:  0.3)),
                               ),
                               child: Row(
                                 children: [
@@ -714,9 +710,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
                               textAlign: TextAlign.center,
                             ),
                           ),
-                        ],
-                      ),
-                    ),
+                    ],
                   ),
                 ),
               ),

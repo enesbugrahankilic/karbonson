@@ -48,8 +48,8 @@ class EnhancedRewardCard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      rarityColor.withOpacity(0.15),
-                      rarityColor.withOpacity(0.05),
+                      rarityColor.withValues(alpha: 0.15),
+                      rarityColor.withValues(alpha: 0.05),
                     ],
                   )
                 : null,
@@ -109,7 +109,7 @@ class EnhancedRewardCard extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: reward.status == RewardStatus.unlocked
-            ? rarityColor.withOpacity(0.2)
+            ? rarityColor.withValues(alpha: 0.2)
             : Colors.grey[300],
         border: Border.all(
           color: rarityColor,
@@ -166,7 +166,7 @@ class EnhancedRewardCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
+              color: Colors.green.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -189,7 +189,7 @@ class EnhancedRewardCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: canAfford ? Colors.blue.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
+              color: canAfford ? Colors.blue.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -216,7 +216,7 @@ class EnhancedRewardCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.1),
+              color: Colors.orange.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -403,7 +403,7 @@ class PointWalletWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.orange.withOpacity(0.2), Colors.red.withOpacity(0.2)],
+          colors: [Colors.orange.withValues(alpha: 0.2), Colors.red.withValues(alpha: 0.2)],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.orange),
@@ -485,7 +485,7 @@ class ProgressBarWidget extends StatelessWidget {
                 height: 8,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [color, color.withOpacity(0.7)],
+                    colors: [color, color.withValues(alpha: 0.7)],
                   ),
                   borderRadius: BorderRadius.circular(4),
                 ),
@@ -532,7 +532,7 @@ class MilestoneCard extends StatelessWidget {
                   height: 48,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isAchieved ? Colors.green.withOpacity(0.2) : Colors.grey[200],
+                    color: isAchieved ? Colors.green.withValues(alpha: 0.2) : Colors.grey[200],
                     border: Border.all(
                       color: isAchieved ? Colors.green : Colors.grey,
                       width: 2,

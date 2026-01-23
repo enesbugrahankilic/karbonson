@@ -81,7 +81,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
                 gradient: LinearGradient(
                   colors: [
                     ThemeColors.getGlassBackground(context),
-                    ThemeColors.getGlassBackground(context).withOpacity(0.95),
+                    ThemeColors.getGlassBackground(context).withValues(alpha: 0.95),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -89,13 +89,13 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
                 borderRadius: BorderRadius.circular(DesignSystem.radiusL),
                 border: Border.all(
                   color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white.withOpacity(0.1)
-                      : Colors.white.withOpacity(0.3),
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.white.withValues(alpha: 0.3),
                   width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: ThemeColors.getPrimaryButtonColor(context).withOpacity(0.1),
+                    color: ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.1),
                     blurRadius: 16,
                     offset: const Offset(0, 8),
                   ),
@@ -108,7 +108,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: DesignSystem.spacingL),
                     height: 1,
-                    color: ThemeColors.getBorder(context).withOpacity(0.2),
+                    color: ThemeColors.getBorder(context).withValues(alpha: 0.2),
                   ),
                   _buildOptionsSection(context),
                 ],
@@ -127,8 +127,8 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            ThemeColors.getPrimaryButtonColor(context).withOpacity(0.08),
-            ThemeColors.getPrimaryButtonColor(context).withOpacity(0.03),
+            ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.08),
+            ThemeColors.getPrimaryButtonColor(context).withValues(alpha: 0.03),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -183,7 +183,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         borderRadius: BorderRadius.circular(DesignSystem.radiusM),
         boxShadow: [
           BoxShadow(
-            color: (difficultyConfig['color'] as Color).withOpacity(0.4),
+            color: (difficultyConfig['color'] as Color).withValues(alpha: 0.4),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -347,7 +347,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         gradient: LinearGradient(
           colors: [
             ThemeColors.getSuccessColor(context),
-            ThemeColors.getSuccessColor(context).withOpacity(0.8),
+            ThemeColors.getSuccessColor(context).withValues(alpha: 0.8),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -359,7 +359,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         ),
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.getSuccessColor(context).withOpacity(0.3),
+            color: ThemeColors.getSuccessColor(context).withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -373,7 +373,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         gradient: LinearGradient(
           colors: [
             ThemeColors.getErrorColor(context),
-            ThemeColors.getErrorColor(context).withOpacity(0.8),
+            ThemeColors.getErrorColor(context).withValues(alpha: 0.8),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -385,7 +385,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         ),
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.getErrorColor(context).withOpacity(0.3),
+            color: ThemeColors.getErrorColor(context).withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -394,7 +394,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
     }
 
     return BoxDecoration(
-      color: ThemeColors.getCardBackgroundLight(context).withOpacity(0.6),
+      color: ThemeColors.getCardBackgroundLight(context).withValues(alpha: 0.6),
       borderRadius: BorderRadius.circular(DesignSystem.radiusM),
       border: Border.all(
         color: ThemeColors.getBorder(context),
@@ -463,7 +463,7 @@ class _CustomQuestionCardState extends State<CustomQuestionCard>
         height: 8,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: ThemeColors.getSecondaryText(context).withOpacity(0.5),
+          color: ThemeColors.getSecondaryText(context).withValues(alpha: 0.5),
         ),
       ),
     );

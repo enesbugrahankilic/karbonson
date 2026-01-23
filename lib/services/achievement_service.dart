@@ -809,6 +809,12 @@ class AchievementService {
     }
   }
 
+  /// Get user achievements (requires initialization first)
+  Future<List<Achievement>> getUserAchievements(String userId) async {
+    await initializeForUser();
+    return _loadUserAchievementsList(userId);
+  }
+
   /// Get all available achievements
   List<Achievement> getAllAchievements() => _allAchievements;
 
