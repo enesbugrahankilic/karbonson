@@ -42,6 +42,7 @@ import '../../pages/ai_recommendations_page.dart';
 import '../../pages/rewards_shop_page.dart';
 import '../../pages/how_to_play_page.dart';
 import '../../pages/profile_page.dart';
+import '../../pages/carbon_footprint_page.dart';
 
 // Settings Pages
 import '../../pages/settings_page.dart';
@@ -533,7 +534,7 @@ class AppRouterComplete {
       AppRoutes.rewardsShop => _buildProtectedRoute(_buildPlaceholderPage('Ödül Mağazası'), settings),
       AppRoutes.notifications => _buildProtectedRoute(_buildPlaceholderPage('Bildirimler'), settings),
       AppRoutes.spectatorMode => _buildProtectedRoute(_buildPlaceholderPage('İzleyici Modu'), settings),
-      AppRoutes.carbonFootprint => _buildProtectedRoute(_buildPlaceholderPage('Karbon Ayak İzi'), settings),
+      AppRoutes.carbonFootprint => _buildProtectedRoute(const CarbonFootprintPage(), settings),
 
       // Default route
       _ => _buildRoute(LoginPage()),

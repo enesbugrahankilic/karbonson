@@ -569,7 +569,7 @@ class _BoardGamePageState extends State<BoardGamePage> with TickerProviderStateM
       subtitle: _currentRoom != null
           ? '${_players.length} oyuncu • Tur $_currentTurn'
           : 'Çevre dostu tahta oyunu',
-      showBackButton: true,
+      showBackButton: false,
       onBackPressed: () => Navigator.pop(context),
       actions: [
         if (_currentRoom == null) ...[

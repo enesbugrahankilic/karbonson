@@ -624,11 +624,11 @@ class ChallengeService {
         bonusReward: 'social_badge',
       );
 
-      final friendshipId = await createWeeklyChallenge(friendshipChallenge);
-      if (friendshipId != null) challenges.add(friendshipId);
-
       final bonusId = await createWeeklyChallenge(bonusChallenge);
       if (bonusId != null) challenges.add(bonusId);
+
+      final friendshipId = await createWeeklyChallenge(friendshipChallenge);
+      if (friendshipId != null) challenges.add(friendshipId);
 
       if (kDebugMode) {
         debugPrint('✅ Generated ${challenges.length} weekly challenges');

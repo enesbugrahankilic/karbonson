@@ -3,9 +3,12 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/profile_service.dart';
 import '../services/authentication_state_service.dart';
+import '../services/carbon_footprint_service.dart';
+import '../services/firestore_service.dart';
 import '../theme/design_system.dart';
 import '../theme/theme_colors.dart';
 import '../widgets/page_templates.dart';
+import '../widgets/carbon_class_selection_widget.dart';
 import 'register_page.dart';
 import 'welcome_page.dart';
 import 'forgot_password_page.dart';
@@ -83,7 +86,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  Future<void> _login() async {
+Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       setState(() => _errorMessage = 'E-posta ve şifre gerekli');
       return;
@@ -122,15 +125,27 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         );
 
         if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => WelcomePage(
-                userName: nickname,
-                isGuest: false,
+          // Check if user has class information
+          final userData = await _profileService.getUserProfile();
+          if (userData?.classLevel == null || userData?.classSection == null) {
+            // Show class selection dialog if no class info
+            _showClassSelectionDialog(
+              context,
+              nickname: nickname,
+              uid: userCredential.user!.uid,
+            );
+          } else {
+            // User has class info, proceed to welcome page
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => WelcomePage(
+                  userName: nickname,
+                  isGuest: false,
+                ),
               ),
-            ),
-          );
+            );
+          }
         }
       }
     } on FirebaseAuthException catch (e) {
@@ -158,6 +173,143 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  /// Show class selection dialog after login if user has no class info
+  void _showClassSelectionDialog(
+    BuildContext context, {
+    required String nickname,
+    required String uid,
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(DesignSystem.spacingL),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).primaryColor,
+                Theme.of(context).primaryColor.withValues(alpha: 0.8),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icon
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.school,
+                    size: 40,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: DesignSystem.spacingM),
+
+                // Title
+                Text(
+                  'Sınıf Bilgisi Gerekli',
+                  style: DesignSystem.getHeadlineSmall(context).copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: DesignSystem.spacingS),
+
+                // Message
+                Text(
+                  'Karbon ayak izi raporlarınızı görüntülemek için sınıf bilgilerinizi seçmeniz gerekmektedir.',
+                  style: DesignSystem.getBodyMedium(context).copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: DesignSystem.spacingL),
+
+                // Class Selection Widget
+                CarbonClassSelectionWidget(
+                  onClassSelected: (classInfo) async {
+                    if (classInfo.classLevel != null && classInfo.classSection != null) {
+                      // Save class info to Firestore
+                      final profileService = ProfileService();
+                      final firestoreService = FirestoreService();
+                      
+                      await firestoreService.createOrUpdateUserProfile(
+                        nickname: nickname,
+                        classLevel: classInfo.classLevel,
+                        classSection: classInfo.classSection,
+                      );
+
+                      if (mounted) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Sınıf bilgileriniz kaydedildi!'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                        
+                        // Navigate to welcome page
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => WelcomePage(
+                              userName: nickname,
+                              isGuest: false,
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  isRequired: true,
+                  helperText: 'Bu bilgi karbon raporlarınız için gereklidir',
+                ),
+                const SizedBox(height: DesignSystem.spacingM),
+
+                // Skip button
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => WelcomePage(
+                          userName: nickname,
+                          isGuest: false,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    'Şimdilik Atla',
+                    style: DesignSystem.getLabelLarge(context).copyWith(
+                      color: Colors.white.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   void _navigateToForgotPassword() {

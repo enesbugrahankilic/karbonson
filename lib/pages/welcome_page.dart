@@ -3,16 +3,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/design_system.dart';
 import '../theme/theme_colors.dart';
 import '../widgets/page_templates.dart';
+import '../services/authentication_state_service.dart';
 import 'profile_page.dart';
 import 'how_to_play_page.dart';
 
 class WelcomePage extends StatefulWidget {
-  final String userName;
+  final String? userName;
   final bool isGuest;
 
   const WelcomePage({
     super.key,
-    required this.userName,
+    this.userName,
     this.isGuest = false,
   });
 
@@ -223,7 +224,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
                                 child: Text(
                                   widget.isGuest
                                       ? 'Misafir Modu Aktif'
-                                      : '${widget.userName}',
+                                      : '${widget.userName ?? AuthenticationStateService().authenticatedNickname ?? 'Kullanıcı'}',
                                   style: DesignSystem.getHeadlineSmall(context).copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w700,

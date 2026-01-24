@@ -104,13 +104,19 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
 
       if (kDebugMode) {
         debugPrint(
-            'ForgotPasswordPage: Sending OTP code to: ${email.replaceRange(2, email.indexOf('@'), '***')}');
+            'ForgotPasswordPage: Sending password reset email to: ${email.replaceRange(2, email.indexOf('@'), '***')}');
       }
 
-      // Send OTP code using email OTP service
-      final otpResult = await EmailOtpService.sendOtpCode(
+      // Send password reset email using Firebase Auth
+      await FirebaseAuth.instance.sendPasswordResetEmail(
         email: email,
-        purpose: 'forgot_password',
+        actionCodeSettings: ActionCodeSettings(
+          url: 'https://karbonson.page.link/reset-password',
+          handleCodeInApp: true,
+          androidPackageName: 'com.example.karbonson',
+          androidMinimumVersion: '21',
+          iOSBundleId: 'com.example.karbonson',
+        ),
       );
 
       // Hide loading overlay
@@ -120,28 +126,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
         _isLoading = false;
       });
 
-      // Handle the result
-      if (otpResult.isSuccess) {
-        // Navigate to OTP verification page
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => EmailOtpVerificationPage(
-              email: email,
-              verificationId: '', // Will be set by the service
-              onVerify: (otp) {
-                // Handle OTP verification
-                if (otp.isNotEmpty) {
-                  // OTP verified successfully, navigate back or to next step
-                  Navigator.of(context).pop();
-                }
-              },
-            ),
-          ),
-        );
-      } else {
-        // Show error message
-        _showErrorSnackbar(otpResult.message);
-      }
+      // Show success dialog
+      _showSuccessDialog(
+        'Şifre sıfırlama bağlantısı gönderildi!\n\n$email adresine şifre sıfırlama bağlantısı gönderdik. Lütfen e-posta kutunuzu kontrol edin ve bağlantıya tıklayarak yeni şifrenizi belirleyin.\n\nE-posta gelmediyse spam klasörünü kontrol etmeyi unutmayın.',
+      );
     } catch (e) {
       // Hide loading overlay
       _hideLoadingOverlay();
@@ -151,7 +139,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
       });
 
       if (kDebugMode) {
-        debugPrint('ForgotPasswordPage: Unexpected error: $e');
+        debugPrint('ForgotPasswordPage: Password reset error: $e');
       }
 
       // Enhanced error handling
@@ -160,11 +148,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
           e.toString().contains('Network')) {
         errorMessage =
             'İnternet bağlantınızı kontrol edin. Ağ bağlantısı sorunu var.';
-      } else if (e.toString().contains('Timeout') ||
-          e.toString().contains('timeout')) {
-        errorMessage = 'İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.';
+      } else if (e.toString().contains('user-not-found')) {
+        errorMessage = 'Bu e-posta adresi ile kayıtlı bir hesap bulunamadı.';
+      } else if (e.toString().contains('invalid-email')) {
+        errorMessage = 'Geçerli bir e-posta adresi girin.';
+      } else if (e.toString().contains('too-many-requests')) {
+        errorMessage = 'Çok fazla istek gönderdiniz. Lütfen biraz bekleyin.';
       } else {
-        errorMessage = 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
+        errorMessage = 'Şifre sıfırlama e-postası gönderilemedi. Lütfen tekrar deneyin.';
       }
 
       _showErrorSnackbar(errorMessage);
@@ -514,7 +505,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'E-posta adresinizi girin, size 6 haneli doğrulama kodu gönderelim.',
+                            'E-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.',
                             style: TextStyle(
                               fontSize: 14,
                               color: ThemeColors.getSecondaryText(context),
@@ -671,7 +662,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
                                         ? null
                                         : _handleSendPasswordReset,
                                     icon: const Icon(Icons.send),
-                                    label: const Text('Doğrulama Kodu Gönder'),
+                                    label: const Text('Şifre Sıfırlama Bağlantısı Gönder'),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: _isConnected
                                           ? ThemeColors.getPrimaryButtonColor(
@@ -702,7 +693,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
                               ),
                             ),
                             child: Text(
-                              'E-posta adresinize gönderilen 6 haneli kodu girerek yeni şifrenizi belirleyebilirsiniz. E-posta gelmezse spam klasörünü kontrol etmeyi unutmayın.',
+                              'E-posta adresinize gönderilen şifre sıfırlama bağlantısına tıklayarak yeni şifrenizi belirleyebilirsiniz. E-posta gelmezse spam klasörünü kontrol etmeyi unutmayın.',
                               style: TextStyle(
                                 color: ThemeColors.getSecondaryText(context),
                                 fontSize: 12,

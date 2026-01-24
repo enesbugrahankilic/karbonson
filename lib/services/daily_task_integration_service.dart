@@ -77,6 +77,12 @@ class DailyTaskIntegrationService {
   void _setupFriendshipListeners() {
     // Arkadaş ekleme olaylarını dinle
     // Bu, FriendshipService'in başarılı arkadaş ekleme işlemlerinden sonra tetiklenir
+    // TODO: FriendshipService'e event stream eklenmeli
+    // Örnek: _friendshipService.friendshipEventStream.listen((event) {
+    //   if (event.type == FriendshipEventType.friendAdded) {
+    //     onFriendAdded(event.friendId);
+    //   }
+    // });
   }
 
   /// Arkadaş eklendiğinde çağır

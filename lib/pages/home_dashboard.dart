@@ -18,6 +18,7 @@ import '../services/profile_picture_service.dart';
 import '../services/user_progress_service.dart';
 import '../services/user_activity_service.dart';
 import '../services/app_localizations.dart';
+import '../services/carbon_footprint_service.dart';
 import '../models/achievement.dart';
 import '../models/user_progress.dart';
 import '../models/daily_challenge.dart';
@@ -3196,7 +3197,7 @@ class _HomeDashboardState extends State<HomeDashboard>
     );
   }
 
-  Widget _buildCarbonFootprintWidget(BuildContext context) {
+Widget _buildCarbonFootprintWidget(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
 
@@ -3211,99 +3212,418 @@ class _HomeDashboardState extends State<HomeDashboard>
                     ? DesignSystem.spacingS
                     : DesignSystem.spacingM,
                 vertical: DesignSystem.spacingS),
-            child: Text(
-              '🌱 Çevre Bilinci',
-              style: DesignSystem.getTitleLarge(context).copyWith(
-                color: Colors.white,
-                fontSize: isSmallScreen ? 18.0 : 22.0,
-                fontWeight: FontWeight.w700,
-                shadows: [
-                  Shadow(
-                    color: Colors.black.withOpacity( 0.3),
-                    offset: const Offset(0, 2),
-                    blurRadius: 4,
+            child: Row(
+              children: [
+                Text(
+                  '🌱 Karbon Ayak İzi',
+                  style: DesignSystem.getTitleLarge(context).copyWith(
+                    color: Colors.white,
+                    fontSize: isSmallScreen ? 18.0 : 22.0,
+                    fontWeight: FontWeight.w700,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.3),
+                        offset: const Offset(0, 2),
+                        blurRadius: 4,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(
-                isSmallScreen ? DesignSystem.spacingM : DesignSystem.spacingL),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.green.shade400,
-                  Colors.green.shade600,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.green.withOpacity( 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
                 ),
+                const Spacer(),
+                // Edit button if user has class info
+                if (_userData?.classLevel != null && _userData?.classSection != null)
+                  IconButton(
+                    icon: Icon(Icons.edit, color: Colors.white.withOpacity(0.7), size: 20),
+                    onPressed: () => Navigator.of(context).pushNamed('/carbon-footprint'),
+                    tooltip: 'Düzenle',
+                  ),
               ],
             ),
-            child: InkWell(
-              onTap: () => Navigator.of(context).pushNamed(AppRoutes.carbonFootprint),
-              borderRadius: BorderRadius.circular(DesignSystem.radiusL),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.eco,
-                    size: isSmallScreen ? 48.0 : 64.0,
-                    color: Colors.white,
-                  ),
-                  SizedBox(height: DesignSystem.spacingM),
-                  Text(
-                    'Karbon Ayak İzini Hesapla',
-                    style: TextStyle(
-                      color: ThemeColors.getTextOnColoredBackground(context),
-                      fontSize: isSmallScreen ? 18.0 : 22.0,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: DesignSystem.spacingS),
-                  Text(
-                    'Çevreye duyarlılığını ölç, iyileştirme önerileri al!',
-                    style: TextStyle(
-                      color: ThemeColors.getTextOnColoredBackground(context).withOpacity( 0.9),
-                      fontSize: isSmallScreen ? 14.0 : 16.0,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: DesignSystem.spacingM),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: DesignSystem.spacingM,
-                      vertical: DesignSystem.spacingS,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity( 0.2),
-                      borderRadius: BorderRadius.circular(DesignSystem.radiusM),
-                    ),
-                    child: Text(
-                      'Hemen Başla',
-                      style: TextStyle(
-                        color: ThemeColors.getTextOnColoredBackground(context),
-                        fontSize: isSmallScreen ? 14.0 : 16.0,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
+          
+          // Check if user has class info
+          if (_userData?.classLevel == null || _userData?.classSection == null)
+            _buildNoClassInfoCard(context, isSmallScreen)
+          else
+            _buildCarbonSummaryCard(context, isSmallScreen),
         ],
       ),
     );
+  }
+
+  /// Build card shown when user has no class info
+  Widget _buildNoClassInfoCard(BuildContext context, bool isSmallScreen) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(
+          isSmallScreen ? DesignSystem.spacingM : DesignSystem.spacingL),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.orange.shade400,
+            Colors.orange.shade600,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () => Navigator.of(context).pushNamed('/carbon-footprint'),
+        borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+        child: Column(
+          children: [
+            Icon(
+              Icons.info_outline,
+              size: isSmallScreen ? 48.0 : 64.0,
+              color: Colors.white,
+            ),
+            SizedBox(height: DesignSystem.spacingM),
+            Text(
+              'Sınıf Bilgisi Eksik',
+              style: TextStyle(
+                color: ThemeColors.getTextOnColoredBackground(context),
+                fontSize: isSmallScreen ? 18.0 : 22.0,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: DesignSystem.spacingS),
+            Text(
+              'Karbon ayak izi raporlarınızı görmek için sınıf bilgilerinizi ekleyin.',
+              style: TextStyle(
+                color: ThemeColors.getTextOnColoredBackground(context).withOpacity(0.9),
+                fontSize: isSmallScreen ? 14.0 : 16.0,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: DesignSystem.spacingM),
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: DesignSystem.spacingM,
+                vertical: DesignSystem.spacingS,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+              ),
+              child: Text(
+                'Sınıf Ekle',
+                style: TextStyle(
+                  color: ThemeColors.getTextOnColoredBackground(context),
+                  fontSize: isSmallScreen ? 14.0 : 16.0,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Build actual carbon summary card with real data
+  Widget _buildCarbonSummaryCard(BuildContext context, bool isSmallScreen) {
+    final classLevel = _userData?.classLevel ?? 9;
+    final classSection = _userData?.classSection ?? 'A';
+    final classIdentifier = '$classLevel$classSection';
+    
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _getCarbonSummaryData(classLevel, classSection),
+      builder: (context, snapshot) {
+        final carbonValue = snapshot.data?['carbonValue'] ?? 0;
+        final averageCarbon = snapshot.data?['averageCarbon'] ?? 0;
+        final hasPlants = snapshot.data?['hasPlants'] ?? false;
+        final orientation = snapshot.data?['orientation'] ?? 'south';
+        
+        final statusText = _getCarbonStatusText(carbonValue);
+        final statusColor = _getCarbonStatusColor(carbonValue);
+
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(
+              isSmallScreen ? DesignSystem.spacingM : DesignSystem.spacingL),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                statusColor.withOpacity(0.7),
+                statusColor.withOpacity(0.9),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+            boxShadow: [
+              BoxShadow(
+                color: statusColor.withOpacity(0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: InkWell(
+            onTap: () => Navigator.of(context).pushNamed(AppRoutes.carbonFootprint),
+            borderRadius: BorderRadius.circular(DesignSystem.radiusL),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Class identifier
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isSmallScreen ? 12 : 16,
+                        vertical: isSmallScreen ? 6 : 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                      ),
+                      child: Text(
+                        classIdentifier,
+                        style: TextStyle(
+                          color: ThemeColors.getTextOnColoredBackground(context),
+                          fontSize: isSmallScreen ? 16 : 20,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    // Status indicator
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isSmallScreen ? 8 : 12,
+                        vertical: isSmallScreen ? 4 : 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            hasPlants ? Icons.local_florist : Icons.info,
+                            color: Colors.white,
+                            size: 14,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            hasPlants ? 'Bitkili' : 'Bitkisiz',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: isSmallScreen ? 11 : 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: DesignSystem.spacingM),
+                
+                // Carbon value
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.eco,
+                      size: isSmallScreen ? 32 : 40,
+                      color: Colors.white,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      '$carbonValue',
+                      style: TextStyle(
+                        color: ThemeColors.getTextOnColoredBackground(context),
+                        fontSize: isSmallScreen ? 36 : 48,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'g CO₂',
+                      style: TextStyle(
+                        color: ThemeColors.getTextOnColoredBackground(context).withOpacity(0.8),
+                        fontSize: isSmallScreen ? 16 : 20,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                
+                SizedBox(height: DesignSystem.spacingS),
+                
+                // Status text
+                Text(
+                  statusText,
+                  style: TextStyle(
+                    color: ThemeColors.getTextOnColoredBackground(context).withOpacity(0.9),
+                    fontSize: isSmallScreen ? 14 : 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                
+                SizedBox(height: DesignSystem.spacingM),
+                
+                // Comparison with average
+                if (averageCarbon > 0)
+                  Container(
+                    padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildCarbonStatItem(
+                          context,
+                          label: 'Sınıfınız',
+                          value: '$carbonValue',
+                          isHighlight: true,
+                        ),
+                        _buildCarbonStatItem(
+                          context,
+                          label: 'Ortalama',
+                          value: '$averageCarbon',
+                          isHighlight: false,
+                        ),
+                        _buildCarbonStatItem(
+                          context,
+                          label: 'Fark',
+                          value: '${carbonValue > averageCarbon ? '+' : ''}${carbonValue - averageCarbon}',
+                          isHighlight: carbonValue > averageCarbon,
+                          isWarning: carbonValue > averageCarbon,
+                        ),
+                      ],
+                    ),
+                  ),
+                
+                SizedBox(height: DesignSystem.spacingM),
+                
+                // View details button
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: DesignSystem.spacingM,
+                    vertical: DesignSystem.spacingS,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(DesignSystem.radiusM),
+                  ),
+                  child: Text(
+                    'Detayları Gör',
+                    style: TextStyle(
+                      color: ThemeColors.getTextOnColoredBackground(context),
+                      fontSize: isSmallScreen ? 14.0 : 16.0,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCarbonStatItem(
+    BuildContext context, {
+    required String label,
+    required String value,
+    required bool isHighlight,
+    bool isWarning = false,
+  }) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            color: isWarning 
+                ? Colors.yellow 
+                : (isHighlight ? Colors.white : Colors.white.withOpacity(0.8)),
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.8),
+            fontSize: 11,
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _getCarbonStatusText(int carbonValue) {
+    if (carbonValue < 1000) return 'Mükemmel! Çok düşük karbon ayak izi';
+    if (carbonValue < 2000) return 'İyi durumda';
+    if (carbonValue < 3000) return 'Orta seviye, iyileştirme mümkün';
+    return 'Yüksek, azaltma önerilir';
+  }
+
+  Color _getCarbonStatusColor(int carbonValue) {
+    if (carbonValue < 1000) return Colors.green;
+    if (carbonValue < 2000) return Colors.teal;
+    if (carbonValue < 3000) return Colors.amber;
+    return Colors.orange;
+  }
+
+  Future<Map<String, dynamic>> _getCarbonSummaryData(
+    int classLevel,
+    String classSection,
+  ) async {
+    try {
+      final carbonService = CarbonFootprintService();
+      
+      // Initialize seed data if needed
+      final hasData = await carbonService.carbonDataExists(classLevel, classSection);
+      if (!hasData) {
+        await carbonService.initializeSeedData();
+      }
+      
+      // Get carbon data for user's class
+      final carbonData = await carbonService.getCarbonDataByClass(classLevel, classSection);
+      
+      if (carbonData != null) {
+        // Get average for class level
+        final averageCarbon = await carbonService.getAverageCarbonForClassLevel(classLevel);
+        
+        return {
+          'carbonValue': carbonData.carbonValue,
+          'averageCarbon': averageCarbon,
+          'hasPlants': carbonData.hasPlants,
+          'orientation': carbonData.classOrientation.name,
+        };
+      }
+      
+      // Return default data if no carbon data found
+      return {
+        'carbonValue': 1500, // Default value
+        'averageCarbon': 1500,
+        'hasPlants': false,
+        'orientation': 'south',
+      };
+    } catch (e) {
+      debugPrint('Error getting carbon summary data: $e');
+      return {
+        'carbonValue': 1500,
+        'averageCarbon': 1500,
+        'hasPlants': false,
+        'orientation': 'south',
+      };
+    }
   }
 
   Widget _buildWeeklyChart(BuildContext context) {

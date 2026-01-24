@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:karbonson/models/user_data.dart';
 
@@ -16,8 +17,10 @@ class AIService {
       };
       final uri = Uri.parse('$baseUrl/recommendations').replace(queryParameters: queryParams);
 
-      print('AI Service: Getting recommendations for user $userId, class level: $classLevel');
-      print('AI Service: Request URL: $uri');
+      if (kDebugMode) {
+        debugPrint('AI Service: Getting recommendations for user $userId, class level: $classLevel');
+        debugPrint('AI Service: Request URL: $uri');
+      }
 
       final response = await http.get(uri);
 
@@ -27,7 +30,9 @@ class AIService {
         throw Exception('Failed to get recommendations');
       }
     } catch (e) {
-      print('AI Service: Error connecting to AI service: $e');
+      if (kDebugMode) {
+        debugPrint('AI Service: Error connecting to AI service: $e');
+      }
       // Return fallback recommendations
       return _getFallbackRecommendations(userId, classLevel);
     }

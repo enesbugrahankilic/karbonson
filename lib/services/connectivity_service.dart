@@ -63,7 +63,7 @@ class ConnectivityService {
     if (wasConnected != _isConnected) {
       if (_isConnected) {
         _lastOnlineTime = DateTime.now();
-        if (DateTime.now().difference(_lastOnlineTime!).inMinutes > 1) {
+        if (_lastOnlineTime != null && DateTime.now().difference(_lastOnlineTime!).inMinutes > 1) {
           // Was offline for more than a minute
           _notifyOnline();
         }

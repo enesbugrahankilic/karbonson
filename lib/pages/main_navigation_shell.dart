@@ -1,219 +1,238 @@
 // lib/pages/main_navigation_shell.dart
-// Premium Main Navigation Shell - Apple Quality Navigation Experience
-// Features: Smooth transitions, independent nav stacks, haptic feedback, state preservation
+// 🚀 Main Navigation Shell with 5-Tab System
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../widgets/premium_bottom_navigation.dart';
-import '../services/profile_service.dart';
+import '../core/navigation/simplified_app_router.dart';
+import '../services/authentication_state_service.dart';
+import '../services/notification_service.dart';
+import '../services/user_progress_service.dart';
+import '../services/achievement_service.dart';
+import '../theme/design_system.dart';
 import 'home_dashboard.dart';
 import 'quiz_page.dart';
-import 'duel_page.dart';
+import 'leaderboard_page.dart';
 import 'friends_page.dart';
 import 'profile_page.dart';
 
-/// Premium Main Navigation Shell - Apple Quality
+/// 🚀 Main Navigation Shell
+/// Provides 5-tab navigation with simplified routing
 class MainNavigationShell extends StatefulWidget {
-  final int? initialTabIndex;
-
-  const MainNavigationShell({
-    super.key,
-    this.initialTabIndex = 0,
-  });
+  const MainNavigationShell({super.key});
 
   @override
   State<MainNavigationShell> createState() => _MainNavigationShellState();
 }
 
-class _MainNavigationShellState extends State<MainNavigationShell>
-    with SingleTickerProviderStateMixin {
-  late int _selectedIndex;
-  late PageController _pageController;
-  late AnimationController _animationController;
-  final ProfileService _profileService = ProfileService();
+class _MainNavigationShellState extends State<MainNavigationShell> {
+  int _currentIndex = 0;
+  bool _isInitialized = false;
 
-  // Independent navigator keys for each tab
-  static final GlobalKey<NavigatorState> _homeNavKey =
-      GlobalKey<NavigatorState>();
-  static final GlobalKey<NavigatorState> _quizNavKey =
-      GlobalKey<NavigatorState>();
-  static final GlobalKey<NavigatorState> _duelNavKey =
-      GlobalKey<NavigatorState>();
-  static final GlobalKey<NavigatorState> _socialNavKey =
-      GlobalKey<NavigatorState>();
-  static final GlobalKey<NavigatorState> _profileNavKey =
-      GlobalKey<NavigatorState>();
-
-  // Last tab tap times for double-tap detection
-  late List<DateTime> _lastTabTapTimes;
-
-  // User nickname for FriendsPage
-  String _userNickname = '';
+  // Tab icons with labels
+  final List<BottomNavItem> _navItems = [
+    BottomNavItem(
+      route: AppRoutes.home,
+      icon: Icons.home_outlined,
+      activeIcon: Icons.home,
+      label: 'Ana Sayfa',
+    ),
+    BottomNavItem(
+      route: AppRoutes.gameModes,
+      icon: Icons.sports_esports_outlined,
+      activeIcon: Icons.sports_esports,
+      label: 'Oyunlar',
+    ),
+    BottomNavItem(
+      route: AppRoutes.social,
+      icon: Icons.people_outline,
+      activeIcon: Icons.people,
+      label: 'Sosyal',
+    ),
+    BottomNavItem(
+      route: AppRoutes.friends,
+      icon: Icons.person_add_outlined,
+      activeIcon: Icons.person_add,
+      label: 'Arkadaşlar',
+    ),
+    BottomNavItem(
+      route: AppRoutes.profile,
+      icon: Icons.person_outline,
+      activeIcon: Icons.person,
+      label: 'Profil',
+    ),
+  ];
 
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.initialTabIndex ?? 0;
-    _pageController = PageController(initialPage: _selectedIndex);
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _lastTabTapTimes = List.filled(5, DateTime.now());
-    _loadUserNickname();
+    _initializeServices();
   }
 
-  Future<void> _loadUserNickname() async {
+  Future<void> _initializeServices() async {
     try {
-      final nickname = await _profileService.getCurrentNickname();
-      if (mounted && nickname != null) {
-        setState(() {
-          _userNickname = nickname;
-        });
-      }
-    } catch (e) {
-      // Handle error silently or log it
-      if (mounted) {
-        setState(() {
-          _userNickname = 'Kullanıcı'; // Fallback
-        });
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  void _onNavItemTapped(int index) {
-    final now = DateTime.now();
-    final isDoubleTap = now.difference(_lastTabTapTimes[index]).inMilliseconds < 500;
-    _lastTabTapTimes[index] = now;
-
-    if (isDoubleTap && index != 0) {
-      // Double tap: pop to root
-      _getNavKey(index).currentState?.popUntil((route) => route.isFirst);
-      HapticFeedback.mediumImpact();
-    } else if (_selectedIndex == index) {
-      // Single tap on same tab: scroll to top
-      _getNavKey(index).currentState?.popUntil((route) => route.isFirst);
-      HapticFeedback.lightImpact();
-    } else {
-      // Switch to different tab
-      HapticFeedback.selectionClick();
+      // Initialize services in parallel
+      await Future.wait([
+        NotificationService.initializeStatic(),
+        AchievementService().initializeForUser(),
+      ]);
       setState(() {
-        _selectedIndex = index;
+        _isInitialized = true;
       });
-      _pageController.animateToPage(
-        index,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic,
-      );
+    } catch (e) {
+      debugPrint('Service initialization error: $e');
+      setState(() {
+        _isInitialized = true;
+      });
     }
-  }
-
-  GlobalKey<NavigatorState> _getNavKey(int index) {
-    switch (index) {
-      case 0:
-        return _homeNavKey;
-      case 1:
-        return _quizNavKey;
-      case 2:
-        return _duelNavKey;
-      case 3:
-        return _socialNavKey;
-      case 4:
-        return _profileNavKey;
-      default:
-        return _homeNavKey;
-    }
-  }
-
-  Widget _buildTab(int index, GlobalKey<NavigatorState> navKey, Widget page) {
-    return Navigator(
-      key: navKey,
-      onGenerateRoute: (settings) {
-        return MaterialPageRoute(
-          builder: (_) => page,
-          settings: settings,
-        );
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        final navKey = _getNavKey(_selectedIndex);
-        if (navKey.currentState?.canPop() ?? false) {
-          navKey.currentState?.pop();
-          return false;
-        }
-        return true;
-      },
-      child: Scaffold(
-        extendBody: true,
-        body: PageView(
-          controller: _pageController,
-          physics: const NeverScrollableScrollPhysics(),
-          children: [
-            _buildTab(0, _homeNavKey, const HomePage()),
-            _buildTab(1, _quizNavKey, const QuizPage()),
-            _buildTab(2, _duelNavKey, const DuelPage()),
-            _buildTab(3, _socialNavKey, FriendsPage(userNickname: _userNickname)),
-            _buildTab(4, _profileNavKey, const ProfilePage()),
-          ],
+    return Scaffold(
+      body: _isInitialized
+          ? IndexedStack(
+              index: _currentIndex,
+              children: _buildTabPages(),
+            )
+          : const Center(
+              child: CircularProgressIndicator(),
+            ),
+      bottomNavigationBar: _buildBottomNavigationBar(),
+    );
+  }
+
+  List<Widget> _buildTabPages() {
+    return [
+      // Home Tab
+      const HomeDashboard(),
+      
+      // Games Tab - Quiz as main game hub
+      const QuizPage(),
+      
+      // Social Tab - Leaderboard as main social hub
+      LeaderboardPage(),
+      
+      // Friends Tab
+      FriendsPage(userNickname: ''),
+      
+      // Profile Tab
+      const ProfilePage(),
+    ];
+  }
+
+  Widget _buildBottomNavigationBar() {
+    final theme = Theme.of(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: _navItems.asMap().entries.map((entry) {
+              final index = entry.key;
+              final item = entry.value;
+              final isSelected = _currentIndex == index;
+
+              return Expanded(
+                child: InkWell(
+                  onTap: () => _onTabSelected(index),
+                  borderRadius: BorderRadius.circular(16),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? theme.primaryColor.withOpacity(0.1)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isSelected ? item.activeIcon : item.icon,
+                          color: isSelected
+                              ? theme.primaryColor
+                              : theme.unselectedWidgetColor,
+                          size: 24,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          item.label,
+                          style: TextStyle(
+                            color: isSelected
+                                ? theme.primaryColor
+                                : theme.unselectedWidgetColor,
+                            fontSize: 10,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
         ),
-        bottomNavigationBar: _buildPremiumBottomNav(context),
       ),
     );
   }
 
-  Widget _buildPremiumBottomNav(BuildContext context) {
-    return PremiumBottomNavigation(
-      selectedIndex: _selectedIndex,
-      onItemTapped: _onNavItemTapped,
-      items: [
-        NavigationItem(
-          icon: Icons.home_rounded,
-          label: 'Home',
-        ),
-        NavigationItem(
-          icon: Icons.psychology,
-          label: 'Quiz',
-        ),
-        NavigationItem(
-          icon: Icons.flash_on,
-          label: 'Duel',
-        ),
-        NavigationItem(
-          icon: Icons.people_rounded,
-          label: 'Social',
-        ),
-        NavigationItem(
-          icon: Icons.person_rounded,
-          label: 'Profile',
-        ),
-      ],
-    );
+  void _onTabSelected(int index) {
+    if (_currentIndex == index) {
+      // Scroll to top if already on this tab
+      _scrollToTop(index);
+    } else {
+      setState(() {
+        _currentIndex = index;
+      });
+      HapticFeedback.lightImpact();
+    }
+  }
+
+  void _scrollToTop(int index) {
+    // This will be implemented by each tab page
+    // Tab pages should have a GlobalKey to scroll to top
   }
 }
 
-// Home Page Tab Content
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+/// Bottom Navigation Item Model
+class BottomNavItem {
+  final String route;
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
 
-  @override
-  State<HomePage> createState() => _HomePageState();
+  const BottomNavItem({
+    required this.route,
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+  });
 }
 
-class _HomePageState extends State<HomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return const HomeDashboard();
+/// Extension for tab pages to support scroll-to-top
+extension ScrollToTopExtension on State {
+  void _scrollToTopInTab(int tabIndex) {
+    // This can be overridden by individual tab pages
   }
 }
+
